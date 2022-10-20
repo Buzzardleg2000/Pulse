@@ -143,7 +143,7 @@ class PFMixin(pl.LightningModule):
     # TODO check this when implementing categorical target in from_dataset
     # https://pytorch-forecasting.readthedocs.io/en/stable/tutorials/building.html#Predicting-multiple-targets-at-the-same-time
     @classmethod
-    def from_datamodule(cls, dm, **kwargs):
+    def from_datamodule(cls, dm, ckpt_path=None, **kwargs):
         dm.prepare_data()
         dm.setup(stage='train')
         # TODO keep track of deduce_default_output_parameters output_size
@@ -153,27 +153,35 @@ class PFMixin(pl.LightningModule):
         # for TFT:
         # output_size=[7, 7, 7, 7], # 4 target variables
         dataset = dm._dset('df_tr', **dm.kwargs)
-        loss_weights = cls.target_weights(dataset)
-        x_dims = len(dataset.reals) + len(dataset.flat_categoricals)
-        y_dims = len(dataset.target)
-        loss = cls._coerce_loss(kwargs['loss'], y_dims, loss_weights)
-        # These are PER-TARGET, no need to dup+weight them
-        logging_metrics = nn.ModuleList(
-            [cls._coerce_loss(l) for l in kwargs['logging_metrics']])
-        kwargs.update(
-            x_dims=x_dims,
-            y_dims=y_dims,
-            loss=loss,
-            logging_metrics=logging_metrics,
-        )
-        self = cls.from_dataset(
-            dataset,
-            **ub.dict_diff(
-                kwargs,
-                list(asdict(BaseModelWithCovariatesKwargs())) +
-                ['output_transformer', 'target', 'output_size']),
-            STUB=False,
-        )  #, output_transformer=dataset.target_normalizer)
+
+        # first-time initialization
+        if ckpt_path is None:
+            loss_weights = cls.target_weights(dataset)
+            x_dims = len(dataset.reals) + len(dataset.flat_categoricals)
+            y_dims = len(dataset.target)
+            loss = cls._coerce_loss(kwargs['loss'], y_dims, loss_weights)
+            # These are PER-TARGET, no need to dup+weight them
+            logging_metrics = nn.ModuleList(
+                [cls._coerce_loss(l) for l in kwargs['logging_metrics']])
+            kwargs.update(
+                x_dims=x_dims,
+                y_dims=y_dims,
+                loss=loss,
+                logging_metrics=logging_metrics,
+            )
+            self = cls.from_dataset(
+                dataset,
+                **ub.dict_diff(
+                    kwargs,
+                    list(asdict(BaseModelWithCovariatesKwargs())) +
+                    ['output_transformer', 'target', 'output_size']),
+                STUB=False,
+            )  #, output_transformer=dataset.target_normalizer)
+        else:
+            self = cls.load_from_checkpoint(ckpt_path)
+
+        # postprocessing
+
         batch = next(iter(dm.train_dataloader()))
         x, y = batch
         # https://pytorch-lightning.readthedocs.io/en/stable/api/pytorch_lightning.core.LightningModule.html#pytorch_lightning.core.LightningModule.example_input_array
@@ -708,30 +716,31 @@ class HemorrhageVitals(BaseData):
     # could use shelve module to avoid dealing w serialization
     def _dset(self, df_name, xt_mins: Optional[Tuple[int, int]]=None, **kwargs):
 
-        # import xdev
-        # with xdev.embed_on_exception_context():
-            # # TODO file issue
-            # # for sklearn.preprocessing.StandardScaler
-            # import sklearn
-            # from sklearn.preprocessing import StandardScaler
-            # ub.util_hash._HASHABLE_EXTENSIONS.register(StandardScaler)(hash)
-            # cache_fpath = (self._cache_dir /
-                           # f'{df_name}_{xt_mins}_{ub.hash_data(kwargs)}.pt')
-        # if not cache_fpath.exists():
-        if 1:
+        # # TODO file issue
+        # # for sklearn.preprocessing.StandardScaler
+        # import sklearn
+        # from sklearn.preprocessing import StandardScaler
+        # ub.util_hash._HASHABLE_EXTENSIONS.register(StandardScaler)(hash)
+        # cache_fpath = (self._cache_dir /
+                       # f'{df_name}_{xt_mins}_{ub.hash_data(kwargs)}.pt')
+        dct_hash = hash(str({k:v for k, v in sorted(kwargs.items())}))
+        cache_fpath = (self._cache_dir /
+                       f'{df_name}_{xt_mins}_{dct_hash}.pt')
+        if not cache_fpath.exists():
 
             df = getattr(self, df_name)
             if xt_mins is not None:
                 xt_start_ix, xt_end_ix = map(self.mins_to_ix, xt_mins)
+                xt_end_ix -= xt_start_ix
                 kwargs['max_encoder_length'] = xt_end_ix
                 min_pred_idx_diff = (xt_start_ix + xt_end_ix - kwargs['min_prediction_idx'])
                 kwargs['min_prediction_idx'] += min_pred_idx_diff
                 kwargs['max_prediction_length'] -= min_pred_idx_diff
             dset = pf.TimeSeriesDataSet(df, **kwargs)
             print('loaded ', len(dset.decoded_index.id.unique()), ' pts')
-            # dset.save(cache_fpath)
+            dset.save(cache_fpath)
 
-        # dset = pf.TimeSeriesDataSet.load(cache_fpath)
+        dset = pf.TimeSeriesDataSet.load(cache_fpath)
         return dset
 
     def train_dataloader(self, xt_mins: Optional[Tuple[float, float]]=None, xt_restrict=True):
@@ -761,7 +770,8 @@ class HemorrhageVitals(BaseData):
         return dl
 
     def val_dataloader(self):
-        dl = self.dset_va.to_dataloader(train=False,
+        dset = self._dset('df_va', **self.kwargs)
+        dl = dset.to_dataloader(train=False,
                                         batch_size=self.batch_size * 10,
                                         batch_sampler='synchronized',
                                         num_workers=self.num_workers,
@@ -770,7 +780,8 @@ class HemorrhageVitals(BaseData):
         return dl
 
     def test_dataloader(self):
-        dl = self.dset_te.to_dataloader(train=False,
+        dset = self._dset('df_te', **self.kwargs)
+        dl = dset.to_dataloader(train=False,
                                         batch_size=self.batch_size * 10,
                                         batch_sampler='synchronized',
                                         num_workers=self.num_workers,

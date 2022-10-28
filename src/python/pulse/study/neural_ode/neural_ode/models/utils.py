@@ -189,6 +189,7 @@ class PFMixin(pl.LightningModule):
         # self.batch_size = len(x['encoder_lengths'])
         self.batch_size = dm.batch_size
         self.t_idx = dataset.reals.index(dm.t_param)
+        self.target = dataset.target
         # self.x_dims = x_dims  # TODO make properties based on pf?
         # self.y_dims = y_dims
         return self
@@ -436,11 +437,12 @@ class HemorrhageVitals(BaseData):
     # of x reverse solving until t0
     # if arch in { 'Seq2Seq', 'VAE' }
     start_reverse: bool = False
-    shuffle: bool = True
 
     static_behavior: Literal['ignore', 'propagate', 'augment'] = 'augment'
     time_augmentation: bool = False
     num_workers: int = 4
+
+    shuffle: bool = True  # turned off for overfit_batches
 
     def __post_init__(self):
         super().__init__()
@@ -451,8 +453,10 @@ class HemorrhageVitals(BaseData):
     def _cache_dir(self):
         if not self.hparams:
             self.save_hyperparameters(ignore=['read_cache'])
-        hparam_str = ub.hash_data(dict(self.hparams))
-        return (ub.Path(self.root_path) / 'cache' / hparam_str)
+        # hparam_str = ub.hash_data(dict(self.hparams))
+        h = str({k:v for k, v in sorted(self.hparams.items())})
+        hparam_str = ub.hash_data(h, base='abc')
+        return (ub.Path(self.root_path) / 'cache' / str(hparam_str))
 
     def _prepare_data(self):
         cache_dir = self._cache_dir
@@ -723,7 +727,11 @@ class HemorrhageVitals(BaseData):
         # ub.util_hash._HASHABLE_EXTENSIONS.register(StandardScaler)(hash)
         # cache_fpath = (self._cache_dir /
                        # f'{df_name}_{xt_mins}_{ub.hash_data(kwargs)}.pt')
-        dct_hash = hash(str({k:v for k, v in sorted(kwargs.items())}))
+        # HACK, beware, clear cache when testing scaling
+        kwargs_save = kwargs.copy()
+        kwargs_save.pop('scalers')  # default StandardSCaler() added
+        dct = str({k:v for k, v in sorted(kwargs_save.items())})
+        dct_hash = ub.hash_data(dct, base='abc')
         cache_fpath = (self._cache_dir /
                        f'{df_name}_{xt_mins}_{dct_hash}.pt')
         if not cache_fpath.exists():
@@ -743,7 +751,7 @@ class HemorrhageVitals(BaseData):
         dset = pf.TimeSeriesDataSet.load(cache_fpath)
         return dset
 
-    def train_dataloader(self, xt_mins: Optional[Tuple[float, float]]=None, xt_restrict=True):
+    def _dataloader(self, dset_nm: str, xt_mins: Optional[Tuple[float, float]]=None, xt_restrict=True, train=False):
         # can remove batch_sampler='synchronized' with irregular/masking support
         # (and should write a custom sampler - "TimeBounded"? - to ensure there
         # is some temporal overlap between batch entries)
@@ -756,38 +764,33 @@ class HemorrhageVitals(BaseData):
         if self.time_augmentation:
             kwargs['predict_mode'] = False
             kwargs['randomize_length'] = True  # TODO test this
-        dset = self._dset('df_tr', xt_mins, **kwargs)
+        dset = self._dset(dset_nm, xt_mins, **kwargs)
         if xt_restrict and xt_mins:
-            pts_in_orig = self._dset('df_tr', **kwargs).decoded_index.id.unique()
+            pts_in_orig = self._dset(dset_nm, **kwargs).decoded_index.id.unique()
             print('filtering', len(set(dset.decoded_index.id.unique()) - set(pts_in_orig)), 'pts')
             dset.filter(lambda df: df.id.isin(pts_in_orig), copy=False)
-        dl = dset.to_dataloader(train=True,
-                                batch_size=self.batch_size,
+        if train:
+            batch_size = self.batch_size
+            shuffle = self.shuffle
+        else:
+            batch_size = self.batch_size * 10
+            shuffle = False
+        dl = dset.to_dataloader(train=train,
+                                batch_size=batch_size,
                                 batch_sampler='synchronized',
                                 num_workers=self.num_workers,
-                                shuffle=self.shuffle,
+                                shuffle=shuffle,
                                 pin_memory=True)
         return dl
 
+    def train_dataloader(self):
+        return self._dataloader('df_tr', train=True)
+
     def val_dataloader(self):
-        dset = self._dset('df_va', **self.kwargs)
-        dl = dset.to_dataloader(train=False,
-                                        batch_size=self.batch_size * 10,
-                                        batch_sampler='synchronized',
-                                        num_workers=self.num_workers,
-                                        shuffle=self.shuffle,
-                                        pin_memory=True)
-        return dl
+        return self._dataloader('df_va', train=False)
 
     def test_dataloader(self):
-        dset = self._dset('df_te', **self.kwargs)
-        dl = dset.to_dataloader(train=False,
-                                        batch_size=self.batch_size * 10,
-                                        batch_sampler='synchronized',
-                                        num_workers=self.num_workers,
-                                        shuffle=self.shuffle,
-                                        pin_memory=True)
-        return dl
+        return self._dataloader('df_te', train=False)
 
     def predict_dataloader(self):
 

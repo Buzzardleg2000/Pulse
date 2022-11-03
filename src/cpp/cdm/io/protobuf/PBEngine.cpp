@@ -117,8 +117,8 @@ void PBEngine::Serialize(const CDM_BIND::LogMessagesData& src, LogMessages& dst)
 {
   for (int i = 0; i < src.debugmessages_size(); i++)
     dst.debug_msgs.push_back(src.debugmessages()[i]);
-  for (int i = 0; i < src.infogmessages_size(); i++)
-    dst.info_msgs.push_back(src.infogmessages()[i]);
+  for (int i = 0; i < src.infomessages_size(); i++)
+    dst.info_msgs.push_back(src.infomessages()[i]);
   for (int i = 0; i < src.warningmessages_size(); i++)
     dst.warning_msgs.push_back(src.warningmessages()[i]);
   for (int i = 0; i < src.errormessages_size(); i++)
@@ -146,7 +146,7 @@ void PBEngine::Serialize(const LogMessages& src, CDM_BIND::LogMessagesData& dst)
   for (std::string str : src.debug_msgs)
     dst.add_debugmessages(str);
   for (std::string str : src.info_msgs)
-    dst.add_infogmessages(str);
+    dst.add_infomessages(str);
   for (std::string str : src.warning_msgs)
     dst.add_warningmessages(str);
   for (std::string str : src.error_msgs)
@@ -992,8 +992,6 @@ void PBEngine::Load(const CDM_BIND::EngineInitializationData& src, SEEngineIniti
 }
 void PBEngine::Serialize(const CDM_BIND::EngineInitializationData& src, SEEngineInitialization& dst, const SESubstanceManager& subMgr)
 {
-  dst.SetID(src.id());
-
   if (src.has_patientconfiguration())
     PBEngine::Load(src.patientconfiguration(), dst.GetPatientConfiguration(), subMgr);
   else if (!src.statefilename().empty())
@@ -1018,8 +1016,6 @@ CDM_BIND::EngineInitializationData* PBEngine::Unload(const SEEngineInitializatio
 }
 void PBEngine::Serialize(const SEEngineInitialization& src, CDM_BIND::EngineInitializationData& dst)
 {
-  dst.set_id(src.m_ID);
-
   if (src.HasPatientConfiguration())
     dst.set_allocated_patientconfiguration(PBEngine::Unload(*src.m_PatientConfiguration));
   else if (src.HasStateFilename())
@@ -1062,7 +1058,7 @@ bool PBEngine::SerializeFromString(const std::string& src, SEEngineInitializatio
 }
 bool PBEngine::SerializeFromString(const std::string& src, std::vector<SEEngineInitialization*>& dst, eSerializationFormat m, const SESubstanceManager& subMgr)
 {
-  CDM_BIND::EngineInitializationListData data;
+  CDM_BIND::EngineInitializationGroupData data;
   if (!PBUtils::SerializeFromString(src, data, m, subMgr.GetLogger()))
     return false;
   for (int i = 0; i < data.engineinitialization_size(); i++)

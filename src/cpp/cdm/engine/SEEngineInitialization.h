@@ -13,9 +13,6 @@ public:
   explicit SEEngineInitialization(Logger* logger=nullptr);
   virtual ~SEEngineInitialization();
 
-  SEEngineInitialization(const SEEngineInitialization&) = delete;
-  SEEngineInitialization operator=(const SEEngineInitialization&) = delete;
-
   virtual void Copy(const SEEngineInitialization& from, const SESubstanceManager& subMgr);
   virtual void Clear(); //clear memory
 
@@ -24,9 +21,6 @@ public:
   static bool SerializeFromString(const std::string& src, std::vector<SEEngineInitialization*>& dst, eSerializationFormat m, const SESubstanceManager& subMgr);
 
   virtual bool IsValid()const;
-
-  virtual int GetID() const;
-  virtual void SetID(int id);
 
   virtual bool HasPatientConfiguration() const;
   virtual SEPatientConfiguration& GetPatientConfiguration();
@@ -56,7 +50,6 @@ public:
   virtual void KeepEventChanges(bool b);
 
 protected:
-  int                             m_ID;
   SEPatientConfiguration*         m_PatientConfiguration;
   std::string                     m_StateFilename;
   std::string                     m_State;
@@ -65,4 +58,34 @@ protected:
   std::string                     m_LogFilename;
   bool                            m_KeepLogMessages;
   bool                            m_KeepEventChanges;
+};
+
+class CDM_DECL SEEngineInitializationStatus : public Loggable
+{
+  friend class PBEngine; //friend the serialization class
+public:
+  explicit SEEngineInitializationStatus(Logger* logger=nullptr);
+  virtual ~SEEngineInitializationStatus();
+
+  virtual void Copy(const SEEngineInitializationStatus& from);
+  virtual void Clear(); //clear memory
+
+  bool SerializeToString(std::string& output, eSerializationFormat m) const;
+  bool SerializeFromString(const std::string& src, eSerializationFormat m);
+  static bool SerializeFromString(const std::string& src, std::vector<SEEngineInitializationStatus*>& dst, eSerializationFormat m, Logger* logger);
+
+  virtual int GetID() const;
+  virtual void SetID(int id);
+  
+  virtual bool Created() const;
+  virtual void Created(bool b);
+
+  virtual bool HasLogMessages() const;
+  virtual LogMessages& GetLogMessages();
+  virtual const LogMessages* GetLogMessages() const;
+
+protected:
+  int                             m_ID;
+  bool                            m_Created;
+  LogMessages*                    m_LogMessages;
 };

@@ -16,6 +16,7 @@ CDM_BIND_DECL2(DecimalFormat)
 CDM_BIND_DECL2(DynamicStabilization)
 CDM_BIND_DECL2(DynamicStabilizationEngineConvergence)
 CDM_BIND_DECL2(EngineInitialization)
+CDM_BIND_DECL2(EngineInitializationStatus)
 CDM_BIND_DECL2(TimedStabilization)
 CDM_BIND_DECL2(PatientConfiguration)
 class LogMessages;
@@ -143,6 +144,15 @@ public:
   static bool SerializeFromString(const std::string& src, SEEngineInitialization& dst, eSerializationFormat m, const SESubstanceManager& subMgr);
   static bool SerializeFromString(const std::string& src, std::vector<SEEngineInitialization*>& dst, eSerializationFormat m, const SESubstanceManager& subMgr);
   static void Copy(const SEEngineInitialization& src, SEEngineInitialization& dst, const SESubstanceManager& subMgr);
+
+  static void Load(const CDM_BIND::EngineInitializationStatusData& src, SEEngineInitializationStatus& dst);
+  static CDM_BIND::EngineInitializationStatusData* Unload(const SEEngineInitializationStatus& src);
+  static void Serialize(const CDM_BIND::EngineInitializationStatusData& src, SEEngineInitializationStatus& dst);
+  static void Serialize(const SEEngineInitializationStatus& src, CDM_BIND::EngineInitializationStatusData& dst);
+  static bool SerializeToString(const SEEngineInitializationStatus& src, std::string& output, eSerializationFormat m);
+  static bool SerializeFromString(const std::string& src, SEEngineInitializationStatus& dst, eSerializationFormat m);
+  static bool SerializeFromString(const std::string& src, std::vector<SEEngineInitializationStatus*>& dst, eSerializationFormat m, Logger* logger);
+  static void Copy(const SEEngineInitializationStatus& src, SEEngineInitializationStatus& dst);
 
   static void Load(const CDM_BIND::TimedStabilizationData& src, SETimedStabilization& dst);
   static CDM_BIND::TimedStabilizationData* Unload(const SETimedStabilization& src);

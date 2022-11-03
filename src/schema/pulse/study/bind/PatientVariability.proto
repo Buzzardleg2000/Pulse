@@ -8,8 +8,6 @@ import "pulse/cdm/bind/Patient.proto";
 import "pulse/cdm/bind/PatientActions.proto";
 import "pulse/cdm/bind/TestReport.proto";
 
-
-
 message PatientStateData
 {
 
@@ -78,12 +76,4 @@ message PatientStateData
 message PatientStateListData
 {
   repeated PatientStateData      PatientState               = 1;
-}
-
-message LogData
-{
-  repeated string                Info                       = 1;
-  repeated string                Warning                    = 2;
-  repeated string                Error                      = 3;
-  repeated string                Fatal                      = 4;
 }

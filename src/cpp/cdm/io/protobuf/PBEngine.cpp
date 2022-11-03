@@ -114,8 +114,8 @@ void PBEngine::Serialize(const CDM_BIND::LogMessagesData& src, LogMessages& dst)
 {
   for (int i = 0; i < src.debugmessages_size(); i++)
     dst.debug_msgs.push_back(src.debugmessages()[i]);
-  for (int i = 0; i < src.infogmessages_size(); i++)
-    dst.info_msgs.push_back(src.infogmessages()[i]);
+  for (int i = 0; i < src.infomessages_size(); i++)
+    dst.info_msgs.push_back(src.infomessages()[i]);
   for (int i = 0; i < src.warningmessages_size(); i++)
     dst.warning_msgs.push_back(src.warningmessages()[i]);
   for (int i = 0; i < src.errormessages_size(); i++)
@@ -143,7 +143,7 @@ void PBEngine::Serialize(const LogMessages& src, CDM_BIND::LogMessagesData& dst)
   for (std::string str : src.debug_msgs)
     dst.add_debugmessages(str);
   for (std::string str : src.info_msgs)
-    dst.add_infogmessages(str);
+    dst.add_infomessages(str);
   for (std::string str : src.warning_msgs)
     dst.add_warningmessages(str);
   for (std::string str : src.error_msgs)
@@ -1035,8 +1035,6 @@ void PBEngine::Load(const CDM_BIND::EngineInitializationData& src, SEEngineIniti
 }
 void PBEngine::Serialize(const CDM_BIND::EngineInitializationData& src, SEEngineInitialization& dst, const SESubstanceManager& subMgr)
 {
-  dst.SetID(src.id());
-
   if (src.has_patientconfiguration())
     PBEngine::Load(src.patientconfiguration(), dst.GetPatientConfiguration(), subMgr);
   else if (!src.statefilename().empty())
@@ -1061,8 +1059,6 @@ CDM_BIND::EngineInitializationData* PBEngine::Unload(const SEEngineInitializatio
 }
 void PBEngine::Serialize(const SEEngineInitialization& src, CDM_BIND::EngineInitializationData& dst)
 {
-  dst.set_id(src.m_ID);
-
   if (src.HasPatientConfiguration())
     dst.set_allocated_patientconfiguration(PBEngine::Unload(*src.m_PatientConfiguration));
   else if (src.HasStateFilename())
@@ -1096,7 +1092,7 @@ bool PBEngine::SerializeFromString(const std::string& src, SEEngineInitializatio
 }
 bool PBEngine::SerializeFromString(const std::string& src, std::vector<SEEngineInitialization*>& dst, eSerializationFormat m, const SESubstanceManager& subMgr)
 {
-  CDM_BIND::EngineInitializationListData data;
+  CDM_BIND::EngineInitializationGroupData data;
   if (!PBUtils::SerializeFromString(src, data, m, subMgr.GetLogger()))
     return false;
   for (int i = 0; i < data.engineinitialization_size(); i++)
@@ -1114,4 +1110,71 @@ void PBEngine::Copy(const SEEngineInitialization& src, SEEngineInitialization& d
   CDM_BIND::EngineInitializationData data;
   PBEngine::Serialize(src, data);
   PBEngine::Serialize(data, dst, subMgr);
+}
+
+
+void PBEngine::Load(const CDM_BIND::EngineInitializationStatusData& src, SEEngineInitializationStatus& dst)
+{
+  dst.Clear();
+  PBEngine::Serialize(src, dst);
+}
+void PBEngine::Serialize(const CDM_BIND::EngineInitializationStatusData& src, SEEngineInitializationStatus& dst)
+{
+  dst.SetID(src.id());
+
+  dst.Created(src.created());
+
+  if (src.has_logmessages())
+    PBEngine::Load(src.logmessages(), dst.GetLogMessages());
+}
+CDM_BIND::EngineInitializationStatusData* PBEngine::Unload(const SEEngineInitializationStatus& src)
+{
+  CDM_BIND::EngineInitializationStatusData* dst = new CDM_BIND::EngineInitializationStatusData();
+  PBEngine::Serialize(src, *dst);
+  return dst;
+}
+void PBEngine::Serialize(const SEEngineInitializationStatus& src, CDM_BIND::EngineInitializationStatusData& dst)
+{
+  dst.set_id(src.m_ID);
+
+  dst.set_created(src.Created());
+  
+  if (src.HasLogMessages())
+    dst.set_allocated_logmessages(PBEngine::Unload(*src.m_LogMessages));
+}
+
+bool PBEngine::SerializeToString(const SEEngineInitializationStatus& src, std::string& output, eSerializationFormat m)
+{
+  CDM_BIND::EngineInitializationStatusData data;
+  PBEngine::Serialize(src, data);
+  return PBUtils::SerializeToString(data, output, m, src.GetLogger());
+}
+bool PBEngine::SerializeFromString(const std::string& src, SEEngineInitializationStatus& dst, eSerializationFormat m)
+{
+  CDM_BIND::EngineInitializationStatusData data;
+  if (!PBUtils::SerializeFromString(src, data, m, dst.GetLogger()))
+    return false;
+  PBEngine::Load(data, dst);
+  return true;
+}
+bool PBEngine::SerializeFromString(const std::string& src, std::vector<SEEngineInitializationStatus*>& dst, eSerializationFormat m, Logger* logger)
+{
+  CDM_BIND::EngineInitializationGroupStatusData data;
+  if (!PBUtils::SerializeFromString(src, data, m, logger))
+    return false;
+  for (int i = 0; i < data.engineinitializationstatus_size(); i++)
+  {
+    SEEngineInitializationStatus* eis = new SEEngineInitializationStatus();
+    PBEngine::Load(data.engineinitializationstatus()[i], *eis);
+    dst.push_back(eis);
+  }
+  return true;
+}
+
+void PBEngine::Copy(const SEEngineInitializationStatus& src, SEEngineInitializationStatus& dst)
+{
+  dst.Clear();
+  CDM_BIND::EngineInitializationStatusData data;
+  PBEngine::Serialize(src, data);
+  PBEngine::Serialize(data, dst);
 }

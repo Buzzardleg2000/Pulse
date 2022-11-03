@@ -36,12 +36,11 @@ bool SEEngineInitialization::SerializeFromString(const std::string& src, std::ve
 
 void SEEngineInitialization::Clear()
 {
-  m_ID = -1;
   SAFE_DELETE(m_PatientConfiguration);
   m_StateFilename = "";
   m_State = "";
   SAFE_DELETE(m_DataRequestManager);
-  m_StateFilename = "";
+  m_LogFilename = "";
   m_KeepLogMessages = false;
   m_KeepEventChanges = false;
 }
@@ -54,15 +53,6 @@ void SEEngineInitialization::Copy(const SEEngineInitialization& from, const SESu
 bool SEEngineInitialization::IsValid() const
 {
   return (HasPatientConfiguration() || HasStateFilename() || HasState());
-}
-
-int SEEngineInitialization::GetID() const
-{
-  return m_ID;
-}
-void SEEngineInitialization::SetID(int id)
-{
-  m_ID = id;
 }
 
 bool SEEngineInitialization::HasPatientConfiguration() const
@@ -155,4 +145,75 @@ bool SEEngineInitialization::KeepEventChanges() const
 void SEEngineInitialization::KeepEventChanges(bool b)
 {
   m_KeepEventChanges = b;
+}
+
+
+//////////////////////////////////////////////////////
+SEEngineInitializationStatus::SEEngineInitializationStatus(Logger* logger) : Loggable(logger)
+{
+  m_LogMessages = nullptr;
+  Clear();
+}
+
+SEEngineInitializationStatus::~SEEngineInitializationStatus()
+{
+  SAFE_DELETE(m_LogMessages);
+}
+
+bool SEEngineInitializationStatus::SerializeToString(std::string& output, eSerializationFormat m) const
+{
+  return PBEngine::SerializeToString(*this, output, m);
+}
+bool SEEngineInitializationStatus::SerializeFromString(const std::string& src, eSerializationFormat m)
+{
+  return PBEngine::SerializeFromString(src, *this, m);
+}
+bool SEEngineInitializationStatus::SerializeFromString(const std::string& src, std::vector<SEEngineInitializationStatus*>& dst, eSerializationFormat m, Logger* logger)
+{
+  return PBEngine::SerializeFromString(src, dst, m, logger);
+}
+
+void SEEngineInitializationStatus::Clear()
+{
+  m_ID = -1;
+  SAFE_DELETE(m_LogMessages);
+  m_Created = false;
+}
+
+void SEEngineInitializationStatus::Copy(const SEEngineInitializationStatus& from)
+{
+  PBEngine::Copy(from, *this);
+}
+
+int SEEngineInitializationStatus::GetID() const
+{
+  return m_ID;
+}
+void SEEngineInitializationStatus::SetID(int id)
+{
+  m_ID = id;
+}
+
+bool SEEngineInitializationStatus::Created() const
+{
+  return m_Created;
+}
+void SEEngineInitializationStatus::Created(bool b)
+{
+  m_Created = b;
+}
+
+bool SEEngineInitializationStatus::HasLogMessages() const
+{
+  return m_LogMessages != nullptr;
+}
+LogMessages& SEEngineInitializationStatus::GetLogMessages()
+{
+  if (m_LogMessages == nullptr)
+    m_LogMessages = new LogMessages();
+  return *m_LogMessages;
+}
+const LogMessages* SEEngineInitializationStatus::GetLogMessages() const
+{
+  return m_LogMessages;
 }

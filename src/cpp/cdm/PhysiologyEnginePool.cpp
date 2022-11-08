@@ -96,7 +96,7 @@ SEEngineInitializationStatus SEPhysiologyEnginePool::InitEngine(SEPhysiologyEngi
     pe->Warning("Engine "+std::to_string(id)+" was unable to initialize");
 
   // TODO: Capture log messages in status
-  SEEngineInitializationStatus status;
+  SEEngineInitializationStatus status(pe->GetLogger());
   status.SetID(id);
   status.Created(pe->IsActive);
 

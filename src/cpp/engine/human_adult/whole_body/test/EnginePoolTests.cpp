@@ -37,13 +37,13 @@ namespace pulse { namespace human_adult_whole_body
 
     std::vector<SEEngineInitializationStatus> statuses = pool.InitializeEngines(eis, eModelType::HumanAdultWholeBody);
 
-    /*for (unsigned int idx = 0; idx < statuses.size(); ++idx)
+    for (unsigned int idx = 0; idx < statuses.size(); ++idx)
     {
       if (!(statuses[idx].Created()))
       {
         testCases[idx]->AddFailure("Failed to create engine at index " + std::to_string(idx));
       }
-    }*/
+    }
   }
   
   void EngineTest::AddRemoveEnginesTests(const std::string& rptDirectory)

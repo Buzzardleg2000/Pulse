@@ -36,10 +36,12 @@ bool SEEngineInitialization::SerializeFromString(const std::string& src, std::ve
 
 void SEEngineInitialization::Clear()
 {
-  SAFE_DELETE(m_PatientConfiguration);
+  if (m_PatientConfiguration)
+    m_PatientConfiguration->Clear();
   m_StateFilename = "";
   m_State = "";
-  SAFE_DELETE(m_DataRequestManager);
+  if (m_DataRequestManager)
+    m_DataRequestManager->Clear();
   m_LogFilename = "";
   m_KeepLogMessages = false;
   m_KeepEventChanges = false;
@@ -147,8 +149,10 @@ void SEEngineInitialization::KeepEventChanges(bool b)
   m_KeepEventChanges = b;
 }
 
+//////////////////////////////////
+// SEEngineInitializationStatus //
+//////////////////////////////////
 
-//////////////////////////////////////////////////////
 SEEngineInitializationStatus::SEEngineInitializationStatus(Logger* logger) : Loggable(logger)
 {
   m_LogMessages = nullptr;
@@ -176,7 +180,8 @@ bool SEEngineInitializationStatus::SerializeFromString(const std::string& src, s
 void SEEngineInitializationStatus::Clear()
 {
   m_ID = -1;
-  SAFE_DELETE(m_LogMessages);
+  if (m_LogMessages)
+    m_LogMessages->Clear();
   m_Created = false;
 }
 

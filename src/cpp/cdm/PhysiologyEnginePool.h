@@ -25,7 +25,7 @@ public:
   ~SEPhysiologyEnginePoolEngine();
 
   bool                              IsActive=false;
-  SEEngineInitialization            EngineInitialization;
+  SEEngineInitializationStatus      EngineInitializationStatus;
   std::vector<const SEAction*>      Actions;
   SEDataRequested                   DataRequested;
   std::unique_ptr<PhysiologyEngine> Engine;
@@ -42,8 +42,8 @@ public:
 
   bool RemoveEngine(int id);
 
-  SEEngineInitializationStatus InitializeEngine(SEEngineInitialization& init);
-  std::vector<SEEngineInitializationStatus> InitializeEngines(std::vector<SEEngineInitialization>& inits);
+  SEEngineInitializationStatus& InitializeEngine(SEEngineInitialization& init);
+  std::vector<SEEngineInitializationStatus*> InitializeEngines(const std::vector<SEEngineInitialization*>& inits);
 
   // Advance all engines the same amount of time
   // If you want to advance individual engines/different times
@@ -63,8 +63,8 @@ public:
 protected:
   virtual void AllocateEngine(SEPhysiologyEnginePoolEngine& pe) = 0;
 
-  SEPhysiologyEnginePoolEngine* CreateEngine(SEEngineInitialization& init, int id);
-  static SEEngineInitializationStatus InitEngine(SEPhysiologyEnginePoolEngine* pe, int id);
+  SEPhysiologyEnginePoolEngine* CreateEngine(int id);
+  static void InitEngine(SEPhysiologyEnginePoolEngine* pe, SEEngineInitialization* init);
 
   bool m_IsActive;
   SESubstanceManager m_SubMgr;

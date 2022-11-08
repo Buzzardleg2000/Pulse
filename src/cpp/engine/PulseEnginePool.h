@@ -12,8 +12,8 @@ public:
   PulseEnginePool(size_t poolSize = 0, const std::string& dataDir = "./", Logger* logger = nullptr);
   ~PulseEnginePool() = default;
 
-  virtual  SEEngineInitializationStatus InitializeEngine(SEEngineInitialization init, eModelType type);
-  virtual  std::vector<SEEngineInitializationStatus> InitializeEngines(std::vector<SEEngineInitialization>& inits, eModelType type);
+  virtual SEEngineInitializationStatus& InitializeEngine(SEEngineInitialization& init, eModelType type);
+  virtual std::vector<SEEngineInitializationStatus*> InitializeEngines(const std::vector<SEEngineInitialization*>& inits, eModelType type);
 
 protected:
   using SEPhysiologyEnginePool::InitializeEngine;

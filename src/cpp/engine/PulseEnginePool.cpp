@@ -12,13 +12,13 @@ PulseEnginePool::PulseEnginePool(size_t poolSize, const std::string& dataDir, Lo
 
 }
 
-SEEngineInitializationStatus PulseEnginePool::InitializeEngine(SEEngineInitialization init, eModelType type)
+SEEngineInitializationStatus& PulseEnginePool::InitializeEngine(SEEngineInitialization& init, eModelType type)
 {
   m_creationType = type;
   return InitializeEngine(init);
 }
 
-std::vector<SEEngineInitializationStatus> PulseEnginePool::InitializeEngines(std::vector<SEEngineInitialization>& inits, eModelType type)
+std::vector<SEEngineInitializationStatus*> PulseEnginePool::InitializeEngines(const std::vector<SEEngineInitialization*>& inits, eModelType type)
 {
   m_creationType = type;
   return InitializeEngines(inits);

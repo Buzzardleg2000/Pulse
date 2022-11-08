@@ -67,6 +67,9 @@ public:
   explicit SEEngineInitializationStatus(Logger* logger=nullptr);
   virtual ~SEEngineInitializationStatus();
 
+  SEEngineInitializationStatus(const SEEngineInitializationStatus&) = delete;
+  SEEngineInitializationStatus& operator= (const SEEngineInitializationStatus&) = delete;
+
   virtual void Copy(const SEEngineInitializationStatus& from);
   virtual void Clear(); //clear memory
 

@@ -24,7 +24,7 @@ namespace
 SEPhysiologyEnginePoolEngine::SEPhysiologyEnginePoolEngine(Logger* logger) : Loggable(logger)
 {
 
-};
+}
 SEPhysiologyEnginePoolEngine::~SEPhysiologyEnginePoolEngine()
 {
 
@@ -50,23 +50,22 @@ bool SEPhysiologyEnginePool::RemoveEngine(int id)
   return true;
 }
 
-SEPhysiologyEnginePoolEngine* SEPhysiologyEnginePool::CreateEngine(SEEngineInitialization& init, int id)
+SEPhysiologyEnginePoolEngine* SEPhysiologyEnginePool::CreateEngine(int id)
 {
   SEPhysiologyEnginePoolEngine* pe = new SEPhysiologyEnginePoolEngine(m_Logger);
   AllocateEngine(*pe);
   pe->DataRequested.SetEngine(*pe->Engine);
-  //pe->EngineInitialization.Copy(init, m_SubMgr);
   pe->Engine->GetLogger()->LogToConsole(false);
+  pe->EngineInitializationStatus.SetID(id);
   m_Engines.insert({ id, pe });
 
   return pe;
 }
 
-SEEngineInitializationStatus SEPhysiologyEnginePool::InitEngine(SEPhysiologyEnginePoolEngine* pe, int id)
+void SEPhysiologyEnginePool::InitEngine(SEPhysiologyEnginePoolEngine* pe, SEEngineInitialization* init)
 {
   pe->IsActive = false;
   PhysiologyEngine* engine = pe->Engine.get();
-  SEEngineInitialization* init = &pe->EngineInitialization;
 
   if(init->HasLogFilename())
     engine->GetLogger()->SetLogFile(init->GetLogFilename());
@@ -93,36 +92,39 @@ SEEngineInitializationStatus SEPhysiologyEnginePool::InitEngine(SEPhysiologyEngi
   // Set Results Active
   pe->DataRequested.SetIsActive(pe->IsActive);
   if (!pe->IsActive)
-    pe->Warning("Engine "+std::to_string(id)+" was unable to initialize");
+    pe->Warning("Engine "+std::to_string(pe->EngineInitializationStatus.GetID())+" was unable to initialize");
 
   // TODO: Capture log messages in status
-  SEEngineInitializationStatus status(pe->GetLogger());
-  status.SetID(id);
-  status.Created(pe->IsActive);
-
-  return status;
+  pe->EngineInitializationStatus.Created(pe->IsActive);
 }
 
-SEEngineInitializationStatus SEPhysiologyEnginePool::InitializeEngine(SEEngineInitialization& init)
+SEEngineInitializationStatus& SEPhysiologyEnginePool::InitializeEngine(SEEngineInitialization& init)
 {
   int id = m_NextID++;
-  SEPhysiologyEnginePoolEngine* pe = CreateEngine(init, id);
-  return InitEngine(pe, id);
+  SEPhysiologyEnginePoolEngine* pe = CreateEngine(id);
+
+  InitEngine(pe, &init);
+  return pe->EngineInitializationStatus;
 }
 
-std::vector<SEEngineInitializationStatus> SEPhysiologyEnginePool::InitializeEngines(std::vector<SEEngineInitialization>& inits)
+std::vector<SEEngineInitializationStatus*> SEPhysiologyEnginePool::InitializeEngines(const std::vector<SEEngineInitialization*>& inits)
 {
-  std::vector<std::future<SEEngineInitializationStatus>> futures;
-  for (auto& ei : inits)
+  std::vector<std::future<void>> futures;
+  std::vector<SEPhysiologyEnginePoolEngine*> engines;
+  for (const auto ei : inits)
   {
+    // TODO: Handle ei is nullptr
     int id = m_NextID++;
-    SEPhysiologyEnginePoolEngine* pe = CreateEngine(ei, id);
-    futures.push_back(m_Pool.enqueue(InitEngine, pe, id));
+    engines.push_back(CreateEngine(id));
+    futures.push_back(m_Pool.enqueue(InitEngine, engines.back(), ei));
   }
 
-  std::vector<SEEngineInitializationStatus> statuses;
-  for (auto & f: futures)
-    statuses.push_back(f.get());
+  std::vector<SEEngineInitializationStatus*> statuses;
+  for (unsigned int i = 0; i < futures.size(); ++i)
+  {
+    futures[i].wait();
+    statuses.push_back(&engines[i]->EngineInitializationStatus);
+  }
 
   return statuses;
 }
@@ -226,13 +228,8 @@ bool PhysiologyEnginePoolThunk::InitializeEngines(std::string const& engineIniti
     data->pool->Error("Unable to serialize engine_initializations string");
     return false;
   }
-
-  // TODO: Fix this mess
-  std::vector<SEEngineInitialization> eis;
-  for (auto e: engines)
-    eis.push_back(*e);
     
-  data->pool->InitializeEngines(eis);
+  data->pool->InitializeEngines(engines);
 
   // TODO: Fix return
   return true;

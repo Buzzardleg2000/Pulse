@@ -66,6 +66,13 @@ void SEPhysiologyEnginePool::InitEngine(SEPhysiologyEnginePoolEngine* pe, SEEngi
 {
   pe->IsActive = false;
   PhysiologyEngine* engine = pe->Engine.get();
+  if (!init)
+  {
+    pe->EngineInitializationStatus.Created(pe->IsActive);
+    engine->GetLogger()->AddForward(&pe->EngineInitializationStatus);
+    engine->GetLogger()->Warning("Recieved nullptr engine initialization object");
+    return;
+  }
 
   if(init->HasLogFilename())
     engine->GetLogger()->SetLogFile(init->GetLogFilename());
@@ -87,14 +94,14 @@ void SEPhysiologyEnginePool::InitEngine(SEPhysiologyEnginePoolEngine* pe, SEEngi
 
   // Logging
   pe->DataRequested.KeepLogMessages(init->KeepLogMessages());
+  pe->EngineInitializationStatus.KeepLogMessages(init->KeepLogMessages());
   engine->GetLogger()->AddForward(&pe->DataRequested);
+  engine->GetLogger()->AddForward(&pe->EngineInitializationStatus);
 
   // Set Results Active
   pe->DataRequested.SetIsActive(pe->IsActive);
   if (!pe->IsActive)
-    pe->Warning("Engine "+std::to_string(pe->EngineInitializationStatus.GetID())+" was unable to initialize");
-
-  // TODO: Capture log messages in status
+    pe->Warning("Failed to initialize engine "+std::to_string(pe->EngineInitializationStatus.GetID()));
   pe->EngineInitializationStatus.Created(pe->IsActive);
 }
 
@@ -110,21 +117,17 @@ SEEngineInitializationStatus& SEPhysiologyEnginePool::InitializeEngine(SEEngineI
 std::vector<SEEngineInitializationStatus*> SEPhysiologyEnginePool::InitializeEngines(const std::vector<SEEngineInitialization*>& inits)
 {
   std::vector<std::future<void>> futures;
-  std::vector<SEPhysiologyEnginePoolEngine*> engines;
+  std::vector<SEEngineInitializationStatus*> statuses;
   for (const auto ei : inits)
   {
-    // TODO: Handle ei is nullptr
     int id = m_NextID++;
-    engines.push_back(CreateEngine(id));
-    futures.push_back(m_Pool.enqueue(InitEngine, engines.back(), ei));
+    SEPhysiologyEnginePoolEngine* pe = CreateEngine(id);
+    statuses.push_back(&pe->EngineInitializationStatus);
+    futures.push_back(m_Pool.enqueue(InitEngine, pe, ei));
   }
 
-  std::vector<SEEngineInitializationStatus*> statuses;
   for (unsigned int i = 0; i < futures.size(); ++i)
-  {
     futures[i].wait();
-    statuses.push_back(&engines[i]->EngineInitializationStatus);
-  }
 
   return statuses;
 }

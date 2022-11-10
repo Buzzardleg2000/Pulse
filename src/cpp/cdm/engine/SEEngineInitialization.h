@@ -60,11 +60,11 @@ protected:
   bool                            m_KeepEventChanges;
 };
 
-class CDM_DECL SEEngineInitializationStatus : public Loggable
+class CDM_DECL SEEngineInitializationStatus : public LoggerForward
 {
   friend class PBEngine; //friend the serialization class
 public:
-  explicit SEEngineInitializationStatus(Logger* logger=nullptr);
+  explicit SEEngineInitializationStatus();
   virtual ~SEEngineInitializationStatus();
 
   SEEngineInitializationStatus(const SEEngineInitializationStatus&) = delete;
@@ -83,12 +83,20 @@ public:
   virtual bool Created() const;
   virtual void Created(bool b);
 
-  virtual bool HasLogMessages() const;
+  virtual bool KeepLogMessages() const { return m_KeepLogMessages; }
+  virtual void KeepLogMessages(bool b) { m_KeepLogMessages = b; }
   virtual LogMessages& GetLogMessages();
-  virtual const LogMessages* GetLogMessages() const;
+  virtual const LogMessages& GetLogMessages() const;
+
+  void ForwardDebug(const std::string& msg) override;
+  void ForwardInfo(const std::string& msg) override;
+  void ForwardWarning(const std::string& msg) override;
+  void ForwardError(const std::string& msg) override;
+  void ForwardFatal(const std::string& msg) override;
 
 protected:
   int                             m_ID;
   bool                            m_Created;
-  LogMessages*                    m_LogMessages;
+  bool                            m_KeepLogMessages;
+  LogMessages                     m_LogMessages;
 };

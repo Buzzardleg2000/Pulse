@@ -153,15 +153,15 @@ void SEEngineInitialization::KeepEventChanges(bool b)
 // SEEngineInitializationStatus //
 //////////////////////////////////
 
-SEEngineInitializationStatus::SEEngineInitializationStatus(Logger* logger) : Loggable(logger)
+SEEngineInitializationStatus::SEEngineInitializationStatus()
 {
-  m_LogMessages = nullptr;
+  m_KeepLogMessages = false;
   Clear();
 }
 
 SEEngineInitializationStatus::~SEEngineInitializationStatus()
 {
-  SAFE_DELETE(m_LogMessages);
+
 }
 
 bool SEEngineInitializationStatus::SerializeToString(std::string& output, eSerializationFormat m) const
@@ -180,8 +180,7 @@ bool SEEngineInitializationStatus::SerializeFromString(const std::string& src, s
 void SEEngineInitializationStatus::Clear()
 {
   m_ID = -1;
-  if (m_LogMessages)
-    m_LogMessages->Clear();
+  m_LogMessages.Clear();
   m_Created = false;
 }
 
@@ -208,17 +207,37 @@ void SEEngineInitializationStatus::Created(bool b)
   m_Created = b;
 }
 
-bool SEEngineInitializationStatus::HasLogMessages() const
-{
-  return m_LogMessages != nullptr;
-}
 LogMessages& SEEngineInitializationStatus::GetLogMessages()
 {
-  if (m_LogMessages == nullptr)
-    m_LogMessages = new LogMessages();
-  return *m_LogMessages;
+  return m_LogMessages;
 }
-const LogMessages* SEEngineInitializationStatus::GetLogMessages() const
+const LogMessages& SEEngineInitializationStatus::GetLogMessages() const
 {
   return m_LogMessages;
+}
+
+void SEEngineInitializationStatus::ForwardDebug(const std::string& msg)
+{
+  if (m_KeepLogMessages)
+    m_LogMessages.debug_msgs.push_back(msg);
+}
+void SEEngineInitializationStatus::ForwardInfo(const std::string& msg)
+{
+  if (m_KeepLogMessages)
+    m_LogMessages.info_msgs.push_back(msg);
+}
+void SEEngineInitializationStatus::ForwardWarning(const std::string& msg)
+{
+  if (m_KeepLogMessages)
+    m_LogMessages.warning_msgs.push_back(msg);
+}
+void SEEngineInitializationStatus::ForwardError(const std::string& msg)
+{
+  if (m_KeepLogMessages)
+    m_LogMessages.error_msgs.push_back(msg);
+}
+void SEEngineInitializationStatus::ForwardFatal(const std::string& msg)
+{
+  if (m_KeepLogMessages)
+    m_LogMessages.fatal_msgs.push_back(msg);
 }

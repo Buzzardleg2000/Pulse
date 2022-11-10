@@ -1112,7 +1112,6 @@ void PBEngine::Copy(const SEEngineInitialization& src, SEEngineInitialization& d
   PBEngine::Serialize(data, dst, subMgr);
 }
 
-
 void PBEngine::Load(const CDM_BIND::EngineInitializationStatusData& src, SEEngineInitializationStatus& dst)
 {
   dst.Clear();
@@ -1124,8 +1123,7 @@ void PBEngine::Serialize(const CDM_BIND::EngineInitializationStatusData& src, SE
 
   dst.Created(src.created());
 
-  if (src.has_logmessages())
-    PBEngine::Load(src.logmessages(), dst.GetLogMessages());
+  PBEngine::Load(src.logmessages(), dst.GetLogMessages());
 }
 CDM_BIND::EngineInitializationStatusData* PBEngine::Unload(const SEEngineInitializationStatus& src)
 {
@@ -1139,20 +1137,19 @@ void PBEngine::Serialize(const SEEngineInitializationStatus& src, CDM_BIND::Engi
 
   dst.set_created(src.Created());
   
-  if (src.HasLogMessages())
-    dst.set_allocated_logmessages(PBEngine::Unload(*src.m_LogMessages));
+  dst.set_allocated_logmessages(PBEngine::Unload(src.m_LogMessages));
 }
 
 bool PBEngine::SerializeToString(const SEEngineInitializationStatus& src, std::string& output, eSerializationFormat m)
 {
   CDM_BIND::EngineInitializationStatusData data;
   PBEngine::Serialize(src, data);
-  return PBUtils::SerializeToString(data, output, m, src.GetLogger());
+  return PBUtils::SerializeToString(data, output, m, nullptr);
 }
 bool PBEngine::SerializeFromString(const std::string& src, SEEngineInitializationStatus& dst, eSerializationFormat m)
 {
   CDM_BIND::EngineInitializationStatusData data;
-  if (!PBUtils::SerializeFromString(src, data, m, dst.GetLogger()))
+  if (!PBUtils::SerializeFromString(src, data, m, nullptr))
     return false;
   PBEngine::Load(data, dst);
   return true;

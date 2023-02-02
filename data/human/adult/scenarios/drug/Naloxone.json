@@ -92,13 +92,13 @@
         "Substance": "Fentanyl",
         "Concentration": {
           "ScalarMassPerVolume": {
-            "Value": 15.0,
+            "Value": 50.0,
             "Unit": "ug/mL"
           }
         },
         "Dose": {
           "ScalarVolume": {
-            "Value": 10.0,
+            "Value": 2.0,
             "Unit": "mL"
           }
         }

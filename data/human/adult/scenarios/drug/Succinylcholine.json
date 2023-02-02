@@ -92,13 +92,13 @@
         "Substance": "Succinylcholine",
         "Concentration": {
           "ScalarMassPerVolume": {
-            "Value": 1000.0,
-            "Unit": "ug/mL"
+            "Value": 20.0,
+            "Unit": "mg/mL"
           }
         },
         "Dose": {
           "ScalarVolume": {
-            "Value": 77.0,
+            "Value": 3.85,
             "Unit": "mL"
           }
         }

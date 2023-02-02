@@ -92,13 +92,13 @@
         "Substance": "Rocuronium",
         "Concentration": {
           "ScalarMassPerVolume": {
-            "Value": 1000.0,
-            "Unit": "ug/mL"
+            "Value": 10.0,
+            "Unit": "mg/mL"
           }
         },
         "Dose": {
           "ScalarVolume": {
-            "Value": 50.0,
+            "Value": 5.2,
             "Unit": "mL"
           }
         }

@@ -92,13 +92,13 @@
         "Substance": "Prednisone",
         "Concentration": {
           "ScalarMassPerVolume": {
-            "Value": 1000.0,
-            "Unit": "ug/mL"
+            "Value": 10.0,
+            "Unit": "mg/mL"
           }
         },
         "Dose": {
           "ScalarVolume": {
-            "Value": 20.0,
+            "Value": 15.0,
             "Unit": "mL"
           }
         }

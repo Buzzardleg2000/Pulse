@@ -92,13 +92,13 @@
         "Substance": "Propofol",
         "Concentration": {
           "ScalarMassPerVolume": {
-            "Value": 1000.0,
-            "Unit": "ug/mL"
+            "Value": 10.0,
+            "Unit": "mg/mL"
           }
         },
         "Dose": {
           "ScalarVolume": {
-            "Value": 200.0,
+            "Value": 17.0,
             "Unit": "mL"
           }
         }

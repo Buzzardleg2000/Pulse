@@ -11,9 +11,6 @@ See accompanying NOTICE file for details.*/
 #include "cdm/engine/SEEngineInitialization.h"
 #include "cdm/substance/SESubstanceManager.h"
 
-// TODO Template these class and move to CDM
-// (Template is the PhysiologEngine type)
-
 class SEPhysiologyEnginePoolEngine : public Loggable
 {
   friend class SEPhysiologyEnginePool;
@@ -25,7 +22,7 @@ public:
   ~SEPhysiologyEnginePoolEngine();
 
   bool                              IsActive=false;
-  SEEngineInitialization            EngineInitialization;
+  SEEngineInitializationStatus      EngineInitializationStatus;
   std::vector<const SEAction*>      Actions;
   SEDataRequested                   DataRequested;
   std::unique_ptr<PhysiologyEngine> Engine;
@@ -39,13 +36,12 @@ public:
   ~SEPhysiologyEnginePool();
 
   const size_t GetWorkerCount() const { return m_Pool.workerCount(); }
+  const size_t GetEngineCount() const { return m_Engines.size(); }
 
   bool RemoveEngine(int id);
-  const std::map<int, SEPhysiologyEnginePoolEngine*>& GetEngines() const;
-  SEPhysiologyEnginePoolEngine* GetEngine(int id) const;
-  SEPhysiologyEnginePoolEngine* CreateEngine(int id);
 
-  bool InitializeEngines();
+  SEEngineInitializationStatus& InitializeEngine(SEEngineInitialization& init);
+  std::vector<SEEngineInitializationStatus*> InitializeEngines(const std::vector<SEEngineInitialization*>& inits);
 
   // Advance all engines the same amount of time
   // If you want to advance individual engines/different times
@@ -65,10 +61,14 @@ public:
 protected:
   virtual void AllocateEngine(SEPhysiologyEnginePoolEngine& pe) = 0;
 
+  SEPhysiologyEnginePoolEngine* CreateEngine(int id);
+  static void InitEngine(SEPhysiologyEnginePoolEngine* pe, SEEngineInitialization* init);
+
   bool m_IsActive;
   SESubstanceManager m_SubMgr;
   std::map<int, SEPhysiologyEnginePoolEngine*> m_Engines;
   ThreadPool m_Pool;
+  int m_NextID;
 };
 
 /**

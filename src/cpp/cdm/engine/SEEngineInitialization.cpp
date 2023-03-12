@@ -36,12 +36,13 @@ bool SEEngineInitialization::SerializeFromString(const std::string& src, std::ve
 
 void SEEngineInitialization::Clear()
 {
-  m_ID = -1;
-  SAFE_DELETE(m_PatientConfiguration);
+  if (m_PatientConfiguration)
+    m_PatientConfiguration->Clear();
   m_StateFilename = "";
   m_State = "";
-  SAFE_DELETE(m_DataRequestManager);
-  m_StateFilename = "";
+  if (m_DataRequestManager)
+    m_DataRequestManager->Clear();
+  m_LogFilename = "";
   m_KeepLogMessages = false;
   m_KeepEventChanges = false;
 }
@@ -54,15 +55,6 @@ void SEEngineInitialization::Copy(const SEEngineInitialization& from, const SESu
 bool SEEngineInitialization::IsValid() const
 {
   return (HasPatientConfiguration() || HasStateFilename() || HasState());
-}
-
-int SEEngineInitialization::GetID() const
-{
-  return m_ID;
-}
-void SEEngineInitialization::SetID(int id)
-{
-  m_ID = id;
 }
 
 bool SEEngineInitialization::HasPatientConfiguration() const
@@ -155,4 +147,97 @@ bool SEEngineInitialization::KeepEventChanges() const
 void SEEngineInitialization::KeepEventChanges(bool b)
 {
   m_KeepEventChanges = b;
+}
+
+//////////////////////////////////
+// SEEngineInitializationStatus //
+//////////////////////////////////
+
+SEEngineInitializationStatus::SEEngineInitializationStatus()
+{
+  m_KeepLogMessages = false;
+  Clear();
+}
+
+SEEngineInitializationStatus::~SEEngineInitializationStatus()
+{
+
+}
+
+bool SEEngineInitializationStatus::SerializeToString(std::string& output, eSerializationFormat m) const
+{
+  return PBEngine::SerializeToString(*this, output, m);
+}
+bool SEEngineInitializationStatus::SerializeFromString(const std::string& src, eSerializationFormat m)
+{
+  return PBEngine::SerializeFromString(src, *this, m);
+}
+bool SEEngineInitializationStatus::SerializeFromString(const std::string& src, std::vector<SEEngineInitializationStatus*>& dst, eSerializationFormat m, Logger* logger)
+{
+  return PBEngine::SerializeFromString(src, dst, m, logger);
+}
+
+void SEEngineInitializationStatus::Clear()
+{
+  m_ID = -1;
+  m_LogMessages.Clear();
+  m_Created = false;
+}
+
+void SEEngineInitializationStatus::Copy(const SEEngineInitializationStatus& from)
+{
+  PBEngine::Copy(from, *this);
+}
+
+int SEEngineInitializationStatus::GetID() const
+{
+  return m_ID;
+}
+void SEEngineInitializationStatus::SetID(int id)
+{
+  m_ID = id;
+}
+
+bool SEEngineInitializationStatus::Created() const
+{
+  return m_Created;
+}
+void SEEngineInitializationStatus::Created(bool b)
+{
+  m_Created = b;
+}
+
+LogMessages& SEEngineInitializationStatus::GetLogMessages()
+{
+  return m_LogMessages;
+}
+const LogMessages& SEEngineInitializationStatus::GetLogMessages() const
+{
+  return m_LogMessages;
+}
+
+void SEEngineInitializationStatus::ForwardDebug(const std::string& msg)
+{
+  if (m_KeepLogMessages)
+    m_LogMessages.debug_msgs.push_back(msg);
+}
+void SEEngineInitializationStatus::ForwardInfo(const std::string& msg)
+{
+  if (m_KeepLogMessages)
+    m_LogMessages.info_msgs.push_back(msg);
+}
+void SEEngineInitializationStatus::ForwardWarning(const std::string& msg)
+{
+  if (m_KeepLogMessages)
+    m_LogMessages.warning_msgs.push_back(msg);
+}
+void SEEngineInitializationStatus::ForwardError(const std::string& msg)
+{
+  if (m_KeepLogMessages)
+    m_LogMessages.error_msgs.push_back(msg);
+}
+void SEEngineInitializationStatus::ForwardFatal(const std::string& msg)
+{
+  if (m_KeepLogMessages)
+    m_LogMessages.fatal_msgs.push_back(msg);
 }

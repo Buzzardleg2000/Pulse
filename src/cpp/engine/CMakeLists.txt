@@ -161,6 +161,7 @@ add_library_ex(PulseEngineTests
     human_adult/whole_body/test/BlackBoxTests.cpp
     human_adult/whole_body/test/CardiovascularCircuit.cpp
     human_adult/whole_body/test/ConditionsTest.cpp
+    human_adult/whole_body/test/EnginePoolTests.cpp
     human_adult/whole_body/test/EngineTest.cpp
     human_adult/whole_body/test/FourCompartmentTest.cpp
     human_adult/whole_body/test/MechanicalVentilatorCircuit.cpp

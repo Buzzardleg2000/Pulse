@@ -221,5 +221,15 @@ namespace pulse { namespace human_adult_whole_body
     void ImposePressureAndFlowBlackBoxTest(const std::string& sOutputDirectory);
   protected:
 
+  public:
+    ///////////////////////
+    // Engine Pool Tests //
+    ///////////////////////
+    void AddRemoveEnginesTests(const std::string& rptDirectory);
+  protected:
+    void AddEngineGroupTest(SETestSuite& testSuite);
+    void AddEnginesTest(SETestSuite& testSuite);
+    void RemoveEnginesTest(SETestSuite& testSuite);
+
   };
 END_NAMESPACE_EX

@@ -29,7 +29,7 @@
 //--------------------------------------------------------------------------------------------------
 void HowToPulseEnginePool()
 {
-  std::stringstream ss;
+  /*std::stringstream ss;
   size_t numEngine = 1;
   TimingProfile profiler;
   double sim_time_s = 60;
@@ -129,4 +129,5 @@ void HowToPulseEnginePool()
   // You can always access data straight from the engine as well
   pool.Info("Engine 0 Blood Volume(mL) :"+std::to_string(pool.GetEngine(0)->Engine->GetCardiovascularSystem()->GetBloodVolume(VolumeUnit::mL)));
   pool.Info("Engine 1 Blood Volume(mL) :" + std::to_string(pool.GetEngine(1)->Engine->GetCardiovascularSystem()->GetBloodVolume(VolumeUnit::mL)));
+*/
 }

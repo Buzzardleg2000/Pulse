@@ -12,10 +12,13 @@
 #include "cdm/engine/SEEngineTracker.h"
 #include "cdm/engine/SEDataRequestManager.h"
 #include "cdm/engine/SEPatientConfiguration.h"
+#include "cdm/engine/SEAdvanceTime.h"
 #include "cdm/engine/SEEventManager.h"
 #include "cdm/patient/SEPatient.h"
 #include "cdm/io/protobuf/PBPatient.h"
 #include "cdm/patient/actions/SEHemorrhage.h"
+#include "cdm/patient/actions/SEAirwayObstruction.h"
+#include "cdm/patient/actions/SETensionPneumothorax.h"
 #include "cdm/properties/SEScalar0To1.h"
 #include "cdm/properties/SEScalarFrequency.h"
 #include "cdm/properties/SEScalarLength.h"
@@ -24,6 +27,7 @@
 #include "cdm/properties/SEScalarTime.h"
 #include "cdm/properties/SEScalarVolume.h"
 #include "cdm/properties/SEScalarVolumePerTime.h"
+#include "cdm/properties/SEScalarTemperature.h"
 #include "cdm/scenario/SEScenario.h"
 #include "cdm/system/physiology/SECardiovascularSystem.h"
 #include "cdm/utils/ConfigParser.h"
@@ -75,7 +79,7 @@ namespace pulse::study::patient_variability
     return b;
   }
 
-  
+
   bool PVRunner::Run()
   {
     if (m_PatientList->patientstate_size() == 0)
@@ -84,7 +88,7 @@ namespace pulse::study::patient_variability
     TimingProfile profiler;
     profiler.Start("Total");
 
-    if (m_PatientList->patientstate()[0].has_validation() && m_StandardValidationType!=eStandardValidationType::None)
+    if (m_PatientList->patientstate()[0].has_validation() && m_StandardValidationType != eStandardValidationType::None)
     {
       // Generate json files for standard male and female validation data from baselines
       // If json files already exist don't redo that work
@@ -92,7 +96,7 @@ namespace pulse::study::patient_variability
       {
         // Run standard patients if we aren't using baseline
         std::string dir = "./verification/scenarios/validation/systems";
-        if(m_StandardValidationType == eStandardValidationType::Current)
+        if (m_StandardValidationType == eStandardValidationType::Current)
         {
           Info("Executing System Validation...");
           std::string runCommand = "cmake -DTYPE:STRING=SystemValidation -P run.cmake";
@@ -106,7 +110,7 @@ namespace pulse::study::patient_variability
           ReadFile("./test_results/SystemVerification.html", content);
           WriteFile(content, m_RootDir + "/SystemVerification-StandardPatients.html");
           ReadFile("./test_results/SystemValidation.html", content);
-          WriteFile(content,m_RootDir + "/SystemValidation-StandardPatients.html");
+          WriteFile(content, m_RootDir + "/SystemValidation-StandardPatients.html");
         }
 
         Info("Validating Results in: " + dir);
@@ -149,7 +153,7 @@ namespace pulse::study::patient_variability
     {
       if (PostProcessOnly)
       {
-        if(!DeleteFile(m_PatientResultsListFile,5))
+        if (!DeleteFile(m_PatientResultsListFile, 5))
           Error("Unable to remove file " + m_PatientResultsListFile);
       }
       else if (!SerializeFromFile(m_PatientResultsListFile, *m_PatientResultsList))
@@ -172,14 +176,14 @@ namespace pulse::study::patient_variability
           auto patientData = m_PatientResultsList->add_patientstate();
           patientData->CopyFrom(patientStateData);
           patientData->set_failure(eFailure::PatientStateData_eFailure_FailedSetup);
-          Info("[!Setup]  " + p.GetName()+"_"+PVGenerator::ToString(p));
+          Info("[!Setup]  " + p.GetName() + "_" + PVGenerator::ToString(p));
         }
       }
       // Write this file to disk
       if (failedPatients > 0)
       {
         Info("There are " + std::to_string(failedPatients) + " invalid patients in this dataset");
-        if(!SerializeToFile(*m_PatientResultsList, m_PatientResultsListFile))
+        if (!SerializeToFile(*m_PatientResultsList, m_PatientResultsListFile))
           Error("Unable to write initial results file, you may loose all your runs, check permissions.");
       }
     }
@@ -278,7 +282,7 @@ namespace pulse::study::patient_variability
         else
         {
           Info("Running " + patient->outputbasefilename());
-          if (!RunPatient(*patient) && patient->failure()==eFailure::PatientStateData_eFailure_None)
+          if (!RunPatient(*patient) && patient->failure() == eFailure::PatientStateData_eFailure_None)
             GetLogger()->Error("Unable to run patient " + patient->outputbasefilename());
         }
       }
@@ -337,7 +341,7 @@ namespace pulse::study::patient_variability
     }
     std::string patientName = patientState.patient().name();
 
-    if(!PostProcessOnly)
+    if (!PostProcessOnly)
     {
       PulseConfiguration cfgChanges;
       auto pulse = CreatePulseEngine();
@@ -350,7 +354,7 @@ namespace pulse::study::patient_variability
       PBPatient::Serialize(patientState.patient(), pc.GetPatient());
       if (!CheckPatientSetup(pc.GetPatient()))
       {
-        Error("["+patientName+"] Could not setup patient");
+        Error("[" + patientName + "] Could not setup patient");
         patientState.set_failure(eFailure::PatientStateData_eFailure_FailedSetup);
         CompletePatient(patientState);
         return false;
@@ -400,7 +404,7 @@ namespace pulse::study::patient_variability
         }
         else
         {
-          Error("["+patientName+"] Cannot find scenario root... cannot add any data requests...");
+          Error("[" + patientName + "] Cannot find scenario root... cannot add any data requests...");
           patientState.set_failure(eFailure::PatientStateData_eFailure_RuntimeError);
           return false;
         }
@@ -422,7 +426,7 @@ namespace pulse::study::patient_variability
       }
       else
       {
-        Error("["+patientName+"] Unknown run mode");
+        Error("[" + patientName + "] Unknown run mode");
         patientState.set_failure(eFailure::PatientStateData_eFailure_RuntimeError);
         return false;
       }
@@ -430,7 +434,7 @@ namespace pulse::study::patient_variability
 
       if (!pulse->InitializeEngine(pc))
       {
-        Error("["+patientName+"] Unable to stabilize engine");
+        Error("[" + patientName + "] Unable to stabilize engine");
         patientState.set_failure(eFailure::PatientStateData_eFailure_FailedStabilization);
         CompletePatient(patientState);
         return false;
@@ -442,7 +446,7 @@ namespace pulse::study::patient_variability
       PBPatient::Serialize(baselinePatient, *patientState.mutable_setuppatient());
 
       patientState.set_stabilizationtime_s(profiler.GetElapsedTime_s("Total"));
-      pulse->GetLogger()->Info("["+patientName+"] It took " + cdm::to_string(patientState.stabilizationtime_s()) + "s to stabilize this Patient");
+      pulse->GetLogger()->Info("[" + patientName + "] It took " + cdm::to_string(patientState.stabilizationtime_s()) + "s to stabilize this Patient");
 
       pulse->GetEngineTracker()->TrackData(0);
       double dT_s = pulse->GetTimeStep(TimeUnit::s);
@@ -452,7 +456,7 @@ namespace pulse::study::patient_variability
       {
         if (!pulse->AdvanceModelTime()) // Compute 1 time step
         {
-          Error("["+patientName+"] Unable to advance time");
+          Error("[" + patientName + "] Unable to advance time");
           patientState.set_failure(eFailure::PatientStateData_eFailure_FatalRuntimeError);
           return false;
         }
@@ -463,7 +467,7 @@ namespace pulse::study::patient_variability
         // Hemorrhage Mode //
         if (hemorrhageData)
         {
-          switch(hState)
+          switch (hState)
           {
           case eHemorrhageState::Start:
           {
@@ -511,7 +515,7 @@ namespace pulse::study::patient_variability
 
           if (pulse->GetEventManager().IsEventActive(eEvent::CardiovascularCollapse))
           {
-            Info("["+patientName+"] "+ std::to_string(patientState.id())+" Has Cardiovascular Collapse " + patientState.outputbasefilename());
+            Info("[" + patientName + "] " + std::to_string(patientState.id()) + " Has Cardiovascular Collapse " + patientState.outputbasefilename());
             break;
           }
         }
@@ -533,8 +537,8 @@ namespace pulse::study::patient_variability
       if (patientState.has_validation())
       {
         CSV::SplitCSV(csvFilename, allScenarioRequests);
-        if (!DeleteFile(csvFilename,5))
-          Warning("["+patientName+"] Unable to remove file " + csvFilename);
+        if (!DeleteFile(csvFilename, 5))
+          Warning("[" + patientName + "] Unable to remove file " + csvFilename);
       }
     }// end if(!m_PostProcessOnly)
 
@@ -549,7 +553,7 @@ namespace pulse::study::patient_variability
       ListFiles(m_RootDir + patientState.outputbasefilename(), validation_files, true, "ValidationResults.json");
       if (!AggregateResults(patientState, validation_files, GetLogger()))
       {
-        Error("["+patientName+"] Unable to aggregate results");
+        Error("[" + patientName + "] Unable to aggregate results");
         return false;
       }
     }
@@ -585,7 +589,7 @@ namespace pulse::study::patient_variability
     auto pResult = m_PatientResultsList->add_patientstate();
     pResult->CopyFrom(patientState);
     SerializeToFile(*m_PatientResultsList, m_PatientResultsListFile);
-    Info("["+patientState.patient().name()+"] Completed Simulation " + std::to_string(m_PatientResultsList->patientstate_size()) + " of " + std::to_string(m_PatientList->patientstate_size()));
+    Info("[" + patientState.patient().name() + "] Completed Simulation " + std::to_string(m_PatientResultsList->patientstate_size()) + " of " + std::to_string(m_PatientList->patientstate_size()));
     m_VectorMutex.unlock();
   }
 
@@ -625,14 +629,14 @@ namespace pulse::study::patient_variability
   bool PVRunner::AggregateResults(pulse::study::bind::patient_variability::PatientStateData& patient, const std::vector<std::string>& validation_files, Logger* logger)
   {
     const auto& vMap = patient.mutable_validation()->mutable_validationmap();
-    for(auto validation_filepath: validation_files)
+    for (auto validation_filepath : validation_files)
     {
       std::string validation_filename;
       SplitFilename(validation_filepath, validation_filename);
 
       //Serialize the file contents
       pulse::cdm::bind::PropertyValidationListData vList;
-      if(!PBUtils::SerializeFromFile(validation_filepath, vList, logger))
+      if (!PBUtils::SerializeFromFile(validation_filepath, vList, logger))
         return false;
 
       (*vMap)[validation_filename] = vList;
@@ -645,5 +649,252 @@ namespace pulse::study::patient_variability
     std::scoped_lock<std::mutex>  m(m_SystemMutex);
     Info("Processing: " + cmd);
     std::system(cmd.c_str());
+  }
+
+  bool PVRunner::RunTriage(pulse::study::bind::patient_variability::PatientStateListData& simList)
+  {
+    SAFE_DELETE(m_PatientList);
+    SAFE_DELETE(m_PatientResultsList);
+    m_PatientList = &simList;
+    m_PatientResultsList = new pulse::study::bind::patient_variability::PatientStateListData();
+
+    bool b = RunTriage();
+    m_PatientList = nullptr;
+    SAFE_DELETE(m_PatientResultsList);
+    return b;
+  }
+
+  bool PVRunner::RunTriage()
+  {
+    if (m_PatientList->patientstate_size() == 0)
+      return true; // Nothing to do
+
+    TimingProfile profiler;
+    profiler.Start("Total");
+
+    // Get the ID's of Patients we need to run
+    m_PatientsToRun.clear();
+    for (int i = 0; i < m_PatientList->patientstate_size(); i++)
+      m_PatientsToRun.insert(m_PatientList->patientstate()[i].id());
+
+    size_t numSimsToRun = m_PatientList->patientstate_size() - m_PatientResultsList->patientstate_size();
+    if (numSimsToRun == 0)
+    {
+      Info("All Patients are run in the results file");
+      return true;
+    }
+    size_t processor_count = std::thread::hardware_concurrency();
+    if (processor_count == 0)
+    {
+      Fatal("Unable to detect number of processors");
+      return false;
+    }
+    // Let's not kill the computer this is running on...
+    if (processor_count > 1)
+      processor_count -= 1;
+    // Let's not kick off more threads than we need
+    if (processor_count > numSimsToRun)
+      processor_count = numSimsToRun;
+    Info("Starting " + std::to_string(processor_count) + " Threads to run " + std::to_string(m_PatientsToRun.size()) + " Patients");
+    // Crank up our threads
+    for (size_t p = 0; p < processor_count; p++)
+      m_Threads.push_back(std::thread(&PVRunner::TriageControllerLoop, this));
+
+    for (size_t p = 0; p < processor_count; p++)
+      m_Threads[p].join();
+
+    // Let's count up our stats
+    size_t SetupErrors = 0;
+    size_t StabilizationErrors = 0;
+    size_t RuntimeErrors = 0;
+    size_t FatalRuntimeErrors = 0;
+    size_t ValidRuns = 0;
+    Info("Total Patients: " + std::to_string(m_PatientResultsList->patientstate_size()));
+    for (int i = 0; i < m_PatientResultsList->patientstate_size(); i++)
+    {
+      auto& patientStateData = m_PatientResultsList->patientstate()[i];
+      if (patientStateData.failure() == eFailure::PatientStateData_eFailure_FailedSetup)
+        SetupErrors++;
+      else if (patientStateData.failure() == eFailure::PatientStateData_eFailure_FailedStabilization)
+        StabilizationErrors++;
+      else if (patientStateData.failure() == eFailure::PatientStateData_eFailure_RuntimeError)
+        RuntimeErrors++;
+      else if (patientStateData.failure() == eFailure::PatientStateData_eFailure_FatalRuntimeError)
+        FatalRuntimeErrors++;
+      else
+        ValidRuns++;
+    }
+    Info("Total Valid Patients: " + std::to_string(ValidRuns));
+    Info("Total SetupErrors: " + std::to_string(SetupErrors));
+    Info("Total StabilizationErrors: " + std::to_string(StabilizationErrors));
+    Info("Total RuntimeErrors: " + std::to_string(RuntimeErrors));
+    Info("Total FatalRuntimeErrors: " + std::to_string(FatalRuntimeErrors));
+
+    Info("It took " + std::to_string(profiler.GetElapsedTime_s("Total")) + "s to run this Patient list");
+    profiler.Clear();
+    return true;
+  }
+
+  void PVRunner::TriageControllerLoop()
+  {
+    CreatePath(m_RootDir);
+
+    pulse::study::bind::patient_variability::PatientStateData* patient = nullptr;
+    while (true)
+    {
+      try
+      {
+        patient = GetNextPatient();
+        if (patient == nullptr)
+          break;
+
+        if (patient->failure() != eFailure::PatientStateData_eFailure_None)
+        {
+          Info("Not running invalid patient " + std::to_string(patient->id()) + " " + patient->outputbasefilename());
+          CompletePatient(*patient);
+        }
+        else
+        {
+          Info("Running " + patient->outputbasefilename());
+          if (!RunTriagePatient(*patient) && patient->failure() == eFailure::PatientStateData_eFailure_None)
+            GetLogger()->Error("Unable to run patient " + patient->outputbasefilename());
+        }
+      }
+      catch (CommonDataModelException& cdm_ex)
+      {
+        GetLogger()->Fatal("Exception caught runnning Patient " + patient->outputbasefilename());
+        GetLogger()->Fatal(cdm_ex.what());
+        std::cerr << cdm_ex.what() << std::endl;
+      }
+      catch (std::exception& ex)
+      {
+        GetLogger()->Fatal("Exception caught runnning Patient " + patient->outputbasefilename());
+        GetLogger()->Fatal(ex.what());
+        std::cerr << ex.what() << std::endl;
+      }
+      catch (...)
+      {
+        std::cerr << "Unable to run Patient " << patient->outputbasefilename() << std::endl;
+      }
+    }
+  }
+
+  bool PVRunner::RunTriagePatient(pulse::study::bind::patient_variability::PatientStateData& patientState)
+  {
+    TimingProfile profiler;
+    profiler.Start("Total");
+    profiler.Start("Status");
+
+    Logger* logger = GetLogger();
+    SEScenario sce(logger);
+    sce.SetDescription(patientState.description());
+    std::string patientFileName = patientState.outputbasefilename();
+    std::string patientName = patientState.patient().name();
+    sce.SetName(patientName);
+
+    logger->SetLogFile(patientFileName + ".log");
+    std::unique_ptr<PhysiologyEngine> pe = CreatePulseEngine(eModelType::HumanAdultWholeBody, logger);
+
+    if (!patientState.has_triage())
+    {
+      SEPatient& scePatient = sce.GetPatientConfiguration().GetPatient();
+      PBPatient::Serialize(patientState.patient(), scePatient);
+      sce.SerializeToFile(patientFileName + ".json");
+
+      //Run stabilization and serialize initial patients
+      if (!pe->InitializeEngine(sce.GetPatientConfiguration()))
+      {
+        pe->GetLogger()->Error("Could not load patient configuration, check the error");
+      }
+
+      std::string serializedPatientFilename = patientFileName + "InitialState.json";
+      pe->SerializeToFile(serializedPatientFilename);
+    }
+    else
+    {
+      std:: string patientSerializedFileName = patientState.statefilename();
+      sce.GetPatientConfiguration().SetPatientFile(patientSerializedFileName);
+
+      SEHemorrhage hemorrhage;
+      hemorrhage.SetCompartment((eHemorrhage_Compartment)patientState.triage().hemorrhageaction().compartment());
+      hemorrhage.GetSeverity().SetValue(patientState.triage().hemorrhageaction().severity().scalar0to1().value());
+
+      SEAirwayObstruction airwayObstruction;
+      airwayObstruction.GetSeverity().SetValue(patientState.triage().airwayobstructionaction().severity().scalar0to1().value());
+
+      SETensionPneumothorax pneumothorax;
+      pneumothorax.SetType((eGate)patientState.triage().tensionpneumothoraxaction().type());
+      pneumothorax.SetSide((eSide)patientState.triage().tensionpneumothoraxaction().side());
+      pneumothorax.GetSeverity().SetValue(patientState.triage().tensionpneumothoraxaction().severity().scalar0to1().value());
+
+      sce.AddAction(hemorrhage);
+      sce.AddAction(airwayObstruction);
+      sce.AddAction(pneumothorax);
+
+      SEAdvanceTime adv;
+      adv.GetTime().SetValue(1.0, TimeUnit::min);
+      sce.AddAction(adv);
+
+      if (!pe->SerializeFromFile(patientSerializedFileName))
+      {
+        pe->GetLogger()->Error("Could not load state, check the error");
+        return 0;
+      }
+
+      //Data requests
+      pe->GetEngineTracker()->GetDataRequestManager().CreatePhysiologyDataRequest("HeartRate", FrequencyUnit::Per_min);
+      pe->GetEngineTracker()->GetDataRequestManager().CreatePhysiologyDataRequest("SystolicArterialPressure", PressureUnit::mmHg);
+      pe->GetEngineTracker()->GetDataRequestManager().CreatePhysiologyDataRequest("DiastolicArterialPressure", PressureUnit::mmHg);
+      pe->GetEngineTracker()->GetDataRequestManager().CreatePhysiologyDataRequest("MeanArterialPressure", PressureUnit::mmHg);
+      pe->GetEngineTracker()->GetDataRequestManager().CreatePhysiologyDataRequest("BloodVolume", VolumeUnit::mL);
+      pe->GetEngineTracker()->GetDataRequestManager().CreatePhysiologyDataRequest("CardiacOutput", VolumePerTimeUnit::L_Per_min);
+      pe->GetEngineTracker()->GetDataRequestManager().CreatePhysiologyDataRequest("RespirationRate", FrequencyUnit::Per_min);
+      pe->GetEngineTracker()->GetDataRequestManager().CreatePhysiologyDataRequest("TidalVolume", VolumeUnit::mL);
+      pe->GetEngineTracker()->GetDataRequestManager().CreatePhysiologyDataRequest("EndTidalCarbonDioxidePressure", PressureUnit::mmHg);
+      pe->GetEngineTracker()->GetDataRequestManager().CreatePhysiologyDataRequest("EndTidalOxygenPressure", PressureUnit::mmHg);
+      pe->GetEngineTracker()->GetDataRequestManager().CreatePhysiologyDataRequest("OxygenSaturation");
+      pe->GetEngineTracker()->GetDataRequestManager().CreatePhysiologyDataRequest("CoreTemperature", TemperatureUnit::C);
+      pe->GetEngineTracker()->GetDataRequestManager().CreatePhysiologyDataRequest("SkinTemperature", TemperatureUnit::C);
+
+      sce.GetDataRequestManager().Copy(pe->GetEngineTracker()->GetDataRequestManager());
+
+      pe->GetEngineTracker()->GetDataRequestManager().SetResultsFilename(patientFileName + "Results.csv");
+
+      sce.SerializeToFile(patientFileName + ".json");
+
+      const SEAdvanceTime* advRun;
+      // Now run the scenario actions
+      for (const SEAction* a : sce.GetActions())
+      {
+        // We want the tracker to process an advance time action so it will write each time step of data to our track file
+        advRun = dynamic_cast<const SEAdvanceTime*>(a);
+        if (advRun != nullptr)
+          AdvanceAndTrackTime_s(advRun->GetTime(TimeUnit::s), *pe);// you could just do pe->AdvanceModelTime without tracking timesteps
+        else
+          pe->ProcessAction(*a);
+      }
+
+      std::string serializedInsultsFilename = patientFileName + "EndState.json";
+      pe->SerializeToFile(serializedInsultsFilename);
+    }
+
+    sce.Clear();
+    profiler.Clear();
+    return true;
+  }
+
+  bool PVRunner::AdvanceAndTrackTime_s(double time_s, PhysiologyEngine& engine)
+  {
+    double dT_s = engine.GetTimeStep(TimeUnit::s);
+    int count = static_cast<int>(time_s / dT_s);
+    for (int i = 0; i < count; i++)
+    {
+      if (!engine.AdvanceModelTime())  // Compute 1 time step
+        return false;
+
+      // Pull Track will pull data from the engine and append it to the file
+      engine.GetEngineTracker()->TrackData(engine.GetSimulationTime(TimeUnit::s));
+    }
+    return true;
   }
 }

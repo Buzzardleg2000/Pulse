@@ -35,6 +35,8 @@ namespace pulse::study::patient_variability
     bool Run(const std::string& filename);
     bool Run(pulse::study::bind::patient_variability::PatientStateListData& patients);
 
+    bool RunTriage(pulse::study::bind::patient_variability::PatientStateListData& patients);
+
   protected:
     bool Run();
     bool SerializeToString(pulse::study::bind::patient_variability::PatientStateListData& src, std::string& dst) const;
@@ -62,5 +64,9 @@ namespace pulse::study::patient_variability
     pulse::study::bind::patient_variability::PatientStateListData* m_PatientList;
     pulse::study::bind::patient_variability::PatientStateListData* m_PatientResultsList;
 
+    bool RunTriage();
+    void TriageControllerLoop();
+    bool RunTriagePatient(pulse::study::bind::patient_variability::PatientStateData& patient);
+    bool AdvanceAndTrackTime_s(double time_s, PhysiologyEngine& engine);
   };
 }

@@ -185,6 +185,13 @@ namespace pulse::study::patient_variability
     static std::string ToString(SEPatient& patient);
     void GenerateData(eSetType t, PatientStateListData& pList);
 
+    void GenerateTriagePatientData(std::string rootDir, PatientStateListData& pList);
+    void GenerateTriageInsultData(std::string rootDir, PatientStateListData& pList, PatientStateListData& pInsultsList);
+    static std::string PatientToDescriptionString(SEPatient& patient);
+    static std::string InsultsToDescriptionString(double hemorrhageSeverity, double airwayObstructionSeverity, double pneumothoraxSeverity);
+    void GenerateTriagePatients(PatientStateListData& pList, const std::string& directory);
+    void GenerateTriageInsults(PatientStateListData& pList, PatientStateListData& pInsultsList, const std::string& directory);
+
   protected:
     eSetType     m_SetType;
     unsigned int m_TotalPatients=0; // The actual number of patients for this data set, (NOT the number of runs, i.e. hemorrhage options can create more runs for each patient)
@@ -205,5 +212,8 @@ namespace pulse::study::patient_variability
 
     pulse::study::bind::patient_variability::PatientStateData* AddPatientToList(PatientStateListData& pList,
       SEPatient& patient, double runDuration_s, const std::string& full_dir_path);
+
+    void CreateTriagePatient(PatientStateListData& pList, SEPatient& patient, const std::string& directory);
+    pulse::study::bind::patient_variability::PatientStateData* AddTriagePatientToList(PatientStateListData& pList, SEPatient& patient, const std::string& full_dir_path);
   };
 }

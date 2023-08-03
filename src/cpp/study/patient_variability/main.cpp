@@ -24,6 +24,41 @@ int main(int argc, char* argv[])
   bool postProcessOnly         = false;
   bool validationMode          = false;
   bool hemorrhageMode          = false;
+  bool triageMode              = true;
+
+  if (triageMode)
+  {
+    bool usePatientStates = false;
+
+    std::string rootDir = "./test_results/synthetic_data/";
+
+    Logger logger;
+    PVGenerator pvg(&logger);
+
+    pulse::study::bind::patient_variability::PatientStateListData patients;
+    pvg.GenerateTriagePatientData(rootDir, patients);
+
+    eStandardValidationType vType = eStandardValidationType::None;
+    PVRunner pvr(rootDir, vType, &logger);
+    if (!usePatientStates)
+    {
+      if (!pvr.RunTriage(patients))
+      {
+        ///\TODO: Throw error
+      }
+    }
+
+    pulse::study::bind::patient_variability::PatientStateListData insultPatients;
+    pvg.GenerateTriageInsultData(rootDir, patients, insultPatients);
+
+    if (!pvr.RunTriage(insultPatients))
+    {
+      ///\TODO: Throw error
+    }
+
+    return 0;
+  }
+
   eStandardValidationType vType = eStandardValidationType::None;
   std::string data = "full";
   eMode mode = eMode::Validation;

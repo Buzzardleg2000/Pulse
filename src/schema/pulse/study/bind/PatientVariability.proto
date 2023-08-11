@@ -4,11 +4,56 @@ option java_package = "com.kitware.pulse.study.bind.patient_variability";
 option csharp_namespace = "pulse.study.bind.patient_variability";
 option optimize_for = SPEED;
 
+import "pulse/cdm/bind/Engine.proto";
 import "pulse/cdm/bind/Patient.proto";
-import "pulse/cdm/bind/PatientActions.proto";
 import "pulse/cdm/bind/TestReport.proto";
 
+message IterationData
+{
+  double Start             = 1;
+  double Stop              = 2;
+  double Step              = 3;
+  repeated double Explicit = 4;
+}
 
+message PatientIterationData
+{
+  pulse.cdm.bind.PatientData.eSex                  Sex                        = 1;
+  IterationData                                    Age_yr                     = 2;
+  IterationData                                    Height_cm                  = 3;
+  IterationData                                    BodyMassIndex              = 4;
+  IterationData                                    BodyFatFraction            = 5;
+  IterationData                                    HeartRate_bpm              = 6;
+  IterationData                                    MeanArtierialPressure_mmHg = 7;
+  IterationData                                    PulsePressure_mmHg         = 8;
+  IterationData                                    RespirationRate_bpm        = 9;
+}
+
+message SeverityInsultInterventionIterationData
+{
+  
+  pulse.cdm.bind.AnyActionData                     Insult                     = 1;
+  IterationData                                    InsultSeverity             = 2;
+  IterationData                                    ApplyInsultSimTime_s       = 3;
+  IterationData                                    InsultDuration_s           = 4;
+  repeated pulse.cdm.bind.ActionListData           InterventionOption         = 5;
+}
+message SeverityInsultInterventionIterationListData
+{
+  repeated SeverityInsultInterventionIterationData InsultIntervention         = 3;
+}
+
+message PatientVariabilityData
+{
+  DataRequestManagerData                           DataRequestManager      = 1;
+  repeated string                                  DataRequestFile         = 2;
+  repeated PatientIterationData                    PatientIteration        = 3;
+  oneof SimulateOptions
+  {
+    double                                         AdvanceTime_s           = 4;
+    SeverityInsultInterventionIterationListData    InsultIntervention      = 5;
+  }
+}
 
 message PatientStateData
 {
@@ -20,16 +65,6 @@ message PatientStateData
     FailedStabilization=2;/**<< @brief Pulse was unable to stabilize to provided/computed patient values. */
     RuntimeError=3;       /**<< @brief Error running the engine with (optional) actions. */
     FatalRuntimeError=4;  /**<< @brief Fatal error running the engine with (optional) actions. */
-  }
-  
-  /** @brief Enumeration for triage state */
-  enum eTriageCategory
-  {
-    Unknown=0;            /**<< @brief Not determined. */
-    Minimal=1;            /**<< @brief Green: Not life-threatening injuries. */
-    Delayed=2;            /**<< @brief Yellow: Potentially life-threatening injuries. */
-    Immediate=3;          /**<< @brief Red: Life-threatening injury. */
-    Expectant=4;          /**<< @brief Black: Non-survivable injuries. */
   }
 
   uint32                                                  ID                                = 1;
@@ -45,81 +80,13 @@ message PatientStateData
   eFailure                                                Failure                           = 9;
   double                                                  StabilizationTime_s               = 10;
 
-  // Run Modes
-  oneof RunMode
-  {
-    HemorrhageData                                        Hemorrhage                        = 11;
-    ValidationData                                        Validation                        = 12;
-    TriageData                                            Triage                            = 13;
-  }
-
   message ValidationData
   {
     map<string,pulse.cdm.bind.PropertyValidationListData> ValidationMap                     = 1;
-  }
-  
-  message HemorrhageData
-  {
-    // Initial Conditions
-    pulse.cdm.bind.HemorrhageData                         Action                            = 1;/**<< @brief Hemorrhage Action. */
-    double                                                StartTime_s                       = 3;/**<< @brief How far into the simulation does the hemorrhage occur. */
-    double                                                TriageTime_s                      = 4;/**<< @brief How far into the simulation does the triage occur. */
-
-    // Results
-    // Values at the time of hemorrhage
-    double                                                InitialBloodVolume_mL             = 5;
-    double                                                InitialCardiacOutput_L_Per_min    = 6;
-    double                                                InitialHeartRate_bpm              = 7;
-    double                                                InitialMeanArterialPressure_mmHg  = 8;
-    double                                                InitialHemorrhageFlow_mL_Per_s    = 9;/**<< @brief Not constant throughout the simulation. */
-    // Values at triage time
-    double                                                TriageBloodLoss_mL                = 10;
-    double                                                TriageCardiacOutput_L_Per_min     = 11;
-    double                                                TriageHeartRate_bpm               = 12;
-    double                                                TriageHemorrhageFlow_mL_Per_s     = 13;/**<< @brief Not constant throughout the simulation. */
-    double                                                TriageMeanArterialPressure_mmHg   = 14;
-    // Values at patient death, or at final sim time, as defined by MaxSimulationTime
-    double                                                FinalBloodLoss_mL                 = 15;
-    double                                                FinalCardiacOutput_L_Per_min      = 16;
-    double                                                FinalHeartRate_bpm                = 17;
-    double                                                FinalHemorrhageFlow_mL_Per_s      = 18;/**<< @brief Not constant throughout the simulation. */
-    double                                                FinalMeanArterialPressure_mmHg    = 19;
-  }
-
-  message TriageData
-  {
-    // Insults
-    pulse.cdm.bind.AirwayObstructionData                  AirwayObstructionAction                      = 1;/**<< @brief Airway obstruction action. */
-    pulse.cdm.bind.HemorrhageData                         HemorrhageAction                             = 2;/**<< @brief Hemorrhage action. */
-    pulse.cdm.bind.TensionPneumothoraxData                TensionPneumothoraxAction                    = 3;/**<< @brief Tension pneumothorax action. */
-    // Results
-    double                                                InitialEndTime_s                             = 4;/**<< @brief Simulation stop time after insults. */
-    eTriageCategory                                       InitialTriageCategory                        = 5;/**<< @brief Triage category at the end of the initial insult simulation. */
-
-    // Interventions
-    pulse.cdm.bind.AirwayObstructionData                  AirwayObstructionIntervention                = 6;/**<< @brief Airway obstruction intervention for obstruction removal. */
-    double                                                AirwayObstructionInterventionTime_s          = 7;/**<< @brief How far into the simulation does the airway obstruction intervention occur. */
-    pulse.cdm.bind.ChestOcclusiveDressingData             ChestOcclusiveDressingIntervention           = 8;/**<< @brief Chest occlusive dressing intervention for treating pneumothorax. */
-    double                                                ChestOcclusiveDressingInterventionTime_s     = 9;/**<< @brief How far into the simulation does the chest occlusive dressing intervention occur. */
-    pulse.cdm.bind.HemorrhageData                         HemorrhageIntervention                       = 10;/**<< @brief Hemorrhage intervention for tourniquet application. */
-    double                                                HemorrhageInterventionTime_s                 = 11;/**<< @brief How far into the simulation does the hemorrhage intervention occur. */
-    pulse.cdm.bind.NeedleDecompressionData                NeedleDecompressionIntervention              = 12;/**<< @brief Needle decompression intervention for treating pneumothorax. */
-    double                                                NeedleDecompressionInterventionTime_s        = 13;/**<< @brief How far into the simulation does the needle decompression intervention occur. */
-    // Results
-    double                                                FinalEndTime_s                               = 14;/**<< @brief Simulation stop time after interventions. */
-    eTriageCategory                                       FinalTriageCategory                          = 15;/**<< @brief Triage category at the end of the final intervention simulation. */
   }
 }
 
 message PatientStateListData
 {
   repeated PatientStateData      PatientState               = 1;
-}
-
-message LogData
-{
-  repeated string                Info                       = 1;
-  repeated string                Warning                    = 2;
-  repeated string                Error                      = 3;
-  repeated string                Fatal                      = 4;
 }

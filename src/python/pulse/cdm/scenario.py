@@ -1,10 +1,19 @@
 # Distributed under the Apache License, Version 2.0.
 # See accompanying NOTICE file for details.
 
-from typing import List
+import re
+import logging
+from typing import List, Optional, Tuple
+from pathlib import Path
 
 from pulse.cdm.engine import eSerializationFormat, eSwitch, SEAction, SEDataRequestManager
-from pulse.cdm.patient import SEPatientConfiguration
+from pulse.cdm.patient import eSex, SEPatient, SEPatientConfiguration
+from pulse.cdm.scalars import SEScalarTime, get_unit
+from pulse.cdm.io.patient import serialize_patient_from_string
+
+
+_pulse_logger = logging.getLogger('pulse')
+
 
 class SEScenario:
     __slots__ = ["_name", "_description", "_params", "_engine_state_file", "_dr_mgr", "_dr_files", "_actions"]
@@ -224,3 +233,155 @@ class SEScenarioExec:
         return self._thread_count
     def set_thread_count(self, c: int) -> None:
         self._thread_count = c
+
+
+class SEScenarioLog:
+    __slots__ = ("_log_file", "_patient", "_actions", "_actions_filter", "_events", "_events_filter")
+
+    def __init__(
+        self,
+        log_file: Path,
+        actions_filter: Optional[List[str]] = None,
+        events_filter: Optional[List[str]] = None
+    ):
+        """
+        Base class to parse log content. Inheriting classes should implement method(s) to
+        use this extracted info.
+
+        :param log_file: Path to log file
+        :param actions_filter: Exclude actions containing any of these strings
+        :param events_filter: Exclude events containing any of these strings
+        """
+        if not log_file.is_file():
+            raise ValueError(f"Log file ({log_file}) does not exist/is not a file")
+        self._log_file = log_file
+        self._actions_filter = actions_filter
+        self._events_filter = events_filter
+        self._patient = SEPatient()
+        self._actions = list()
+        self._events = list()
+
+    def _process_log(self) -> None:
+        """
+        Extracts patient, actions, and events from log
+        """
+        def _parse_dict(
+            tag: str,
+            lines: List[str],
+            matches_out: List[Tuple[SEScalarTime, str]],
+            max_matches: Optional[int]=None
+        ) -> bool:
+            """
+            Parses dict-like structures following given tag
+
+            :param tag: Tag identifying content to extract
+            :param lines: Log text
+            :param matches_out: List where matches will be added
+            :param max_matches: If provided, limit the number of matches to this value
+
+            :return: Whether parsing was successful
+            """
+            idx = 0
+            while idx < len(lines):
+                line = lines[idx]
+                tag_idx = line.find(tag)
+                if tag_idx != -1:
+                    tag_text = line
+                    # Extract time
+                    match = re.search(r'\[(?P<time>\d*\.?\d*)\((?P<time_unit>.*)\)\]', tag_text)
+                    if match is None:
+                        return False
+                    tag_time = float(match['time'])
+                    time_unit = get_unit(match['time_unit'])
+                    tag_text = tag_text[(tag_idx+len(tag)):].lstrip()
+
+                    # Find blank line indicating end of tag match
+                    while (idx + 1) < len(lines) and len(lines[idx+1].strip()) != 0:
+                        idx += 1
+                        line = lines[idx]
+                        tag_text += line
+
+                    matches_out.append((SEScalarTime(tag_time, time_unit), tag_text))
+                    if max_matches is not None and len(matches_out) >= max_matches:
+                        break
+                idx += 1
+            return True
+
+        def _parse_line(
+            tag: str,
+            lines: List[str],
+            matches_out: List[Tuple[SEScalarTime, str]],
+            max_matches: Optional[int]=None
+        ):
+            """
+            Parses single line containing given tag
+
+            :param tag: Tag identifying content to extract
+            :param lines: Log text
+            :param matches_out: List where matches will be added
+            :param max_matches: If provided, limit the number of matches to this value
+
+            :return: Whether parsing was successful
+            """
+            for line in lines:
+                tag_idx = line.find(tag)
+                if tag_idx != -1:
+                    tag_text = line
+                    # Get time and find beginning of actual tag text content
+                    match = re.search(
+                        r'\[(?P<time>\d*\.?\d*)\((?P<time_unit>.*)\)\]\s*(?P<tag>' +
+                            re.escape(tag) +
+                            r'\s*(?:\d*\.?\d*\(s\),)?)',
+                        tag_text
+                    )
+                    if match is None:
+                        return False
+                    tag_time = float(match['time'])
+                    time_unit = get_unit(match['time_unit'])
+                    tag_text = tag_text[(tag_idx + len(match['tag'])):].strip()
+
+                    matches_out.append((SEScalarTime(tag_time, time_unit), tag_text))
+                    if max_matches is not None and len(matches_out) >= max_matches:
+                        break
+
+            return True
+
+        def _filter(item: str, filter_out: List[str]) -> bool:
+            """
+            :param item: Value to check
+            :param filter_out: Values that given item shoud not contain
+
+            :return: Whether given item passes given filters
+            """
+            for filter in filter_out:
+                if filter in item:
+                    return False
+            return True
+
+        with open(self._log_file) as f:
+            lines = f.readlines()
+
+            # Get patient
+            patient_text = list()
+            if not _parse_dict(tag="[Patient]", lines=lines, max_matches=1, matches_out=patient_text) or not patient_text:
+                _pulse_logger.warning(f"Could not extract patient info: {self._log_file}")
+            else:
+                serialize_patient_from_string(patient_text[0][1], self._patient, eSerializationFormat.TEXT)
+
+            # Get events
+            if not _parse_line(tag="[Event]", lines=lines, matches_out=self._events):
+                _pulse_logger.warning(f"Could not extract events: {self._log_file}")
+            elif self._events_filter:
+                self._events = [
+                    e
+                    for e in self._events if _filter(item=e[1], filter_out=self._events_filter)
+                ]
+
+            # Get actions
+            if not _parse_dict(tag="[Action]", lines=lines, matches_out=self._actions):
+                _pulse_logger.warning(f"Could not extract actions: {self._log_file}")
+            elif self._actions_filter:
+                self._actions = [
+                    a
+                    for a in self._actions if _filter(item=a[1], filter_out=self._actions_filter)
+                ]

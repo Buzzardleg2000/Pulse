@@ -9,8 +9,10 @@ import "pulse/cdm/bind/Enums.proto";
 
 enum eSerializationFormat
 {
-  JSON     = 0;
-  BINARY   = 1;
+  JSON         = 0;
+  BINARY       = 1;
+  VERBOSE_JSON = 2;
+  TEXT         = 3;
 }
 
 message ScenarioData
@@ -54,10 +56,10 @@ message ScenarioExecData
     string                         ScenarioLogFilename           = 13;/**<< @brief A directory, where each file is assumed to be a scenario.*/
     string                         ScenarioLogDirectory          = 14;/**<< @brief A directory, where each file is assumed to be a scenario.*/
   }
-  
+
   eSerializationFormat             ContentFormat                 = 15;/**<< @brief Set what Content is*/
   int32                            ThreadCount                   = 16;/**<< @brief Number of threads to use when processing a Directory: >0 NumThreads to use; 0 NumThreads=NumCores; <0 NumThreads=NumCores-ThreadCount */
-  
+
   repeated string                  DataRequestFilesSearch        = 17;/**<< @brief A list of directories to find any data request files referenced in the scenario. */
 
 }

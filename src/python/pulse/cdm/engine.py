@@ -12,6 +12,8 @@ from pulse.cdm.scalars import SEScalarTime, SEScalarUnit
 class eSerializationFormat(Enum):
     JSON = 0
     BINARY = 1
+    VERBOSE_JSON = 2
+    TEXT = 3
 
 class eSide(Enum):
     NullSide = 0

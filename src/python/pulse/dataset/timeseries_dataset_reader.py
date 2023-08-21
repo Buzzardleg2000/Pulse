@@ -2,10 +2,10 @@
 # See accompanying NOTICE file for details.
 
 import sys
-import time
 import shutil
 import logging
 import numbers
+import tempfile
 import numpy as np
 from pathlib import Path
 from dataclasses import dataclass
@@ -45,36 +45,30 @@ def load_data(xls_file: Path):
 
     _pulse_logger.info(f"Generating data from {xls_file}")
 
-    # Copy file to preserve original state through patient updates
-    timestr = time.strftime("%Y%m%d-%H%M%S")
-    xls_edit = xls_file.parent / f"{xls_basename}_{timestr}.xlsx"
+    # Temp file to preserve original state through patient updates
+    xls_edit = tempfile.NamedTemporaryFile(suffix=".xlsx")
+    xls_edit_path = Path(xls_edit.name)
 
     # Iterate through patients
     patient_dir = Path("./patients/")
     try:
         if patient_dir.is_dir():
             for patient_file in patient_dir.glob("*.json"):
-                update_patient(patient_file, xls_file, xls_edit)
+                update_patient(patient_file, xls_file, xls_edit_path)
                 full_output_path = output_dir / patient_file.stem
                 full_output_path.mkdir(parents=True, exist_ok=True)
 
-                workbook = load_workbook(filename=xls_edit, data_only=False)
-                evaluator = ExcelCompiler(filename=xls_edit)
+                workbook = load_workbook(filename=xls_edit_path, data_only=False)
+                evaluator = ExcelCompiler(filename=xls_edit_path)
                 for system in workbook.sheetnames:
                     if system == "Patient":
                         continue
                     if not read_sheet(workbook[system], evaluator, full_output_path):
                         _pulse_logger.error(f"Unable to read {system} sheet")
     except:
-        # Clean up temporary file no matter what
-        if xls_edit.is_file():
-            xls_edit.unlink()
-        raise
-
-    # Remove temp file
-    if xls_edit.is_file():
-        xls_edit.unlink()
-
+        xls_edit.close()
+    finally:
+        xls_edit.close()
 
 def update_patient(patient_file: Path, xls_file: Path, new_file: Optional[Path]=None):
     p = SEPatient()
@@ -189,7 +183,7 @@ def read_sheet(sheet: Worksheet, evaluator: ExcelCompiler, output_dir: Path):
         vts.append(tgt)
 
     for target in targets.keys():
-        filename = f"{output_dir}{system}{'-' if target else ''}{target}.json"
+        filename = output_dir / f"{system}{'-' if target else ''}{target}.json"
         _pulse_logger.info(f"Writing {filename}")
         serialize_time_series_validation_target_list_to_file(targets[target], filename)
 

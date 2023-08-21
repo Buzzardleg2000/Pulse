@@ -210,8 +210,19 @@ class ITMScenarioReport(SEScenarioLog):
             observation["Abnormality"] = list()
             for event_time, event in self._events:
                 if event_time.get_value(TimeUnit.s) <= time_s:
-                    active_regex = [r'\s*Patient\s*has\s*', r'\s*Engine\s*has\s*entered\s*state\s*:?']
-                    inactive_regex = [r'\s*Patient\s*no\s*longer\s*has\s*', r'\s*Engine\s*has\s*exited\s*state\s*:?']
+                    active_regex = [
+                        r'\s*Patient\s*has\s*',
+                        r'\s*Patient\s*is\s*in\s*',
+                        r'\s*The\s*Patient\s*is\s*in\s*a\s*state\s*of\s*',
+                        r'\s*Engine\s*has\s*entered\s*state\s*:?'
+                    ]
+                    inactive_regex = [
+                        r'\s*Patient\s*no\s*longer\s*has\s*',
+                        r'\s*Patient\s*is\s*no\s*longer\s*in\s*',
+                        r'\s*Patient\s*no\s*longer\s*is\s*in\s*',
+                        r'\s*The\s*Patient\s*is\s*no\s*longer\s*in\s*a\s*state\s*of\s*',
+                        r'\s*Engine\s*has\s*exited\s*state\s*:?'
+                    ]
 
                     # Note: using re.match here instead of re.search because we expect the match at index 0
                     # Add it to the list of abnormalities if active
@@ -231,12 +242,23 @@ class ITMScenarioReport(SEScenarioLog):
                                     _pulse_logger.warning(f"Could not find corresponding abnormality: {event}")
                                 break
                         else:  # Not a known active/inactive phrase
-                            _pulse_logger.warning(f"Could not identify if event is active, adding anyway: {event}")
-                            observation["Abnormality"].append(event.strip())
+                            _pulse_logger.warning(f"Could not identify if event is active, ignoring: {event}")
 
             # Add insults and interventions from actions
+            def _get_severity_str(severity: float) -> str:
+                if severity == 0:
+                    raise ValueError("Severity string undefined for 0 severity")
+                elif severity <= 0.3:
+                    severity_str = "Mild"
+                elif severity <= 0.6:
+                    severity_str = "Moderate"
+                else:
+                    severity_str = "Severe"
+
+                return severity_str
             observation["Insults"] = list()
             observation["Interventions"] = list()
+            hemorrhage = -1
             for action_time, action in self._actions:
                 if action_time.get_value(TimeUnit.s) <= time_s:
                     action_data = json.loads(action)
@@ -245,32 +267,46 @@ class ITMScenarioReport(SEScenarioLog):
                         action_name = list(action_data["PatientAction"].keys())[0]
 
                         severity_str = ""
+                        severity = 0
                         insult = False
                         if "Severity" in action_data["PatientAction"][action_name]:
                             insult = True
                             severity = action_data["PatientAction"][action_name]["Severity"]["Scalar0To1"]["Value"]
+
+                            # Add side and type to pneumothorax actions
+                            if action_name.endswith("Pneumothorax"):
+                                action_name = f'{action_data["PatientAction"][action_name]["Side"]}' \
+                                              f'{action_data["PatientAction"][action_name]["Type"]}' \
+                                              f'{action_name}'
+
                             if severity == 0:  # Severity 0 indicates intervention
                                 insult = False
                                 if action_name == "Hemorrhage":
                                     action_name = "Tourniquet"
                                 elif action_name == "AirwayObstruction":
-                                    action_name = "Secured Airway"
+                                    action_name = "SecuredAirway"
+                                elif action_name.endswith("Pneumothorax"):
+                                    action_name = f"{action_name}WasCorrected"
                                 else:
-                                    _pulse_logger.warning(f"Undefined zero-severity action: {action_data}")
-                            elif severity <= 0.3:
-                                severity_str = "Mild"
-                            elif severity <= 0.6:
-                                severity_str = "Moderate"
-                            else:
-                                severity_str = "Severe"
+                                    _pulse_logger.warning(f"Ignoring zero-severity action: {action_data}")
+                                    continue
+                            else:  # Insult
+                                severity_str = _get_severity_str(severity)
 
                         action_out = f"{severity_str} {break_camel_case(action_name)}".strip()
-                        if insult:
+                        if "Hemorrhage" in action_name:  # Only adding max severity hemorrhage
+                            if severity > hemorrhage:
+                                hemorrhage = severity
+                        elif insult:
                             observation["Insults"].append(action_out)
                         else:
                             observation["Interventions"].append(action_out)
                     else:
                         raise ValueError(f"Unsupported action: {action_data}")
+
+            # Add max severity hemorrhage, if one exists
+            if hemorrhage > 0:
+                observation["Insults"].append(f"{_get_severity_str(hemorrhage)} Hemorrhage")
 
             observations.append(observation)
 

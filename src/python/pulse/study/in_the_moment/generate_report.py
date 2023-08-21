@@ -183,7 +183,7 @@ class ITMScenarioReport(SEScenarioLog):
         # Add set of observations per closest time step to requested observation frequency
         observations = list()
         observation_times= np.arange(
-            start=times[0] + self._observation_frequency_s,
+            start=times[0],
             stop=times[-1] + self._observation_frequency_s, # TODO: Do we need to add observation frequency here?
             step=self._observation_frequency_s
         )

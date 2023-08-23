@@ -4,55 +4,56 @@ option java_package = "com.kitware.pulse.study.bind.patient_variability";
 option csharp_namespace = "pulse.study.bind.patient_variability";
 option optimize_for = SPEED;
 
-import "pulse/cdm/bind/Engine.proto";
 import "pulse/cdm/bind/Patient.proto";
 import "pulse/cdm/bind/TestReport.proto";
+import "pulse/engine/bind/Scenario.proto";
 
-message IterationData
+enum eGenStyle
 {
-  double Start             = 1;
-  double Stop              = 2;
-  double Step              = 3;
-  repeated double Explicit = 4;
+  Combinatorial = 0; /**<<@brief Classic combinatorial of all factors. */
+  Slice         = 1; /**<<@brief Iterate 1 property at a time, hold other properties to their slice index value. */
+}
+
+message ParameterIterationData
+{
+  uint32          SliceIndex = 1;
+  repeated double Values     = 2;
 }
 
 message PatientIterationData
 {
-  pulse.cdm.bind.PatientData.eSex                  Sex                        = 1;
-  IterationData                                    Age_yr                     = 2;
-  IterationData                                    Height_cm                  = 3;
-  IterationData                                    BodyMassIndex              = 4;
-  IterationData                                    BodyFatFraction            = 5;
-  IterationData                                    HeartRate_bpm              = 6;
-  IterationData                                    MeanArtierialPressure_mmHg = 7;
-  IterationData                                    PulsePressure_mmHg         = 8;
-  IterationData                                    RespirationRate_bpm        = 9;
+  eGenStyle                                        GenStyle                    = 1;
+  pulse.cdm.bind.PatientData.eSex                  Sex                         = 2;
+  ParameterIterationData                           Age_yr                      = 3;
+  ParameterIterationData                           Height_cm                   = 4;
+  ParameterIterationData                           BodyMassIndex               = 5;
+  ParameterIterationData                           BodyFatFraction             = 6;
+  ParameterIterationData                           HeartRate_bpm               = 7;
+  ParameterIterationData                           MeanArtierialPressure_mmHg  = 8;
+  ParameterIterationData                           PulsePressure_mmHg          = 9;
+  ParameterIterationData                           RespirationRate_bpm         = 10;
 }
 
-message SeverityInsultInterventionIterationData
+message ScenarioIterationData
 {
-  
-  pulse.cdm.bind.AnyActionData                     Insult                     = 1;
-  IterationData                                    InsultSeverity             = 2;
-  IterationData                                    ApplyInsultSimTime_s       = 3;
-  IterationData                                    InsultDuration_s           = 4;
-  repeated pulse.cdm.bind.ActionListData           InterventionOption         = 5;
-}
-message SeverityInsultInterventionIterationListData
-{
-  repeated SeverityInsultInterventionIterationData InsultIntervention         = 3;
+  pulse.engine.bind.ScenarioData                   Scenario                    = 1;
+  eGenStyle                                        GenStyle                    = 2;
+  bool                                             CreateStates                = 3;
+  double                                           BaselineDuration_s          = 4;
+  double                                           MaxSimTime_min              = 5;
 }
 
-message PatientVariabilityData
+message TCCCIterationData
 {
-  DataRequestManagerData                           DataRequestManager      = 1;
-  repeated string                                  DataRequestFile         = 2;
-  repeated PatientIterationData                    PatientIteration        = 3;
-  oneof SimulateOptions
-  {
-    double                                         AdvanceTime_s           = 4;
-    SeverityInsultInterventionIterationListData    InsultIntervention      = 5;
-  }
+  ScenarioIterationData                            ScenarioIteration           = 1;
+  bool                                             PerformInterventions        = 2;// Set to false to study injury effects only
+  ParameterIterationData                           AirwayObstructionSeverity   = 3;
+  ParameterIterationData                           HemorrhageSeverity          = 4;
+  ParameterIterationData                           TensionPneumothoraxSeverity = 5;
+  ParameterIterationData                           InsultDuration_s            = 6;
+  ParameterIterationData                           SalineAvailable             = 7;// Should only contain 0 and/or 1
+  ParameterIterationData                           NeedleAvaiable              = 8;// Should only contain 0 and/or 1
+  ParameterIterationData                           ChestWrapAvailable          = 9;// Should only contain 0 and/or 1
 }
 
 message PatientStateData

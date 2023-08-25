@@ -22,7 +22,9 @@ from pulse.cdm.bind.Events_pb2 import ActiveEventListData, EventChangeListData
 
 from pulse.cdm.patient import SEPatientConfiguration
 from pulse.cdm.equipment_actions import SEEquipmentAction
-from pulse.cdm.engine import SEEventChange, eEvent, SESegmentValidationConfig
+from pulse.cdm.engine import SEEventChange, eEvent, SESegmentValidationConfig, eDataRequest_category, \
+                             eDecimalFormat_type
+from pulse.cdm.scalars import get_unit
 
 from pulse.cdm.io.action import *
 from pulse.cdm.io.patient_actions import *
@@ -325,7 +327,7 @@ def serialize_actions_to_bind(src: [], dst: ActionListData):
                 serialize_urinate_to_bind(action, any_action.PatientAction.Urinate)
                 dst.AnyAction.append(any_action)
                 continue
-            print("Uknown Patient Action")
+            print("Unknown Patient Action")
 
         if isinstance(action, SEEnvironmentAction):
             if isinstance(action, SEChangeEnvironmentalConditions):
@@ -336,7 +338,7 @@ def serialize_actions_to_bind(src: [], dst: ActionListData):
                 serialize_thermal_application_to_bind(action, any_action.EnvironmentAction.ThermalApplication)
                 dst.AnyAction.append(any_action)
                 continue
-            print("Uknown Environment Action")
+            print("Unknown Environment Action")
 
         if isinstance(action, SEEquipmentAction):
             if isinstance(action, SEBagValveMaskConfiguration):
@@ -452,9 +454,22 @@ def serialize_data_request_to_bind(src: SEDataRequest, dst: DataRequestData):
     dst.PropertyName = src.get_property_name()
     dst.Category = src.get_category().value
 
-def serialize_data_request_from_bind(src: DataRequestData, dst: SEDataRequest):
-    raise Exception("serialize_data_request_from_bind not implemented")
+def serialize_data_request_from_bind(src: DataRequestData) -> SEDataRequest:
+    return SEDataRequest(
+        category=eDataRequest_category(src.Category),
+        action=src.ActionName if src.ActionName else None,
+        compartment=src.CompartmentName if src.CompartmentName else None,
+        substance=src.SubstanceName if src.SubstanceName else None,
+        property=src.PropertyName if src.PropertyName else None,
+        unit=get_unit(src.Unit),
+        precision=src.DecimalFormat.Precision if src.DecimalFormat.Precision else None,
+        notation=eDecimalFormat_type(src.DecimalFormat.Type) if src.DecimalFormat.Type else None
+    )
 
+def serialize_data_request_manager_from_file(filename: str, dst: SEDataRequestManager):
+    with open(filename) as f:
+        string = f.read()
+    return serialize_data_request_manager_from_string(string, dst, eSerializationFormat.JSON)
 def serialize_data_request_manager_to_file(src: SEDataRequestManager, filename: str):
     string = serialize_data_request_manager_to_string(src, eSerializationFormat.JSON)
     file = open(filename, "w")
@@ -477,9 +492,13 @@ def serialize_data_request_manager_to_bind(src: SEDataRequestManager, dst: DataR
             serialize_data_request_to_bind(dr, dst_dr)
             dst.DataRequest.append(dst_dr)
     dst.ResultsFilename = src.get_results_filename()
+    dst.SamplesPerSecond = src.get_samples_per_second()
 
 def serialize_data_request_manager_from_bind(src: DataRequestManagerData, dst: SEDataRequestManager):
-    raise Exception("serialize_data_request_manager_from_bind not implemented")
+    if src.ResultsFilename:
+        dst.set_results_filename(src.ResultsFilename)
+    dst.set_samples_per_second(src.SamplesPerSecond)
+    dst.set_data_requests([serialize_data_request_from_bind(dr) for dr in src.DataRequest])
 
 def serialize_engine_initialization_to_bind(src: SEEngineInitialization, dst: EngineInitializationData):
     if src.id is not None:

@@ -73,7 +73,13 @@ def generate_data_request(request_type: str, property_name: str, unit_str: str, 
         property = props[1]
     elif category == eDataRequest_category.TissueCompartment:
         compartment = props[0]
-        property = props[1]
+        if len(props) == 2:
+            property = props[1]
+        elif len(props) == 3:
+            substance = props[1]
+            property = props[2]
+        else:
+            raise ValueError(f"Invalid property name for TissueCompartment Data Request: {property_name}")
     elif category == eDataRequest_category.Substance:
         substance = props[0]
         property = props[1]
@@ -92,4 +98,12 @@ def generate_data_request(request_type: str, property_name: str, unit_str: str, 
     else:
         raise ValueError(f"Unknown data request category: {request_type}")
 
-    return SEDataRequest(category, action, compartment, substance, property, unit, precision)
+    return SEDataRequest(
+        category=category,
+        action=action,
+        compartment=compartment,
+        substance=substance,
+        property=property,
+        unit=unit,
+        precision=precision
+    )

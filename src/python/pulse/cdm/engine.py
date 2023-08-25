@@ -448,8 +448,8 @@ class SEDataRequest(SEDecimalFormat):
     __slots__ = ['_category', '_action_name', '_compartment_name', '_substance_name', '_property_name', '_unit']
 
     def __init__(
-        self, category: eDataRequest_category, action:str=None, compartment:str=None,
-        substance:str=None, property:str=None, unit:SEScalarUnit=None,
+        self, category: eDataRequest_category, action:Optional[str]=None, compartment:Optional[str]=None,
+        substance:Optional[str]=None, property:Optional[str]=None, unit:Optional[SEScalarUnit]=None,
         precision: Optional[int]=None, notation: Optional[eDecimalFormat_type]=None
     ):
         super().__init__(precision, notation)
@@ -476,7 +476,7 @@ class SEDataRequest(SEDecimalFormat):
         else:
             self._unit = unit.get_string()
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         out_string = ""
         if self._category == eDataRequest_category.Action:
             out_string = self._action_name+"-"
@@ -515,7 +515,7 @@ class SEDataRequest(SEDecimalFormat):
 
         return out_string.replace(" ", "_")
 
-    def to_string(self):
+    def to_string(self) -> str:
         return self.__repr__()
 
     @classmethod
@@ -571,6 +571,7 @@ class SEDataRequest(SEDecimalFormat):
     def create_thermal_compartment_request(cls, compartment:str, property:str, unit:SEScalarUnit=None):
         return cls(eDataRequest_category.ThermalCompartment, compartment=compartment, property=property,  unit=unit)
 
+    @classmethod
     def create_tissue_request(cls, compartment:str, property:str, unit:SEScalarUnit=None):
         return cls(eDataRequest_category.TissueCompartment, compartment=compartment, property=property,  unit=unit)
 
@@ -594,32 +595,28 @@ class SEDataRequest(SEDecimalFormat):
     def create_mechanical_ventilator_request(cls, property:str, unit:SEScalarUnit=None):
         return cls(eDataRequest_category.MechanicalVentilator, property=property,  unit=unit)
 
-    def get_category(self):
+    def get_category(self) -> eDataRequest_category:
         return self._category
 
-    def has_action_name(self):
-        return self._action_name is not None
-    def get_action_name(self):
+    def has_action_name(self) -> bool:
+        return bool(self._action_name)
+    def get_action_name(self) -> str:
         return self._action_name
-    def has_compartment_name(self):
-        return self._compartment_name is not None
-    def get_compartment_name(self):
+    def has_compartment_name(self) -> bool:
+        return bool(self._compartment_name)
+    def get_compartment_name(self) -> str:
         return self._compartment_name
-    def has_action_name(self):
-        return self._action_name is not None
-    def get_action_name(self):
-        return self._action_name
-    def has_substance_name(self):
-        return self._substance_name is not None
-    def get_substance_name(self):
+    def has_substance_name(self) -> bool:
+        return bool(self._substance_name)
+    def get_substance_name(self) -> str:
         return self._substance_name
-    def has_property_name(self):
-        return self._property_name is not None
-    def get_property_name(self):
+    def has_property_name(self) -> bool:
+        return bool(self._property_name)
+    def get_property_name(self) -> str:
         return self._property_name
-    def has_unit(self):
-        return self._unit is not None
-    def get_unit(self):
+    def has_unit(self) -> bool:
+        return bool(self._unit)
+    def get_unit(self) -> str:
         return self._unit
 
 
@@ -700,28 +697,27 @@ class SEDataRequested: # Event and Log support
 
 
 class SEDataRequestManager:
-    __slots__ = ["_results_filename", "_samples_per_second", "_data_requests", "_validation_targets"]
+    __slots__ = ["_results_filename", "_samples_per_second", "_data_requests"]
 
-    def __init__(self, data_requests=[]):
+    def __init__(self, data_requests: Optional[List[SEDataRequest]]=None):
         self.clear()
-        self._data_requests = data_requests
+        self._data_requests = data_requests if data_requests is not None else list()
 
     def clear(self):
-        self._data_requests = []
-        self._validation_targets = []
+        self._data_requests = list()
         self._results_filename = ""
         self._samples_per_second = 0
 
-    def has_data_requests(self): return len(self._data_requests)
-    def get_data_requests(self): return self._data_requests
-    def set_data_requests(self, requests): self._data_requests = requests
+    def has_data_requests(self) -> int: return len(self._data_requests)
+    def get_data_requests(self) -> List[SEDataRequest]: return self._data_requests
+    def set_data_requests(self, requests: List[SEDataRequest]) -> None: self._data_requests = requests
 
-    def has_results_filename(self): return self._results_filename is not None
-    def get_results_filename(self): return self._results_filename
-    def set_results_filename(self, filename): self._results_filename = filename
+    def has_results_filename(self) -> bool: return self._results_filename is not None
+    def get_results_filename(self) -> str: return self._results_filename
+    def set_results_filename(self, filename: str) -> None: self._results_filename = filename
 
-    def get_samples_per_second(self): return self._samples_per_second
-    def set_samples_per_second(self, sample): self._samples_per_second = sample
+    def get_samples_per_second(self) -> float: return self._samples_per_second
+    def set_samples_per_second(self, sample: float) -> None: self._samples_per_second = sample
 
     def to_console(self, data_values):
         print("SimulationTime(s)={})".format(data_values[0]))
@@ -1033,6 +1029,9 @@ class SETimeSeriesValidationTarget(SEValidationTarget):
         Mean = 0
         Minimum = 1
         Maximum = 2
+        MeanPerIdealWeight_kg = 3
+        MinPerIdealWeight_kg = 4
+        MaxPerIdealWeight_kg = 5
 
     def __init__(self):
         super().__init__()

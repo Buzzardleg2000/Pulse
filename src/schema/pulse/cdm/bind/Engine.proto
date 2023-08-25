@@ -152,6 +152,9 @@ message TimeSeriesValidationTargetData
     Mean     = 0;
     Minimum  = 1;
     Maximum  = 2;
+    MeanPerIdealWeight_kg = 3;
+    MinPerIdealWeight_kg = 4;
+    MaxPerIdealWeight_kg = 5;
   }
   ValidationTargetData                                  ValidationTarget                = 1;
   eType                                                 Type                            = 2;

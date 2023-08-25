@@ -15,11 +15,14 @@ from openpyxl.utils.cell import get_column_letter
 from typing import Optional, Union
 from pycel import ExcelCompiler
 
-from pulse.cdm.engine import SETimeSeriesValidationTarget
+from pulse.cdm.engine import SEDataRequestManager, SETimeSeriesValidationTarget
 from pulse.cdm.patient import SEPatient, eSex
 from pulse.cdm.scalars import LengthUnit, MassUnit
 from pulse.cdm.utils.file_utils import get_data_dir
-from pulse.cdm.io.engine import serialize_time_series_validation_target_list_to_file
+from pulse.cdm.io.engine import (
+    serialize_data_request_manager_to_file,
+    serialize_time_series_validation_target_list_to_file
+)
 from pulse.cdm.io.patient import serialize_patient_from_file
 from pulse.dataset.utils import generate_data_request
 
@@ -49,28 +52,53 @@ def load_data(xls_file: Path):
     xls_edit = tempfile.NamedTemporaryFile(suffix=".xlsx")
     xls_edit_path = Path(xls_edit.name)
 
-    # Iterate through patients
+    # xlsx sheets to skip when generating targets and requests
+    ignore_sheets = ["Patient"]
+
+    # Iterate through patients, generating targets for each
     patient_dir = Path("./patients/")
     try:
         if patient_dir.is_dir():
             for patient_file in patient_dir.glob("*.json"):
-                update_patient(patient_file, xls_file, xls_edit_path)
                 full_output_path = output_dir / patient_file.stem
                 full_output_path.mkdir(parents=True, exist_ok=True)
+
+                # Update patient sheet so formulas can be re-evaluated with correct parameters
+                update_patient(patient_file, xls_file, xls_edit_path)
 
                 workbook = load_workbook(filename=xls_edit_path, data_only=False)
                 evaluator = ExcelCompiler(filename=xls_edit_path)
                 for system in workbook.sheetnames:
-                    if system == "Patient":
+                    if system in ignore_sheets:
                         continue
-                    if not read_sheet(workbook[system], evaluator, full_output_path):
-                        _pulse_logger.error(f"Unable to read {system} sheet")
-    except:
-        xls_edit.close()
-    finally:
+                    if not generate_targets(
+                        sheet=workbook[system],
+                        evaluator=evaluator,
+                        output_dir=full_output_path
+                    ):
+                        _pulse_logger.error(f"Unable to generate targets for {system} sheet")
+        else:
+            _pulse_logger.error("Unable to location patient directory")
+    except Exception as e:
+        raise
+    finally:  # Always clean up temp file
         xls_edit.close()
 
-def update_patient(patient_file: Path, xls_file: Path, new_file: Optional[Path]=None):
+    # Generate a data request file for each target file
+    workbook = load_workbook(filename=xls_file, data_only=True)
+    full_output_path = output_dir / "requests"
+    full_output_path.mkdir(parents=True, exist_ok=True)
+    for system in workbook.sheetnames:
+        if system in ignore_sheets:
+            continue
+        if not generate_requests(
+            sheet=workbook[system],
+            output_dir=full_output_path
+        ):
+            _pulse_logger.error(f"Unable to generate requests for {system} sheet")
+
+
+def update_patient(patient_file: Path, xls_file: Path, new_file: Optional[Path]=None) -> None:
     p = SEPatient()
     serialize_patient_from_file(patient_file, p)
 
@@ -91,9 +119,79 @@ def update_patient(patient_file: Path, xls_file: Path, new_file: Optional[Path]=
     workbook.save(filename=new_file)
 
 
-def read_sheet(sheet: Worksheet, evaluator: ExcelCompiler, output_dir: Path):
+def generate_requests(sheet: Worksheet, output_dir: Path) -> bool:
+    system = sheet.title.replace(" ", "")
+    dr_mgrs = dict()
+
+    # Get header to dataclass mapping
+    ws_headers = [cell.value for cell in sheet[1]]
+    try:
+        DRB_HEADER = ws_headers.index('Output')
+        DRB_UNITS = ws_headers.index('Units')
+        DRB_REF_CELL = ws_headers.index('Reference Values')
+        DRB_TGT_FILE = ws_headers.index('ValidationTargetFile')
+        DRB_REQUEST_TYPE = ws_headers.index('Request Type')
+    except ValueError as e:
+        _pulse_logger.error(f"Missing required header {str(e)[:str(e).find(' is not in list')]}")
+        return False
+
+    @dataclass
+    class DataRequestBuilder():
+        header: str
+        units: str
+        ref_cell: Union[str, numbers.Number]
+        tgt_file: str
+        request_type: str
+
+    for row_num, r in enumerate(sheet.iter_rows(min_row=2, values_only=True)):
+        drb = DataRequestBuilder(
+            header=r[DRB_HEADER],
+            units=r[DRB_UNITS] if r[DRB_UNITS] else "unitless",
+            ref_cell=r[DRB_REF_CELL],
+            tgt_file=r[DRB_TGT_FILE] if r[DRB_TGT_FILE] else "",
+            request_type=r[DRB_REQUEST_TYPE]
+        )
+        if not drb.header:
+            continue
+
+        # Skip header rows
+        if drb.tgt_file == "ValidationTargetFile":
+            continue
+
+        # Nothing to validate to
+        if drb.ref_cell is None:
+            _pulse_logger.info(f"Not generating request {drb.header} (no reference value)")
+            continue
+
+        if not drb.request_type:
+            _pulse_logger.info(f"Not generating request {drb.header} (no DR type)")
+            continue
+
+        if drb.tgt_file not in dr_mgrs:
+            dr_mgrs[drb.tgt_file] = SEDataRequestManager()
+        drs = dr_mgrs[drb.tgt_file].get_data_requests()
+
+        prop_split = [s.strip() for s in drb.header.split("-")]
+        dr = generate_data_request(
+            request_type=drb.request_type,
+            property_name=drb.header.replace("*", ""),
+            unit_str=drb.units.strip(),
+            precision=None
+        )
+
+        drs.append(dr)
+
+    for target, dr_mgr in dr_mgrs.items():
+        filename = output_dir / f"{system}{'-' if target else ''}{target}.json"
+        _pulse_logger.info(f"Writing {filename}")
+        serialize_data_request_manager_to_file(dr_mgr, filename)
+
+    return True
+
+
+def generate_targets(sheet: Worksheet, evaluator: ExcelCompiler, output_dir: Path) -> bool:
     system = sheet.title
-    targets = {}
+    targets = dict()
 
     # Get header to dataclass mapping
     ws_headers = [cell.value for cell in sheet[1]]
@@ -103,10 +201,10 @@ def read_sheet(sheet: Worksheet, evaluator: ExcelCompiler, output_dir: Path):
         VTB_ALGO = ws_headers.index('Algorithm')
         VTB_REF_CELL = ws_headers.index('Reference Values')
         VTB_TGT_FILE = ws_headers.index('ValidationTargetFile')
+        VTB_REQUEST_TYPE = ws_headers.index('Request Type')
     except ValueError as e:
         _pulse_logger.error(f"Missing required header {str(e)[:str(e).find(' is not in list')]}")
         return False
-
 
     @dataclass
     class ValidationTargetBuilder():
@@ -115,37 +213,45 @@ def read_sheet(sheet: Worksheet, evaluator: ExcelCompiler, output_dir: Path):
         algorithm: str
         ref_cell: Union[str, numbers.Number]
         tgt_file: str
+        request_type: str
 
     for row_num, r in enumerate(sheet.iter_rows(min_row=2, values_only=True)):
         vtb = ValidationTargetBuilder(
-            header = r[VTB_HEADER],
-            units = r[VTB_UNITS],
-            algorithm = r[VTB_ALGO],
+            header=r[VTB_HEADER],
+            units=r[VTB_UNITS] if r[VTB_UNITS] else "unitless",
+            algorithm=r[VTB_ALGO],
             ref_cell=r[VTB_REF_CELL],
-            tgt_file = r[VTB_TGT_FILE]
+            tgt_file=r[VTB_TGT_FILE] if r[VTB_TGT_FILE] else "",
+            request_type=r[VTB_REQUEST_TYPE]
         )
         if not vtb.header:
             continue
 
-        # Nothing to validate to
-        if vtb.ref_cell is None:
+        # Skip header
+        if vtb.tgt_file == "ValidationTargetFile":
             continue
 
-        # TODO: Create targets for blank validation targets
-        if not vtb.tgt_file or vtb.tgt_file == "ValidationTargetFile":
+        # Nothing to validate to
+        if vtb.ref_cell is None:
+            _pulse_logger.info(f"Not validating {vtb.header} (no reference value)")
+            continue
+
+        # Only generate targets with provided DR type
+        if not vtb.request_type:
+            _pulse_logger.info(f"Not validating {vtb.header} (no DR type)")
             continue
 
         if vtb.tgt_file not in targets:
-            targets[vtb.tgt_file] = []
+            targets[vtb.tgt_file] = list()
         vts = targets[vtb.tgt_file]
 
         prop_split = [s.strip() for s in vtb.header.split("-")]
-        # TODO: Create other DR types
         dr = generate_data_request(
-            request_type="LiquidCompartment",
+            request_type=vtb.request_type,
             property_name=vtb.header.replace("*", ""),
             unit_str=vtb.units.strip(),
-            precision=None)
+            precision=None
+        )
         # TODO: References and notes
         tgt = SETimeSeriesValidationTarget()
         tgt.set_header(dr.to_string())
@@ -157,7 +263,13 @@ def read_sheet(sheet: Worksheet, evaluator: ExcelCompiler, output_dir: Path):
             algo = "Maximum"
         elif algo == "Min":
             algo = "Minimum"
-        algo = SETimeSeriesValidationTarget.eTargetType[algo]
+        elif algo.endswith("(kg)"):
+            algo = algo.replace("(kg)", "_kg")
+        try:
+            algo = SETimeSeriesValidationTarget.eTargetType[algo]
+        except:
+            _pulse_logger.error(f"Unknown validation target type: {algo}. Skipping validation target for {vtb.header} in {system}.")
+            continue
 
         # Evaluate if needed
         if isinstance(ref_val, str) and ref_val.startswith("="):
@@ -182,10 +294,10 @@ def read_sheet(sheet: Worksheet, evaluator: ExcelCompiler, output_dir: Path):
 
         vts.append(tgt)
 
-    for target in targets.keys():
-        filename = output_dir / f"{system}{'-' if target else ''}{target}.json"
+    for target, val_tgts in targets.items():
+        filename = output_dir / f"{system.replace(' ', '')}{'-' if target else ''}{target}.json"
         _pulse_logger.info(f"Writing {filename}")
-        serialize_time_series_validation_target_list_to_file(targets[target], filename)
+        serialize_time_series_validation_target_list_to_file(val_tgts, filename)
 
     return True
 

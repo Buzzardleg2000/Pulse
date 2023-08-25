@@ -49,27 +49,27 @@ int main(int argc, char* argv[])
     PatientIteration* male = new PatientIteration(logger);
     male->SetGenStyle(eGenStyle::Combo);
     male->SetSex(ePatient_Sex::Male);
-    male->GetAge_yr().SetValues({ stdAge_yr });// minAge_yr, maxAge_yr, stdAge_yr }, 2);
+    male->GetAge_yr().SetValues({minAge_yr, maxAge_yr, stdAge_yr }, 2);
+    male->GetHR_bpm().SetValues({minHR_bpm, maxHR_bpm, stdHR_bpm }, 2);
+    male->GetMAP_mmHg().SetValues({ minMAP_mmHg, maxMAP_mmHg, stdMAP_mmHg }, 2);
+    male->GetPP_mmHg().SetValues({ minPulsePressure_mmHg, maxPulsePressure_mmHg, stdPulsePressure_mmHg }, 2);
+    male->GetRR_bpm().SetValues({ minRR_bpm, maxRR_bpm, stdRR_bpm }, 2);
     male->GetHeight_cm().SetValues({ minMaleHeight_cm, maxMaleHeight_cm, stdMaleHeight_cm }, 2);
     male->GetBMI().SetValues({ minBMI, maxBMI, stdMaleBMI }, 2);
     male->GetBFF().SetValues({ minMaleBFF, maxMaleBFF, stdMaleBFF }, 2);
-    male->GetHR_bpm().SetValues({ stdHR_bpm });// minHR_bpm, maxHR_bpm, stdHR_bpm }, 2);
-    male->GetMAP_mmHg().SetValues({ stdMAP_mmHg });// minMAP_mmHg, maxMAP_mmHg, stdMAP_mmHg }, 2);
-    male->GetPP_mmHg().SetValues({ stdPulsePressure_mmHg });// minPulsePressure_mmHg, maxPulsePressure_mmHg, stdPulsePressure_mmHg }, 2);
-    male->GetRR_bpm().SetValues({ stdRR_bpm });// minRR_bpm, maxRR_bpm, stdRR_bpm }, 2);
     iPatients.push_back(male);
 
     PatientIteration* female = new PatientIteration(logger);
     female->SetGenStyle(eGenStyle::Combo);
     female->SetSex(ePatient_Sex::Female);
-    female->GetAge_yr().SetValues({ stdAge_yr }); //  minAge_yr, maxAge_yr, stdAge_yr }, 2);
+    female->GetAge_yr().SetValues({ minAge_yr, maxAge_yr, stdAge_yr }, 2);
+    female->GetHR_bpm().SetValues({ minHR_bpm, maxHR_bpm, stdHR_bpm }, 2);
+    female->GetMAP_mmHg().SetValues({ minMAP_mmHg, maxMAP_mmHg, stdMAP_mmHg }, 2);
+    female->GetPP_mmHg().SetValues({ minPulsePressure_mmHg, maxPulsePressure_mmHg, stdPulsePressure_mmHg }, 2);
+    female->GetRR_bpm().SetValues({ minRR_bpm, maxRR_bpm, stdRR_bpm }, 2);
     female->GetHeight_cm().SetValues({ minFemaleHeight_cm, maxFemaleHeight_cm, stdFemaleHeight_cm }, 2);
     female->GetBMI().SetValues({ minBMI, maxBMI, stdFemaleBMI }, 2);
     female->GetBFF().SetValues({ minFemaleBFF, maxFemaleBFF, stdFemaleBFF }, 2);
-    female->GetHR_bpm().SetValues({ stdHR_bpm }); //  minHR_bpm, maxHR_bpm, stdHR_bpm }, 2);
-    female->GetMAP_mmHg().SetValues({ stdMAP_mmHg }); //  minMAP_mmHg, maxMAP_mmHg, stdMAP_mmHg }, 2);
-    female->GetPP_mmHg().SetValues({ stdPulsePressure_mmHg }); //  minPulsePressure_mmHg, maxPulsePressure_mmHg, stdPulsePressure_mmHg }, 2);
-    female->GetRR_bpm().SetValues({ stdRR_bpm }); //  minRR_bpm, maxRR_bpm, stdRR_bpm }, 2);
     iPatients.push_back(female);
 
     if (mode == "validation")

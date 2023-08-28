@@ -131,6 +131,7 @@ def generate_requests(sheet: Worksheet, output_dir: Path) -> bool:
         DRB_REF_CELL = ws_headers.index('Reference Values')
         DRB_TGT_FILE = ws_headers.index('ValidationTargetFile')
         DRB_REQUEST_TYPE = ws_headers.index('Request Type')
+        DRB_PRECISION = ws_headers.index('Precision')
     except ValueError as e:
         _pulse_logger.error(f"Missing required header {str(e)[:str(e).find(' is not in list')]}")
         return False
@@ -142,6 +143,7 @@ def generate_requests(sheet: Worksheet, output_dir: Path) -> bool:
         ref_cell: Union[str, numbers.Number]
         tgt_file: str
         request_type: str
+        precision: Union[str, numbers.Number]
 
     for row_num, r in enumerate(sheet.iter_rows(min_row=2, values_only=True)):
         drb = DataRequestBuilder(
@@ -149,7 +151,8 @@ def generate_requests(sheet: Worksheet, output_dir: Path) -> bool:
             units=r[DRB_UNITS] if r[DRB_UNITS] else "unitless",
             ref_cell=r[DRB_REF_CELL],
             tgt_file=r[DRB_TGT_FILE] if r[DRB_TGT_FILE] else "",
-            request_type=r[DRB_REQUEST_TYPE]
+            request_type=r[DRB_REQUEST_TYPE],
+            precision=r[DRB_PRECISION]
         )
         if not drb.header:
             continue
@@ -176,7 +179,7 @@ def generate_requests(sheet: Worksheet, output_dir: Path) -> bool:
             request_type=drb.request_type,
             property_name=drb.header.replace("*", ""),
             unit_str=drb.units.strip(),
-            precision=None
+            precision=int(drb.precision) if drb.precision else None
         )
 
         drs.append(dr)

@@ -23,7 +23,7 @@ _pulse_logger = logging.getLogger('pulse')
 
 
 class ITMScenarioReport(SEScenarioLog):
-    __slots__ = ("_csv_file", "_df", "_observation_frequency_s", "_headers", "_start_headers")
+    __slots__ = ("_csv_file", "_df", "_observation_frequency_s", "_vitals_headers", "_start_headers")
 
     def __init__(
         self,
@@ -50,12 +50,15 @@ class ITMScenarioReport(SEScenarioLog):
             events_filter=events_filter
         )
 
-        # Always filter advance time actions
+        # Always filter advance time and serialize actions
         adv_time = "AdvanceTime"
         if self._actions_filter is None or adv_time not in self._actions_filter:
             if not self._actions_filter:
                 self._actions_filter = list()
             self._actions_filter.append(adv_time)
+        serialize = "Serialize"
+        if serialize not in self._actions_filter:
+            self._actions_filter.append(serialize)
 
         if observation_frequency_min <= 0:
             raise ValueError(f"Observation frequency must be positive, got {observation_frequency_min}")
@@ -66,9 +69,9 @@ class ITMScenarioReport(SEScenarioLog):
         self._csv_file = csv_file
 
         # Headers to be included in report with display names
-        self._headers = headers
-        if self._headers is None:
-            self._headers = {
+        self._vitals_headers = headers
+        if self._vitals_headers is None:
+            self._vitals_headers = {
                 "HeartRate(1/min)" : "HR",
                 "RespirationRate(1/min)" : "RR",
                 "OxygenSaturation": "SpO2",
@@ -95,7 +98,7 @@ class ITMScenarioReport(SEScenarioLog):
         """
         # Determine set of needed headers for this report
         all_headers = set(self._start_headers)
-        all_headers.update(self._headers.keys())
+        all_headers.update(self._vitals_headers.keys())
         df = read_csv_into_df(self._csv_file)
         time_header = "Time(s)"
         all_headers.add(time_header)  # Make sure we keep time (as seconds)
@@ -165,6 +168,11 @@ class ITMScenarioReport(SEScenarioLog):
 
         :return: Dict representing report
         """
+        ABNORMALITY = "Abnormality"
+        INSULTS = "Insults"
+        INTERVENTIONS = "Interventions"
+        PATIENT_ACTION = "PatientAction"
+
         out = dict()
 
         # Parse patient, actions, and events from log
@@ -201,48 +209,30 @@ class ITMScenarioReport(SEScenarioLog):
             observation["SimTime_min"] = float(time_s) / 60
 
             # Add requested CSV data
-            for header, display in self._headers.items():
+            for header, display in self._vitals_headers.items():
                 observation[display] = float(data[header])
 
             observation["START"] = self._START(data)
 
             # Add active abnormalities (events)
-            observation["Abnormality"] = list()
+            observation[ABNORMALITY] = list()
             for event_time, event in self._events:
                 if event_time.get_value(TimeUnit.s) <= time_s:
-                    active_regex = [
-                        r'\s*Patient\s*has\s*',
-                        r'\s*Patient\s*is\s*in\s*',
-                        r'\s*The\s*Patient\s*is\s*in\s*a\s*state\s*of\s*',
-                        r'\s*Engine\s*has\s*entered\s*state\s*:?'
-                    ]
-                    inactive_regex = [
-                        r'\s*Patient\s*no\s*longer\s*has\s*',
-                        r'\s*Patient\s*is\s*no\s*longer\s*in\s*',
-                        r'\s*Patient\s*no\s*longer\s*is\s*in\s*',
-                        r'\s*The\s*Patient\s*is\s*no\s*longer\s*in\s*a\s*state\s*of\s*',
-                        r'\s*Engine\s*has\s*exited\s*state\s*:?'
-                    ]
-
                     # Note: using re.match here instead of re.search because we expect the match at index 0
                     # Add it to the list of abnormalities if active
-                    for active_str in active_regex:
-                        match = re.match(active_str, event, re.IGNORECASE)
-                        if match is not None:
-                            observation["Abnormality"].append(event[len(match.group()):].strip())
-                            break
-                    else:  # Remove previously added abnormality if now inactive
-                        for inactive_str in inactive_regex:
-                            match = re.match(inactive_str, event, re.IGNORECASE)
-                            if match is not None:
-                                event_name = event[len(match.group()):].strip()
-                                if event_name in observation["Abnormality"]:
-                                    observation["Abnormality"].remove(event_name)
-                                else:
-                                    _pulse_logger.warning(f"Could not find corresponding abnormality: {event}")
-                                break
-                        else:  # Not a known active/inactive phrase
-                            _pulse_logger.warning(f"Could not identify if event is active, ignoring: {event}")
+                    match = re.match(r'\[Event\s*(?P<abnormality>\D*)(?P<active>\d)\]', event, re.IGNORECASE)
+                    if match is None:
+                        _pulse_logger.warning(f"Could not identify if event is active, ignoring: {event}")
+                        continue
+                    event_name = match["abnormality"].strip()
+                    event_active = int(match["active"])
+                    if event_active:
+                        observation[ABNORMALITY].append(event_name)
+                    else:
+                        if event_name in observation[ABNORMALITY]:
+                            observation[ABNORMALITY].remove(event_name)
+                        else:
+                            _pulse_logger.warning(f"Could not find corresponding abnormality: {event}")
 
             # Add insults and interventions from actions
             def _get_severity_str(severity: float) -> str:
@@ -256,27 +246,27 @@ class ITMScenarioReport(SEScenarioLog):
                     severity_str = "Severe"
 
                 return severity_str
-            observation["Insults"] = list()
-            observation["Interventions"] = list()
+            observation[INSULTS] = list()
+            observation[INTERVENTIONS] = list()
             hemorrhage = -1
             for action_time, action in self._actions:
                 if action_time.get_value(TimeUnit.s) <= time_s:
                     action_data = json.loads(action)
 
-                    if "PatientAction" in action_data:
-                        action_name = list(action_data["PatientAction"].keys())[0]
+                    if PATIENT_ACTION in action_data:
+                        action_name = list(action_data[PATIENT_ACTION].keys())[0]
 
                         severity_str = ""
                         severity = 0
                         insult = False
-                        if "Severity" in action_data["PatientAction"][action_name]:
+                        if "Severity" in action_data[PATIENT_ACTION][action_name]:
                             insult = True
-                            severity = action_data["PatientAction"][action_name]["Severity"]["Scalar0To1"]["Value"]
+                            severity = action_data[PATIENT_ACTION][action_name]["Severity"]["Scalar0To1"]["Value"]
 
                             # Add side and type to pneumothorax actions
                             if action_name.endswith("Pneumothorax"):
-                                action_name = f'{action_data["PatientAction"][action_name]["Side"]}' \
-                                              f'{action_data["PatientAction"][action_name]["Type"]}' \
+                                action_name = f'{action_data[PATIENT_ACTION][action_name]["Side"]}' \
+                                              f'{action_data[PATIENT_ACTION][action_name]["Type"]}' \
                                               f'{action_name}'
 
                             if severity == 0:  # Severity 0 indicates intervention
@@ -298,15 +288,15 @@ class ITMScenarioReport(SEScenarioLog):
                             if severity > hemorrhage:
                                 hemorrhage = severity
                         elif insult:
-                            observation["Insults"].append(action_out)
+                            observation[INSULTS].append(action_out)
                         else:
-                            observation["Interventions"].append(action_out)
+                            observation[INTERVENTIONS].append(action_out)
                     else:
                         raise ValueError(f"Unsupported action: {action_data}")
 
             # Add max severity hemorrhage, if one exists
             if hemorrhage > 0:
-                observation["Insults"].append(f"{_get_severity_str(hemorrhage)} Hemorrhage")
+                observation[INSULTS].append(f"{_get_severity_str(hemorrhage)} Hemorrhage")
 
             observations.append(observation)
 

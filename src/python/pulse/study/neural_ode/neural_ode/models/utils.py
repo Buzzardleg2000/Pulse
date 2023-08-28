@@ -177,6 +177,10 @@ class PFMixin(pl.LightningModule):
                     ['output_transformer', 'target', 'output_size']),
                 STUB=False,
             )  #, output_transformer=dataset.target_normalizer)
+
+            # HACK ODE
+            # ckpt_path = 'lightning_logs/RecurrentODE_orig_b8p217s100sta/version_9/checkpoints/epoch=112-step=3051.ckpt'
+            # self.load_state_dict(torch.load(ckpt_path)['state_dict'])
         else:
             self = cls.load_from_checkpoint(ckpt_path)
 
@@ -410,7 +414,7 @@ class HemorrhageVitals(BaseData):
     missing_rate: Optional[float] = None  # 0.7
 
     # common
-    root_path: str = '/data/pulse/hemorrhage/hemorrhage'
+    root_path: str = '/data/pulse/hemorrhage/hemorrhage'  # severe dataset
     x_time_minutes: float = 20
     x_start_minutes: float = 0
     total_time_minutes_max: int = 120
@@ -751,7 +755,10 @@ class HemorrhageVitals(BaseData):
         dset = pf.TimeSeriesDataSet.load(cache_fpath)
         return dset
 
-    def _dataloader(self, dset_nm: str, xt_mins: Optional[Tuple[float, float]]=None, xt_restrict=True, train=False):
+    def _dataloader(self, dset_nm: str,
+                    xt_mins: Optional[Tuple[float, float]]=None,
+                    xt_restrict=True,
+                    train=False):
         # can remove batch_sampler='synchronized' with irregular/masking support
         # (and should write a custom sampler - "TimeBounded"? - to ensure there
         # is some temporal overlap between batch entries)
@@ -773,7 +780,8 @@ class HemorrhageVitals(BaseData):
             batch_size = self.batch_size
             shuffle = self.shuffle
         else:
-            batch_size = self.batch_size * 10
+            batch_size = self.batch_size
+            # batch_size = self.batch_size * 10
             shuffle = False
         dl = dset.to_dataloader(train=train,
                                 batch_size=batch_size,

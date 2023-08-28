@@ -26,6 +26,35 @@ from neural_ode.models.seq2seq import Seq2Seq
 from neural_ode.models.vae import VAE
 
 
+def calc_cvcs(map_true, map_pred):
+    THRESH = 40
+    true_ixs = []
+    pred_ixs = []
+    for pt in range(len(map_true)):
+        if len(ixs := torch.argwhere(map_true[pt] < THRESH)) > 0:
+            true_ixs.append(ixs[0][0])
+        else:
+            true_ixs.append(-1)
+
+        if len(ixs := torch.argwhere(map_pred[pt] < THRESH)) > 0:
+            pred_ixs.append(ixs[0][0])
+        else:
+            pred_ixs.append(-1)
+
+    true_ixs = np.array(true_ixs)
+    pred_ixs = np.array(pred_ixs)
+
+    import sklearn
+    from sklearn.metrics import confusion_matrix, f1_score
+    print(confusion_matrix(true_ixs > 0, pred_ixs > 0))
+    print(f1_score(true_ixs > 0, pred_ixs > 0))
+
+    valid_ixs = (true_ixs > 0) & (pred_ixs > 0)
+    diffs_ixs = pred_ixs[valid_ixs] - true_ixs[valid_ixs]
+    diffs_sec = diffs_ixs * 100 * 0.02  # * stride * base_freq
+    print(len(map_true), len(valid_ixs), np.mean(diffs_sec), np.std(diffs_sec))
+
+
 class UpdateKLCoef(pl.Callback):
     # for VAE, currently unused
 
@@ -205,7 +234,6 @@ class PlotCallback(pl.Callback):
         if xs is None:
             xs = [[torch.zeros((0, 1)) for y in y_pred[0]]] * len(y_pred)
 
-        # import xdev; xdev.embed()
         # (b * n_batches) t -> t
         xt = np.concatenate(xt[0]) / 60
         yt = np.concatenate(yt[0]) / 60
@@ -228,6 +256,13 @@ class PlotCallback(pl.Callback):
                           var_name='vital',
                           value_name='pred').join(
                               true_df.melt(value_name='true')['true'])
+
+        ROLL = 0
+        if ROLL:
+            df[['pred', 'true']] = (df.groupby('pt')[['pred', 'true']]
+                                      .transform(
+                                          lambda s: s.rolling(window=100).mean()))
+        df = df.dropna()
 
         # gets rid of start of THR/THV as well as padded timesteps
         df_error = df[df['true'] != 0]
@@ -397,13 +432,11 @@ class MyLightningCLI(LightningCLI):
     # after dm is setup.
     def instantiate_classes(self) -> None:
         """Instantiates the classes and sets their attributes."""
-        # import xdev; xdev.embed()
         self.config_init = self.parser.instantiate_classes(self.config)
         self.datamodule = self._get(self.config_init, "data")
         self.model = self._get(self.config_init, "model")
 
         # self.model = self.model.from_datamodule(self.datamodule, **self.model.hparams)
-        # import xdev; xdev.embed()
 
         self._add_configure_optimizers_method_to_model(self.subcommand)
         self.trainer = self.instantiate_trainer()
@@ -507,7 +540,7 @@ def scan_metric(
     kws = {
         'train': dict(dset_nm='df_tr', xt_restrict=True),
         'val': dict(dset_nm='df_va', xt_restrict=False),
-        'test': dict(dset_nm='df_te', xt_restrict=False),
+        # 'test': dict(dset_nm='df_te', xt_restrict=False),
     }
     for xt_start_mins, xt_end_mins in filter(
             lambda tup: tup[0] < tup[1],
@@ -516,7 +549,9 @@ def scan_metric(
         for nm, kwargs in kws.items():
             dl = dm._dataloader(**kwargs, xt_mins=(xt_start_mins, xt_end_mins))
 
+            # print(nm, xt_start_mins, xt_end_mins)
             batch = Batch.from_agg([Batch.from_net_out(model, b) for b in dl])
+            # print('...evaled')
             metric_dct = {}
             for i, trg in enumerate(model.target):
                 tt, pp = batch.y_true[i], batch.y_pred[i]
@@ -577,11 +612,11 @@ def scan_metric(
         # ms=1,
     )
 
-    # import xdev; xdev.embed()
 
     # https://stackoverflow.com/a/65799913
     def twin_lineplot(x, **kwargs):
         ax = plt.twinx()
+        ax.set_ylim(0, 200)  # TODO figure out how to eq this
         sub_df = (data.loc[x.index, ix_vars +
                            ['n_pts', 'mins_per_pt']].drop_duplicates(ix_vars).melt(
                                id_vars=ix_vars, var_name='variable'))
@@ -726,7 +761,6 @@ if __name__ == "__main__":
     # batch = next(iter(cli.datamodule.train_dataloader()))
     # x, y = batch
     # y_pred = cli.model(x)
-    # import xdev; xdev.embed()
 
     # DUMP HPARAMS
     # from pytorch_lightning.core.saving import save_hparams_to_yaml
@@ -734,8 +768,24 @@ if __name__ == "__main__":
     # save_hparams_to_yaml('cli_dm.yaml', cli.datamodule.hparams)
 
     # # fit == train + validate
-    cli.trainer.fit(cli.model, datamodule=cli.datamodule)
+    # cli.trainer.fit(cli.model, datamodule=cli.datamodule)
     # scan_metric(cli.model, cli.datamodule)
     # cvc(cli.model, cli.datamodule._dataloader('df_tr', train=False))
     # cvc(cli.model, cli.datamodule.val_dataloader())
     # cvc(cli.model, cli.datamodule.test_dataloader())
+
+    # dl = cli.datamodule._dataloader('df_tr', train=False)
+    # dl = cli.datamodule.test_dataloader()
+    import itertools
+    dl = itertools.chain(
+        cli.datamodule._dataloader('df_tr', train=False),
+        cli.datamodule._dataloader('df_va', train=False),
+        cli.datamodule._dataloader('df_te', train=False)
+    )
+    batch = Batch.from_agg([Batch.from_net_out(cli.model, batch) for batch in dl])
+    breakpoint()
+    PlotCallback.make_plot(**asdict(batch))
+    # yt, yp = batch.y_true[5], batch.y_pred[5]
+    # calc_cvcs(yt, yp)
+    cvc(cli.model, dl)
+

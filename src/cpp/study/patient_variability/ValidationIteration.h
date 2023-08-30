@@ -13,6 +13,8 @@ namespace pulse::study::patient_variability
     ValidationIteration(Logger& logger);
     virtual ~ValidationIteration();
 
+    std::string GetIterationName() override { return "Validation"; }
+
   protected:
     void GenerateScenarios(std::pair<std::string, std::string>, const std::string destDir);
     void GenerateSlicedActionSets(std::pair<std::string, std::string>, const std::string destDir) override;

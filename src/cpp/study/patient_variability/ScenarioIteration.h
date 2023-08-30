@@ -16,6 +16,7 @@ namespace pulse::study::patient_variability
     virtual ~ScenarioIteration();
 
     void Clear() override;
+    virtual std::string GetIterationName() = 0;
 
     eGenStyle GetGenStyle() const { return m_GenStyle; }
     void SetGenStyle(eGenStyle s) { m_GenStyle = s; }
@@ -44,5 +45,6 @@ namespace pulse::study::patient_variability
     // Stateless
     size_t                                        m_Duplicates;
     size_t                                        m_NumScenarios;
+    std::map<std::string, std::string>            m_ScenarioStates;
   };
 }

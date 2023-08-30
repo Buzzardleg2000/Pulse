@@ -115,6 +115,7 @@ int main(int argc, char* argv[])
     tccc->SetMaxSimTime_min(60);
     tccc->PerformInterventions(false);
     tccc->GetHemorrhageSeverity().SetValues({ 0.2, 0.5 });
+    tccc->GetInsultDuration_s().SetValues({ 5 });
     iScenarios.push_back(tccc);
   }
 

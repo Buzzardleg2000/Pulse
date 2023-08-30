@@ -9,6 +9,7 @@
 #include "cdm/properties/SEScalarFrequency.h"
 #include "cdm/properties/SEScalarPressure.h"
 #include "cdm/properties/SEScalarTime.h"
+#include "cdm/properties/SEScalarVolumePerTime.h"
 #include "cdm/utils/GeneralMath.h"
 
 namespace pulse::study::patient_variability
@@ -18,7 +19,7 @@ namespace pulse::study::patient_variability
     m_PerformInterventions = false;
 
     m_Hemorrhage.SetType(eHemorrhage_Type::External);
-    m_Hemorrhage.SetCompartment(eHemorrhage_Compartment::VenaCava);
+    m_Hemorrhage.SetCompartment(eHemorrhage_Compartment::RightLeg);
     m_TensionPneumothorax.SetType(eGate::Open);
     m_TensionPneumothorax.SetSide(eSide::Left);
 
@@ -27,7 +28,7 @@ namespace pulse::study::patient_variability
     m_DataRequestMgr->CreatePhysiologyDataRequest("OxygenSaturation");
     m_DataRequestMgr->CreatePhysiologyDataRequest("SystolicArterialPressure", PressureUnit::mmHg);
     m_DataRequestMgr->CreatePhysiologyDataRequest("DiastolicArterialPressure", PressureUnit::mmHg);
-    m_DataRequestMgr->CreateLiquidCompartmentDataRequest("RightArmVasculature", "InFlow", FrequencyUnit::Per_min);
+    m_DataRequestMgr->CreateLiquidCompartmentDataRequest("RightArmVasculature", "InFlow", VolumePerTimeUnit::mL_Per_s);
     m_DataRequestMgr->CreateLiquidCompartmentDataRequest("BrainVasculature", "Oxygen", "PartialPressure", PressureUnit::mmHg);
   }
   TCCCIteration::~TCCCIteration()
@@ -82,38 +83,46 @@ namespace pulse::study::patient_variability
     double TensionPneumothoraxSeverity = 0;
     double InsultDuration_s = 0;
 
+    SetDescription(patientFolderAndStateFilename.first);
     SetEngineStateFile(patientFolderAndStateFilename.second);
 
-    SetEngineStateFile(patientFolderAndStateFilename.second);
     for (auto idxs : permutations)
     {
       AirwayObstructionSeverity = m_AirwayObstructionSeverity.GetValues()[idxs[0]];
       HemorrhageSeverity = m_HemorrhageSeverity.GetValues()[idxs[1]];
       TensionPneumothoraxSeverity = m_TensionPneumothoraxSeverity.GetValues()[idxs[2]];
       InsultDuration_s = m_InsultDuration_s.GetValues()[idxs[3]];
-      if (AirwayObstructionSeverity > 0 &&
-          HemorrhageSeverity > 0 &&
+      if (AirwayObstructionSeverity > 0 ||
+          HemorrhageSeverity > 0 ||
           TensionPneumothoraxSeverity > 0)
       {
-        GenerateScenario(AirwayObstructionSeverity, HemorrhageSeverity, TensionPneumothoraxSeverity, InsultDuration_s);
-        // Write the scenario
-        SerializeToFile(destDir + "/TCCC/" + patientFolderAndStateFilename.first + "/" + m_Name + ".json");
+        GenerateScenario(AirwayObstructionSeverity, HemorrhageSeverity, TensionPneumothoraxSeverity, InsultDuration_s,
+          patientFolderAndStateFilename.first, destDir);
       }
       m_Actions.clear();
     }
   }
 
   void TCCCIteration::GenerateScenario(double AirwayObstructionSeverity,
-                                           double HemorrhageSeverity,
-                                           double TensionPneumothoraxSeverity,
-                                           double InsultDuration_s)
+                                       double HemorrhageSeverity,
+                                       double TensionPneumothoraxSeverity,
+                                       double InsultDuration_s,
+                                       const std::string& PatientName,
+                                       const std::string& destDir)
   {
     std::string name;
     name =  "AO" + pulse::cdm::to_string(AirwayObstructionSeverity) + "_";
     name += "H"  + pulse::cdm::to_string(HemorrhageSeverity) + "_";
     name += "TP" +pulse::cdm::to_string(TensionPneumothoraxSeverity) + "_";
     name += "D"+pulse::cdm::to_string(InsultDuration_s)+"s";
-    SetName(name);
+    SetName(PatientName +"/"+name);
+    if (m_ScenarioStates.find(m_Name) != m_ScenarioStates.end())
+    {
+      Info("Ignoring duplicate TCCC scenario: " + m_Name);
+      m_Duplicates++;
+      return;
+    }
+    GetDataRequestManager().SetResultsFilename(destDir + "/results/TCCC/" + m_Name + ".csv");
 
     double TotalAdvanceTime_s = 0;
     double FinalAdvanceTime_min = 0;
@@ -143,8 +152,6 @@ namespace pulse::study::patient_variability
       m_Actions.push_back(&m_TensionPneumothorax);
     }
 
-    // Save State
-
     // Advance the duration of the insult
     if (InsultDuration_s > 0)
     {
@@ -154,6 +161,8 @@ namespace pulse::study::patient_variability
     }
 
     // Save State
+    m_Serialize.SetFilename(destDir + "/states/TCCC/" + m_Name + ".pbb");
+    m_Actions.push_back(&m_Serialize);
 
     if (m_PerformInterventions)
     {
@@ -164,8 +173,12 @@ namespace pulse::study::patient_variability
     FinalAdvanceTime_min = m_MaxSimTime_min - (TotalAdvanceTime_s / 60);
     if (FinalAdvanceTime_min > 0)
     {
-      m_Adv2End.GetTime().SetValue(FinalAdvanceTime_min, TimeUnit::s);
+      m_Adv2End.GetTime().SetValue(FinalAdvanceTime_min, TimeUnit::min);
       m_Actions.push_back(&m_Adv2End);
     }
+
+    // Write the scenario
+    m_NumScenarios++;
+    SerializeToFile(destDir + "/scenarios/TCCC/" + m_Name + ".json");
   }
 }

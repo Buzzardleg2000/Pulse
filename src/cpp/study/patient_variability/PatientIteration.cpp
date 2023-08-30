@@ -89,7 +89,7 @@ namespace pulse::study::patient_variability
       break;
     }
 
-    Info("Removed " + std::to_string(m_DuplicatePatients) + " duplicates");
+    Info("Removed " + std::to_string(m_DuplicatePatients) + " duplicate patients");
     Info("Defined " + std::to_string(m_PatientStates.size()) + " patients");
   }
 
@@ -202,7 +202,6 @@ namespace pulse::study::patient_variability
 
     for (auto idxs : permutations)
     {
-      SEPatient* patient = new SEPatient(GetLogger());
       m_Patient->SetSex(m_Sex);
       m_Patient->GetAge().SetValue(m_Age_yr.GetValues()[idxs[0]], TimeUnit::yr);
       m_Patient->GetHeight().SetValue(m_Height_cm.GetValues()[idxs[1]], LengthUnit::cm);
@@ -221,14 +220,14 @@ namespace pulse::study::patient_variability
     std::string name = ToString(*m_Patient);
     if (m_PatientStates.find(name) != m_PatientStates.end())
     {
-      Info("Ignoring duplicate: " + name);
+      Info("Ignoring duplicate patient: " + name);
       m_DuplicatePatients++;
       return;
     }
     m_Name = name;
     m_Patient->SetName(name);
-    m_PatientState.SetFilename(destDir+"/patients/states/"+name+".pbb");
-    SerializeToFile(destDir + "/patients/" + name + ".json");
+    m_PatientState.SetFilename(destDir+"/states/patients/"+name+".pbb");
+    SerializeToFile(destDir + "/scenarios/patients/" + name + ".json");
     m_PatientStates[name] = m_PatientState.GetFilename();
   }
 

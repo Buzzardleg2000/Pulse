@@ -23,6 +23,7 @@ namespace pulse::study::patient_variability
     virtual ~TCCCIteration();
 
     void Clear() override;
+    std::string GetIterationName() override { return "TCCC"; }
 
     bool PerformInterventions() const { return m_PerformInterventions; }
     void PerformInterventions(bool p) { m_PerformInterventions = p; }
@@ -55,7 +56,9 @@ namespace pulse::study::patient_variability
     void GenerateScenario(double AirwayObstructionSeverity,
                           double HemorrhageSeverity,
                           double TensionPneumothoraxSeverity,
-                          double InsultDuration_s);
+                          double InsultDuration_s,
+                          const std::string& PatientName,
+                          const std::string& destDir);
 
     // Statefull
     bool                  m_PerformInterventions;
@@ -72,6 +75,7 @@ namespace pulse::study::patient_variability
     SEHemorrhage          m_Hemorrhage;
     SETensionPneumothorax m_TensionPneumothorax;
     SEAdvanceTime         m_Adv2Intervention;
+    SESerializeState      m_Serialize;
     SEAdvanceTime         m_Adv2End;
   };
 }

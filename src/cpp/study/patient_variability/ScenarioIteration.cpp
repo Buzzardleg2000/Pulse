@@ -26,6 +26,8 @@ namespace pulse::study::patient_variability
   {
     FixUp();
     m_NumScenarios = 0;
+    m_ScenarioStates.clear();
+    Info("Generating " + GetIterationName() + " scenarios");
 
     for (auto& itr : patients.GetPatientStates())
     {
@@ -40,7 +42,7 @@ namespace pulse::study::patient_variability
       }
     }
 
-    Info("Removed " + std::to_string(m_Duplicates) + " duplicates");
+    Info("Removed " + std::to_string(m_Duplicates) + " duplicate scenarios");
     Info("Defined " + std::to_string(m_NumScenarios) + " scenarios");
 
     return true;

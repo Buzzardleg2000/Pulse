@@ -11,6 +11,9 @@ class SEScenarioLog;
 class PhysiologyEngine;
 class SEEngineConfiguration;
 
+enum class eRelativeSerialization { ToWorkingDir = 0, ToOutputDir, ToScenarioDir };
+extern const std::string& eRelativeSerialization_Name(eRelativeSerialization rt);
+
 class CDM_DECL SEScenarioExec : public Loggable
 {
 public:
@@ -22,6 +25,9 @@ public:
 
   eSwitch LogToConsole() const { return m_LogToConsole; }
   void LogToConsole(eSwitch s) { m_LogToConsole = s; }
+
+  virtual eRelativeSerialization GetRelativeSerialization() const { return m_RelativeSerialization; }
+  virtual void SetRelativeSerialization(eRelativeSerialization rt) { m_RelativeSerialization = rt; }
 
   std::string GetDataRootDirectory() const { return m_DataRootDirectory; }
   void SetDataRootDirectory(const std::string& fn) { m_DataRootDirectory = fn; }
@@ -172,6 +178,7 @@ protected:
 
   // Settings for serialization
   bool                       m_SaveNextStep;
+  eRelativeSerialization     m_RelativeSerialization;
   std::string                m_AutoSerializeFilename;
   std::string                m_AutoSerializeBaseFilename;
   std::string                m_AutoSerializeFilenameExt;

@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from abc import ABC, abstractmethod
 from typing import List, Optional, Union
 
-from pulse.cdm.scalars import SEScalarTime, SEScalarUnit
+from pulse.cdm.scalars import SEScalarTime, SEScalarUnit, TimeUnit
 
 class eSerializationFormat(Enum):
     JSON = 0
@@ -95,15 +95,15 @@ class eEvent(Enum):
 class SEEventChange:
     __slots__ = ["event", "active", "sim_time_s"]
 
-    def __init__(self):
-        self.event = None
-        self.active = None
-        self.sim_time_s = SEScalarTime()
+    def __init__(self, event=None, active=None, sim_time_s=None):
+        self.event = event
+        self.active = active
+        self.sim_time_s = SEScalarTime(sim_time_s, TimeUnit.s) if sim_time_s is not None else SEScalarTime()
 
     def __repr__(self):
         return_text = ("{} is {}").format(self.event, "Active" if self.active else "Inactive")
         if self.sim_time_s.is_valid():
-            return_text += (" @ {}s").format(self.sim_time_s)
+            return_text += (" @ {}").format(self.sim_time_s)
         return return_text
 
 class IEventHandler:

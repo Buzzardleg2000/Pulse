@@ -2,14 +2,20 @@
 # See accompanying NOTICE file for details.
 
 import re
+import abc
+import json
 import logging
-from typing import List, Optional, Tuple
+import numpy as np
+import pandas as pd
 from pathlib import Path
+from typing import Any, Dict, Hashable, Iterable, List, NamedTuple, Optional, Set, Tuple
 
-from pulse.cdm.engine import eSerializationFormat, eSwitch, SEAction, SEDataRequestManager
+import PyPulse
+from pulse.cdm.engine import eSerializationFormat, eSwitch, SEAction, SEDataRequestManager, SEEventChange
 from pulse.cdm.patient import eSex, SEPatient, SEPatientConfiguration
-from pulse.cdm.scalars import SEScalarTime, get_unit
+from pulse.cdm.scalars import SEScalarTime, TimeUnit, get_unit
 from pulse.cdm.io.patient import serialize_patient_from_string
+from pulse.cdm.utils.csv_utils import read_csv_into_df
 
 
 _pulse_logger = logging.getLogger('pulse')
@@ -409,3 +415,287 @@ class SEScenarioLog:
                     break
 
         return True
+
+
+class SEReportModule(metaclass=abc.ABCMeta):
+    __slots__ = ("_headers")
+
+    def __init__(self):
+        self._headers = []
+
+    def required_headers(self) -> List[str]:
+        return self._headers
+
+    def handle_event(self, event: SEEventChange) -> None:
+        """ Process given event change """
+
+    def handle_action(self, action: str) -> None:
+        """ Process action """
+
+    @abc.abstractmethod
+    def update(self, data_slice: NamedTuple, slice_idx: Dict[str, int]) -> Any:
+        """
+        Process given data.
+
+        :param data_slice: Single timestep of data
+        :param slice_idx: Maps headers to tuple index for faster look-up
+        """
+
+
+class SEObservationReportModule(SEReportModule):
+    """
+    Report module that will only be updated when an observation is due.
+    """
+    @abc.abstractmethod
+    def update(self, data_slice: NamedTuple, slice_idx: Dict[str, int]) -> Iterable[Tuple[Hashable, Any]]:
+        """ Process given data and report results """
+
+    def __call__(self, data_slice: NamedTuple, slice_idx: Dict[str, int]) -> Iterable[Tuple[Hashable, Any]]:
+        return self.update(data_slice=data_slice, slice_idx=slice_idx)
+
+
+class SETimestepReportModule(SEReportModule):
+    """
+    Report module that will be updated every timestep, but only provides results when report is called.
+    """
+    def update(self, data_slice: NamedTuple, slice_idx: Dict[str, int]) -> None:
+        """ Process given data """
+
+    def __call__(self, data_slice: NamedTuple, slice_idx: Dict[str, int]) -> None:
+        return self.update(data_slice=data_slice, slice_idx=slice_idx)
+
+    @abc.abstractmethod
+    def report(self) -> Iterable[Tuple[Hashable, Any]]:
+        """ Report results """
+
+
+class SEScenarioReport(SEScenarioLog):
+    __slots__ = ("_csv_file", "_df", "_death_check_module", "_observation_frequency_s", "_observation_modules",
+                 "_timestep_modules", "_time_header")
+
+    def __init__(
+        self,
+        log_file: Path,
+        csv_file: Path,
+        observation_frequency_min: float,
+        observation_modules: Optional[List[SEObservationReportModule]] = None,
+        timestep_modules: Optional[List[SETimestepReportModule]] = None,
+        death_check_module: Optional[SETimestepReportModule] = None,
+        actions_filter: Optional[List[str]] = None,
+        events_filter: Optional[List[str]] = None
+    ):
+        """
+        Generates summary results report from given results CSV and log file.
+
+        :param log_file: Path to log file
+        :param csv_file: Path to csv file containing scenario results
+        :param observation_frequency_s: Frequency to include observations in report
+        :param actions_filter: Exclude actions containing any of these strings
+        :param events_filter: Exclude events containing any of these strings
+        """
+        super().__init__(
+            log_file=log_file,
+            actions_filter=actions_filter,
+            events_filter=events_filter
+        )
+
+        self._time_header = "Time(s)"
+
+        if observation_frequency_min <= 0:
+            raise ValueError(f"Observation frequency must be positive, got {observation_frequency_min}")
+        self._observation_frequency_s = SEScalarTime(observation_frequency_min, TimeUnit.min).get_value(TimeUnit.s)
+
+        if not csv_file.is_file():
+            raise ValueError(f"CSV file ({csv_file}) does not exist/is not a file")
+        self._csv_file = csv_file
+
+        self._observation_modules = observation_modules if observation_modules is not None else list()
+        self._timestep_modules = timestep_modules if timestep_modules is not None else list()
+        self._death_check_module = death_check_module
+
+        self._df = None
+        self._prepare_df()
+
+    def _parse_events(self, lines: List[str]) -> None:
+        """
+        Generate SEEventChanges from events parsed in super method.
+        """
+        super()._parse_events(lines)
+
+        events_out = list()
+        for time_s, event in self._events:
+            # Determine event name and active status
+            # Note: using re.match here instead of re.search because we expect the match at index 0
+            match = re.match(r'\[Event\s*(?P<event>\D*)(?P<active>\d)\]', event, re.IGNORECASE)
+            if match is None:
+                _pulse_logger.warning(f"Could not identify if event is active, ignoring: {event}")
+                continue
+            events_out.append((
+                time_s,
+                SEEventChange(
+                    event=match["event"].strip(),
+                    active=bool(int(match["active"])),
+                    sim_time_s=time_s
+                )
+            ))
+
+        self._events = events_out
+
+    def _required_headers(self) -> Set[str]:
+        """
+        Generate complete set of headers required for this report.
+
+        :return: Set of required headers.
+        """
+        out = set([self._time_header])
+        for module in self._timestep_modules:
+            out.update(module.required_headers())
+        for module in self._observation_modules:
+            out.update(module.required_headers())
+        if self._death_check_module is not None:
+            out.update(self._death_check_module.required_headers())
+
+        return out
+
+    def _prepare_df(self) -> None:
+        """
+        Loads dataframe from CSV and filters down to only needed columns,
+        converting units where needed.
+        """
+        all_headers = self._required_headers()
+
+        # Filter dataframe to only required headers
+        df = read_csv_into_df(self._csv_file)
+        self._df = pd.DataFrame()
+        for header in all_headers:
+            if header not in df.columns:
+                # Attempt to locate header with different unit and convert
+                resolved = False
+                paren_idx = header.find("(")
+                if paren_idx != -1:
+                    unitless_header = header[:(paren_idx+1)]
+                    desired_unit = header[(paren_idx+1):-1].replace("_", " ")
+                    for h in df.columns:
+                        if h.startswith(unitless_header):
+                            results_paren_idx = h.find("(")
+                            if results_paren_idx != -1:
+                                results_unit = h[(results_paren_idx+1):-1].replace("_", " ")
+                                self._df[header] = df[h].map(lambda x: PyPulse.convert(x, results_unit, desired_unit))
+                                resolved = True
+                if not resolved:
+                    raise ValueError(f"Missing required and/or requested header: {header}")
+            else:
+                self._df[header] = df[header]
+
+    def _initialize_report(self) -> Dict:
+        """
+        Initialize the report dict with any initial datapoints.
+
+        :return: Initialized report dict
+        """
+        return dict()
+
+    def generate(self) -> Dict:
+        """
+        Generates report content.
+
+        :return: Dict representing report.
+        """
+        # Process before init report so we can use what we parse from log if needed
+        self._process_log()
+
+        out = self._initialize_report()
+
+        # Determine time step
+        # Note: Assumes time step is not variable
+        times_s = self._df[self._time_header].tolist()
+        timestep_s = 0.02
+        if len(times_s) > 1:
+            timestep_s = times_s[1] - times_s[0]
+
+        # Compute observation times
+        observation_times_s = np.arange(
+            start=times_s[0],
+            stop=times_s[-1] + self._observation_frequency_s,
+            step=self._observation_frequency_s
+        ).tolist()
+
+        # Snap observation times to times that exist in data
+        if timestep_s !=0:
+            observation_times_s = [
+                np.floor( (requested_time_s / timestep_s) + 0.5 ) * timestep_s
+                for requested_time_s in observation_times_s
+            ]
+
+        def _generate_observation() -> Dict:
+            observation = dict()
+            observation["SimTime_min"] = SEScalarTime(time_s, TimeUnit.s).get_value(TimeUnit.min)
+            for module in self._observation_modules:
+                observation.update(module(data_slice=data_slice, slice_idx=idx))
+            return observation
+
+        observations = list()
+        idx = {name: i for i, name in enumerate(list(self._df), start=0)}  # for faster named tuple look-up
+        event_idx = 0
+        action_idx = 0
+        for data_slice in self._df.itertuples(index=False, name="DataSlice"):  # itertuples is faster than iterrows
+            time_s = data_slice[idx[self._time_header]]
+
+            # Send event changes to each module
+            for next_event_idx, event_info in enumerate(self._events[event_idx:]):
+                event_time_s, event = event_info
+                if event_time_s.get_value(TimeUnit.s) == time_s:  # TODO: Floating point errors?
+                    for module in self._timestep_modules:
+                        module.handle_event(event)
+                    for module in self._observation_modules:
+                        module.handle_event(event)
+                    if self._death_check_module is not None:
+                        self._death_check_module.handle_event(event)
+                    event_idx = next_event_idx + 1
+
+            # Send action changes to each module
+            for next_action_idx, action_info in enumerate(self._actions[action_idx:]):
+                action_time_s, action = action_info
+                if action_time_s.get_value(TimeUnit.s) == time_s:  # TODO: Floating point errors?
+                    for module in self._timestep_modules:
+                        module.handle_action(action)
+                    for module in self._observation_modules:
+                        module.handle_action(action)
+                    if self._death_check_module is not None:
+                        self._death_check_module.handle_action(action)
+                    action_idx = action_idx + 1
+
+            # Send data to each module for processing
+            # TODO: Update data for timestep in which death is indicated?
+            for module in self._timestep_modules:
+                module(data_slice=data_slice, slice_idx=idx)
+            try:
+                if self._death_check_module is not None:
+                    self._death_check_module(data_slice=data_slice, slice_idx=idx)
+            except StopIteration:  # Death indication: stop iterating, do one last observation
+                observations.append(_generate_observation())
+                break
+
+            # If this is an observation time, update those modules
+            if time_s in observation_times_s:  # TODO: Floating point errors?
+               observations.append(_generate_observation())
+
+        # Get final results from timestep modules
+        for module in self._timestep_modules:
+            out.update(module.report())
+        if self._death_check_module is not None:
+            out.update(module.report())
+
+        out["Observations"] = observations
+        return out
+
+    def write(self, out_file: Path) -> None:
+        """
+        Generates and writes report.
+
+        :param out_file: JSON filepath
+        """
+        out_file.parent.mkdir(parents=True, exist_ok=True)
+
+        with open(out_file, "w") as f:
+            f.write(json.dumps(self.generate(), indent=2))

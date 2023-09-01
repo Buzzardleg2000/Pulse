@@ -5,32 +5,231 @@ import re
 import sys
 import json
 import logging
-import numpy as np
-import pandas as pd
 from enum import Enum
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Any, Dict, Hashable, Iterable, List, NamedTuple, Optional, Tuple
 
-import PyPulse
+from pulse.cdm.engine import SEEventChange
 from pulse.cdm.patient import eSex
 from pulse.cdm.scalars import TimeUnit
-from pulse.cdm.scenario import SEScenarioLog
-from pulse.cdm.utils.csv_utils import read_csv_into_df
+from pulse.cdm.scenario import SEScenarioReport, SEObservationReportModule
 from pulse.cdm.utils.logger import break_camel_case
 
 
 _pulse_logger = logging.getLogger('pulse')
 
 
-class ITMScenarioReport(SEScenarioLog):
-    __slots__ = ("_csv_file", "_df", "_observation_frequency_s", "_vitals_headers", "_start_headers")
+class VitalsObservationModule(SEObservationReportModule):
+    """
+    Reports requested vitals at the observation timestep.
+    """
 
+    __slots__ = ("_vitals")
+
+    def __init__(self, vitals: Optional[Dict[str, str]]):
+        """
+        :param vitals: Mapping of desired vital headers to their display name in the report.
+        """
+        super().__init__()
+        self._headers = vitals.keys() if vitals is not None else list()
+        self._vitals = vitals if vitals is not None else dict()
+
+    def update(self, data_slice: NamedTuple, slice_idx: Dict[str, int]) -> Iterable[Tuple[Hashable, Any]]:
+        """
+        Returns requested vitals.
+        """
+        vitals_out = list()
+        for vital, display_vital in self._vitals.items():
+            vitals_out.append((display_vital, data_slice[slice_idx[vital]]))
+        return vitals_out
+
+
+class STARTObservationModule(SEObservationReportModule):
+    """
+    Computes tag color indicated by the START algorithm at the observation timestep.
+    """
+
+    def __init__(self):
+        super().__init__()
+        self._headers = [
+            "RespirationRate(1/min)",
+            "SystolicArterialPressure(mmHg)",
+            "RightArmVasculature-InFlow(mL/s)",
+            "BrainVasculature-Oxygen-PartialPressure(mmHg)",
+            "OxygenSaturation"
+        ]
+
+    def update(self, data_slice: NamedTuple, slice_idx: Dict[str, int]) -> Iterable[Tuple[Hashable, Any]]:
+        """
+        Computes START Triage category.
+        """
+        triage_category = Enum(
+            "TriageCategory",
+            names={
+                "EXPECTANT": "Black",
+                "IMMEDIATE": "Red",
+                "DELAYED": "Yellow",
+                "MINOR": "Green"},
+            type=str
+        )
+
+        triage_status = None
+        if data_slice[slice_idx["RespirationRate(1/min)"]] == 0:
+            triage_status = triage_category.EXPECTANT
+        elif data_slice[slice_idx["RespirationRate(1/min)"]] > 30:
+            triage_status = triage_category.IMMEDIATE
+        elif data_slice[slice_idx["SystolicArterialPressure(mmHg)"]] < 85.1:
+            triage_status = triage_category.IMMEDIATE
+        # TODO: Need CRT
+        #elif data_slice[slice_idx["RightArmVasculature-InFlow(mL/s)"]] < CRT:
+        #    triage_status = triage_category.IMMEDIATE
+        elif data_slice[slice_idx["BrainVasculature-Oxygen-PartialPressure(mmHg)"]] < 19:
+            triage_status = triage_category.IMMEDIATE
+        elif data_slice[slice_idx["OxygenSaturation"]] < .92:
+            triage_status = triage_category.DELAYED
+        else:
+            triage_status = triage_category.MINOR
+
+        return [("START", triage_status)]
+
+
+class ClinicalAbnormalityObservationModule(SEObservationReportModule):
+    """
+    Reports active clinical abnormalities at the observation timestep.
+    """
+
+    __slots__ = ("_active_events")
+
+    def __init__(self):
+        super().__init__()
+        self._active_events = list()
+
+    def handle_event(self, event: SEEventChange) -> None:
+        """
+        Add/remove event from active events.
+        """
+        if event.active:
+            self._active_events.append(event.event)
+        else:
+            if event.event in self._active_events:
+                self._active_events.remove(event.event)
+            else:
+                _pulse_logger.warning(f"Could not find corresponding active abnormality: {event}")
+
+    def update(self, data_slice: NamedTuple, slice_idx: Dict[str, int]) -> Iterable[Tuple[Hashable, Any]]:
+        """
+        Return list of active events.
+        """
+        return [("Abnormality", self._active_events[:])]  # Need to return a copy of list so it doesn't keep updating
+
+
+class TCCCActionsObservationModule(SEObservationReportModule):
+    """
+    Reports insults and interventions applied from the beginning of the
+    scenario until this observation timestep.
+    """
+
+    __slots__ = ("_insults", "_interventions", "_max_hemorrhage")
+
+    def __init__(self):
+        super().__init__()
+        self._insults = list()
+        self._interventions = list()
+        self._max_hemorrhage = -1
+
+    @staticmethod
+    def _get_severity_str(severity: float) -> str:
+        """
+        :param severity: The severity value.
+
+        :return: Severity as a qualitative string.
+        """
+        if severity == 0:
+            raise ValueError("Severity string undefined for 0 severity")
+        elif severity <= 0.3:
+            severity_str = "Mild"
+        elif severity <= 0.6:
+            severity_str = "Moderate"
+        else:
+            severity_str = "Severe"
+
+        return severity_str
+
+    def handle_action(self, action: str) -> None:
+        """
+        Determine if action is insult or intervention.
+        """
+        # Load into dict direct from JSON because we can't serialize actions from bind
+        action_data = json.loads(action)
+
+        # TCCC handles a restricted set of actions:
+        # Hemorrhage, AirwayObstruction, TensionPneumothorax, NeedleDecompression, ChestOcclusiveDressing
+        # Certain actions with 0 severity are being treated as interventions (such as hemorrhage -> tourniquet)
+        PATIENT_ACTION = "PatientAction"
+        if PATIENT_ACTION in action_data:
+            action_name = list(action_data[PATIENT_ACTION].keys())[0]
+
+            severity_str = ""
+            severity = 0
+            insult = False
+            if "Severity" in action_data[PATIENT_ACTION][action_name]:
+                insult = True
+                severity = action_data[PATIENT_ACTION][action_name]["Severity"]["Scalar0To1"]["Value"]
+
+                # Add side and type to pneumothorax actions
+                if action_name.endswith("Pneumothorax"):
+                    action_name = f'{action_data[PATIENT_ACTION][action_name]["Side"]}' \
+                                    f'{action_data[PATIENT_ACTION][action_name]["Type"]}' \
+                                    f'{action_name}'
+
+                if severity == 0:  # Severity 0 indicates intervention
+                    insult = False
+                    if action_name == "Hemorrhage":
+                        action_name = "Tourniquet"
+                    elif action_name == "AirwayObstruction":
+                        action_name = "SecuredAirway"
+                    elif action_name.endswith("Pneumothorax"):
+                        action_name = f"{action_name}WasCorrected"
+                    else:
+                        _pulse_logger.warning(f"Ignoring zero-severity action: {action_data}")
+                        return
+                else:  # Insult
+                    severity_str = TCCCActionsObservationModule._get_severity_str(severity)
+
+            action_out = f"{severity_str} {break_camel_case(action_name)}".strip()
+
+            if "Hemorrhage" in action_name:  # Only adding max severity hemorrhage
+                if severity > self._max_hemorrhage:
+                    self._max_hemorrhage = severity
+            elif insult:
+                self._insults.append(action_out)
+            else:
+                self._interventions.append(action_out)
+        else:
+            raise ValueError(f"Unsupported action: {action_data}")
+
+
+    def update(self, data_slice: NamedTuple, slice_idx: Dict[str, int]) -> Iterable[Tuple[Hashable, Any]]:
+        """
+        Return insults and interventions that have occured up to this point.
+        """
+        # Add max severity hemorrhage, if one exists (want only one hemorrhage in results)
+        insults = self._insults[:]
+        if self._max_hemorrhage > 0:
+            insults.append(f"{TCCCActionsObservationModule._get_severity_str( self._max_hemorrhage)} Hemorrhage")
+
+        return [
+            ("Insults", insults),
+            ("Interventions", self._interventions[:])  # Need to return a copy of list so it doesn't keep updating
+        ]
+
+
+class ITMScenarioReport(SEScenarioReport):
     def __init__(
         self,
         log_file: Path,
         csv_file: Path,
         observation_frequency_min: float=3,
-        headers: Optional[Dict[str, str]] = None,
         actions_filter: Optional[List[str]] = None,
         events_filter: Optional[List[str]] = None
     ):
@@ -44,275 +243,57 @@ class ITMScenarioReport(SEScenarioLog):
         :param actions_filter: Exclude actions containing any of these strings
         :param events_filter: Exclude events containing any of these strings
         """
+        # Always filter advance time and serialize actions
+        adv_time = "AdvanceTime"
+        if actions_filter is None or adv_time not in actions_filter:
+            if not actions_filter:
+                actions_filter = list()
+            actions_filter.append(adv_time)
+        serialize = "Serialize"
+        if serialize not in actions_filter:
+            actions_filter.append(serialize)
+
+        # Desired vitals and display names
+        vitals = {
+            "HeartRate(1/min)" : "HR",
+            "RespirationRate(1/min)" : "RR",
+            "OxygenSaturation": "SpO2",
+            "SystolicArterialPressure(mmHg)": "Systolic",
+            "DiastolicArterialPressure(mmHg)": "Diastolic",
+        }
+
+        # Report modules
+        observation_modules = [
+            VitalsObservationModule(vitals=vitals),
+            STARTObservationModule(),
+            ClinicalAbnormalityObservationModule(),
+            TCCCActionsObservationModule()
+        ]
+        timestep_modules = None
+        death_check_module = None
+
         super().__init__(
             log_file=log_file,
+            csv_file=csv_file,
+            observation_frequency_min=observation_frequency_min,
+            observation_modules=observation_modules,
+            timestep_modules=timestep_modules,
+            death_check_module=death_check_module,
             actions_filter=actions_filter,
             events_filter=events_filter
         )
 
-        # Always filter advance time and serialize actions
-        adv_time = "AdvanceTime"
-        if self._actions_filter is None or adv_time not in self._actions_filter:
-            if not self._actions_filter:
-                self._actions_filter = list()
-            self._actions_filter.append(adv_time)
-        serialize = "Serialize"
-        if serialize not in self._actions_filter:
-            self._actions_filter.append(serialize)
-
-        if observation_frequency_min <= 0:
-            raise ValueError(f"Observation frequency must be positive, got {observation_frequency_min}")
-        self._observation_frequency_s = observation_frequency_min * 60
-
-        if not csv_file.is_file():
-            raise ValueError(f"CSV file ({csv_file}) does not exist/is not a file")
-        self._csv_file = csv_file
-
-        # Headers to be included in report with display names
-        self._vitals_headers = headers
-        if self._vitals_headers is None:
-            self._vitals_headers = {
-                "HeartRate(1/min)" : "HR",
-                "RespirationRate(1/min)" : "RR",
-                "OxygenSaturation": "SpO2",
-                "SystolicArterialPressure(mmHg)": "Systolic",
-                "DiastolicArterialPressure(mmHg)": "Diastolic",
-            }
-
-        # Headers needed for START algorithm
-        self._start_headers = [
-            "RespirationRate(1/min)",
-            "SystolicArterialPressure(mmHg)",
-            "RightArmVasculature-InFlow(mL/s)",
-            "BrainVasculature-Oxygen-PartialPressure(mmHg)",
-            "OxygenSaturation"
-        ]
-
-        self._df = None
-        self._prepare_df()
-
-    def _prepare_df(self) -> None:
+    def _initialize_report(self) -> Dict:
         """
-        Loads dataframe from CSV and filters down to only needed columns,
-        converting units where needed.
+        Initialize the report dict with any initial datapoints.
+
+        :return: Initialized report dict
         """
-        # Determine set of needed headers for this report
-        all_headers = set(self._start_headers)
-        all_headers.update(self._vitals_headers.keys())
-        df = read_csv_into_df(self._csv_file)
-        time_header = "Time(s)"
-        all_headers.add(time_header)  # Make sure we keep time (as seconds)
+        init = super()._initialize_report()
+        init["PatientAge_yr"] = self._patient.get_age().get_value(TimeUnit.yr)
+        init["PatientSex"] = "Male" if self._patient.get_sex() == eSex.Male else "Female"
 
-        # Filter dataframe to only needed headers
-        self._df = pd.DataFrame()
-        for header in all_headers:
-            if header not in df.columns:
-                # Attempt to locate header with different unit and convert
-                resolved = False
-                paren_idx = header.find("(")
-                if paren_idx != -1:
-                    unitless_header = header[:(paren_idx+1)]
-                    desired_unit = header[(paren_idx+1):-1].replace("_", " ")
-                    for h in df.columns:
-                        if h.startswith(unitless_header):
-                            results_paren_idx = h.find("(")
-                            if results_paren_idx != -1:
-                                results_unit = h[(results_paren_idx+1):-1].replace("_", " ")
-                                self._df[header] = df[h].map(lambda x: PyPulse.convert(x, results_unit, desired_unit))
-                                resolved = True
-                if not resolved:
-                    raise ValueError(f"Missing required and/or requested header: {header}")
-            else:
-                self._df[header] = df[header]
-
-        # Set time as df index col
-        self._df = self._df.set_index(time_header)
-
-    def _START(self, data: pd.Series) -> str:
-        """
-        Computes START Triage category.
-
-        :param data: Data series containing the necessary headers to compute START result
-
-        :return: START Triage category
-        """
-        triage_category = Enum(
-            'TriageCategory',
-            names={
-                "EXPECTANT": "Black",
-                "IMMEDIATE": "Red",
-                "DELAYED": "Yellow",
-                "MINOR": "Green"},
-            type=str
-        )
-
-        if data["RespirationRate(1/min)"] == 0:
-            return triage_category.EXPECTANT
-        elif data["RespirationRate(1/min)"] > 30:
-            return triage_category.IMMEDIATE
-        elif data["SystolicArterialPressure(mmHg)"] < 85.1:
-            return triage_category.IMMEDIATE
-        # TODO: Need CRT
-        #elif data["RightArmVasculature-InFlow(mL/s)"] < CRT:
-        #    return triage_category.IMMEDIATE
-        elif data["BrainVasculature-Oxygen-PartialPressure(mmHg)"] < 19:
-            return triage_category.IMMEDIATE
-        elif data["OxygenSaturation"] < .92:
-            return triage_category.DELAYED
-        else:
-            return triage_category.MINOR
-
-    def generate(self) -> Dict:
-        """
-        Generates ITM report content.
-
-        :return: Dict representing report
-        """
-        ABNORMALITY = "Abnormality"
-        INSULTS = "Insults"
-        INTERVENTIONS = "Interventions"
-        PATIENT_ACTION = "PatientAction"
-
-        out = dict()
-
-        # Parse patient, actions, and events from log
-        self._process_log()
-
-        out["PatientAge_yr"] = self._patient.get_age().get_value(TimeUnit.yr)
-        out["PatientSex"] = "Male" if self._patient.get_sex() == eSex.Male else "Female"
-
-        # Determine time step
-        # Note: Assumes time step is not variable
-        times = self._df.index.values
-        time_step_s = 0.02
-        if len(times) > 1:
-            time_step_s = times[1] - times[0]
-
-        # Add set of observations per closest time step to requested observation frequency
-        observations = list()
-        observation_times= np.arange(
-            start=times[0],
-            stop=times[-1] + self._observation_frequency_s, # TODO: Do we need to add observation frequency here?
-            step=self._observation_frequency_s
-        )
-        for requested_time_s in observation_times:
-            observation = {}
-
-            # Determine closest time to requested observation time in case time step doesn't line up with frequency
-            time_s = requested_time_s if time_step_s == 0 else np.floor( (requested_time_s / time_step_s) + 0.5 ) * time_step_s
-            if time_s < times[0]:
-                continue
-            if time_s > times[-1]:
-                break
-
-            data = self._df.loc[time_s]
-            observation["SimTime_min"] = float(time_s) / 60
-
-            # Add requested CSV data
-            for header, display in self._vitals_headers.items():
-                observation[display] = float(data[header])
-
-            observation["START"] = self._START(data)
-
-            # Add active abnormalities (events)
-            observation[ABNORMALITY] = list()
-            for event_time, event in self._events:
-                if event_time.get_value(TimeUnit.s) <= time_s:
-                    # Note: using re.match here instead of re.search because we expect the match at index 0
-                    # Add it to the list of abnormalities if active
-                    match = re.match(r'\[Event\s*(?P<abnormality>\D*)(?P<active>\d)\]', event, re.IGNORECASE)
-                    if match is None:
-                        _pulse_logger.warning(f"Could not identify if event is active, ignoring: {event}")
-                        continue
-                    event_name = match["abnormality"].strip()
-                    event_active = int(match["active"])
-                    if event_active:
-                        observation[ABNORMALITY].append(event_name)
-                    else:
-                        if event_name in observation[ABNORMALITY]:
-                            observation[ABNORMALITY].remove(event_name)
-                        else:
-                            _pulse_logger.warning(f"Could not find corresponding abnormality: {event}")
-
-            # Add insults and interventions from actions
-            def _get_severity_str(severity: float) -> str:
-                if severity == 0:
-                    raise ValueError("Severity string undefined for 0 severity")
-                elif severity <= 0.3:
-                    severity_str = "Mild"
-                elif severity <= 0.6:
-                    severity_str = "Moderate"
-                else:
-                    severity_str = "Severe"
-
-                return severity_str
-            observation[INSULTS] = list()
-            observation[INTERVENTIONS] = list()
-            hemorrhage = -1
-            for action_time, action in self._actions:
-                if action_time.get_value(TimeUnit.s) <= time_s:
-                    action_data = json.loads(action)
-
-                    if PATIENT_ACTION in action_data:
-                        action_name = list(action_data[PATIENT_ACTION].keys())[0]
-
-                        severity_str = ""
-                        severity = 0
-                        insult = False
-                        if "Severity" in action_data[PATIENT_ACTION][action_name]:
-                            insult = True
-                            severity = action_data[PATIENT_ACTION][action_name]["Severity"]["Scalar0To1"]["Value"]
-
-                            # Add side and type to pneumothorax actions
-                            if action_name.endswith("Pneumothorax"):
-                                action_name = f'{action_data[PATIENT_ACTION][action_name]["Side"]}' \
-                                              f'{action_data[PATIENT_ACTION][action_name]["Type"]}' \
-                                              f'{action_name}'
-
-                            if severity == 0:  # Severity 0 indicates intervention
-                                insult = False
-                                if action_name == "Hemorrhage":
-                                    action_name = "Tourniquet"
-                                elif action_name == "AirwayObstruction":
-                                    action_name = "SecuredAirway"
-                                elif action_name.endswith("Pneumothorax"):
-                                    action_name = f"{action_name}WasCorrected"
-                                else:
-                                    _pulse_logger.warning(f"Ignoring zero-severity action: {action_data}")
-                                    continue
-                            else:  # Insult
-                                severity_str = _get_severity_str(severity)
-
-                        action_out = f"{severity_str} {break_camel_case(action_name)}".strip()
-                        if "Hemorrhage" in action_name:  # Only adding max severity hemorrhage
-                            if severity > hemorrhage:
-                                hemorrhage = severity
-                        elif insult:
-                            observation[INSULTS].append(action_out)
-                        else:
-                            observation[INTERVENTIONS].append(action_out)
-                    else:
-                        raise ValueError(f"Unsupported action: {action_data}")
-
-            # Add max severity hemorrhage, if one exists
-            if hemorrhage > 0:
-                observation[INSULTS].append(f"{_get_severity_str(hemorrhage)} Hemorrhage")
-
-            observations.append(observation)
-
-        out["Observations"] = observations
-        return out
-
-    def write(self, out_file: Path) -> None:
-        """
-        Generates and writes ITM report.
-
-        :param out_file: JSON filepath
-        """
-        out_file.parent.mkdir(parents=True, exist_ok=True)
-
-        with open(out_file, "w") as f:
-            f.write(json.dumps(self.generate(), indent=2))
+        return init
 
 
 if __name__ == "__main__":

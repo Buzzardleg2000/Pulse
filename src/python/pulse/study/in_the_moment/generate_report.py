@@ -9,10 +9,10 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, Hashable, Iterable, List, NamedTuple, Optional, Tuple
 
-from pulse.cdm.engine import SEEventChange
+from pulse.cdm.engine import eEvent, SEEventChange
 from pulse.cdm.patient import eSex
-from pulse.cdm.scalars import TimeUnit
-from pulse.cdm.scenario import SEScenarioReport, SEObservationReportModule
+from pulse.cdm.scalars import TimeUnit, FrequencyUnit, SEScalarFrequency
+from pulse.cdm.scenario import SEScenarioReport, SEObservationReportModule, SETimestepReportModule
 from pulse.cdm.utils.logger import break_camel_case
 
 
@@ -48,15 +48,20 @@ class STARTObservationModule(SEObservationReportModule):
     """
     Computes tag color indicated by the START algorithm at the observation timestep.
     """
+    RR_Per_min = "RespirationRate(1/min)"
+    SAP_mmHg = "SystolicArterialPressure(mmHg)"
+    PPI = "PeripheralPerfusionIndex"
+    BRAIN_VASC_O2PP_mmHg = "BrainVasculature-Oxygen-PartialPressure(mmHg)"
+    SPO2 = "OxygenSaturation"
 
     def __init__(self):
         super().__init__()
         self._headers = [
-            "RespirationRate(1/min)",
-            "SystolicArterialPressure(mmHg)",
-            "RightArmVasculature-InFlow(mL/s)",
-            "BrainVasculature-Oxygen-PartialPressure(mmHg)",
-            "OxygenSaturation"
+            self.RR_Per_min,
+            self.SAP_mmHg,
+            #self.PPI,
+            self.BRAIN_VASC_O2PP_mmHg,
+            self.SPO2
         ]
 
     def update(self, data_slice: NamedTuple, slice_idx: Dict[str, int]) -> Iterable[Tuple[Hashable, Any]]:
@@ -74,18 +79,18 @@ class STARTObservationModule(SEObservationReportModule):
         )
 
         triage_status = None
-        if data_slice[slice_idx["RespirationRate(1/min)"]] == 0:
+        if data_slice[slice_idx[self.RR_Per_min]] == 0:
             triage_status = triage_category.EXPECTANT
-        elif data_slice[slice_idx["RespirationRate(1/min)"]] > 30:
+        elif data_slice[slice_idx[self.RR_Per_min]] > 30:
             triage_status = triage_category.IMMEDIATE
-        elif data_slice[slice_idx["SystolicArterialPressure(mmHg)"]] < 85.1:
+        elif data_slice[slice_idx[self.SAP_mmHg]] < 85.1:
             triage_status = triage_category.IMMEDIATE
-        # TODO: Need CRT
-        #elif data_slice[slice_idx["RightArmVasculature-InFlow(mL/s)"]] < CRT:
-        #    triage_status = triage_category.IMMEDIATE
-        elif data_slice[slice_idx["BrainVasculature-Oxygen-PartialPressure(mmHg)"]] < 19:
+        # PPI is serving as a replacement for capillary refill time (CRT)
+        elif data_slice[slice_idx[self.PPI]] < 0.003:
             triage_status = triage_category.IMMEDIATE
-        elif data_slice[slice_idx["OxygenSaturation"]] < .92:
+        elif data_slice[slice_idx[self.BRAIN_VASC_O2PP_mmHg]] < 19:
+            triage_status = triage_category.IMMEDIATE
+        elif data_slice[slice_idx[self.SPO2]] < .92:
             triage_status = triage_category.DELAYED
         else:
             triage_status = triage_category.MINOR
@@ -104,17 +109,17 @@ class ClinicalAbnormalityObservationModule(SEObservationReportModule):
         super().__init__()
         self._active_events = list()
 
-    def handle_event(self, event: SEEventChange) -> None:
+    def handle_event(self, change: SEEventChange) -> None:
         """
         Add/remove event from active events.
         """
-        if event.active:
-            self._active_events.append(event.event)
+        if change.active:
+            self._active_events.append(change.event.name)
         else:
-            if event.event in self._active_events:
-                self._active_events.remove(event.event)
+            if change.event.name in self._active_events:
+                self._active_events.remove(change.event.name)
             else:
-                _pulse_logger.warning(f"Could not find corresponding active abnormality: {event}")
+                _pulse_logger.warning(f"Could not find corresponding active abnormality: {change.event.name}")
 
     def update(self, data_slice: NamedTuple, slice_idx: Dict[str, int]) -> Iterable[Tuple[Hashable, Any]]:
         """
@@ -224,6 +229,121 @@ class TCCCActionsObservationModule(SEObservationReportModule):
         ]
 
 
+class TCCCDeathCheckModule(SETimestepReportModule):
+    """
+    Reports if patient survives. Raises StopIteration on update if patient death detected.
+    """
+
+    __slots__ = ("_irreversible_state", "_cardiovascular_collapse", "_brain_O2_deficit",
+                 "_start_brain_O2_deficit_s", "_myocardium_O2_deficit", "_start_myocardium_O2_deficit_s",
+                 "_spO2_deficit", "_start_spO2_deficit_s", "_max_hr_bpm", "_survived")
+
+    TIME_s = "Time(s)"
+    HR_bpm = "HeartRate(1/min)"
+    SPO2 = "OxygenSaturation"
+    SAP_mmHg = "SystolicArterialPressure(mmHg)"
+
+    def __init__(self):
+        super().__init__()
+        self._headers = [
+            self.TIME_s,
+            self.HR_bpm,
+            self.SPO2,
+            self.SAP_mmHg
+        ]
+        self._irreversible_state = False
+        self._cardiovascular_collapse = False
+        self._brain_O2_deficit = False
+        self._start_brain_O2_deficit_s = 0.
+        self._myocardium_O2_deficit = False
+        self._start_myocardium_O2_deficit_s = 0.
+        self._spO2_deficit = False
+        self._start_spO2_deficit_s = 0.
+        self._max_hr_bpm = None
+        self._survived = True
+
+    def set_max_hr(self, max_hr: SEScalarFrequency) -> None:
+        self._max_hr_bpm = max_hr.get_value(FrequencyUnit.Per_min)
+
+    def handle_event(self, change: SEEventChange) -> None:
+        """
+        Check for death indicators.
+        """
+        if change.event == eEvent.IrreversibleState:
+            self._irreversible_state = change.active
+
+        if change.event == eEvent.CardiovascularCollapse:
+            self._cardiovascular_collapse = change.active
+
+        if change.event == eEvent.BrainOxygenDeficit:
+            if change.active:
+                if not self._brain_O2_deficit:
+                    self._brain_O2_deficit = True
+                    self._start_brain_O2_deficit_s = change.sim_time.get_value(TimeUnit.s)
+            else:
+                self._brain_O2_deficit = False
+                self._start_brain_O2_deficit_s = 0
+
+        if change.event == eEvent.MyocardiumOxygenDeficit:
+            if change.active:
+                if not self._myocardium_O2_deficit:
+                    self._myocardium_O2_deficit = True
+                    self._start_myocardium_O2_deficit_s = change.sim_time.get_value(TimeUnit.s)
+            else:
+                self._myocardium_O2_deficit = False
+                self._start_myocardium_O2_deficit_s = 0
+
+    def update(self, data_slice: NamedTuple, slice_idx: Dict[str, int]) -> None:
+        """
+        Determine if death is indicated, if so raise StopIteration.
+        """
+        curr_time_s = data_slice[slice_idx[self.TIME_s]]
+
+        if self._irreversible_state:
+            self._survived = False
+            raise StopIteration(f"Patient died from irreversible state @{curr_time_s}s")
+
+        if self._cardiovascular_collapse:
+            self._survived = False
+            raise StopIteration(f"Patient died from cardiovascular collapse @{curr_time_s}s")
+
+        if self._max_hr_bpm is None:
+            raise ValueError("Max HR BPM is not set in death check")
+        elif data_slice[slice_idx[self.HR_bpm]] >= self._max_hr_bpm:
+            self._survived = False
+            raise StopIteration(f"Patient died from reaching max hr of {self._max_hr_bpm} @{curr_time_s}s")
+
+        if self._brain_O2_deficit and (curr_time_s - self._start_brain_O2_deficit_s) > 180:
+            self._survived = False
+            raise StopIteration(f"Patient died from brain O2 deficit of 180s @{curr_time_s}s")
+
+        if self._myocardium_O2_deficit and (curr_time_s - self._start_myocardium_O2_deficit_s) > 180:
+            self._survived = False
+            raise StopIteration(f"Patient died from myocardium O2 deficit of 180s @{curr_time_s}s")
+
+        if data_slice[slice_idx[self.SPO2]] < 0.85:
+            if not self._spO2_deficit:
+                self._spO2_deficit = True
+                self._start_spO2_deficit_s = curr_time_s
+            elif (curr_time_s - self._start_spO2_deficit_s) > 140:
+                self._survived = False
+                raise StopIteration(f"Patient died from SpO2 < 85 for 140s @{curr_time_s}s")
+        else:
+            self._spO2_deficit = False
+
+        if data_slice[slice_idx[self.SAP_mmHg]] < 60:
+            self._survived = False
+            raise StopIteration(f"Patient died from SBP < 60 @{curr_time_s}s")
+
+    def report(self) -> Iterable[Tuple[Hashable, Any]]:
+        """
+        Report survival status.
+        """
+        return [
+            ("Survives", self._survived),
+        ]
+
+
 class ITMScenarioReport(SEScenarioReport):
     def __init__(
         self,
@@ -270,7 +390,7 @@ class ITMScenarioReport(SEScenarioReport):
             TCCCActionsObservationModule()
         ]
         timestep_modules = None
-        death_check_module = None
+        death_check_module = TCCCDeathCheckModule()
 
         super().__init__(
             log_file=log_file,
@@ -282,6 +402,12 @@ class ITMScenarioReport(SEScenarioReport):
             actions_filter=actions_filter,
             events_filter=events_filter
         )
+
+        # After super init so that we can use the parsed patient
+        if self._patient.has_heart_rate_maximum():
+            death_check_module.set_max_hr(self._patient.get_heart_rate_maximum())
+        else:
+            raise ValueError("Could not determine max heart rate")
 
     def _initialize_report(self) -> Dict:
         """

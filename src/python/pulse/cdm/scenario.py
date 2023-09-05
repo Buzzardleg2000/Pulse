@@ -11,7 +11,8 @@ from pathlib import Path
 from typing import Any, Dict, Hashable, Iterable, List, NamedTuple, Optional, Set, Tuple
 
 import PyPulse
-from pulse.cdm.engine import eSerializationFormat, eSwitch, SEAction, SEDataRequestManager, SEEventChange
+from pulse.cdm.engine import eEvent, eSerializationFormat, eSwitch, SEAction, SEDataRequestManager, \
+                             SEEventChange
 from pulse.cdm.patient import eSex, SEPatient, SEPatientConfiguration
 from pulse.cdm.scalars import SEScalarTime, TimeUnit, get_unit
 from pulse.cdm.io.patient import serialize_patient_from_string
@@ -426,7 +427,7 @@ class SEReportModule(metaclass=abc.ABCMeta):
     def required_headers(self) -> List[str]:
         return self._headers
 
-    def handle_event(self, event: SEEventChange) -> None:
+    def handle_event(self, change: SEEventChange) -> None:
         """ Process given event change """
 
     def handle_action(self, action: str) -> None:
@@ -516,6 +517,8 @@ class SEScenarioReport(SEScenarioLog):
         self._df = None
         self._prepare_df()
 
+        self._process_log()
+
     def _parse_events(self, lines: List[str]) -> None:
         """
         Generate SEEventChanges from events parsed in super method.
@@ -533,7 +536,7 @@ class SEScenarioReport(SEScenarioLog):
             events_out.append((
                 time_s,
                 SEEventChange(
-                    event=match["event"].strip(),
+                    event=eEvent[match["event"].strip()],
                     active=bool(int(match["active"])),
                     sim_time_s=time_s
                 )
@@ -601,9 +604,6 @@ class SEScenarioReport(SEScenarioLog):
 
         :return: Dict representing report.
         """
-        # Process before init report so we can use what we parse from log if needed
-        self._process_log()
-
         out = self._initialize_report()
 
         # Determine time step
@@ -643,14 +643,14 @@ class SEScenarioReport(SEScenarioLog):
 
             # Send event changes to each module
             for next_event_idx, event_info in enumerate(self._events[event_idx:]):
-                event_time_s, event = event_info
+                event_time_s, change = event_info
                 if event_time_s.get_value(TimeUnit.s) == time_s:  # TODO: Floating point errors?
                     for module in self._timestep_modules:
-                        module.handle_event(event)
+                        module.handle_event(change)
                     for module in self._observation_modules:
-                        module.handle_event(event)
+                        module.handle_event(change)
                     if self._death_check_module is not None:
-                        self._death_check_module.handle_event(event)
+                        self._death_check_module.handle_event(change)
                     event_idx = next_event_idx + 1
 
             # Send action changes to each module
@@ -684,7 +684,7 @@ class SEScenarioReport(SEScenarioLog):
         for module in self._timestep_modules:
             out.update(module.report())
         if self._death_check_module is not None:
-            out.update(module.report())
+            out.update(self._death_check_module.report())
 
         out["Observations"] = observations
         return out

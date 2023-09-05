@@ -93,17 +93,22 @@ class eEvent(Enum):
     NonRebreatherMaskOxygenBagEmpty = 1005
 
 class SEEventChange:
-    __slots__ = ["event", "active", "sim_time_s"]
+    __slots__ = ["event", "active", "sim_time"]
 
-    def __init__(self, event=None, active=None, sim_time_s=None):
+    def __init__(
+        self,
+        event: Optional[eEvent]=None,
+        active: Optional[bool]=None,
+        sim_time_s: Optional[float]=None
+    ):
         self.event = event
         self.active = active
-        self.sim_time_s = SEScalarTime(sim_time_s, TimeUnit.s) if sim_time_s is not None else SEScalarTime()
+        self.sim_time = SEScalarTime(sim_time_s, TimeUnit.s) if sim_time_s is not None else SEScalarTime()
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return_text = ("{} is {}").format(self.event, "Active" if self.active else "Inactive")
-        if self.sim_time_s.is_valid():
-            return_text += (" @ {}").format(self.sim_time_s)
+        if self.sim_time.is_valid():
+            return_text += (" @ {}").format(self.sim_time)
         return return_text
 
 class IEventHandler:

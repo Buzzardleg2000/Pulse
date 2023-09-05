@@ -775,31 +775,31 @@ class SESerializeRequested(SEAction):
                 "  Filename: {}").format(self._filename)
 
 
-class eSerializationType(Enum):
+class eSerializationMode(Enum):
     Save = 0
     Load = 1
 
 
 class SESerializeState(SEAction):
-    __slots__ = ["_filename", "_type"]
+    __slots__ = ["_filename", "_mode"]
 
     def __init__(self) -> None:
         super().__init__()
         self._filename = ""
-        self._type = eSerializationType.Save
+        self._type = eSerializationMode.Save
 
     def clear(self) -> None:
         super().clear()
         self._filename = ""
-        self._type = eSerializationType.Save
+        self._mode = eSerializationMode.Save
 
     def is_valid(self) -> bool:
         return self.has_filename()
 
-    def get_type(self) -> eSerializationType:
-        return self._type
-    def set_type(self, t: eSerializationType):
-        self._type = t
+    def get_mode(self) -> eSerializationMode:
+        return self._mode
+    def set_mode(self, t: eSerializationMode):
+        self._mode = t
 
     def has_filename(self) -> bool:
         return self._filename != ""
@@ -813,7 +813,7 @@ class SESerializeState(SEAction):
     def __repr__(self) -> str:
         return ("Serialize State\n"
                 "  Filename: {}\n"
-                "  Type: {}").format(self._filename, self._type.name)
+                "  Mode: {}").format(self._filename, self._mode.name)
 
 
 class SEValidationTarget():

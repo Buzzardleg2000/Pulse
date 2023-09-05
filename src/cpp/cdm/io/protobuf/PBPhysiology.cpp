@@ -204,6 +204,8 @@ void PBPhysiology::Serialize(const CDM_BIND::CardiovascularSystemData& src, SECa
     PBProperty::Load(src.meancentralvenouspressure(), dst.GetMeanCentralVenousPressure());
   if (src.has_meanskinflow())
     PBProperty::Load(src.meanskinflow(), dst.GetMeanSkinFlow());
+  if (src.has_peripheralperfusionindex())
+    PBProperty::Load(src.peripheralperfusionindex(), dst.GetPeripheralPerfusionIndex());
   if (src.has_pulmonaryarterialpressure())
     PBProperty::Load(src.pulmonaryarterialpressure(), dst.GetPulmonaryArterialPressure());
   if (src.has_pulmonarycapillariescoveragefraction())
@@ -291,6 +293,8 @@ void PBPhysiology::Serialize(const SECardiovascularSystem& src, CDM_BIND::Cardio
     dst.set_allocated_meancentralvenouspressure(PBProperty::Unload(*src.m_MeanCentralVenousPressure));
   if (src.HasMeanSkinFlow())
     dst.set_allocated_meanskinflow(PBProperty::Unload(*src.m_MeanSkinFlow));
+  if (src.HasPeripheralPerfusionIndex())
+    dst.set_allocated_peripheralperfusionindex(PBProperty::Unload(*src.m_PeripheralPerfusionIndex));
   if (src.HasPulmonaryArterialPressure())
     dst.set_allocated_pulmonaryarterialpressure(PBProperty::Unload(*src.m_PulmonaryArterialPressure));
   if (src.HasPulmonaryCapillariesCoverageFraction())

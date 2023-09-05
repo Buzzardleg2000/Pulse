@@ -27,6 +27,7 @@
         { "DecimalFormat": { "Precision": 3 }, "Category": "Physiology", "PropertyName": "MeanArterialCarbonDioxidePartialPressureDelta", "Unit": "mmHg"          },
         { "DecimalFormat": { "Precision": 1 }, "Category": "Physiology", "PropertyName": "MeanCentralVenousPressure",                     "Unit": "mmHg"          },
         { "DecimalFormat": {                }, "Category": "Physiology", "PropertyName": "MeanSkinFlow",                                  "Unit": "mL/min"        },
+        { "DecimalFormat": { "Precision": 5 }, "Category": "Physiology", "PropertyName": "PeripheralPerfusionIndex"                                               },
         { "DecimalFormat": {                }, "Category": "Physiology", "PropertyName": "PulmonaryArterialPressure",                     "Unit": "mmHg"          },
         { "DecimalFormat": { "Precision": 2 }, "Category": "Physiology", "PropertyName": "PulmonaryCapillariesWedgePressure",             "Unit": "mmHg"          },
         { "DecimalFormat": {                }, "Category": "Physiology", "PropertyName": "PulmonaryDiastolicArterialPressure",            "Unit": "mmHg"          },

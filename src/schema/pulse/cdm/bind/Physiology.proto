@@ -98,24 +98,25 @@ message CardiovascularSystemData
   ScalarPressureData                  MeanArterialCarbonDioxidePartialPressureDelta  = 19;/**<< @brief The change of the the mean of the partial pressure of carbon dioxide in the aorta from the previous cardiac cycle.*/
   ScalarPressureData                  MeanCentralVenousPressure                      = 20;/**<< @brief The average pressure in the vena cava over the course of a cardiac cycle.*/
   ScalarVolumePerTimeData             MeanSkinFlow                                   = 21;/**<< @brief The blood flow to the skin  averaged over the current cardiac cycle time*/
-  ScalarPressureData                  PulmonaryArterialPressure                      = 22;/**<< @brief The current pressure in the pulmonary arteries.*/
-  Scalar0To1Data                      PulmonaryCapillariesCoverageFraction           = 23;/**<< @brief The fraction of the capillaries interacting with blood.*/
-  ScalarPressureData                  PulmonaryCapillariesWedgePressure              = 24;/**<< @brief The pressure within the pulmonary capillaries.*/
-  ScalarPressureData                  PulmonaryDiastolicArterialPressure             = 25;/**<< @brief The minimum pressure that occurs in the pulmonary arteries over the course of a cardiac cycle.*/
-  ScalarPressureData                  PulmonaryMeanArterialPressure                  = 26;/**<< @brief The average pressure that occurs in the pulmonary arteries over the course of a cardiac cycle.*/
-  ScalarVolumePerTimeData             PulmonaryMeanCapillaryFlow                     = 27;/**<< @brief The average blood flow in the pulmonary capillaries over the course of a cardiac cycle.*/
-  ScalarVolumePerTimeData             PulmonaryMeanShuntFlow                         = 28;/**<< @brief The average blood flow diverted from the pulmonary capillaries (not oxygenated) over the course of a cardiac cycle.*/
-  ScalarPressureData                  PulmonarySystolicArterialPressure              = 29;/**<< @brief The maximum pressure in the pulmonary arteries over the course of a cardiac cycle.*/
-  ScalarPressureTimePerVolumeData     PulmonaryVascularResistance                    = 30;/**<< @brief The resistance offered by the pulmonary circulation.*/
-  ScalarPressureTimePerVolumeAreaData PulmonaryVascularResistanceIndex               = 31;/**<< @brief Relates pulmonary circulation performance to the size of the individual. */
-  ScalarPressureData                  PulsePressure                                  = 32;/**<< @brief The difference between the systolic and diastolic pressures.*/
-  ScalarPressureTimePerVolumeData     SystemicVascularResistance                     = 33;/**<< @brief The resistance to blood flow through the entire systemic vasculature, not including the pulmonary circulation.*/
-  ScalarPressureData                  SystolicArterialPressure                       = 34;/**<< @brief The maximum pressure in the aorta over the course of a cardiac cycle.*/
-  ScalarPressureData                  SystolicLeftHeartPressure                      = 35;/**<< @brief The maximum pressure in the aorta over the course of a cardiac cycle.*/
-  ScalarPressureData                  SystolicRightHeartPressure                     = 36;/**<< @brief The maximum pressure in the aorta over the course of a cardiac cycle.*/
-  ScalarVolumePerTimeData             TotalHemorrhageRate                            = 37;/**<< @brief The total rate of blood loss due to all active hemorrhages.*/
-  ScalarVolumeData                    TotalHemorrhagedVolume                         = 38;/**<< @brief The total amount of blood lost due to all hemorrhages.*/
-  ScalarVolumePerTimeData             TotalPulmonaryPerfusion                        = 39;/**<< @brief The total blood flow that participates in gas exchange over the course of a cardiac cycle. */
+  Scalar0To1Data                      PeripheralPerfusionIndex                       = 22;/**<< @brief The ratio of pulsatile blood flow to non-pulsatile blood flow in the peripheral tissue.*/
+  ScalarPressureData                  PulmonaryArterialPressure                      = 23;/**<< @brief The current pressure in the pulmonary arteries.*/
+  Scalar0To1Data                      PulmonaryCapillariesCoverageFraction           = 24;/**<< @brief The fraction of the capillaries interacting with blood.*/
+  ScalarPressureData                  PulmonaryCapillariesWedgePressure              = 25;/**<< @brief The pressure within the pulmonary capillaries.*/
+  ScalarPressureData                  PulmonaryDiastolicArterialPressure             = 26;/**<< @brief The minimum pressure that occurs in the pulmonary arteries over the course of a cardiac cycle.*/
+  ScalarPressureData                  PulmonaryMeanArterialPressure                  = 27;/**<< @brief The average pressure that occurs in the pulmonary arteries over the course of a cardiac cycle.*/
+  ScalarVolumePerTimeData             PulmonaryMeanCapillaryFlow                     = 28;/**<< @brief The average blood flow in the pulmonary capillaries over the course of a cardiac cycle.*/
+  ScalarVolumePerTimeData             PulmonaryMeanShuntFlow                         = 29;/**<< @brief The average blood flow diverted from the pulmonary capillaries (not oxygenated) over the course of a cardiac cycle.*/
+  ScalarPressureData                  PulmonarySystolicArterialPressure              = 30;/**<< @brief The maximum pressure in the pulmonary arteries over the course of a cardiac cycle.*/
+  ScalarPressureTimePerVolumeData     PulmonaryVascularResistance                    = 31;/**<< @brief The resistance offered by the pulmonary circulation.*/
+  ScalarPressureTimePerVolumeAreaData PulmonaryVascularResistanceIndex               = 32;/**<< @brief Relates pulmonary circulation performance to the size of the individual. */
+  ScalarPressureData                  PulsePressure                                  = 33;/**<< @brief The difference between the systolic and diastolic pressures.*/
+  ScalarPressureTimePerVolumeData     SystemicVascularResistance                     = 34;/**<< @brief The resistance to blood flow through the entire systemic vasculature, not including the pulmonary circulation.*/
+  ScalarPressureData                  SystolicArterialPressure                       = 35;/**<< @brief The maximum pressure in the aorta over the course of a cardiac cycle.*/
+  ScalarPressureData                  SystolicLeftHeartPressure                      = 36;/**<< @brief The maximum pressure in the aorta over the course of a cardiac cycle.*/
+  ScalarPressureData                  SystolicRightHeartPressure                     = 37;/**<< @brief The maximum pressure in the aorta over the course of a cardiac cycle.*/
+  ScalarVolumePerTimeData             TotalHemorrhageRate                            = 38;/**<< @brief The total rate of blood loss due to all active hemorrhages.*/
+  ScalarVolumeData                    TotalHemorrhagedVolume                         = 39;/**<< @brief The total amount of blood lost due to all hemorrhages.*/
+  ScalarVolumePerTimeData             TotalPulmonaryPerfusion                        = 40;/**<< @brief The total blood flow that participates in gas exchange over the course of a cardiac cycle. */
 }
 
 /** @brief Provides transport of drugs through the blood and air in the cardiovascular and respiratory systems, respectively.

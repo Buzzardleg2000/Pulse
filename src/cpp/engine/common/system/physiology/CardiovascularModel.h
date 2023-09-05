@@ -144,6 +144,15 @@ namespace pulse
     double m_CardiacCycleRightHeartPressureHigh_mmHg; // The current high for this cycle - Reset at the start of systole
     double m_LastCardiacCycleMeanArterialCO2PartialPressure_mmHg;
     double m_CardiacCycleStrokeVolume_mL; // Total volume of the left heart flow for the current cardiac cycle
+    //jbw - Serialize
+    double m_LeftArmVolumeHigh_mL;
+    double m_LeftArmVolumeLow_mL;
+    double m_LeftLegVolumeHigh_mL;
+    double m_LeftLegVolumeLow_mL;
+    double m_RightArmVolumeHigh_mL;
+    double m_RightArmVolumeLow_mL;
+    double m_RightLegVolumeHigh_mL;
+    double m_RightLegVolumeLow_mL;
     //Needed for expanded pulmonary methodology
     std::vector<double> m_LeftCardiacCyclePerfusionVolumes_mL;
     std::vector<double> m_RightCardiacCyclePerfusionVolumes_mL;
@@ -222,12 +231,16 @@ namespace pulse
     SELiquidSubstanceQuantity*       m_AortaCO2;
     SELiquidCompartment*             m_Brain;
     SELiquidCompartment*             m_Ground;
+    SELiquidCompartment*             m_LeftArm;
     SELiquidCompartment*             m_LeftHeart;
+    SELiquidCompartment*             m_LeftLeg;
     SELiquidCompartment*             m_LeftPulmonaryCapillaries;
     SELiquidCompartment*             m_LeftPulmonaryArteries;
     SELiquidCompartment*             m_LeftPulmonaryVeins;
     SELiquidCompartment*             m_Pericardium;
+    SELiquidCompartment*             m_RightArm;
     SELiquidCompartment*             m_RightHeart;
+    SELiquidCompartment*             m_RightLeg;
     SELiquidCompartment*             m_RightPulmonaryCapillaries;
     SELiquidCompartment*             m_RightPulmonaryArteries;
     SELiquidCompartment*             m_RightPulmonaryVeins;

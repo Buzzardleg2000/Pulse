@@ -15,12 +15,12 @@ from openpyxl.utils.cell import get_column_letter
 from typing import Optional, Union
 from pycel import ExcelCompiler
 
-from pulse.cdm.engine import SEDataRequestManager, SETimeSeriesValidationTarget
+from pulse.cdm.engine import SETimeSeriesValidationTarget
 from pulse.cdm.patient import SEPatient, eSex
 from pulse.cdm.scalars import LengthUnit, MassUnit
 from pulse.cdm.utils.file_utils import get_data_dir
 from pulse.cdm.io.engine import (
-    serialize_data_request_manager_to_file,
+    serialize_data_request_list_to_file,
     serialize_time_series_validation_target_list_to_file
 )
 from pulse.cdm.io.patient import serialize_patient_from_file
@@ -84,18 +84,7 @@ def load_data(xls_file: Path):
     finally:  # Always clean up temp file
         xls_edit.close()
 
-    # Generate a data request file for each target file
-    workbook = load_workbook(filename=xls_file, data_only=True)
-    full_output_path = output_dir / "requests"
-    full_output_path.mkdir(parents=True, exist_ok=True)
-    for system in workbook.sheetnames:
-        if system in ignore_sheets:
-            continue
-        if not generate_requests(
-            sheet=workbook[system],
-            output_dir=full_output_path
-        ):
-            _pulse_logger.error(f"Unable to generate requests for {system} sheet")
+
 
 
 def update_patient(patient_file: Path, xls_file: Path, new_file: Optional[Path]=None) -> None:
@@ -119,9 +108,30 @@ def update_patient(patient_file: Path, xls_file: Path, new_file: Optional[Path]=
     workbook.save(filename=new_file)
 
 
-def generate_requests(sheet: Worksheet, output_dir: Path) -> bool:
+def generate_data_requests(xls_file: Path, output_dir: Path):
+    try:
+        if output_dir.is_dir():
+            shutil.rmtree(output_dir)
+        output_dir.mkdir(parents=True, exist_ok=True)
+    except OSError as e:
+        _pulse_logger.error(f"Unable to clean directories")
+        return
+    # Generate a data request file for each target file
+    ignore_sheets = ["Patient"]
+    workbook = load_workbook(filename=xls_file, data_only=True)
+    for system in workbook.sheetnames:
+        if system in ignore_sheets:
+            continue
+        if not generate_sheet_requests(
+                sheet=workbook[system],
+                output_dir=output_dir
+        ):
+            _pulse_logger.error(f"Unable to generate requests for {system} sheet")
+
+
+def generate_sheet_requests(sheet: Worksheet, output_dir: Path) -> bool:
     system = sheet.title.replace(" ", "")
-    dr_mgrs = dict()
+    dr_dict = dict()
 
     # Get header to dataclass mapping
     ws_headers = [cell.value for cell in sheet[1]]
@@ -129,7 +139,7 @@ def generate_requests(sheet: Worksheet, output_dir: Path) -> bool:
         DRB_HEADER = ws_headers.index('Output')
         DRB_UNITS = ws_headers.index('Units')
         DRB_REF_CELL = ws_headers.index('Reference Values')
-        DRB_TGT_FILE = ws_headers.index('ValidationTargetFile')
+        DRB_FILE = ws_headers.index('Table')
         DRB_REQUEST_TYPE = ws_headers.index('Request Type')
         DRB_PRECISION = ws_headers.index('Precision')
     except ValueError as e:
@@ -137,11 +147,11 @@ def generate_requests(sheet: Worksheet, output_dir: Path) -> bool:
         return False
 
     @dataclass
-    class DataRequestBuilder():
+    class DataRequestBuilder:
         header: str
         units: str
         ref_cell: Union[str, numbers.Number]
-        tgt_file: str
+        dr_file: str
         request_type: str
         precision: Union[str, numbers.Number]
 
@@ -150,7 +160,7 @@ def generate_requests(sheet: Worksheet, output_dir: Path) -> bool:
             header=r[DRB_HEADER],
             units=r[DRB_UNITS] if r[DRB_UNITS] else "unitless",
             ref_cell=r[DRB_REF_CELL],
-            tgt_file=r[DRB_TGT_FILE] if r[DRB_TGT_FILE] else "",
+            dr_file=r[DRB_FILE] if r[DRB_FILE] else "Orphaned",
             request_type=r[DRB_REQUEST_TYPE],
             precision=r[DRB_PRECISION]
         )
@@ -158,10 +168,14 @@ def generate_requests(sheet: Worksheet, output_dir: Path) -> bool:
             continue
 
         # Skip header rows
-        if drb.tgt_file == "ValidationTargetFile":
+        if drb.dr_file == "Table":
             continue
 
         # Nothing to validate to
+        if '*' in drb.header:
+            # _pulse_logger.info(f"Ignoring request {drb.header} (has asterisks)")
+            continue
+
         if drb.ref_cell is None:
             _pulse_logger.info(f"Not generating request {drb.header} (no reference value)")
             continue
@@ -170,11 +184,10 @@ def generate_requests(sheet: Worksheet, output_dir: Path) -> bool:
             _pulse_logger.info(f"Not generating request {drb.header} (no DR type)")
             continue
 
-        if drb.tgt_file not in dr_mgrs:
-            dr_mgrs[drb.tgt_file] = SEDataRequestManager()
-        drs = dr_mgrs[drb.tgt_file].get_data_requests()
+        if drb.dr_file not in dr_dict:
+            dr_dict[drb.dr_file] = []
+        drs = dr_dict[drb.dr_file]
 
-        prop_split = [s.strip() for s in drb.header.split("-")]
         dr = generate_data_request(
             request_type=drb.request_type,
             property_name=drb.header.replace("*", ""),
@@ -184,10 +197,10 @@ def generate_requests(sheet: Worksheet, output_dir: Path) -> bool:
 
         drs.append(dr)
 
-    for target, dr_mgr in dr_mgrs.items():
-        filename = output_dir / f"{system}{'-' if target else ''}{target}.json"
+    for dr_file, drs in dr_dict.items():
+        filename = output_dir / f"{dr_file}.json"
         _pulse_logger.info(f"Writing {filename}")
-        serialize_data_request_manager_to_file(dr_mgr, filename)
+        serialize_data_request_list_to_file(drs, filename)
 
     return True
 

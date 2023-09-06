@@ -11,7 +11,7 @@ from pulse.cdm.bind.Engine_pb2 import AnyActionData, \
                                       ActionListData, ActionMapData, \
                                       AnyConditionData, ConditionListData, \
                                       PatientConfigurationData, \
-                                      DataRequestData, DataRequestManagerData, \
+                                      DataRequestData, DataRequestListData, DataRequestManagerData, \
                                       DataRequestedData, DataRequestedListData, DecimalFormatData, \
                                       EngineInitializationData, EngineInitializationListData, \
                                       LogMessagesData, ValidationTargetData, \
@@ -466,6 +466,21 @@ def serialize_data_request_from_bind(src: DataRequestData) -> SEDataRequest:
         notation=eDecimalFormat_type(src.DecimalFormat.Type) if src.DecimalFormat.Type else None
     )
 
+def serialize_data_request_list_to_bind(src: [SEDataRequest], dst: DataRequestListData):
+    for dr in src:
+        dr_data = DataRequestData()
+        serialize_data_request_to_bind(dr, dr_data)
+        dst.DataRequest.append(dr_data)
+def serialize_data_request_list_to_string(src: [SEDataRequest], fmt: eSerializationFormat) -> str:
+    dst = DataRequestListData()
+    serialize_data_request_list_to_bind(src, dst)
+    return json_format.MessageToJson(dst, True, True)
+def serialize_data_request_list_to_file(src: [SEDataRequest], filename: str):
+    string = serialize_data_request_list_to_string(src, eSerializationFormat.JSON)
+    file = open(filename, "w")
+    n = file.write(string)
+    file.close()
+
 def serialize_data_request_manager_from_file(filename: str, dst: SEDataRequestManager):
     with open(filename) as f:
         string = f.read()
@@ -483,7 +498,7 @@ def serialize_data_request_manager_to_string(src: SEDataRequestManager, fmt: eSe
 def serialize_data_request_manager_from_string(string: str, dst: SEDataRequestManager, fmt: eSerializationFormat):
     src = DataRequestManagerData()
     json_format.Parse(string, src)
-    serialize_data_request_manager_from_bind(src,dst)
+    serialize_data_request_manager_from_bind(src, dst)
 
 def serialize_data_request_manager_to_bind(src: SEDataRequestManager, dst: DataRequestManagerData):
     if src.has_data_requests():

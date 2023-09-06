@@ -144,15 +144,8 @@ namespace pulse
     double m_CardiacCycleRightHeartPressureHigh_mmHg; // The current high for this cycle - Reset at the start of systole
     double m_LastCardiacCycleMeanArterialCO2PartialPressure_mmHg;
     double m_CardiacCycleStrokeVolume_mL; // Total volume of the left heart flow for the current cardiac cycle
-    //jbw - Serialize
-    double m_LeftArmVolumeHigh_mL;
-    double m_LeftArmVolumeLow_mL;
-    double m_LeftLegVolumeHigh_mL;
-    double m_LeftLegVolumeLow_mL;
-    double m_RightArmVolumeHigh_mL;
-    double m_RightArmVolumeLow_mL;
-    double m_RightLegVolumeHigh_mL;
-    double m_RightLegVolumeLow_mL;
+    double m_PeripheralVolumeHigh_mL; // Max cycle volume in arms and legs
+    double m_PeripheralVolumeLow_mL; // Min cycle volume in arms and legs
     //Needed for expanded pulmonary methodology
     std::vector<double> m_LeftCardiacCyclePerfusionVolumes_mL;
     std::vector<double> m_RightCardiacCyclePerfusionVolumes_mL;

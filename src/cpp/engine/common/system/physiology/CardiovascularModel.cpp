@@ -1156,18 +1156,12 @@ namespace pulse
       m_CardiacCycleRightHeartPressureLow_mmHg = RHeartPressure_mmHg;
 
     // Record high and low values to compute for peripheral perfusion index:
-    double leftArmVolume_mL = m_LeftArm->GetVolume(VolumeUnit::mL);
-    double leftLegVolume_mL = m_LeftLeg->GetVolume(VolumeUnit::mL);
-    double rightArmVolume_mL = m_RightArm->GetVolume(VolumeUnit::mL);
-    double rightLegVolume_mL = m_RightLeg->GetVolume(VolumeUnit::mL);
-    m_LeftArmVolumeHigh_mL = MAX(m_LeftArmVolumeHigh_mL, leftArmVolume_mL);
-    m_LeftArmVolumeLow_mL = MIN(m_LeftArmVolumeLow_mL, leftArmVolume_mL);
-    m_LeftLegVolumeHigh_mL = MAX(m_LeftLegVolumeHigh_mL, leftLegVolume_mL);
-    m_LeftLegVolumeLow_mL = MIN(m_LeftLegVolumeLow_mL, leftLegVolume_mL);
-    m_RightArmVolumeHigh_mL = MAX(m_RightArmVolumeHigh_mL, rightArmVolume_mL);
-    m_RightArmVolumeLow_mL = MIN(m_RightArmVolumeLow_mL, rightArmVolume_mL);
-    m_RightLegVolumeHigh_mL = MAX(m_RightLegVolumeHigh_mL, rightLegVolume_mL);
-    m_RightLegVolumeLow_mL = MIN(m_RightLegVolumeLow_mL, rightLegVolume_mL);
+    double totalPeripheralVolume_mL = m_LeftArm->GetVolume(VolumeUnit::mL);
+    totalPeripheralVolume_mL += m_LeftLeg->GetVolume(VolumeUnit::mL);
+    totalPeripheralVolume_mL += m_RightArm->GetVolume(VolumeUnit::mL);
+    totalPeripheralVolume_mL += m_RightLeg->GetVolume(VolumeUnit::mL);
+    m_PeripheralVolumeHigh_mL = MAX(m_PeripheralVolumeHigh_mL, totalPeripheralVolume_mL);
+    m_PeripheralVolumeLow_mL = MIN(m_PeripheralVolumeLow_mL, totalPeripheralVolume_mL);
 
     // Get Max of Left Ventricle Volume over the course of a heart beat for end diastolic volume
     if (LHeartVolume_mL > m_CardiacCycleDiastolicVolume_mL)
@@ -1333,9 +1327,7 @@ namespace pulse
     GetCardiacOutput().SetValue(m_CardiacCycleStrokeVolume_mL * GetHeartRate().GetValue(FrequencyUnit::Per_min), VolumePerTimeUnit::mL_Per_min);
     GetCardiacIndex().SetValue(GetCardiacOutput().GetValue(VolumePerTimeUnit::mL_Per_min) / m_data.GetCurrentPatient().GetSkinSurfaceArea(AreaUnit::m2), VolumePerTimeAreaUnit::mL_Per_min_m2);
 
-    double highPeripheralVolume_mL = m_LeftArmVolumeHigh_mL + m_LeftLegVolumeHigh_mL + m_RightArmVolumeHigh_mL + m_RightLegVolumeHigh_mL;
-    double lowPeripheralVolume_mL = m_LeftArmVolumeLow_mL + m_LeftLegVolumeLow_mL + m_RightArmVolumeLow_mL + m_RightLegVolumeLow_mL;
-    double peripheralPerfusionIndex = (highPeripheralVolume_mL - lowPeripheralVolume_mL) / lowPeripheralVolume_mL;
+    double peripheralPerfusionIndex = (m_PeripheralVolumeHigh_mL - m_PeripheralVolumeLow_mL) / m_PeripheralVolumeLow_mL;
 
     //The normal value of PPI was suggested to range between 0.2% and 20%;
     // however, an observational study showed a median(quartiles) normal value of PPI of 4.3 (2.9–6.2)
@@ -1481,14 +1473,8 @@ namespace pulse
     m_CardiacCycleDiastolicVolume_mL = 0;
     m_CardiacCycleStrokeVolume_mL = 0;
 
-    m_LeftArmVolumeHigh_mL = 0.0;
-    m_LeftArmVolumeLow_mL = 10000.0;
-    m_LeftLegVolumeHigh_mL = 0.0;
-    m_LeftLegVolumeLow_mL = 10000.0;
-    m_RightArmVolumeHigh_mL = 0.0;
-    m_RightArmVolumeLow_mL = 10000.0;
-    m_RightLegVolumeHigh_mL = 0.0;
-    m_RightLegVolumeLow_mL = 10000.0;
+    m_PeripheralVolumeHigh_mL = 0.0;
+    m_PeripheralVolumeLow_mL = 10000.0;
   }
 
   //--------------------------------------------------------------------------------------------------

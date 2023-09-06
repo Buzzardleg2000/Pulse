@@ -104,6 +104,9 @@ namespace pulse
     for (int i = 0; i < src.rightcardiaccycleperfusionvolumes_ml_size(); i++)
       dst.m_RightCardiacCyclePerfusionVolumes_mL.push_back(src.rightcardiaccycleperfusionvolumes_ml()[i]);
 
+    dst.m_PeripheralVolumeHigh_mL = src.peripheralvolumehigh_ml();
+    dst.m_PeripheralVolumeLow_mL = src.peripheralvolumelow_ml();
+
     PBProperty::Load(src.cardiaccyclearterialpressure_mmhg(), *dst.m_CardiacCycleArterialPressure_mmHg);
     PBProperty::Load(src.cardiaccyclearterialco2partialpressure_mmhg(), *dst.m_CardiacCycleArterialCO2PartialPressure_mmHg);
     PBProperty::Load(src.cardiaccyclepulmonarycapillarieswedgepressure_mmhg(), *dst.m_CardiacCyclePulmonaryCapillariesWedgePressure_mmHg);
@@ -166,10 +169,14 @@ namespace pulse
     dst.set_cardiaccyclerightheartpressurehigh_mmhg(src.m_CardiacCycleRightHeartPressureHigh_mmHg);
     dst.set_lastcardiaccyclemeanarterialco2partialpressure_mmhg(src.m_LastCardiacCycleMeanArterialCO2PartialPressure_mmHg);
     dst.set_cardiaccyclestrokevolume_ml(src.m_CardiacCycleStrokeVolume_mL);
+
     for (double d : src.m_LeftCardiacCyclePerfusionVolumes_mL)
       dst.mutable_leftcardiaccycleperfusionvolumes_ml()->Add(d);
     for (double d : src.m_RightCardiacCyclePerfusionVolumes_mL)
       dst.mutable_rightcardiaccycleperfusionvolumes_ml()->Add(d);
+
+    dst.set_peripheralvolumehigh_ml(src.m_PeripheralVolumeHigh_mL);
+    dst.set_peripheralvolumelow_ml(src.m_PeripheralVolumeLow_mL);
 
     dst.set_allocated_cardiaccyclearterialpressure_mmhg(PBProperty::Unload(*src.m_CardiacCycleArterialPressure_mmHg));
     dst.set_allocated_cardiaccyclearterialco2partialpressure_mmhg(PBProperty::Unload(*src.m_CardiacCycleArterialCO2PartialPressure_mmHg));

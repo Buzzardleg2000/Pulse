@@ -194,7 +194,7 @@ def generate_sheet_requests(sheet: Worksheet, output_dir: Path) -> bool:
 
         dr = generate_data_request(
             request_type=drb.request_type,
-            property_name=drb.header.replace("*", ""),
+            property_name=drb.header,
             unit_str=drb.units.strip(),
             precision=int(drb.precision) if drb.precision else None
         )
@@ -322,27 +322,23 @@ def generate_targets(sheet: Worksheet, evaluator: ExcelCompiler, output_dir: Pat
     return True
 
 
-if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
-    logging.getLogger("pycel").setLevel(logging.WARNING)
 
-    if len(sys.argv) < 2:
-        _pulse_logger.error("Expected inputs : <filename base path where there is a csv and log file by the name>")
-        # For example path/to/scenario/results/Male_44yr_180.34cm_23.71bmi_0.21bff_72bpm_87mmHg_40.5mmHg_12bpm
-        sys.exit(1)
 
+def gen_targets(log_file: Path, output_dir: Optional[Path]=None):
+    sys_tgts = gen_system_targets(log_file, output_dir)
+    patient_tgts = gen_patient_targets(log_file, output_dir)
+
+def gen_system_targets(log_file: Path, output_dir: Optional[Path]=None):
     xls_file = Path(get_validation_dir() + "/SystemValidationData.xlsx")
-    csv_file = Path(sys.argv[1] + ".csv")
-    log_file = Path(sys.argv[1] + ".log")
-
     if not xls_file.is_file():
         _pulse_logger.error("Please provide a valid xls file")
         sys.exit(1)
-    if not csv_file.is_file():
-        _pulse_logger.error("Could not find csv file: "+str(csv_file))
-        sys.exit(1)
-    if not log_file.is_file():
-        _pulse_logger.error("Could not find log file: "+str(log_file))
+    # Return a map of table names to the validation targets
+    # Write that to a file next to the log_file
+
+def gen_patient_targets(log_file: Path, output_dir: Optional[Path]=None):
+    xls_file = Path(get_validation_dir() + "/PatientValidationData.xlsx")
+    if not xls_file.is_file():
+        _pulse_logger.error("Please provide a valid xls file")
         sys.exit(1)
 
-    gen_targets(xls_file, log_file)

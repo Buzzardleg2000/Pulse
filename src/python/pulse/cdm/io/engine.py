@@ -478,7 +478,7 @@ def serialize_data_request_list_to_string(src: [SEDataRequest], fmt: eSerializat
 def serialize_data_request_list_to_file(src: [SEDataRequest], filename: str):
     string = serialize_data_request_list_to_string(src, eSerializationFormat.JSON)
     file = open(filename, "w")
-    n = file.write(string)
+    file.write(string)
     file.close()
 
 def serialize_data_request_manager_from_file(filename: str, dst: SEDataRequestManager):

@@ -15,7 +15,7 @@ public class SETimeSeriesValidationTarget extends SEValidationTarget
 {
   public enum eComparisonType
   {
-    EqualToValue, GreaterThanValue, LessThanValue, TrendToValue, Range
+    EqualToValue, Range
   }
   protected eComparisonType m_ComparisonType;
   protected eType m_TargetType;
@@ -75,15 +75,6 @@ public class SETimeSeriesValidationTarget extends SEValidationTarget
       case EQUALTOVALUE:
         dst.setEqualToValue(src.getEqualToValue(), src.getType());
         break;
-      case GREATERTHANVALUE:
-        dst.setGreaterThanValue(src.getGreaterThanValue(), src.getType());
-        break;
-      case LESSTHANVALUE:
-        dst.setLessThanValue(src.getLessThanValue(), src.getType());
-        break;
-      case TRENDSTOVALUE:
-        dst.setLessThanValue(src.getLessThanValue(), src.getType());
-        break;
       case RANGE:
         dst.setRange(
             src.getRange().getMinimum(),
@@ -111,15 +102,6 @@ public class SETimeSeriesValidationTarget extends SEValidationTarget
       case EqualToValue:
         dst.setEqualToValue(src.m_Target);
         break;
-      case GreaterThanValue:
-        dst.setGreaterThanValue(src.m_Target);
-        break;
-      case LessThanValue:
-        dst.setLessThanValue(src.m_Target);
-        break;
-      case TrendToValue:
-        dst.setTrendsToValue(src.m_Target);
-        break;
       case Range:
         dst.getRangeBuilder().setMinimum(src.m_TargetMinimum);
         dst.getRangeBuilder().setMaximum(src.m_TargetMaximum);
@@ -137,31 +119,6 @@ public class SETimeSeriesValidationTarget extends SEValidationTarget
     m_TargetMinimum = d;
     m_TargetType = t;
     m_ComparisonType = eComparisonType.EqualToValue;
-  }
-  public void setGreaterThanValue(double d, eType t)
-  {
-    m_Target = d;
-    m_TargetMaximum = d;
-    m_TargetMinimum = d;
-    m_TargetType = t;
-    m_ComparisonType = eComparisonType.GreaterThanValue;
-    
-  }
-  public void setLessThanValue(double d, eType t)
-  {
-    m_Target = d;
-    m_TargetMaximum = d;
-    m_TargetMinimum = d;
-    m_TargetType = t;
-    m_ComparisonType = eComparisonType.LessThanValue;
-  }
-  public void setTrendToValue(double d, eType t)
-  {
-    m_Target = d;
-    m_TargetMaximum = d;
-    m_TargetMinimum = d;
-    m_TargetType = t;
-    m_ComparisonType = eComparisonType.TrendToValue;
   }
   public void setRange(double min, double max, eType t)
   {

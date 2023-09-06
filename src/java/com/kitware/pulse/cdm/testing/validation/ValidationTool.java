@@ -29,6 +29,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
+import com.kitware.pulse.cdm.bind.Engine.ValidationTargetData;
 import com.kitware.pulse.cdm.bind.Patient.PatientData.eSex;
 import com.kitware.pulse.cdm.bind.Properties.ScalarData;
 import com.kitware.pulse.cdm.bind.TestReport.PropertyValidationData;
@@ -1600,7 +1601,8 @@ public abstract class ValidationTool
     for(ValidationRow vRow : vData)
     {
       PropertyValidationData.Builder pvd = pvList.addPropertyBuilder();
-      pvd.setName(vRow.header+"-"+vRow.dType.toString());
+      ValidationTargetData.Builder vtd = pvd.getValidationTargetBuilder();
+      vtd.setHeader(vRow.header+"-"+vRow.dType.toString());
       pvd.setExpectedValue(vRow.refValue);
       pvd.setComputedValue(vRow.result);
       pvd.setError(vRow.resultError);

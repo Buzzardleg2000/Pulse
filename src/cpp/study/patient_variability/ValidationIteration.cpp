@@ -5,6 +5,7 @@
 
 #include "cdm/CommonDefs.h"
 #include "cdm/engine/SEDataRequestManager.h"
+#include "cdm/properties/SEScalarMass.h"
 #include "cdm/properties/SEScalarTime.h"
 #include "cdm/utils/GeneralMath.h"
 
@@ -28,6 +29,9 @@ namespace pulse::study::patient_variability
     m_DataRequestFiles.push_back("validation/requests/Tissue.json");
     m_DataRequestFiles.push_back("validation/requests/TissueCompartments.json");
     m_DataRequestFiles.push_back("validation/requests/TissueSubstances.json");
+    m_DataRequestMgr->CreatePatientDataRequest("Weight", MassUnit::g);
+    m_DataRequestMgr->CreatePatientDataRequest("IdealBodyWeight", MassUnit::g);
+
 
     m_Adv.GetTime().SetValue(2, TimeUnit::min);
     m_Actions.push_back(&m_Adv);

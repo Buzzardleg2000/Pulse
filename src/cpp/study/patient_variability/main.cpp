@@ -109,14 +109,22 @@ int main(int argc, char* argv[])
   {
     PatientIteration* male = new PatientIteration(logger);
     iPatients.push_back(male);
-    TCCCIteration* tccc = new TCCCIteration(logger);
-    tccc->CreateStates(true);
-    tccc->SetBaselineDuration_s(15);
-    tccc->SetMaxSimTime_min(60);
-    tccc->PerformInterventions(false);
-    tccc->GetHemorrhageSeverity().SetValues({ 0.2, 0.5 });
-    tccc->GetInsultDuration_s().SetValues({ 5 });
-    iScenarios.push_back(tccc);
+    if (true)
+    {
+      ValidationIteration* vi = new ValidationIteration(logger);
+      iScenarios.push_back(vi);
+    }
+    else
+    {
+      TCCCIteration* tccc = new TCCCIteration(logger);
+      tccc->CreateStates(true);
+      tccc->SetBaselineDuration_s(15);
+      tccc->SetMaxSimTime_min(60);
+      tccc->PerformInterventions(false);
+      tccc->GetHemorrhageSeverity().SetValues({ 0.2, 0.5 });
+      tccc->GetInsultDuration_s().SetValues({ 5 });
+      iScenarios.push_back(tccc);
+    }
   }
 
   std::string destDir = rootDir;
@@ -155,5 +163,7 @@ int main(int argc, char* argv[])
     }
   }
 */
+  SAFE_DELETE_VECTOR(iPatients);
+  SAFE_DELETE_VECTOR(iScenarios);
   return 0;
 }

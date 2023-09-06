@@ -4,6 +4,7 @@
 #pragma once
 
 #include "ScenarioIteration.h"
+#include "cdm/engine/SEAdvanceTime.h"
 
 namespace pulse::study::patient_variability
 {
@@ -19,5 +20,9 @@ namespace pulse::study::patient_variability
     void GenerateScenarios(std::pair<std::string, std::string>, const std::string destDir);
     void GenerateSlicedActionSets(std::pair<std::string, std::string>, const std::string destDir) override;
     void GenerateCombinationActionSets(std::pair<std::string, std::string>, const std::string destDir) override;
+
+
+    // Stateless
+    SEAdvanceTime         m_Adv;
   };
 }

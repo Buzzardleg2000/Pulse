@@ -161,16 +161,17 @@ message TimeSeriesValidationTargetData
   oneof Expected
   {
     double                                              EqualToValue                    = 3;
-    double                                              GreaterThanValue                = 4;
-    double                                              LessThanValue                   = 5;
-    double                                              TrendsToValue                   = 6;
-    RangeData                                           Range                           = 7;
+    RangeData                                           Range                           = 4;
   }
-  int32                                                 TablePrecision                  = 8;/**<< @brief How many digits we want to display in the decimal mantissa when generating tables */
+  int32                                                 TablePrecision                  = 5;/**<< @brief How many digits we want to display in the decimal mantissa when generating tables */
 }
 message TimeSeriesValidationTargetListData
 {
   repeated TimeSeriesValidationTargetData               TimeSeriesValidationTarget      = 1;
+}
+message TimeSeriesValidationTargetMapData
+{
+  map<string,TimeSeriesValidationTargetListData>        TimeSeriesValidationTargetMap   = 1;
 }
 
 message AnyConditionData

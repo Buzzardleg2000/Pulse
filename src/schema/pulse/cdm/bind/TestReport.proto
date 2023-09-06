@@ -20,6 +20,10 @@ message PropertyValidationListData
 {
   repeated PropertyValidationData  Property                     = 1;
 }
+message PropertyValidationMapData
+{
+  map<string,pulse.cdm.bind.PropertyValidationListData> ValidationMap = 1;
+}
 
 message TestErrorStatisticsData
 {

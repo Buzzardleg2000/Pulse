@@ -166,6 +166,7 @@ message TimeSeriesValidationTargetData
     double                                              TrendsToValue                   = 6;
     RangeData                                           Range                           = 7;
   }
+  int32                                                 TablePrecision                  = 8;/**<< @brief How many digits we want to display in the decimal mantissa when generating tables */
 }
 message TimeSeriesValidationTargetListData
 {

@@ -18,7 +18,7 @@ from pycel import ExcelCompiler
 from pulse.cdm.engine import SETimeSeriesValidationTarget
 from pulse.cdm.patient import SEPatient, eSex
 from pulse.cdm.scalars import LengthUnit, MassUnit
-from pulse.cdm.utils.file_utils import get_data_dir
+from pulse.cdm.utils.file_utils import get_data_dir, get_validation_dir
 from pulse.cdm.io.engine import (
     serialize_data_request_list_to_file,
     serialize_time_series_validation_target_list_to_file
@@ -139,9 +139,9 @@ def generate_sheet_requests(sheet: Worksheet, output_dir: Path) -> bool:
         DRB_HEADER = ws_headers.index('Output')
         DRB_UNITS = ws_headers.index('Units')
         DRB_REF_CELL = ws_headers.index('Reference Values')
-        DRB_FILE = ws_headers.index('Table')
+        DRB_TABLE = ws_headers.index('Table')
         DRB_REQUEST_TYPE = ws_headers.index('Request Type')
-        DRB_PRECISION = ws_headers.index('Precision')
+        DRB_REQUEST_PRECISION = ws_headers.index('Request Precision')
     except ValueError as e:
         _pulse_logger.error(f"Missing required header {str(e)[:str(e).find(' is not in list')]}")
         return False
@@ -160,9 +160,9 @@ def generate_sheet_requests(sheet: Worksheet, output_dir: Path) -> bool:
             header=r[DRB_HEADER],
             units=r[DRB_UNITS] if r[DRB_UNITS] else "unitless",
             ref_cell=r[DRB_REF_CELL],
-            dr_file=r[DRB_FILE] if r[DRB_FILE] else "Orphaned",
+            dr_file=r[DRB_TABLE] if r[DRB_TABLE] else "Orphaned",
             request_type=r[DRB_REQUEST_TYPE],
-            precision=r[DRB_PRECISION]
+            precision=r[DRB_REQUEST_PRECISION]
         )
         if not drb.header:
             continue
@@ -182,6 +182,10 @@ def generate_sheet_requests(sheet: Worksheet, output_dir: Path) -> bool:
 
         if not drb.request_type:
             _pulse_logger.info(f"Not generating request {drb.header} (no DR type)")
+            continue
+
+        if "@" in drb.request_type:
+            # Currently ignoring assessment types
             continue
 
         if drb.dr_file not in dr_dict:
@@ -322,17 +326,23 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
     logging.getLogger("pycel").setLevel(logging.WARNING)
 
-    xls_file = None
-
     if len(sys.argv) < 2:
-        _pulse_logger.error("Expected inputs : <xls validation file path>")
+        _pulse_logger.error("Expected inputs : <filename base path where there is a csv and log file by the name>")
+        # For example path/to/scenario/results/Male_44yr_180.34cm_23.71bmi_0.21bff_72bpm_87mmHg_40.5mmHg_12bpm
         sys.exit(1)
 
-    xls_file = Path(sys.argv[1])
-    if not xls_file.is_file():
-        xls_file = Path(get_data_dir()+sys.argv[1])
-        if not xls_file.is_file():
-            _pulse_logger.error("Please provide a valid xls file")
-            sys.exit(1)
+    xls_file = Path(get_validation_dir() + "/SystemValidationData.xlsx")
+    csv_file = Path(sys.argv[1] + ".csv")
+    log_file = Path(sys.argv[1] + ".log")
 
-    load_data(xls_file)
+    if not xls_file.is_file():
+        _pulse_logger.error("Please provide a valid xls file")
+        sys.exit(1)
+    if not csv_file.is_file():
+        _pulse_logger.error("Could not find csv file: "+str(csv_file))
+        sys.exit(1)
+    if not log_file.is_file():
+        _pulse_logger.error("Could not find log file: "+str(log_file))
+        sys.exit(1)
+
+    gen_targets(xls_file, log_file)

@@ -126,7 +126,7 @@ public abstract class ValidationTool
     public String   table    = "";
 
     // Results Data
-    public String       resultFile = "";
+    public String       assessmentFile = "";
     public List<Double> results;
     public List<Double> weight;
     public List<Double> idealWeight;
@@ -545,16 +545,17 @@ public abstract class ValidationTool
                   vRow.table = cellValue;
                   if(patientValidation)
                     vRow.table = patient.getName()+cellValue;
-                  break;
-                case 13://N ResultFile (Internal only)
-                  if(cellValue!=null)
-                    vRow.resultFile = cellValue;
-                  break;
-                case 14://O Mantissa Digits
+                  break;             
+                case 13://N Table Mantissa Digits
                   if(cellValue!=null)
                     vRow.doubleFormat = cellValue;
                   if(patientValidation && vRow.dType != DataType.Patient2SystemMean)
                     vRow.refValues = String.format("%."+vRow.doubleFormat, vRow.refValue);
+                  break;
+                case 14://O Request Type (Internal only)
+                  // We only handle if the request type is part of an assessment
+                  if(cellValue!=null && cellValue.contains("@"))// @ denotes this property is part of an assessment
+                    vRow.assessmentFile = cellValue;
                   break;
                 }
               }
@@ -1203,12 +1204,12 @@ public abstract class ValidationTool
       } 
     }
 
-    if(vRow.resultFile.indexOf('@')>-1)
+    if(vRow.assessmentFile.indexOf('@')>-1)
     {
       // It's an assessment row
       for(String s : assessments.keySet())
       {
-        if(s.indexOf(vRow.resultFile)>-1)
+        if(s.indexOf(vRow.assessmentFile)>-1)
         {
           try
           {

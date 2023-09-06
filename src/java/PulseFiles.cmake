@@ -299,7 +299,6 @@ set(PULSE_JAVA_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/com/kitware/pulse/cdm/testing/validation/ValidationMatrix.java
   ${CMAKE_CURRENT_SOURCE_DIR}/com/kitware/pulse/cdm/testing/validation/ValidationTool.java
   ${CMAKE_CURRENT_SOURCE_DIR}/com/kitware/pulse/dataset/DataSetReader.java
-  ${CMAKE_CURRENT_SOURCE_DIR}/com/kitware/pulse/dataset/ValidationDataSetReader.java
   ${CMAKE_CURRENT_SOURCE_DIR}/com/kitware/pulse/engine/PulseConfiguration.java
   ${CMAKE_CURRENT_SOURCE_DIR}/com/kitware/pulse/engine/PulseEngine.java
   ${CMAKE_CURRENT_SOURCE_DIR}/com/kitware/pulse/engine/PulseScenario.java

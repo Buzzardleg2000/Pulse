@@ -378,6 +378,7 @@ class ITMScenarioReport(SEScenarioReport):
             "HeartRate(1/min)" : "HR",
             "RespirationRate(1/min)" : "RR",
             "OxygenSaturation": "SpO2",
+            "PeripheralPerfusionIndex": "PPI",
             "SystolicArterialPressure(mmHg)": "Systolic",
             "DiastolicArterialPressure(mmHg)": "Diastolic",
         }
@@ -425,14 +426,17 @@ class ITMScenarioReport(SEScenarioReport):
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
 
-    if len(sys.argv) < 4:
-        _pulse_logger.error("Expected inputs : <log file> <csv results file> <out file> [observation_frequency_min]")
+    if len(sys.argv) <= 3:
+        log_file = Path(sys.argv[1]+".log")
+        csv_file = Path(sys.argv[1]+".csv")
+        out_file = Path(sys.argv[1]+".obs.json")
+        if len(sys.argv) == 3:
+            observation_frequency_min = sys.argv[2]
+        else:
+            observation_frequency_min = 3
+    else:
+        _pulse_logger.error("Expected inputs : <log/csv file path w/o extension> [observation_frequency_min]")
         sys.exit(1)
-
-    log_file = Path(sys.argv[1])
-    csv_file = Path(sys.argv[2])
-    out_file = Path(sys.argv[3])
-    observation_frequency_min = 3
 
     if not log_file.is_file():
         _pulse_logger.error("Please provide a valid log file")

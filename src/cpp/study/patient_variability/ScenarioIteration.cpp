@@ -22,22 +22,44 @@ namespace pulse::study::patient_variability
     PulseScenario::Clear();
   }
 
-  bool ScenarioIteration::GenerateScenarios(const PatientIteration& patients, const std::string destDir)
+  void ScenarioIteration::SetScenarioDirectory(const std::string& d)
+  {
+    if (d.empty())
+      m_ScenarioDirectory = "./test_results/patient_variability/"+GetIterationName()+"/scenarios/";
+    else
+      m_ScenarioDirectory = d;
+    if (m_ScenarioDirectory.back() != '/')
+      m_ScenarioDirectory = m_ScenarioDirectory + "/";
+  }
+
+  void ScenarioIteration::SetStateDirectory(const std::string& d)
+  {
+    if (d.empty())
+      m_StateDirectory = "./test_results/patient_variability/"+GetIterationName()+"/states/";
+    else
+      m_StateDirectory = d;
+    if (m_StateDirectory.back() != '/')
+      m_StateDirectory = m_StateDirectory + "/";
+  }
+
+  bool ScenarioIteration::GenerateScenarios(const PatientIteration& patients)
   {
     FixUp();
     m_NumScenarios = 0;
     m_ScenarioStates.clear();
-    Info("Generating " + GetIterationName() + " scenarios");
+
+    Info("Generating " + GetIterationName() + " scenarios to: " + m_ScenarioDirectory);
+    Info("Generating " + GetIterationName() + " states to: " + m_StateDirectory);
 
     for (auto& itr : patients.GetPatientStates())
     {
       switch (m_GenStyle)
       {
       case eGenStyle::Combo:
-        GenerateCombinationActionSets(itr, destDir);
+        GenerateCombinationActionSets(itr);
         break;
       case eGenStyle::Slice:
-        GenerateSlicedActionSets(itr, destDir);
+        GenerateSlicedActionSets(itr);
         break;
       }
     }

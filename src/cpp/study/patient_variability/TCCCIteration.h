@@ -23,7 +23,6 @@ namespace pulse::study::patient_variability
     virtual ~TCCCIteration();
 
     void Clear() override;
-    std::string GetIterationName() override { return "TCCC"; }
 
     bool PerformInterventions() const { return m_PerformInterventions; }
     void PerformInterventions(bool p) { m_PerformInterventions = p; }
@@ -51,14 +50,13 @@ namespace pulse::study::patient_variability
 
   protected:
     void FixUp() override;
-    void GenerateSlicedActionSets(std::pair<std::string, std::string>, const std::string destDir) override;
-    void GenerateCombinationActionSets(std::pair<std::string, std::string>, const std::string destDir) override;
+    void GenerateSlicedActionSets(std::pair<std::string, std::string>) override;
+    void GenerateCombinationActionSets(std::pair<std::string, std::string>) override;
     void GenerateScenario(double AirwayObstructionSeverity,
                           double HemorrhageSeverity,
                           double TensionPneumothoraxSeverity,
                           double InsultDuration_s,
-                          const std::string& PatientName,
-                          const std::string& destDir);
+                          const std::string& PatientName);
 
     // Statefull
     bool                  m_PerformInterventions;

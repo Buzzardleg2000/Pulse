@@ -23,24 +23,33 @@ message ParameterIterationData
 message PatientIterationData
 {
   eGenStyle                                        GenStyle                    = 1;
-  pulse.cdm.bind.PatientData.eSex                  Sex                         = 2;
-  ParameterIterationData                           Age_yr                      = 3;
-  ParameterIterationData                           Height_cm                   = 4;
-  ParameterIterationData                           BodyMassIndex               = 5;
-  ParameterIterationData                           BodyFatFraction             = 6;
-  ParameterIterationData                           HeartRate_bpm               = 7;
-  ParameterIterationData                           MeanArtierialPressure_mmHg  = 8;
-  ParameterIterationData                           PulsePressure_mmHg          = 9;
-  ParameterIterationData                           RespirationRate_bpm         = 10;
+  string                                           IterationName               = 2;
+  string                                           ScenarioDirectory           = 3;/**<< @brief Directory to generate scenarios in. */
+  string                                           StateDirectory              = 4;/**<< @brief Directory to generate states in. */
+  
+  pulse.cdm.bind.PatientData.eSex                  Sex                         = 5;
+  ParameterIterationData                           Age_yr                      = 6;
+  ParameterIterationData                           Height_cm                   = 7;
+  ParameterIterationData                           BodyMassIndex               = 8;
+  ParameterIterationData                           BodyFatFraction             = 9;
+  ParameterIterationData                           HeartRate_bpm               = 10;
+  ParameterIterationData                           MeanArtierialPressure_mmHg  = 11;
+  ParameterIterationData                           PulsePressure_mmHg          = 12;
+  ParameterIterationData                           RespirationRate_bpm         = 13;
+  
 }
 
 message ScenarioIterationData
 {
   pulse.engine.bind.ScenarioData                   Scenario                    = 1;
   eGenStyle                                        GenStyle                    = 2;
-  bool                                             CreateStates                = 3;
-  double                                           BaselineDuration_s          = 4;
-  double                                           MaxSimTime_min              = 5;
+  string                                           IterationName               = 3;
+  string                                           ScenarioDirectory           = 4;/**<< @brief Directory to generate scenarios in. */
+  string                                           StateDirectory              = 5;/**<< @brief Directory to generate states in. */
+  
+  bool                                             CreateStates                = 6;
+  double                                           BaselineDuration_s          = 7;/**<< @brief How much time to advance before we add actions. */
+  double                                           MaxSimTime_min              = 8;/**<< @brief Maximum amount of time to run this scenario. */
 }
 
 message TCCCIterationData

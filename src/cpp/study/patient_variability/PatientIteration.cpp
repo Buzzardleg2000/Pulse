@@ -24,6 +24,10 @@ namespace pulse::study::patient_variability
   {
     SetGenStyle(eGenStyle::Combo);
     SetSex(ePatient_Sex::Male);
+    m_IterationName = "default_male";
+
+    SetScenarioDirectory("");
+    SetStateDirectory("");
 
     m_Actions.push_back(&m_PatientState);
     m_Patient = &GetPatientConfiguration().GetPatient();
@@ -31,12 +35,33 @@ namespace pulse::study::patient_variability
 
   PatientIteration::~PatientIteration()
   {
-
+    Clear();
   }
 
   void PatientIteration::Clear()
   {
     m_Actions.clear();
+    PulseScenario::Clear();
+  }
+
+  void PatientIteration::SetScenarioDirectory(const std::string& d)
+  {
+    if (d.empty())
+      m_ScenarioDirectory = "./test_results/patient_variability/patient/scenarios/";
+    else
+      m_ScenarioDirectory = d;
+    if (m_ScenarioDirectory.back() != '/')
+      m_ScenarioDirectory = m_ScenarioDirectory + "/";
+  }
+
+  void PatientIteration::SetStateDirectory(const std::string& d)
+  {
+    if (d.empty())
+      m_StateDirectory = "./test_results/patient_variability/patient/states/";
+    else
+      m_StateDirectory = d;
+    if (m_StateDirectory.back() != '/')
+      m_StateDirectory = m_StateDirectory + "/";
   }
 
   void PatientIteration::FixUp()
@@ -72,20 +97,23 @@ namespace pulse::study::patient_variability
       m_RR_bpm.SetValues({ stdRR_bpm });
   }
 
-  void PatientIteration::GenerateScenarios(const std::string& destDir)
+  void PatientIteration::GenerateScenarios()
   {
     FixUp();
     m_DuplicatePatients = 0;
     m_NumPatientsFailedToSetup = 0;
     m_PatientStates.clear();
 
+    Info("Generating patient scenarios to: " + m_ScenarioDirectory);
+    Info("Generating patient states to: " + m_StateDirectory);
+
     switch (m_GenStyle)
     {
     case eGenStyle::Combo:
-      GenerateCombinationPatientList(destDir);
+      GenerateCombinationPatientList();
       break;
     case eGenStyle::Slice:
-      GenerateSlicedPatientList(destDir);
+      GenerateSlicedPatientList();
       break;
     }
 
@@ -93,7 +121,7 @@ namespace pulse::study::patient_variability
     Info("Defined " + std::to_string(m_PatientStates.size()) + " patients");
   }
 
-  void PatientIteration::GenerateSlicedPatientList(const std::string& destDir)
+  void PatientIteration::GenerateSlicedPatientList()
   {
     SEPatient basePatient(GetLogger());
     basePatient.SetSex(m_Sex);
@@ -111,7 +139,7 @@ namespace pulse::study::patient_variability
     {
       m_Patient->Copy(basePatient);
       m_Patient->GetAge().SetValue(age_yr, TimeUnit::yr);
-      GenerateScenario(destDir);
+      GenerateScenario();
     }
     basePatient.GetAge().SetValue(m_Age_yr.GetSlice(), TimeUnit::yr);
 
@@ -120,7 +148,7 @@ namespace pulse::study::patient_variability
     {
       m_Patient->Copy(basePatient);
       m_Patient->GetHeight().SetValue(height_cm, LengthUnit::cm);
-      GenerateScenario(destDir);
+      GenerateScenario();
     }
     basePatient.GetHeight().SetValue(m_Height_cm.GetSlice(), LengthUnit::cm);
 
@@ -129,7 +157,7 @@ namespace pulse::study::patient_variability
     {
       m_Patient->Copy(basePatient);
       m_Patient->GetBodyMassIndex().SetValue(bmi);
-      GenerateScenario(destDir);
+      GenerateScenario();
     }
     basePatient.GetBodyMassIndex().SetValue(m_BMI.GetSlice());
 
@@ -138,7 +166,7 @@ namespace pulse::study::patient_variability
     {
       m_Patient->Copy(basePatient);
       m_Patient->GetBodyFatFraction().SetValue(bff);
-      GenerateScenario(destDir);
+      GenerateScenario();
     }
     basePatient.GetBodyFatFraction().SetValue(m_BFF.GetSlice());
 
@@ -147,7 +175,7 @@ namespace pulse::study::patient_variability
     {
       m_Patient->Copy(basePatient);
       m_Patient->GetHeartRateBaseline().SetValue(hr_bpm, FrequencyUnit::Per_min);
-      GenerateScenario(destDir);
+      GenerateScenario();
     }
     basePatient.GetHeartRateBaseline().SetValue(m_HR_bpm.GetSlice(), FrequencyUnit::Per_min);
 
@@ -168,7 +196,7 @@ namespace pulse::study::patient_variability
         m_Patient->GetDiastolicArterialPressureBaseline().Invalidate();
         m_Patient->GetMeanArterialPressureBaseline().SetValue(map, PressureUnit::mmHg);
         m_Patient->GetPulsePressureBaseline().SetValue(pp_mmHg, PressureUnit::mmHg);
-        GenerateScenario(destDir);
+        GenerateScenario();
       }
     }
     basePatient.GetMeanArterialPressureBaseline().SetValue(m_MAP_mmHg.GetSlice(), PressureUnit::mmHg);
@@ -179,12 +207,12 @@ namespace pulse::study::patient_variability
     {
       m_Patient->Copy(basePatient);
       m_Patient->GetRespirationRateBaseline().SetValue(rr, FrequencyUnit::Per_min);
-      GenerateScenario(destDir);
+      GenerateScenario();
     }
     basePatient.GetRespirationRateBaseline().SetValue(m_RR_bpm.GetSlice(), FrequencyUnit::Per_min);
   }
 
-  void PatientIteration::GenerateCombinationPatientList(const std::string& destDir)
+  void PatientIteration::GenerateCombinationPatientList()
   {
     Info("Generating combinatorial data set");
     // Each parameter we want to include in our permutations, has 3 options, min, max, standard/default
@@ -211,11 +239,11 @@ namespace pulse::study::patient_variability
       m_Patient->GetMeanArterialPressureBaseline().SetValue(m_MAP_mmHg.GetValues()[idxs[5]], PressureUnit::mmHg);
       m_Patient->GetPulsePressureBaseline().SetValue(m_PP_mmHg.GetValues()[idxs[6]], PressureUnit::mmHg);
       m_Patient->GetRespirationRateBaseline().SetValue(m_RR_bpm.GetValues()[idxs[7]], FrequencyUnit::Per_min);
-      GenerateScenario(destDir);
+      GenerateScenario();
     }
   }
 
-  void PatientIteration::GenerateScenario(const std::string& destDir)
+  void PatientIteration::GenerateScenario()
   {
     std::string name = ToString(*m_Patient);
     if (m_PatientStates.find(name) != m_PatientStates.end())
@@ -226,8 +254,8 @@ namespace pulse::study::patient_variability
     }
     m_Name = name;
     m_Patient->SetName(name);
-    m_PatientState.SetFilename(destDir+"/states/patients/"+name+".pbb");
-    SerializeToFile(destDir + "/scenarios/patients/" + name + ".json");
+    m_PatientState.SetFilename(m_StateDirectory+name+".pbb");
+    SerializeToFile(m_ScenarioDirectory+name+".json");
     m_PatientStates[name] = m_PatientState.GetFilename();
   }
 

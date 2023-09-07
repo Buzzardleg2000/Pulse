@@ -16,6 +16,7 @@ namespace pulse::study::patient_variability
 {
   TCCCIteration::TCCCIteration(Logger& logger) : ScenarioIteration(logger)
   {
+    m_IterationName = "TCCC";
     m_PerformInterventions = false;
 
     m_Hemorrhage.SetType(eHemorrhage_Type::External);
@@ -26,10 +27,12 @@ namespace pulse::study::patient_variability
     m_DataRequestMgr->CreatePhysiologyDataRequest("HeartRate", FrequencyUnit::Per_min);
     m_DataRequestMgr->CreatePhysiologyDataRequest("RespirationRate", FrequencyUnit::Per_min);
     m_DataRequestMgr->CreatePhysiologyDataRequest("OxygenSaturation");
+    m_DataRequestMgr->CreatePhysiologyDataRequest("PeripheralPerfusionIndex");
     m_DataRequestMgr->CreatePhysiologyDataRequest("SystolicArterialPressure", PressureUnit::mmHg);
     m_DataRequestMgr->CreatePhysiologyDataRequest("DiastolicArterialPressure", PressureUnit::mmHg);
     m_DataRequestMgr->CreateLiquidCompartmentDataRequest("RightArmVasculature", "InFlow", VolumePerTimeUnit::mL_Per_s);
     m_DataRequestMgr->CreateLiquidCompartmentDataRequest("BrainVasculature", "Oxygen", "PartialPressure", PressureUnit::mmHg);
+
   }
   TCCCIteration::~TCCCIteration()
   {
@@ -38,6 +41,7 @@ namespace pulse::study::patient_variability
 
   void TCCCIteration::Clear()
   {
+    m_Actions.clear();
     ScenarioIteration::Clear();
   }
 
@@ -59,12 +63,12 @@ namespace pulse::study::patient_variability
       m_ChestWrapAvailable.SetValues({ 0 });
   }
 
-  void TCCCIteration::GenerateSlicedActionSets(std::pair<std::string, std::string> patientFolderAndStateFilename, const std::string destDir)
+  void TCCCIteration::GenerateSlicedActionSets(std::pair<std::string, std::string> patientFolderAndStateFilename)
   {
 
   }
 
-  void TCCCIteration::GenerateCombinationActionSets(std::pair<std::string, std::string> patientFolderAndStateFilename, const std::string destDir)
+  void TCCCIteration::GenerateCombinationActionSets(std::pair<std::string, std::string> patientFolderAndStateFilename)
   {
     std::vector<size_t> opts; // -1 as the opts holds the max index of that option
     opts.push_back(m_AirwayObstructionSeverity.GetValues().size()-1);
@@ -96,8 +100,7 @@ namespace pulse::study::patient_variability
           HemorrhageSeverity > 0 ||
           TensionPneumothoraxSeverity > 0)
       {
-        GenerateScenario(AirwayObstructionSeverity, HemorrhageSeverity, TensionPneumothoraxSeverity, InsultDuration_s,
-          patientFolderAndStateFilename.first, destDir);
+        GenerateScenario(AirwayObstructionSeverity, HemorrhageSeverity, TensionPneumothoraxSeverity, InsultDuration_s, patientFolderAndStateFilename.first);
       }
       m_Actions.clear();
     }
@@ -107,8 +110,7 @@ namespace pulse::study::patient_variability
                                        double HemorrhageSeverity,
                                        double TensionPneumothoraxSeverity,
                                        double InsultDuration_s,
-                                       const std::string& PatientName,
-                                       const std::string& destDir)
+                                       const std::string& PatientName)
   {
     std::string name;
     name =  "AO" + pulse::cdm::to_string(AirwayObstructionSeverity) + "_";
@@ -122,7 +124,7 @@ namespace pulse::study::patient_variability
       m_Duplicates++;
       return;
     }
-    GetDataRequestManager().SetResultsFilename(destDir + "/results/TCCC/" + m_Name + ".csv");
+    GetDataRequestManager().SetResultsFilename("./"+m_Name+".csv");
 
     double TotalAdvanceTime_s = 0;
     double FinalAdvanceTime_min = 0;
@@ -161,7 +163,7 @@ namespace pulse::study::patient_variability
     }
 
     // Save State
-    m_Serialize.SetFilename(destDir + "/states/TCCC/" + m_Name + ".pbb");
+    m_Serialize.SetFilename(m_StateDirectory+"/"+m_Name+".pbb");
     m_Actions.push_back(&m_Serialize);
 
     if (m_PerformInterventions)
@@ -179,6 +181,6 @@ namespace pulse::study::patient_variability
 
     // Write the scenario
     m_NumScenarios++;
-    SerializeToFile(destDir + "/scenarios/TCCC/" + m_Name + ".json");
+    SerializeToFile(m_ScenarioDirectory+"/"+m_Name+".json");
   }
 }

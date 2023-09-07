@@ -13,6 +13,7 @@ namespace pulse::study::patient_variability
 {
   ValidationIteration::ValidationIteration(Logger& logger) : ScenarioIteration(logger)
   {
+    m_IterationName = "Validation";
     // This is where the python data generator puts these validation data request files
     // The ./ is implied
     m_DataRequestFiles.push_back("validation/requests/BloodChemistry.json");
@@ -38,26 +39,32 @@ namespace pulse::study::patient_variability
   }
   ValidationIteration::~ValidationIteration()
   {
+    Clear();
+  }
+
+  void ValidationIteration::Clear()
+  {
     m_Actions.clear();
+    ScenarioIteration::Clear();
   }
 
-  void ValidationIteration::GenerateSlicedActionSets(std::pair<std::string, std::string> patientFolderAndStateFilename, const std::string destDir)
+  void ValidationIteration::GenerateSlicedActionSets(std::pair<std::string, std::string> patientFolderAndStateFilename)
   {
-    GenerateScenarios(patientFolderAndStateFilename, destDir);
+    GenerateScenarios(patientFolderAndStateFilename);
   }
 
-  void ValidationIteration::GenerateCombinationActionSets(std::pair<std::string, std::string> patientFolderAndStateFilename, const std::string destDir)
+  void ValidationIteration::GenerateCombinationActionSets(std::pair<std::string, std::string> patientFolderAndStateFilename)
   {
-    GenerateScenarios(patientFolderAndStateFilename, destDir);
+    GenerateScenarios(patientFolderAndStateFilename);
   }
 
-  void ValidationIteration::GenerateScenarios(std::pair<std::string, std::string> patientFolderAndStateFilename, const std::string destDir)
+  void ValidationIteration::GenerateScenarios(std::pair<std::string, std::string> patientFolderAndStateFilename)
   {
     m_NumScenarios++;
     SetName(patientFolderAndStateFilename.first);
     SetDescription("Generate data for validation");
     SetEngineStateFile(patientFolderAndStateFilename.second);
-    GetDataRequestManager().SetResultsFilename(destDir + "/results/validation/" + patientFolderAndStateFilename.first + ".csv");
-    SerializeToFile(destDir + "/scenarios/validation/" + m_Name + ".json");
+    GetDataRequestManager().SetResultsFilename("./"+patientFolderAndStateFilename.first + ".csv");
+    SerializeToFile(m_ScenarioDirectory+"/"+m_Name+".json");
   }
 }

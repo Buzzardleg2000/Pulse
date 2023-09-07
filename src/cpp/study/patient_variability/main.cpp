@@ -2,18 +2,20 @@
    See accompanying NOTICE file for details.*/
 
 #include "engine/CommonDefs.h"
+#include "engine/PulseScenarioExec.h"
+
+#include "cdm/utils/FileUtils.h"
+
 #include "PatientIteration.h"
 #include "TCCCIteration.h"
 #include "ValidationIteration.h"
-
-#include "cdm/utils/FileUtils.h"
 
 using namespace pulse::study::patient_variability;
 
 int main(int argc, char* argv[])
 {
-  bool clear                   = true;
-  bool generateOnly            = true;
+  bool clear                   = false;// TODO
+  bool generateOnly            = false;
 
   std::vector<PatientIteration*> iPatients;
   std::vector<ScenarioIteration*> iScenarios;
@@ -35,14 +37,14 @@ int main(int argc, char* argv[])
         generateOnly = true;
     }
   }
-  std::string rootDir = "./test_results/patient_variability/"+mode+"/";
+  std::string rootDir = "./test_results/patient_variability/"+mode;
   if (clear)// Then we can delete the specific solo run results
     DeleteDirectory(rootDir);
   CreatePath(rootDir);
 
   Logger logger;
   logger.LogToConsole(true);
-  logger.SetLogFile(rootDir + "PatientVariability.log");
+  logger.SetLogFile(rootDir + "/PatientVariability.log");
 
   if (mode == "validation" || mode == "hemorrhage" || mode == "itm")
   {
@@ -108,15 +110,24 @@ int main(int argc, char* argv[])
   else
   {
     PatientIteration* male = new PatientIteration(logger);
+    male->SetIterationName("default_male");
+    male->SetScenarioDirectory(rootDir + "/scenarios/patients/" + male->GetName());
+    male->SetStateDirectory(rootDir + "/states/patients/" + male->GetName());
     iPatients.push_back(male);
     if (true)
     {
       ValidationIteration* vi = new ValidationIteration(logger);
+      vi->SetIterationName("validation");
+      vi->SetScenarioDirectory(rootDir + "/scenarios/" + vi->GetIterationName());
+      vi->SetStateDirectory(rootDir + "/states/" + vi->GetIterationName());
       iScenarios.push_back(vi);
     }
-    else
+    if (true)
     {
       TCCCIteration* tccc = new TCCCIteration(logger);
+      tccc->SetIterationName("tccc");
+      tccc->SetScenarioDirectory(rootDir + "/scenarios/" + tccc->GetIterationName());
+      tccc->SetStateDirectory(rootDir + "/states/" + tccc->GetIterationName());
       tccc->CreateStates(true);
       tccc->SetBaselineDuration_s(15);
       tccc->SetMaxSimTime_min(60);
@@ -127,42 +138,47 @@ int main(int argc, char* argv[])
     }
   }
 
-  std::string destDir = rootDir;
+  PulseScenarioExec* opts;
+  std::vector<PulseScenarioExec*> execs;
   for (PatientIteration* pi : iPatients)
   {
-    pi->GenerateScenarios(destDir);
+    pi->GenerateScenarios();
+
+    // Create an exec for this directory
+    opts = new PulseScenarioExec(&logger);
+    opts->SetModelType(eModelType::HumanAdultWholeBody);
+    opts->LogToConsole(eSwitch::Off);
+    opts->SetScenarioDirectory(pi->GetScenarioDirectory());
+    opts->SetOutputRootDirectory(rootDir + "/results/patients/" + pi->GetIterationName() + "/");
+    execs.push_back(opts);
+
     for (ScenarioIteration* ssi : iScenarios)
     {
-      ssi->GenerateScenarios(*pi, destDir);
+      ssi->GenerateScenarios(*pi);
+
+      // Create an exec for this directory
+      opts = new PulseScenarioExec(&logger);
+      opts->SetModelType(eModelType::HumanAdultWholeBody);
+      opts->LogToConsole(eSwitch::Off);
+      opts->SetScenarioDirectory(ssi->GetScenarioDirectory());
+      opts->SetOutputRootDirectory(rootDir + "/results/" + ssi->GetIterationName() + "/");
+      execs.push_back(opts);
     }
   }
 
   if (generateOnly)
     return 0;
-/*
-  PulseScenarioExec opts(&logger);
-  opts.SetModelType(eModelType::HumanAdultWholeBody);
-  opts.LogToConsole(eSwitch::Off);
-  // Run the patient scenarios
-  opts.SetScenarioDirectory(sg.GetPatientScenarioDirectory());
-  opts.SetOutputRootDirectory(sg.GetPatientScenarioDirectory() + "/results/");
-  if (!opts.Execute())
+
+  for (PulseScenarioExec* opts : execs)
   {
-    logger.Error("Unable to run patient scenarios");
-    return 1;
-  }
-  // Run the action scenarios
-  for (std::string actionDir : sg.GetActionSetDirectories())
-  {
-    opts.SetScenarioDirectory(actionDir);
-    opts.SetOutputRootDirectory(actionDir + "/results/");
-    if (!opts.Execute())
+    if (!opts->Execute())
     {
-      logger.Error("Unable to run action set scenarios");
+      logger.Error("Unable to run scenarios");
       return 1;
     }
   }
-*/
+
+  SAFE_DELETE_VECTOR(execs);
   SAFE_DELETE_VECTOR(iPatients);
   SAFE_DELETE_VECTOR(iScenarios);
   return 0;

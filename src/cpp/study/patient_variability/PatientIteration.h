@@ -53,6 +53,16 @@ namespace pulse::study::patient_variability
 
     void Clear() override;
 
+    virtual void SetIterationName(const std::string& n) { m_IterationName = n; }
+    virtual std::string GetIterationName() const { return m_IterationName; }
+
+    void SetScenarioDirectory(const std::string& d);
+    std::string GetScenarioDirectory() const { return m_ScenarioDirectory; }
+
+    void SetStateDirectory(const std::string& d);
+    std::string GetStateDirectory() const { return m_StateDirectory; }
+
+
     eGenStyle GetGenStyle() const { return m_GenStyle; }
     void SetGenStyle(eGenStyle s) { m_GenStyle = s; }
 
@@ -83,27 +93,30 @@ namespace pulse::study::patient_variability
     ParameterIteration& GetRR_bpm() { return m_RR_bpm; }
     const ParameterIteration& GetRR_bpm() const { return m_RR_bpm; }
 
-    void GenerateScenarios(const std::string& destDir);
+    void GenerateScenarios();
     const std::map<std::string, std::string>& GetPatientStates() const { return m_PatientStates; }
 
   protected:
     void FixUp();
-    void GenerateScenario(const std::string& destDir);
-    void GenerateSlicedPatientList(const std::string& destDir);
-    void GenerateCombinationPatientList(const std::string& destDir);
+    void GenerateScenario();
+    void GenerateSlicedPatientList();
+    void GenerateCombinationPatientList();
 
     static std::string ToString(SEPatient& patient);
 
-    eGenStyle          m_GenStyle;
-    ePatient_Sex       m_Sex;
-    ParameterIteration m_Age_yr;
-    ParameterIteration m_Height_cm;
-    ParameterIteration m_BMI;
-    ParameterIteration m_BFF;
-    ParameterIteration m_HR_bpm;
-    ParameterIteration m_MAP_mmHg;
-    ParameterIteration m_PP_mmHg;
-    ParameterIteration m_RR_bpm;
+    eGenStyle                              m_GenStyle;
+    ePatient_Sex                           m_Sex;
+    ParameterIteration                     m_Age_yr;
+    ParameterIteration                     m_Height_cm;
+    ParameterIteration                     m_BMI;
+    ParameterIteration                     m_BFF;
+    ParameterIteration                     m_HR_bpm;
+    ParameterIteration                     m_MAP_mmHg;
+    ParameterIteration                     m_PP_mmHg;
+    ParameterIteration                     m_RR_bpm;
+    std::string                            m_IterationName;
+    std::string                            m_ScenarioDirectory;
+    std::string                            m_StateDirectory;
 
     unsigned int                           m_NumPatientsFailedToSetup = 0;
     unsigned int                           m_DuplicatePatients = 0;

@@ -59,7 +59,7 @@ class STARTObservationModule(SEObservationReportModule):
         self._headers = [
             self.RR_Per_min,
             self.SAP_mmHg,
-            #self.PPI,
+            self.PPI,
             self.BRAIN_VASC_O2PP_mmHg,
             self.SPO2
         ]
@@ -378,7 +378,6 @@ class ITMScenarioReport(SEScenarioReport):
             "HeartRate(1/min)" : "HR",
             "RespirationRate(1/min)" : "RR",
             "OxygenSaturation": "SpO2",
-            "PeripheralPerfusionIndex": "PPI",
             "SystolicArterialPressure(mmHg)": "Systolic",
             "DiastolicArterialPressure(mmHg)": "Diastolic",
         }

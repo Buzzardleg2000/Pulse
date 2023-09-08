@@ -47,7 +47,7 @@ def process_sheet(sheet: Worksheet, output_dir: Path, results_dir: Path) -> bool
     drs = []
     segments = []
     seg = None
-    conditions = ""
+    conditions = []
     h2c = {}
 
     def _gen_header_to_col_dict(row: Tuple) -> Dict[str, int]:
@@ -84,24 +84,28 @@ def process_sheet(sheet: Worksheet, output_dir: Path, results_dir: Path) -> bool
                 h2c = _gen_header_to_col_dict(r)
                 continue
 
-            if not scenario.has_engine_state():
-                if "conditions" in h2c and isinstance(r[h2c["conditions"]], str):
-                    conditions = r[h2c["conditions"]]
-
-            seg = SESegmentValidationSegment()
-            if "segment" in h2c:
-                seg.set_segment_id(int(r[h2c["segment"]]))
-            seg.set_notes(r[h2c["notes"]] if "notes" in h2c and isinstance(r[h2c["notes"]], str) else "")
-            segments.append(seg)
-            seg = None
-
-            stage = Stage.DataRequests
-        elif stage == Stage.DataRequests:
             # Header row
             if isinstance(r[0], str) and r[0].strip().lower() == "request type":
+                if seg is not None:
+                    segments.append(seg)
+                    seg = None
+                stage = Stage.DataRequests
                 h2c = _gen_header_to_col_dict(r)
                 continue
 
+            if not scenario.has_engine_state():
+                if "conditions" in h2c and isinstance(r[h2c["conditions"]], str):
+                    conditions.append(r[h2c["conditions"]])
+
+            if seg is None:
+                seg = SESegmentValidationSegment()
+                if "segment" in h2c:
+                    seg.set_segment_id(int(r[h2c["segment"]]))
+            if "segment" in h2c and int(r[h2c["segment"]]) != seg.get_segment_id():
+                _pulse_logger.warning(f'Ignoring change in segment ID without new header. Found {r[h2c["segment"]]} under segment {seg.get_segment_id()}')
+            seg.set_notes("\n".join([seg.get_notes(), r[h2c["notes"]] if "notes" in h2c and isinstance(r[h2c["notes"]], str) else ""]).strip())
+
+        elif stage == Stage.DataRequests:
             # Header row
             if isinstance(r[0], str) and r[0].strip().lower() == "segment":
                 h2c = _gen_header_to_col_dict(r)
@@ -123,24 +127,35 @@ def process_sheet(sheet: Worksheet, output_dir: Path, results_dir: Path) -> bool
         elif stage == Stage.Segment:
             # Header row
             if isinstance(r[0], str) and r[0].strip().lower() == "segment":
+                # True in the case of going directly to the next segment, no validation targets
+                if seg is not None:
+                    segments.append(seg)
+                    seg = None
+
                 h2c = _gen_header_to_col_dict(r)
                 continue
 
-            seg = SESegmentValidationSegment()
-            if "segment" in h2c:
-                seg.set_segment_id(int(r[h2c["segment"]]))
-            seg.set_notes(r[h2c["notes"]] if "notes" in h2c and isinstance(r[h2c["notes"]], str) else "")
-            seg.set_actions(r[h2c["actions"]] if "actions" in h2c and isinstance(r[h2c["actions"]], str) else "")
-
-            stage = Stage.ValidationTargets
-        # Validation targets, comparison type/to, reference/notes
-        elif stage == Stage.ValidationTargets:
             # Header row
             if isinstance(r[0], str) and r[0].strip().lower() == "request type":
                 h2c = _gen_header_to_col_dict(r)
+                stage = Stage.ValidationTargets
                 continue
 
-            # Header row, identified end of segment
+            if seg is None:
+                seg = SESegmentValidationSegment()
+                if "segment" in h2c:
+                    seg.set_segment_id(int(r[h2c["segment"]]))
+            if "segment" in h2c and int(r[h2c["segment"]]) != seg.get_segment_id():
+                _pulse_logger.warning(f'Ignoring change in segment ID without new header. Found {r[h2c["segment"]]} under segment {seg.get_segment_id()}')
+            # Append notes to existing segment notes, joined with new lines
+            seg.set_notes("\n".join([seg.get_notes(), r[h2c["notes"]] if "notes" in h2c and isinstance(r[h2c["notes"]], str) else ""]).strip())
+            # Append any actions to this segment
+            if "actions" in h2c and isinstance(r[h2c["actions"]], str):
+                seg.get_actions().append(r[h2c["actions"]])
+
+        # Validation targets, comparison type/to, reference/notes
+        elif stage == Stage.ValidationTargets:
+            # Header row
             if isinstance(r[0], str) and r[0].strip().lower() == "segment":
                 segments.append(seg)
                 seg = None
@@ -220,15 +235,15 @@ def process_sheet(sheet: Worksheet, output_dir: Path, results_dir: Path) -> bool
 
 
 def write_scenario(scenario: SEScenario, segments: List[SESegmentValidationSegment],
-                   conditions: str, results_csv_filename: Path) -> str:
+                   conditions: List[str], results_csv_filename: Path) -> str:
     # Load actions into dict from concatenated JSON across segments
     segment_file_name = Path(str(results_csv_filename).replace(".csv", "-Segments.json")).as_posix()
     all_actions_str = '{"AnyAction": ['
     for idx, s in enumerate(segments):
-        all_actions_str += s.get_actions()
+        all_actions_str += ",".join(s.get_actions())
 
         # Add serialize requested action to end of every segment
-        if idx == len(segments) - 1 and all_actions_str != '{"AnyAction": [':
+        if all_actions_str != '{"AnyAction": [':
             all_actions_str += ','
         all_actions_str += '{"SerializeRequested": {'
         all_actions_str += f'"ClearCache": false,'
@@ -244,7 +259,7 @@ def write_scenario(scenario: SEScenario, segments: List[SESegmentValidationSegme
 
     # Load conditions into dict
     all_conditions_str = '{"AnyCondition": ['
-    all_conditions_str += conditions
+    all_conditions_str += ", ".join(conditions)
     all_conditions_str += ']}'
     all_conditions = {}
     if conditions:

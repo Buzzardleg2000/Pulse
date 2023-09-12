@@ -166,7 +166,6 @@ namespace pulse
     dst.m_CurrentRespiratoryVolume_L = src.currentrespiratoryvolume_l();
     dst.m_InspirationTime_s = src.inspirationtime_s();
     dst.m_InspiratoryFlow_L_Per_s = src.inspiratoryflow_l_per_s();
-    dst.m_LimitReached = src.limitreached();
     dst.m_PreviousYPieceToConnectionFlow_L_Per_s = src.previousypiecetoconnectionflow_l_per_s();
     dst.m_PreviousConnectionPressure_cmH2O = src.previousconnectionpressure_cmh2o();
     dst.m_Initializing = src.initializing();
@@ -195,7 +194,6 @@ namespace pulse
     dst.set_currentrespiratoryvolume_l(src.m_CurrentRespiratoryVolume_L);
     dst.set_inspirationtime_s(src.m_InspirationTime_s);
     dst.set_inspiratoryflow_l_per_s(src.m_InspiratoryFlow_L_Per_s);
-    dst.set_limitreached(src.m_LimitReached);
     dst.set_previousypiecetoconnectionflow_l_per_s(src.m_PreviousYPieceToConnectionFlow_L_Per_s);
     dst.set_previousconnectionpressure_cmh2o(src.m_PreviousConnectionPressure_cmH2O);
     dst.set_initializing(src.m_Initializing);

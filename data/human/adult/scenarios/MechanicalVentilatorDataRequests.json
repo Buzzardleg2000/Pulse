@@ -2,6 +2,7 @@
   "DataRequest":
   [
     { "DecimalFormat": { "Precision": 6 }, "Category": "MechanicalVentilator", "PropertyName": "AirwayPressure",                      "Unit": "cmH2O"     },
+    { "DecimalFormat": { "Precision": 1 }, "Category": "MechanicalVentilator", "PropertyName": "BreathState",                                             },
     { "DecimalFormat": { "Precision": 6 }, "Category": "MechanicalVentilator", "PropertyName": "DynamicPulmonaryCompliance",          "Unit": "mL/cmH2O"  },
     { "DecimalFormat": { "Precision": 6 }, "Category": "MechanicalVentilator", "PropertyName": "EndTidalCarbonDioxideFraction"                            },
     { "DecimalFormat": { "Precision": 6 }, "Category": "MechanicalVentilator", "PropertyName": "EndTidalCarbonDioxidePressure",       "Unit": "mmHg"      },

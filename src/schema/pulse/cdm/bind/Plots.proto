@@ -50,6 +50,13 @@ message PlotConfigData
     Plain                                                       = 1; /**<< @brief "Plain" values will be used on the y-axis. */
   }
 
+  /** @brief Enumeration for Y-bounds modes. */
+  enum eYBoundsMode
+  {
+    ZeroMax                                                     = 0; /**<< @brief Will include y=0 within the plot window. */
+    MinMax                                                      = 1; /**<< @brief Plot window will be determined by min/max y-value. */
+  }
+
   /** @brief If scientific tick style is used, only apply scientific notation outside of the range 10^M to 10^N.*/
   message SciLimitsData
   {
@@ -73,7 +80,7 @@ message PlotConfigData
   optional bool                       PlotEvents                = 14; /**<< @brief Plot events parsed from log file. */
   optional SciLimitsData              SciLimits                 = 15;
   optional eTickStyle                 TickStyle                 = 16;
-  optional bool                       ZeroAxis                  = 17; /**<< @brief Will ensure that zero is included on the Y axis rather than zooming away from it based on the plot's min/max Y values. */
+  optional eYBoundsMode               YBoundsMode               = 17; /**<< @brief Set mode for y-axis bounds. Note: Log axis plots are always MinMax mode. */
 }
 
 /** @brief Data used to configure a plot source. */
@@ -138,10 +145,10 @@ message MultiHeaderSeriesPlotterData
     optional string                   X2Header                  = 8;  /**<< @brief Specify the header for x-data corresponding to the secondary y-axis. Assumed to be the same as XHeader if not provided. */
     repeated string                   YHeader                   = 9;  /**<< @brief Specify the header(s) for the y-axis. */
     optional string                   YLabel                    = 10; /**<< @brief Specify the y-axis label for this plot. */
-    optional BoundsData               YBounds                   = 11; /**<< @brief Specify the desired y-axis bounds.  */
+    optional BoundsData               YBounds                   = 11; /**<< @brief Specify the desired y-axis bounds. Overrides YBoundsMode in plot config. */
     repeated string                   Y2Header                  = 12; /**<< @bried Specify the header(s) for the secondary y-axis. Data pulled from PlotSources unless ValidationSource provided. */
     optional string                   Y2Label                   = 13; /**<< @brief Specify the secondary y-axis label for this plot. */
-    optional BoundsData               Y2Bounds                  = 14; /**<< @brief Specify the desired secondary y-axis bounds. */
+    optional BoundsData               Y2Bounds                  = 14; /**<< @brief Specify the desired secondary y-axis bounds. Overrides YBoundsMode in plot config.*/
   }
 }
 

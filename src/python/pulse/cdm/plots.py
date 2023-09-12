@@ -119,13 +119,16 @@ class ePercentageOfBaselineMode(Enum):
 class eTickStyle(Enum):
     Scientific = 0
     Plain = 1
+class eYBoundsMode(Enum):
+    ZeroMax = 0
+    MinMax = 1
 class SEPlotConfig():
     __slots__ = [ "_disabled", "_fill_area", "_font_size", "_gridlines", "_image_properties",
                   "_legend_font_size", "_legend_mode", "_log_axis", "_omit_actions_with",
                   "_omit_events_with", "_output_filename", "_output_path_override",
                   "_percent_of_baseline_mode", "_plot_actions", "_plot_events",
                   "_sci_limits", "_tick_style", "_title", "_x_label", "_x_bounds", "_y_label",
-                  "_y_bounds", "_y2_label", "_y2_bounds", "_zero_axis"]
+                  "_y_bounds", "_y2_label", "_y2_bounds", "_y_bounds_mode"]
 
     def __init__(self, set_defaults: bool=False):
         self.clear()
@@ -137,7 +140,7 @@ class SEPlotConfig():
             f'{self._image_properties}, {self._legend_font_size}, {self._legend_mode}, {self._log_axis}, ' \
             f'{self._omit_actions_with}, {self._omit_events_with}, {self._output_path_override}, ' \
             f'{self._percent_of_baseline_mode}, {self._plot_actions}, {self._plot_events}, {self._sci_limits}, ' \
-            f'{self._tick_style}, {self._zero_axis})'
+            f'{self._tick_style}, {self._y_bounds_mode})'
 
     def __str__(self) -> str:
         return f'SEPlotConfig:\n\tDisabled: {self._disabled}\n\tFill Area: {self._fill_area}\n\tFont Size: ' \
@@ -147,7 +150,7 @@ class SEPlotConfig():
             f'{self._omit_events_with}\n\tOutput Path Override: {self._output_path_override}\n\t' \
             f'Percent of Baseline Mode: {self._percent_of_baseline_mode}\n\tPlot Actions: {self._plot_actions}\n\t' \
             f'Plot Events: {self._plot_events}\n\tSci Limits: {self._sci_limits}\n\tTick Style: {self._tick_style}\n\t' \
-            f'Zero Axis: {self._zero_axis}'
+            f'Y Bounds Mode: {self._y_bounds_mode}'
 
     def clear(self) -> None:
         self._disabled = None
@@ -166,7 +169,7 @@ class SEPlotConfig():
         self._plot_events = None
         self._sci_limits = None
         self._tick_style = None
-        self._zero_axis = None
+        self._y_bounds_mode = None
 
         # Internal
         self._output_filename = None
@@ -209,8 +212,8 @@ class SEPlotConfig():
             self._plot_events = False
         if self._tick_style is None:
             self._tick_style = eTickStyle.Scientific
-        if self._zero_axis is None:
-            self._zero_axis = False
+        if self._y_bounds_mode is None:
+            self._y_bounds_mode = eYBoundsMode.ZeroMax
 
         # Internal
         if self._x_bounds is None:
@@ -226,7 +229,7 @@ class SEPlotConfig():
         omit_events_with: Optional[List[str]]=None, output_path_override: Optional[Union[str, Path]]=None,
         percent_of_baseline_mode: Optional[ePercentageOfBaselineMode]=None, plot_actions: Optional[bool]=None,
         plot_events: Optional[bool]=None, sci_limits: Optional[Tuple[int, int]]=None, tick_style: Optional[eTickStyle]=None,
-        zero_axis: Optional[bool]=None
+        y_bounds_mode: Optional[eYBoundsMode]=None
     )  -> None:
         if disabled is not None:
             self._disabled = disabled
@@ -260,8 +263,8 @@ class SEPlotConfig():
             self._sci_limits = sci_limits
         if tick_style is not None:
             self._tick_style = tick_style
-        if zero_axis is not None:
-            self._zero_axis = zero_axis
+        if y_bounds_mode is not None:
+            self._y_bounds_mode = y_bounds_mode
 
     def merge_configs(self, src):
         src = deepcopy(src)
@@ -297,8 +300,8 @@ class SEPlotConfig():
             self._sci_limits = src._sci_limits
         if src._tick_style is not None:
             self._tick_style = src._tick_style
-        if src._zero_axis is not None:
-            self._zero_axis = src._zero_axis
+        if src._y_bounds_mode is not None:
+            self._y_bounds_mode = src._y_bounds_mode
 
         # Internal
         if src._output_filename is not None:
@@ -475,14 +478,14 @@ class SEPlotConfig():
     def invalidate_tick_style(self) -> None:
         self._tick_style = None
 
-    def get_zero_axis(self) -> Union[bool, None]:
-        return self._zero_axis
-    def set_zero_axis(self, zero_axis: bool) -> None:
-        self._zero_axis = zero_axis
-    def has_zero_axis_setting(self) -> bool:
-        return self._zero_axis is not None
-    def invalidate_zero_axis_setting(self) -> None:
-        self._zero_axis = None
+    def get_y_bounds_mode(self) -> Union[eYBoundsMode, None]:
+        return self._y_bounds_mode
+    def set_y_bounds_mode(self, y_bounds_mode: eYBoundsMode) -> None:
+        self._y_bounds_mode = y_bounds_mode
+    def has_y_bounds_mode(self) -> bool:
+        return self._y_bounds_mode is not None
+    def invalidate_y_bounds_mode(self) -> None:
+        self._y_bounds_mode = None
 
     def get_title(self) -> Union[str, None]:
         return self._title

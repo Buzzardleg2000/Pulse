@@ -614,7 +614,7 @@ def create_plot(plot_sources: [SEPlotSource],
     y_bounds = plot_config.get_y_bounds() if plot_config.has_y_bounds() else None
     if y_bounds is not None and (y_bounds.has_lower_bound() or y_bounds.has_upper_bound()):
         ax1.set_ylim(bottom=y_bounds.get_lower_bound(), top=y_bounds.get_upper_bound())
-    else:
+    elif plot_config.get_y_bounds_mode() == eYBoundsMode.ZeroMax:
         determine_y_bounds = not plot_config.get_log_axis()
     min_y = np.nan
     max_y = np.nan
@@ -640,7 +640,7 @@ def create_plot(plot_sources: [SEPlotSource],
                 ax2.set_ylabel(f'Log({y2_label})', fontsize=plot_config.get_font_size())
         if y2_bounds is not None and y2_bounds.has_lower_bound() or y2_bounds.has_upper_bound():
             ax2.set_ylim(bottom=y2_bounds.get_lower_bound(), top=y2_bounds.get_upper_bound())
-        else:
+        elif plot_config.get_y_bounds_mode() == eYBoundsMode.ZeroMax:
             determine_y2_bounds = not plot_config.get_log_axis()
 
     # Action/Events axis
@@ -775,17 +775,6 @@ def create_plot(plot_sources: [SEPlotSource],
                     min_y = -0.01
                 if not np.isnan(min_y):
                     ax.set_ylim(min_y-0.05*abs(min_y), max_y+0.15*abs(max_y))
-
-    # Zero axis
-    if plot_config.get_zero_axis():
-        for ax in [ax1, ax2]:
-            if ax:
-                l, u = ax.get_ylim()
-                if l > 0:
-                    l = 0
-                elif u < 0:
-                    u = 0
-                ax.set_ylim(l, u)
 
     # Ensure negative times aren't shown
     if x_header.lower().startswith("time"):

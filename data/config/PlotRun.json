@@ -58,7 +58,7 @@
           { "Comment": "P-V Loop", "Title": "", "OutputFilename": "PVLoop", "XHeader": "LeftHeart-Volume(mL)",
               "YHeader": [ "LeftHeart-Pressure(mmHg)" ],
               "PlotConfig": { "ImageProperties": { "Height_inch": 6, "Width_inch": 4 }, "LegendMode": "NoLegends",
-                "SciLimits": {}, "ZeroAxis": true } },
+                "SciLimits": {} } },
           { "Comment": "Pressure waveform - Arterial", "Title": "", "OutputFilename": "EnginePressure",
               "XBounds": { "LowerBound": 2.78, "UpperBound": 4.46 }, "YBounds": { "LowerBound": 70, "UpperBound": 120 },
               "YHeader": [ "ArterialPressure(mmHg)" ],
@@ -1348,7 +1348,8 @@
         "Series":
         [
           { "Title": "Muscle Pressure", "XBounds": { "LowerBound": 39.6, "UpperBound": 54.6 },
-              "YHeader": [ "RespiratoryMusclePressure(cmH2O)" ], "YLabel": "Pressure(cmH2O)" },
+              "YHeader": [ "RespiratoryMusclePressure(cmH2O)" ], "YLabel": "Pressure(cmH2O)",
+              "PlotConfig" : { "YBoundsMode": "MinMax" } },
           { "Title": "Pleural and Alveoli Pressure", "XBounds": { "LowerBound": 39.6, "UpperBound": 54.6 },
               "YHeader": [ "LeftPleuralCavity-Pressure(cmH2O)", "LeftAlveoli-Pressure(cmH2O)" ],
               "YLabel": "Pressure(cmH2O)" },

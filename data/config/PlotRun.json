@@ -1009,7 +1009,8 @@
         "PlotConfig":
         {
           "ImageProperties": { "Height_inch": 6, "Width_inch": 8 }, "LegendMode": "NoLegends",
-          "OutputPathOverride": "./docs/html/plots/Nervous/"
+          "OutputPathOverride": "./docs/html/plots/Nervous/",
+          "YBoundsMode": "MinMax"
         },
         "PlotSource":
         [
@@ -1340,7 +1341,7 @@
       "MultiHeaderSeriesPlotter":
       {
         "Comment": "Respiratory Methodology Report - Design - Respiratory Validation Standard Male",
-        "PlotConfig": { "OutputPathOverride": "./docs/html/plots/Respiratory/" },
+        "PlotConfig": { "OutputPathOverride": "./docs/html/plots/Respiratory/", "YBoundsMode": "MinMax" },
         "PlotSource":
         [
           { "CSVData": "$VERIFICATION_DIR/scenarios/validation/systems/RespiratoryValidation-StandardMaleResults.csv" }
@@ -1348,8 +1349,7 @@
         "Series":
         [
           { "Title": "Muscle Pressure", "XBounds": { "LowerBound": 39.6, "UpperBound": 54.6 },
-              "YHeader": [ "RespiratoryMusclePressure(cmH2O)" ], "YLabel": "Pressure(cmH2O)",
-              "PlotConfig" : { "YBoundsMode": "MinMax" } },
+              "YHeader": [ "RespiratoryMusclePressure(cmH2O)" ], "YLabel": "Pressure(cmH2O)" },
           { "Title": "Pleural and Alveoli Pressure", "XBounds": { "LowerBound": 39.6, "UpperBound": 54.6 },
               "YHeader": [ "LeftPleuralCavity-Pressure(cmH2O)", "LeftAlveoli-Pressure(cmH2O)" ],
               "YLabel": "Pressure(cmH2O)" },

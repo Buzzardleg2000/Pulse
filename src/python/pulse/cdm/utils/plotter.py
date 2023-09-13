@@ -616,14 +616,14 @@ def create_plot(plot_sources: [SEPlotSource],
         ax1.set_ylim(bottom=y_bounds.get_lower_bound(), top=y_bounds.get_upper_bound())
     elif plot_config.get_y_bounds_mode() == eYBoundsMode.ZeroMax:
         determine_y_bounds = not plot_config.get_log_axis()
-    min_y = np.nan
-    max_y = np.nan
+    min_y = None
+    max_y = None
 
     # Secondary y axis
     ax2 = None
     y2_label = ""
-    min_y2 = np.nan
-    max_y2 = np.nan
+    min_y2 = None
+    max_y2 = None
     determine_y2_bounds = False
     y2_bounds = plot_config.get_y2_bounds() if plot_config.has_y2_bounds() else None
     if y2_headers:
@@ -710,10 +710,26 @@ def create_plot(plot_sources: [SEPlotSource],
         if color is None:
             return False
 
+        # Identify min/max y values across all headers and sources
         if determine_y_bounds:
-            for y_header in y_headers:
-                min_y = min([i for i in [df[y_header].min(), min_y] if not np.isnan(i)])
-                max_y = max([i for i in [df[y_header].max(), max_y] if not np.isnan(i)])
+            min_ys = [
+                m
+                for m in (df[y_header].min() for y_header in y_headers if y_header in df.columns)
+                if not np.isnan(m)
+            ]
+            max_ys = [
+                m
+                for m in (df[y_header].max() for y_header in y_headers if y_header in df.columns)
+                if not np.isnan(m)
+            ]
+            if min_ys:
+                min_y_candidate = min(min_ys)
+                if min_y is None or min_y_candidate < min_y:
+                    min_y = min_y_candidate
+            if max_ys:
+                max_y_candidate = max(max_ys)
+                if max_y is None or max_y_candidate > max_y:
+                    max_y = max_y_candidate
 
         if y2_headers or validation_source:
             ax1.yaxis.label.set_color(color)
@@ -723,10 +739,26 @@ def create_plot(plot_sources: [SEPlotSource],
         if not validation_source and y2_headers:
             color = _plot_headers(ax2, ps, df, x2_header, y2_headers, y2_label)
 
+            # Identify min/max y values across all headers and sources
             if determine_y2_bounds:
-                for y_header in y2_headers:
-                    min_y2 = min([i for i in [df[y_header].min(), min_y2] if not np.isnan(i)])
-                    max_y2 = max([i for i in [df[y_header].max(), max_y2] if not np.isnan(i)])
+                min_y2s = [
+                    m
+                    for m in (df[y_header].min() for y_header in y2_headers if y_header in df.columns)
+                    if not np.isnan(m)
+                ]
+                max_y2s = [
+                    m
+                    for m in (df[y_header].max() for y_header in y2_headers if y_header in df.columns)
+                    if not np.isnan(m)
+                ]
+                if min_y2s:
+                    min_y2_candidate = min(min_y2s)
+                    if min_y2 is None or min_y2_candidate < min_y2:
+                        min_y2 = min_y2_candidate
+                if max_y2s:
+                    max_y2_candidate = max(max_y2s)
+                    if max_y2 is None or max_y2_candidate > max_y2:
+                        max_y2 = max_y2_candidate
 
             ax2.yaxis.label.set_color(color)
             ax2.tick_params(axis='y', colors=color)
@@ -767,13 +799,13 @@ def create_plot(plot_sources: [SEPlotSource],
     if not plot_config.get_log_axis():
         for det, ax, min_y, max_y in zip([determine_y_bounds, determine_y2_bounds], [ax1, ax2], [min_y, min_y2], [max_y, max_y2]):
             if det:
-                if np.isclose(min_y, 0):
+                if min_y is not None and np.isclose(min_y, 0):
                     min_y = -0.001
-                if np.isclose(max_y, 0):
+                if max_y is not None and np.isclose(max_y, 0):
                     max_y = 0.001
-                if min_y >= 0:
+                if min_y is not None and min_y >= 0:
                     min_y = -0.01
-                if not np.isnan(min_y):
+                if min_y is not None and not np.isnan(min_y):
                     ax.set_ylim(min_y-0.05*abs(min_y), max_y+0.15*abs(max_y))
 
     # Ensure negative times aren't shown

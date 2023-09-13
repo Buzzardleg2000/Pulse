@@ -29,6 +29,7 @@ set(ENGINE_H_FILES
   engine/common/system/physiology/EnergyModel.h
   engine/common/system/physiology/GastrointestinalModel.h
   engine/common/system/physiology/HepaticModel.h
+  engine/common/system/physiology/ImmuneModel.h
   engine/common/system/physiology/NervousModel.h
   engine/common/system/physiology/RenalModel.h
   engine/common/system/physiology/RespiratoryModel.h
@@ -56,6 +57,7 @@ set(ENGINE_H_FILES
   engine/human_adult/whole_body/system/physiology/EnergyModel.h
   engine/human_adult/whole_body/system/physiology/GastrointestinalModel.h
   engine/human_adult/whole_body/system/physiology/HepaticModel.h
+  engine/human_adult/whole_body/system/physiology/ImmuneModel.h
   engine/human_adult/whole_body/system/physiology/NervousModel.h
   engine/human_adult/whole_body/system/physiology/RenalModel.h
   engine/human_adult/whole_body/system/physiology/RespiratoryModel.h
@@ -108,6 +110,7 @@ set(ENGINE_CPP_FILES
   engine/common/system/physiology/EnergyModel.cpp
   engine/common/system/physiology/GastrointestinalModel.cpp
   engine/common/system/physiology/HepaticModel.cpp
+  engine/common/system/physiology/ImmuneModel.cpp
   engine/common/system/physiology/NervousModel.cpp
   engine/common/system/physiology/RenalModel.cpp
   engine/common/system/physiology/RespiratoryModel.cpp

@@ -21,6 +21,7 @@ class SEEndocrineSystem;
 class SEEnergySystem;
 class SEGastrointestinalSystem;
 class SEHepaticSystem;
+class SEImmuneSystem;
 class SENervousSystem;
 class SERenalSystem;
 class SERespiratorySystem;
@@ -343,6 +344,13 @@ public:
   ///
   //--------------------------------------------------------------------------------------------------
   virtual const SEHepaticSystem* GetHepaticSystem() const = 0;
+
+  //--------------------------------------------------------------------------------------------------
+  /// \brief
+  /// Returns the current state of the Immune System
+  ///
+  //--------------------------------------------------------------------------------------------------
+  virtual const SEImmuneSystem* GetImmuneSystem() const = 0;
 
   //--------------------------------------------------------------------------------------------------
   /// \brief

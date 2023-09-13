@@ -147,6 +147,7 @@ set(CDM_H_FILES
   cdm/patient/actions/SEPulmonaryShuntExacerbation.h
   cdm/patient/actions/SERespiratoryFatigue.h
   cdm/patient/actions/SERespiratoryMechanicsConfiguration.h
+  cdm/patient/actions/SESepsisExacerbation.h
   cdm/patient/actions/SESubstanceAdministration.h
   cdm/patient/actions/SESubstanceBolus.h
   cdm/patient/actions/SESubstanceCompoundInfusion.h
@@ -329,6 +330,7 @@ set(CDM_H_FILES
   cdm/system/physiology/SEEnergySystem.h
   cdm/system/physiology/SEGastrointestinalSystem.h
   cdm/system/physiology/SEHepaticSystem.h
+  cdm/system/physiology/SEImmuneSystem.h
   cdm/system/physiology/SENervousSystem.h
   cdm/system/physiology/SEPupillaryResponse.h
   cdm/system/physiology/SERenalSystem.h
@@ -523,6 +525,7 @@ set(CDM_CPP_FILES
   cdm/patient/actions/SEPulmonaryShuntExacerbation.cpp
   cdm/patient/actions/SERespiratoryFatigue.cpp
   cdm/patient/actions/SERespiratoryMechanicsConfiguration.cpp
+  cdm/patient/actions/SESepsisExacerbation.cpp
   cdm/patient/actions/SESubstanceAdministration.cpp
   cdm/patient/actions/SESubstanceBolus.cpp
   cdm/patient/actions/SESubstanceCompoundInfusion.cpp
@@ -706,6 +709,7 @@ set(CDM_CPP_FILES
   cdm/system/physiology/SEEnergySystem.cpp
   cdm/system/physiology/SEGastrointestinalSystem.cpp
   cdm/system/physiology/SEHepaticSystem.cpp
+  cdm/system/physiology/SEImmuneSystem.cpp
   cdm/system/physiology/SENervousSystem.cpp
   cdm/system/physiology/SEPupillaryResponse.cpp
   cdm/system/physiology/SERenalSystem.cpp

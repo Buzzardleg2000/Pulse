@@ -239,6 +239,11 @@ namespace pulse
     else
       PBPhysiology::Load(src.hepatic(), *dst.m_HepaticModel);
 
+    if (!src.has_immune())
+      ss << "Missing Immune State" << std::endl;
+    else
+      PBPhysiology::Load(src.immune(), *dst.m_ImmuneModel);
+
     if (!src.has_nervous())
       ss << "Missing Nervous State" << std::endl;
     else
@@ -369,6 +374,7 @@ namespace pulse
     dst.set_allocated_energy(PBPhysiology::Unload(*src.m_EnergyModel));
     dst.set_allocated_gastrointestinal(PBPhysiology::Unload(*src.m_GastrointestinalModel));
     dst.set_allocated_hepatic(PBPhysiology::Unload(*src.m_HepaticModel));
+    dst.set_allocated_immune(PBPhysiology::Unload(*src.m_ImmuneModel));
     dst.set_allocated_nervous(PBPhysiology::Unload(*src.m_NervousModel));
     dst.set_allocated_renal(PBPhysiology::Unload(*src.m_RenalModel));
     dst.set_allocated_respiratory(PBPhysiology::Unload(*src.m_RespiratoryModel));

@@ -1,19 +1,18 @@
 /* Distributed under the Apache License, Version 2.0.
    See accompanying NOTICE file for details.*/
 
-package com.kitware.pulse.cdm.patient.conditions;
+package com.kitware.pulse.cdm.patient.actions;
 
-import com.kitware.pulse.cdm.bind.PatientConditions.SepsisData;
+import com.kitware.pulse.cdm.bind.PatientActions.SepsisExacerbationData;
 import com.kitware.pulse.cdm.properties.SEScalar0To1;
 
-public class SESepsis extends SEPatientCondition
+public class SESepsisExacerbation extends SEPatientAction
 {
-
   private static final long serialVersionUID = 8862611857864194588L;
   protected SEScalar0To1 infectionSeverity;
   protected SEScalar0To1 progressionSeverity;
   
-  public SESepsis()
+  public SESepsisExacerbation()
   {
     infectionSeverity = null;
     progressionSeverity = null;
@@ -29,7 +28,7 @@ public class SESepsis extends SEPatientCondition
       progressionSeverity.invalidate();
   }
   
-  public void copy(SESepsis other)
+  public void copy(SESepsisExacerbation other)
   {
     if(this==other)
       return;
@@ -45,25 +44,31 @@ public class SESepsis extends SEPatientCondition
       progressionSeverity.invalidate();
   }
   
-  public static void load(SepsisData src, SESepsis dst) 
+  @Override
+  public boolean isValid()
   {
-    SEPatientCondition.load(src.getPatientCondition(), dst);
+    return hasInfectionSeverity() || hasProgressionSeverity();
+  }
+  
+  public static void load(SepsisExacerbationData src, SESepsisExacerbation dst) 
+  {
+    SEPatientAction.load(src.getPatientAction(), dst);
     if(src.hasInfectionSeverity())
       SEScalar0To1.load(src.getInfectionSeverity(),dst.getInfectionSeverity());
     if(src.hasProgressionSeverity())
       SEScalar0To1.load(src.getProgressionSeverity(),dst.getProgressionSeverity());
   }
   
-  public static SepsisData unload(SESepsis src) 
+  public static SepsisExacerbationData unload(SESepsisExacerbation src) 
   {
-    SepsisData.Builder dst = SepsisData.newBuilder();
+    SepsisExacerbationData.Builder dst = SepsisExacerbationData.newBuilder();
     unload(src,dst);
     return dst.build();
   }
   
-  protected static void unload(SESepsis src, SepsisData.Builder dst)
+  protected static void unload(SESepsisExacerbation src, SepsisExacerbationData.Builder dst)
   {
-    SEPatientCondition.unload(src, dst.getPatientConditionBuilder());
+    SEPatientAction.unload(src, dst.getPatientActionBuilder());
     if (src.hasInfectionSeverity())
       dst.setInfectionSeverity(SEScalar0To1.unload(src.infectionSeverity));
     if (src.hasProgressionSeverity())
@@ -95,10 +100,8 @@ public class SESepsis extends SEPatientCondition
   @Override
   public String toString()
   {
-    return "Sepsis" 
+    return "Sepsis Exacerbation" 
         + "\n\tInfectionSeverity: " + getInfectionSeverity()
         + "\n\tProgressionSeverity: " + getProgressionSeverity();
   }
-
-  
 }

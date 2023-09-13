@@ -34,6 +34,7 @@ CDM_BIND_DECL2(PneumoniaExacerbation)
 CDM_BIND_DECL2(PulmonaryShuntExacerbation)
 CDM_BIND_DECL2(RespiratoryFatigue)
 CDM_BIND_DECL2(RespiratoryMechanicsConfiguration)
+CDM_BIND_DECL2(SepsisExacerbation)
 CDM_BIND_DECL2(SubstanceBolus)
 CDM_BIND_DECL2(SubstanceBolusState)
 CDM_BIND_DECL2(SubstanceCompoundInfusion)
@@ -241,6 +242,13 @@ public:
   static void Serialize(const CDM_BIND::RespiratoryMechanicsConfigurationData& src, SERespiratoryMechanicsConfiguration& dst);
   static void Serialize(const SERespiratoryMechanicsConfiguration& src, CDM_BIND::RespiratoryMechanicsConfigurationData& dst);
   static void Copy(const SERespiratoryMechanicsConfiguration& src, SERespiratoryMechanicsConfiguration& dst);
+
+  static void Load(const CDM_BIND::SepsisExacerbationData& src, SESepsisExacerbation& dst);
+  static CDM_BIND::SepsisExacerbationData* Unload(const SESepsisExacerbation& src);
+  static void Serialize(const CDM_BIND::SepsisExacerbationData& src, SESepsisExacerbation& dst);
+  static void Serialize(const SESepsisExacerbation& src, CDM_BIND::SepsisExacerbationData& dst);
+  static void Copy(const SESepsisExacerbation& src, SESepsisExacerbation& dst);
+
 
   static void Load(const CDM_BIND::SubstanceBolusData& src, SESubstanceBolus& dst);
   static CDM_BIND::SubstanceBolusData* Unload(const SESubstanceBolus& src);

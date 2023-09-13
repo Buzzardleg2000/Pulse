@@ -8,18 +8,21 @@
 
 SESepsis::SESepsis(Logger* logger) : SEPatientCondition(logger)
 {
-  m_Severity=nullptr;
+  m_InfectionSeverity = nullptr;
+  m_ProgressionSeverity = nullptr;
 }
 
 SESepsis::~SESepsis()
 {
-  SAFE_DELETE(m_Severity);
+  SAFE_DELETE(m_InfectionSeverity);
+  SAFE_DELETE(m_ProgressionSeverity);
 }
 
 void SESepsis::Clear()
 {
   SEPatientCondition::Clear();
-  INVALIDATE_PROPERTY(m_Severity);
+  INVALIDATE_PROPERTY(m_InfectionSeverity);
+  INVALIDATE_PROPERTY(m_ProgressionSeverity);
 }
 
 void SESepsis::Copy(const SESepsis& src)
@@ -29,29 +32,51 @@ void SESepsis::Copy(const SESepsis& src)
 
 bool SESepsis::IsValid() const
 {
-  return HasSeverity();
+  return HasInfectionSeverity() || HasProgressionSeverity();
 }
 bool SESepsis::IsActive() const
 {
   if (!IsValid())
     return false;
-  return GetSeverity() > 0;
+  if (HasInfectionSeverity() && GetInfectionSeverity() > 0)
+    return true;
+  if (HasProgressionSeverity() && GetProgressionSeverity() > 0)
+    return true;
+  return false;
 }
 
-bool SESepsis::HasSeverity() const
+bool SESepsis::HasInfectionSeverity() const
 {
-  return m_Severity==nullptr?false:m_Severity->IsValid();
+  return m_InfectionSeverity == nullptr ? false : m_InfectionSeverity->IsValid();
 }
 
-SEScalar0To1& SESepsis::GetSeverity()
+SEScalar0To1& SESepsis::GetInfectionSeverity()
 {
-  if(m_Severity==nullptr)
-    m_Severity=new SEScalar0To1();
-  return *m_Severity;
+  if (m_InfectionSeverity == nullptr)
+    m_InfectionSeverity = new SEScalar0To1();
+  return *m_InfectionSeverity;
 }
-double SESepsis::GetSeverity() const
+double SESepsis::GetInfectionSeverity() const
 {
-  if (m_Severity == nullptr)
+  if (m_InfectionSeverity == nullptr)
     return SEScalar::dNaN();
-  return m_Severity->GetValue();
+  return m_InfectionSeverity->GetValue();
+}
+
+bool SESepsis::HasProgressionSeverity() const
+{
+  return m_ProgressionSeverity == nullptr ? false : m_ProgressionSeverity->IsValid();
+}
+
+SEScalar0To1& SESepsis::GetProgressionSeverity()
+{
+  if (m_ProgressionSeverity == nullptr)
+    m_ProgressionSeverity = new SEScalar0To1();
+  return *m_ProgressionSeverity;
+}
+double SESepsis::GetProgressionSeverity() const
+{
+  if (m_ProgressionSeverity == nullptr)
+    return SEScalar::dNaN();
+  return m_ProgressionSeverity->GetValue();
 }

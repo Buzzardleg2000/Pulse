@@ -69,6 +69,7 @@ namespace pulse
     const SEEnergySystem* GetEnergySystem() const override;
     const SEGastrointestinalSystem* GetGastrointestinalSystem() const override;
     const SEHepaticSystem* GetHepaticSystem() const override;
+    const SEImmuneSystem* GetImmuneSystem() const override;
     const SENervousSystem* GetNervousSystem() const override;
     const SERenalSystem* GetRenalSystem() const override;
     const SERespiratorySystem* GetRespiratorySystem() const override;

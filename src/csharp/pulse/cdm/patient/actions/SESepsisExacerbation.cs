@@ -3,12 +3,12 @@
 
 namespace Pulse.CDM
 {
-  public class SESepsis : SEPatientCondition
+  public class SESepsisExacerbation : SEPatientAction
   {
     protected SEScalar0To1 infection_severity;
     protected SEScalar0To1 progression_severity;
 
-    public SESepsis()
+    public SESepsisExacerbation()
     {
       infection_severity = null;
       progression_severity = null;

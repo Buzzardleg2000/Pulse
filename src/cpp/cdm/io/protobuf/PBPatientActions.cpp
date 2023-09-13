@@ -42,6 +42,7 @@ POP_PROTO_WARNINGS
 #include "cdm/patient/actions/SEPericardialEffusion.h"
 #include "cdm/patient/actions/SEPneumoniaExacerbation.h"
 #include "cdm/patient/actions/SEPulmonaryShuntExacerbation.h"
+#include "cdm/patient/actions/SESepsisExacerbation.h"
 #include "cdm/patient/actions/SERespiratoryFatigue.h"
 #include "cdm/patient/actions/SERespiratoryMechanicsConfiguration.h"
 #include "cdm/patient/actions/SESubstanceBolus.h"
@@ -1252,6 +1253,42 @@ void PBPatientAction::Copy(const SERespiratoryMechanicsConfiguration& src, SERes
   PBPatientAction::Serialize(data, dst);
 }
 
+void PBPatientAction::Load(const CDM_BIND::SepsisExacerbationData& src, SESepsisExacerbation& dst)
+{
+  dst.Clear();
+  PBPatientAction::Serialize(src, dst);
+}
+void PBPatientAction::Serialize(const CDM_BIND::SepsisExacerbationData& src, SESepsisExacerbation& dst)
+{
+  PBPatientAction::Serialize(src.patientaction(), dst);
+  if (src.has_infectionseverity())
+    PBProperty::Load(src.infectionseverity(), dst.GetInfectionSeverity());
+  if (src.has_progressionseverity())
+    PBProperty::Load(src.progressionseverity(), dst.GetProgressionSeverity());
+
+}
+CDM_BIND::SepsisExacerbationData* PBPatientAction::Unload(const SESepsisExacerbation& src)
+{
+  CDM_BIND::SepsisExacerbationData* dst = new CDM_BIND::SepsisExacerbationData();
+  PBPatientAction::Serialize(src, *dst);
+  return dst;
+}
+void PBPatientAction::Serialize(const SESepsisExacerbation& src, CDM_BIND::SepsisExacerbationData& dst)
+{
+  PBPatientAction::Serialize(src, *dst.mutable_patientaction());
+  if (src.HasInfectionSeverity())
+    dst.set_allocated_infectionseverity(PBProperty::Unload(*src.m_InfectionSeverity));
+  if (src.HasProgressionSeverity())
+    dst.set_allocated_progressionseverity(PBProperty::Unload(*src.m_ProgressionSeverity));
+}
+void PBPatientAction::Copy(const SESepsisExacerbation& src, SESepsisExacerbation& dst)
+{
+  dst.Clear();
+  CDM_BIND::SepsisExacerbationData data;
+  PBPatientAction::Serialize(src, data);
+  PBPatientAction::Serialize(data, dst);
+}
+
 void PBPatientAction::Load(const CDM_BIND::SubstanceBolusData& src, SESubstanceBolus& dst)
 {
   dst.Clear();
@@ -1709,6 +1746,12 @@ SEPatientAction* PBPatientAction::Load(const CDM_BIND::AnyPatientActionData& any
     PBPatientAction::Load(any.respiratorymechanicsconfiguration(), *a);
     return a;
   }
+  case CDM_BIND::AnyPatientActionData::ActionCase::kSepsisExacerbation:
+  {
+    SESepsisExacerbation* a = new SESepsisExacerbation();
+    PBPatientAction::Load(any.sepsisexacerbation(), *a);
+    return a;
+  }
   case CDM_BIND::AnyPatientActionData::ActionCase::kSubstanceBolus:
   {
     const SESubstance* sub = subMgr.GetSubstance(any.substancebolus().substance());
@@ -1949,10 +1992,10 @@ CDM_BIND::AnyPatientActionData* PBPatientAction::Unload(const SEPatientAction& a
     any->set_allocated_respiratorymechanicsconfiguration(PBPatientAction::Unload(*rmc));
     return any;
   }
-  const SESupplementalOxygen* sO2 = dynamic_cast<const SESupplementalOxygen*>(&action);
-  if (sO2 != nullptr)
+  const SESepsisExacerbation* se = dynamic_cast<const SESepsisExacerbation*>(&action);
+  if (se != nullptr)
   {
-    any->set_allocated_supplementaloxygen(PBPatientAction::Unload(*sO2));
+    any->set_allocated_sepsisexacerbation(PBPatientAction::Unload(*se));
     return any;
   }
   const SESubstanceBolus* sb = dynamic_cast<const SESubstanceBolus*>(&action);

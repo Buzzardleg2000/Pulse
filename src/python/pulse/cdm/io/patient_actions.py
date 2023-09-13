@@ -413,6 +413,19 @@ def serialize_respiratory_mechanics_configuration_from_bind(src: RespiratoryMech
 
 #################################################################
 
+def serialize_sepsis_exacerbation_to_bind(src: SESepsisExacerbation, dst:SepsisExacerbationData):
+    serialize_patient_action_to_bind(src, dst.PatientAction)
+    if src.has_infection_severity():
+        serialize_scalar_0to1_to_bind(src.get_infection_severity(), dst.InfectionSeverity)
+    if src.has_progression_severity():
+        serialize_scalar_0to1_to_bind(src.get_progression_severity(), dst.ProgressionSeverity)
+
+def serialize_sepsis_from_bind(src: SepsisExacerbationData, dst: SESepsisExacerbation):
+    serialize_patient_action_from_bind(src.PatientAction, dst)
+    raise Exception("serialize_sepsis_exacerbation_from_bind not implemented")
+
+#################################################################
+
 def serialize_substance_bolus_to_bind(src:SESubstanceBolus, dst: SubstanceBolusData):
     serialize_patient_action_to_bind(src, dst.PatientAction)
     if src.has_admin_duration():

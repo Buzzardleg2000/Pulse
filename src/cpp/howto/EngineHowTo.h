@@ -36,6 +36,7 @@ void HowToMechanicalVentilation();
 void HowToMechanicalVentilator();
 void HowToPulmonaryFibrosis();
 void HowToRespiratoryMechanics();
+void HowToSepsis();
 void HowToSmoke();
 void HowToTensionPneumothorax();
 

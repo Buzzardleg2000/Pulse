@@ -33,6 +33,7 @@ namespace pulse
   class EnergyModel;
   class GastrointestinalModel;
   class HepaticModel;
+  class ImmuneModel;
   class NervousModel;
   class RenalModel;
   class RespiratoryModel;
@@ -113,6 +114,8 @@ namespace pulse
     virtual SEGastrointestinalSystem&     GetGastrointestinal() const;
     virtual bool                          HasHepatic() const;
     virtual SEHepaticSystem&              GetHepatic() const;
+    virtual bool                          HasImmune() const;
+    virtual SEImmuneSystem&               GetImmune() const;
     virtual bool                          HasNervous() const;
     virtual SENervousSystem&              GetNervous() const;
     virtual bool                          HasRenal() const;
@@ -202,6 +205,7 @@ namespace pulse
     EnergyModel*                          m_EnergyModel = nullptr;
     GastrointestinalModel*                m_GastrointestinalModel = nullptr;
     HepaticModel*                         m_HepaticModel = nullptr;
+    ImmuneModel*                          m_ImmuneModel = nullptr;
     NervousModel*                         m_NervousModel = nullptr;
     RenalModel*                           m_RenalModel = nullptr;
     RespiratoryModel*                     m_RespiratoryModel = nullptr;

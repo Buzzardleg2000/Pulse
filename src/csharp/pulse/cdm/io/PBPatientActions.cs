@@ -173,6 +173,12 @@ namespace Pulse.CDM
         Serialize(any.RespiratoryMechanicsConfiguration, rmc);
         return rmc;
       }
+      if (any.SepsisExacerbation != null)
+      {
+        SESepsisExacerbation se = new SESepsisExacerbation();
+        Serialize(any.SepsisExacerbation, se);
+        return se;
+      }
       if (any.SubstanceBolus != null)
       {
         SESubstanceBolus sb = new SESubstanceBolus();
@@ -355,6 +361,11 @@ namespace Pulse.CDM
       if (action.GetType().IsAssignableFrom(typeof(SERespiratoryMechanicsConfiguration)))
       {
         any.RespiratoryMechanicsConfiguration = Unload((SERespiratoryMechanicsConfiguration)action);
+        return any;
+      }
+      if (action.GetType().IsAssignableFrom(typeof(SESepsisExacerbation)))
+      {
+        any.SepsisExacerbation = Unload((SESepsisExacerbation)action);
         return any;
       }
       if (action.GetType().IsAssignableFrom(typeof(SESubstanceBolus)))
@@ -1400,6 +1411,29 @@ namespace Pulse.CDM
       else if (src.HasSettings())
         dst.Settings = PBPhysiology.Unload(src.GetSettings());
       dst.MergeType = (pulse.cdm.bind.eMergeType)(int)src.GetMergeType();
+    }
+    #endregion
+
+    #region SESepsisExacerbation
+    public static void Load(pulse.cdm.bind.SepsisExacerbationData src, SESepsisExacerbation dst)
+    {
+      Serialize(src, dst);
+    }
+    public static void Serialize(pulse.cdm.bind.SepsisExacerbationData src, SESepsisExacerbation dst)
+    {
+      if (src.PatientAction != null)
+        Serialize(src.PatientAction, dst);
+    }
+    public static pulse.cdm.bind.SepsisExacerbationData Unload(SESepsisExacerbation src)
+    {
+      pulse.cdm.bind.SepsisExacerbationData dst = new pulse.cdm.bind.SepsisExacerbationData();
+      Serialize(src, dst);
+      return dst;
+    }
+    public static void Serialize(SESepsisExacerbation src, pulse.cdm.bind.SepsisExacerbationData dst)
+    {
+      dst.PatientAction = new pulse.cdm.bind.PatientActionData();
+      Serialize(src, dst.PatientAction);
     }
     #endregion
 

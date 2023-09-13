@@ -16,6 +16,7 @@
 #include "engine/common/system/physiology/EnergyModel.h"
 #include "engine/common/system/physiology/GastrointestinalModel.h"
 #include "engine/common/system/physiology/HepaticModel.h"
+#include "engine/common/system/physiology/ImmuneModel.h"
 #include "engine/common/system/physiology/NervousModel.h"
 #include "engine/common/system/physiology/RenalModel.h"
 #include "engine/common/system/physiology/RespiratoryModel.h"
@@ -136,6 +137,8 @@ namespace pulse
   SEGastrointestinalSystem& Data::GetGastrointestinal() const { return *m_GastrointestinalModel; }
   bool Data::HasHepatic() const { return m_HepaticModel != nullptr; }
   SEHepaticSystem& Data::GetHepatic() const { return *m_HepaticModel; }
+  bool Data::HasImmune() const { return m_ImmuneModel != nullptr; }
+  SEImmuneSystem& Data::GetImmune() const { return *m_ImmuneModel; }
   bool Data::HasNervous() const { return m_NervousModel != nullptr; }
   SENervousSystem& Data::GetNervous() const { return *m_NervousModel; }
   bool Data::HasRenal() const { return m_RenalModel != nullptr; }
@@ -211,6 +214,7 @@ namespace pulse
     SAFE_DELETE(m_EnergyModel);
     SAFE_DELETE(m_GastrointestinalModel);
     SAFE_DELETE(m_HepaticModel);
+    SAFE_DELETE(m_ImmuneModel);
     SAFE_DELETE(m_NervousModel);
     SAFE_DELETE(m_RenalModel);
     SAFE_DELETE(m_RespiratoryModel);

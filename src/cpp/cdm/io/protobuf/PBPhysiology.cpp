@@ -16,6 +16,7 @@ POP_PROTO_WARNINGS
 #include "cdm/system/physiology/SEEnergySystem.h"
 #include "cdm/system/physiology/SEGastrointestinalSystem.h"
 #include "cdm/system/physiology/SEHepaticSystem.h"
+#include "cdm/system/physiology/SEImmuneSystem.h"
 #include "cdm/system/physiology/SENervousSystem.h"
 #include "cdm/system/physiology/SEPupillaryResponse.h"
 #include "cdm/system/physiology/SERenalSystem.h"
@@ -521,6 +522,27 @@ CDM_BIND::HepaticSystemData* PBPhysiology::Unload(const SEHepaticSystem& src)
   return dst;
 }
 void PBPhysiology::Serialize(const SEHepaticSystem& /*src*/, CDM_BIND::HepaticSystemData& /*dst*/)
+{
+
+}
+
+void PBPhysiology::Load(const CDM_BIND::ImmuneSystemData& src, SEImmuneSystem& dst)
+{
+  dst.Clear();
+  PBPhysiology::Serialize(src, dst);
+}
+void PBPhysiology::Serialize(const CDM_BIND::ImmuneSystemData& /*src*/, SEImmuneSystem& /*dst*/)
+{
+
+}
+
+CDM_BIND::ImmuneSystemData* PBPhysiology::Unload(const SEImmuneSystem& src)
+{
+  CDM_BIND::ImmuneSystemData* dst = new CDM_BIND::ImmuneSystemData();
+  PBPhysiology::Serialize(src, *dst);
+  return dst;
+}
+void PBPhysiology::Serialize(const SEImmuneSystem& /*src*/, CDM_BIND::ImmuneSystemData& /*dst*/)
 {
 
 }

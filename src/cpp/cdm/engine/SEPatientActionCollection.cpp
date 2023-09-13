@@ -31,6 +31,7 @@
 #include "cdm/patient/actions/SEPulmonaryShuntExacerbation.h"
 #include "cdm/patient/actions/SERespiratoryFatigue.h"
 #include "cdm/patient/actions/SERespiratoryMechanicsConfiguration.h"
+#include "cdm/patient/actions/SESepsisExacerbation.h"
 #include "cdm/patient/actions/SESubstanceBolus.h"
 #include "cdm/patient/actions/SESubstanceCompoundInfusion.h"
 #include "cdm/patient/actions/SESubstanceInfusion.h"
@@ -78,6 +79,7 @@ SEPatientActionCollection::SEPatientActionCollection(SESubstanceManager& subMgr)
   m_PericardialEffusion = nullptr;
   m_PneumoniaExacerbation = nullptr;
   m_PulmonaryShuntExacerbation = nullptr;
+  m_SepsisExacerbation = nullptr;
   m_SupplementalOxygen = nullptr;
   m_LeftOpenTensionPneumothorax = nullptr;
   m_LeftClosedTensionPneumothorax = nullptr;
@@ -119,6 +121,7 @@ SEPatientActionCollection::~SEPatientActionCollection()
   SAFE_DELETE(m_PulmonaryShuntExacerbation);
   SAFE_DELETE(m_RespiratoryFatigue);
   SAFE_DELETE(m_RespiratoryMechanicsConfiguration);
+  SAFE_DELETE(m_SepsisExacerbation);
   SAFE_DELETE(m_SupplementalOxygen);
   SAFE_DELETE(m_LeftClosedTensionPneumothorax);
   SAFE_DELETE(m_LeftOpenTensionPneumothorax);
@@ -164,6 +167,8 @@ void SEPatientActionCollection::Clear()
   RemovePulmonaryShuntExacerbation();
   RemoveRespiratoryFatigue();
   RemoveRespiratoryMechanicsConfiguration();
+  RemoveSepsisExacerbation();
+  RemoveSupplementalOxygen();
   RemoveLeftOpenTensionPneumothorax();
   RemoveLeftClosedTensionPneumothorax();
   RemoveRightOpenTensionPneumothorax();
@@ -550,6 +555,16 @@ bool SEPatientActionCollection::ProcessAction(const SEPatientAction& action)
     m_RespiratoryMechanicsConfiguration->Activate();
     if (!m_RespiratoryMechanicsConfiguration->IsActive())
       RemoveRespiratoryMechanicsConfiguration();
+    return true;
+  }
+
+  const SESepsisExacerbation* sepsis = dynamic_cast<const SESepsisExacerbation*>(&action);
+  if (sepsis != nullptr)
+  {
+    GetSepsisExacerbation().Copy(*sepsis, true);
+    m_SepsisExacerbation->Activate();
+    if (!m_SepsisExacerbation->IsActive())
+      RemoveSepsisExacerbation();
     return true;
   }
 
@@ -1325,6 +1340,26 @@ void SEPatientActionCollection::RemoveRespiratoryFatigue()
     m_RespiratoryFatigue->Deactivate();
 }
 
+bool SEPatientActionCollection::HasSepsisExacerbation() const
+{
+  return m_SepsisExacerbation == nullptr ? false : m_SepsisExacerbation->IsActive();
+}
+SESepsisExacerbation& SEPatientActionCollection::GetSepsisExacerbation()
+{
+  if (m_SepsisExacerbation == nullptr)
+    m_SepsisExacerbation = new SESepsisExacerbation(GetLogger());
+  return *m_SepsisExacerbation;
+}
+const SESepsisExacerbation* SEPatientActionCollection::GetSepsisExacerbation() const
+{
+  return m_SepsisExacerbation;
+}
+void SEPatientActionCollection::RemoveSepsisExacerbation()
+{
+  if (m_SepsisExacerbation)
+    m_SepsisExacerbation->Deactivate();
+}
+
 bool SEPatientActionCollection::HasRespiratoryMechanicsConfiguration() const
 {
   return m_RespiratoryMechanicsConfiguration == nullptr ? false : m_RespiratoryMechanicsConfiguration->IsActive();
@@ -1343,26 +1378,6 @@ void SEPatientActionCollection::RemoveRespiratoryMechanicsConfiguration()
 {
   if (m_RespiratoryMechanicsConfiguration)
     m_RespiratoryMechanicsConfiguration->Deactivate();
-}
-
-bool SEPatientActionCollection::HasSupplementalOxygen() const
-{
-  return m_SupplementalOxygen == nullptr ? false : m_SupplementalOxygen->IsActive();
-}
-SESupplementalOxygen& SEPatientActionCollection::GetSupplementalOxygen()
-{
-  if (m_SupplementalOxygen == nullptr)
-    m_SupplementalOxygen = new SESupplementalOxygen(GetLogger());
-  return *m_SupplementalOxygen;
-}
-const SESupplementalOxygen* SEPatientActionCollection::GetSupplementalOxygen() const
-{
-  return m_SupplementalOxygen;
-}
-void SEPatientActionCollection::RemoveSupplementalOxygen()
-{
-  if (m_SupplementalOxygen)
-    m_SupplementalOxygen->Deactivate();
 }
 
 bool SEPatientActionCollection::HasSubstanceBolus() const
@@ -1484,6 +1499,26 @@ const std::vector<const SESubstanceCompoundInfusion*> SEPatientActionCollection:
 void SEPatientActionCollection::RemoveSubstanceCompoundInfusion(const SESubstanceCompound& sub)
 {
   GetSubstanceCompoundInfusion(sub).Deactivate();
+}
+
+bool SEPatientActionCollection::HasSupplementalOxygen() const
+{
+  return m_SupplementalOxygen == nullptr ? false : m_SupplementalOxygen->IsActive();
+}
+SESupplementalOxygen& SEPatientActionCollection::GetSupplementalOxygen()
+{
+  if (m_SupplementalOxygen == nullptr)
+    m_SupplementalOxygen = new SESupplementalOxygen(GetLogger());
+  return *m_SupplementalOxygen;
+}
+const SESupplementalOxygen* SEPatientActionCollection::GetSupplementalOxygen() const
+{
+  return m_SupplementalOxygen;
+}
+void SEPatientActionCollection::RemoveSupplementalOxygen()
+{
+  if (m_SupplementalOxygen)
+    m_SupplementalOxygen->Deactivate();
 }
 
 bool SEPatientActionCollection::HasTensionPneumothorax() const

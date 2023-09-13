@@ -16,7 +16,7 @@ int main()
 
   //HowToEngineUse();
   //HowToCreateAPatient();
-  HowToSerialize();
+  //HowToSerialize();
   //HowToPulseEnginePool();
 
   //HowToACLS();
@@ -43,6 +43,7 @@ int main()
   //HowToMechanicalVentilator();
   //HowToPulmonaryFibrosis();
   //HowToRespiratoryMechanics();
+  HowToSepsis();
   //HowToSmoke();
   //HowToTensionPneumothorax();
 

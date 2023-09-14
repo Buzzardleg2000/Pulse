@@ -243,13 +243,17 @@ class SEScenarioExec:
 
 
 class SEScenarioLog:
-    __slots__ = ("_log_file", "_patient", "_actions", "_actions_filter", "_events", "_events_filter")
+    __slots__ = ("_log_file", "_patient", "_actions", "_actions_filter", "_events", "_events_filter",
+                 "_extract_patient", "_extract_actions", "_extract_events")
 
     def __init__(
         self,
         log_file: Path,
         actions_filter: Optional[List[str]] = None,
-        events_filter: Optional[List[str]] = None
+        events_filter: Optional[List[str]] = None,
+        extract_patient: bool = True,
+        extract_actions: bool = True,
+        extract_events: bool = True
     ):
         """
         Base class to parse log content. Inheriting classes should implement method(s) to
@@ -267,6 +271,9 @@ class SEScenarioLog:
         self._patient = SEPatient()
         self._actions = list()
         self._events = list()
+        self._extract_patient = extract_patient
+        self._extract_actions = extract_actions
+        self._extract_events = extract_events
 
     def _process_log(self) -> None:
         """
@@ -276,9 +283,12 @@ class SEScenarioLog:
         with open(self._log_file) as f:
             lines = f.readlines()
 
-            self._parse_patient(lines)
-            self._parse_events(lines)
-            self._parse_actions(lines)
+            if self._extract_patient:
+                self._parse_patient(lines)
+            if self._extract_events:
+                self._parse_events(lines)
+            if self._extract_actions:
+                self._parse_actions(lines)
 
     def _parse_patient(self, lines: List[str]) -> None:
         """

@@ -1,7 +1,7 @@
 # Distributed under the Apache License, Version 2.0.
 # See accompanying NOTICE file for details.
 
-from typing import List
+from typing import List, Dict
 
 from pulse.cdm.engine import SEDataRequestManager, SEDataRequest, SEDataRequested, SEDecimalFormat, \
                              SEConditionManager, SEEngineInitialization, SEValidationTarget, \
@@ -17,7 +17,8 @@ from pulse.cdm.bind.Engine_pb2 import AnyActionData, \
                                       LogMessagesData, ValidationTargetData, \
                                       SegmentValidationTargetData, SegmentValidationSegmentData,\
                                       SegmentValidationSegmentListData, SegmentValidationConfigurationData, \
-                                      TimeSeriesValidationTargetData, TimeSeriesValidationTargetListData
+                                      TimeSeriesValidationTargetData, TimeSeriesValidationTargetListData, \
+                                      TimeSeriesValidationTargetMapData
 from pulse.cdm.bind.Events_pb2 import ActiveEventListData, EventChangeListData
 
 from pulse.cdm.patient import SEPatientConfiguration
@@ -756,9 +757,8 @@ def serialize_time_series_validation_target_list_to_string(src: List[SETimeSerie
     return json_format.MessageToJson(dst, True, True)
 def serialize_time_series_validation_target_list_to_file(src: List[SETimeSeriesValidationTarget], filename: str):
     string = serialize_time_series_validation_target_list_to_string(src, eSerializationFormat.JSON)
-    file = open(filename, "w")
-    n = file.write(string)
-    file.close()
+    with open(filename, "w") as f:
+        f.write(string)
 def serialize_time_series_validation_target_list_from_string(string: str, fmt: eSerializationFormat):
     src = TimeSeriesValidationTargetListData()
     json_format.Parse(string, src)
@@ -767,3 +767,42 @@ def serialize_time_series_validation_target_list_from_file(filename: str):
     with open(filename) as f:
         string = f.read()
     return serialize_time_series_validation_target_list_from_string(string, eSerializationFormat.JSON)
+
+def serialize_time_series_validation_target_map_to_bind(
+    src: Dict[str, List[SETimeSeriesValidationTarget]],
+    dst: TimeSeriesValidationTargetMapData
+) -> None:
+    for tgt_dest, tgts in src.items():
+        serialize_time_series_validation_target_list_to_bind(tgts, dst.TimeSeriesValidationTargetMap[tgt_dest])
+def serialize_time_series_validation_target_map_to_string(
+    src: Dict[str, List[SETimeSeriesValidationTarget]],
+    fmt: eSerializationFormat
+) -> None:
+    dst = TimeSeriesValidationTargetMapData()
+    serialize_time_series_validation_target_map_to_bind(src, dst)
+    return json_format.MessageToJson(dst, True, True)
+def serialize_time_series_validation_target_map_to_file(
+    src: Dict[str, List[SETimeSeriesValidationTarget]],
+    filename: str
+) -> None:
+    string = serialize_time_series_validation_target_map_to_string(src, eSerializationFormat.JSON)
+    with open(filename, "w") as f:
+        f.write(string)
+def serialize_time_series_validation_target_map_from_bind(
+    src: TimeSeriesValidationTargetMapData
+) -> Dict[str, List[SETimeSeriesValidationTarget]]:
+    dst = dict()
+    for tgt_dest, tgts in src.TimeSeriesValidationTargetMap.items():
+        dst[tgt_dest] = serialize_time_series_validation_target_list_from_bind(tgts)
+    return dst
+def serialize_time_series_validation_target_map_from_string(
+    string: str,
+    fmt: eSerializationFormat
+) -> Dict[str, List[SETimeSeriesValidationTarget]]:
+    src = TimeSeriesValidationTargetMapData()
+    json_format.Parse(string, src)
+    return serialize_time_series_validation_target_map_from_bind(src)
+def serialize_time_series_validation_target_map_from_file(filename: str) -> Dict[str, List[SETimeSeriesValidationTarget]]:
+    with open(filename) as f:
+        string = f.read()
+    return serialize_time_series_validation_target_map_from_string(string, eSerializationFormat.JSON)

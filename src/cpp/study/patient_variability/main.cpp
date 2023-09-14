@@ -1,6 +1,8 @@
 /* Distributed under the Apache License, Version 2.0.
    See accompanying NOTICE file for details.*/
 
+#include <cstring>
+
 #include "engine/CommonDefs.h"
 #include "engine/PulseScenarioExec.h"
 
@@ -19,7 +21,7 @@ int main(int argc, char* argv[])
 
   std::vector<PatientIteration*> iPatients;
   std::vector<ScenarioIteration*> iScenarios;
-  
+
 
   // Process arguments
   std::string mode="test";

@@ -709,12 +709,6 @@ def serialize_time_series_validation_target_to_bind(src: SETimeSeriesValidationT
     serialize_validation_target_to_bind(src, dst.ValidationTarget)
     if src.get_comparison_type() == SETimeSeriesValidationTarget.eComparisonType.EqualToValue:
         dst.EqualToValue = src.get_target()
-    elif src.get_comparison_type() == SETimeSeriesValidationTarget.eComparisonType.GreaterThanValue:
-        dst.GreaterThanValue = src.get_target()
-    elif src.get_comparison_type() == SETimeSeriesValidationTarget.eComparisonType.LessThanValue:
-        dst.LessThanValue = src.get_target()
-    elif src.get_comparison_type() == SETimeSeriesValidationTarget.eComparisonType.TrendsToValue:
-        dst.TrendsToValue = src.get_target()
     elif src.get_comparison_type() == SETimeSeriesValidationTarget.eComparisonType.Range:
         dst.Range.Minimum = src.get_target_minimum()
         dst.Range.Maximum = src.get_target_maximum()
@@ -728,12 +722,6 @@ def serialize_time_series_validation_target_from_bind(src: TimeSeriesValidationT
     serialize_validation_target_from_bind(src.ValidationTarget, dst)
     if src.HasField("EqualToValue"):
         dst.set_equal_to(src.EqualToValue, SETimeSeriesValidationTarget.eTargetType(src.Type))
-    elif src.HasField("GreaterThanValue"):
-        dst.set_greater_than(src.GreaterThanValue, SETimeSeriesValidationTarget.eTargetType(src.Type))
-    elif src.HasField("LessThanValue"):
-        dst.set_less_than(src.LessThanValue, SETimeSeriesValidationTarget.eTargetType(src.Type))
-    elif src.HasField("TrendsToValue"):
-        dst.set_trends_to(src.TrendsToValue, SETimeSeriesValidationTarget.eTargetType(src.Type))
     elif src.HasField("Range"):
         dst.set_range(src.Range.Minimum, src.Range.Maximum, SETimeSeriesValidationTarget.eTargetType(src.Type))
     elif src.WhichOneof('Expected') is None:  # Not validating

@@ -595,6 +595,7 @@ class SEScenarioReport(SEScenarioLog):
                                 results_unit = h[(results_paren_idx+1):-1].replace("_", " ")
                                 self._df[header] = df[h].map(lambda x: PyPulse.convert(x, results_unit, desired_unit))
                                 resolved = True
+                                break
                 if not resolved:
                     raise ValueError(f"Missing required and/or requested header: {header}")
             else:

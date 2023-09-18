@@ -1020,14 +1020,11 @@ class SESegmentValidationConfig:
 
 
 class SETimeSeriesValidationTarget(SEValidationTarget):
-    __slots__ = ["_target_type", "_error", "_data", "_comparison_type", "_comparison_value"]
+    __slots__ = ["_target_type", "_comparison_type"]
 
     class eComparisonType(Enum):
         NotValidating = 0
         EqualToValue = 1
-        GreaterThanValue = 2
-        LessThanValue = 3
-        TrendsToValue = 4
         Range = 5
 
     class eTargetType(Enum):
@@ -1042,18 +1039,11 @@ class SETimeSeriesValidationTarget(SEValidationTarget):
         super().__init__()
         self._comparison_type = self.eComparisonType.NotValidating
         self._target_type = self.eTargetType.Mean
-        self._error = 100.0
-        self._data = []
-        self._comparison_value = 0.0
 
     def clear(self):
         super().clear()
         self._comparison_type = self.eComparisonType.NotValidating
         self._target_type = self.eTargetType.Mean
-
-        self._error = np.nan
-        self._data = []
-        self._comparison_value = np.nan
 
     def get_comparison_type(self) -> eComparisonType:
         return self._comparison_type
@@ -1066,64 +1056,12 @@ class SETimeSeriesValidationTarget(SEValidationTarget):
         self._target = d
         self._target_max = d
         self._target_min = d
-    def set_greater_than(self, d: float, t: eTargetType):
-        self._comparison_type = self.eComparisonType.GreaterThanValue
-        self._target_type = t
-        self._target = d
-        self._target_max = d
-        self._target_min = d
-    def set_less_than(self, d: float, t: eTargetType):
-        self._comparison_type = self.eComparisonType.LessThanValue
-        self._target_type = t
-        self._target = d
-        self._target_max = d
-        self._target_min = d
-    def set_trends_to(self, d: float, t: eTargetType):
-        self._comparison_type = self.eComparisonType.TrendsToValue
-        self._target_type = t
-        self._target = np.nan
-        self._target_max = np.nan
-        self._target_min = np.nan
     def set_range(self, min: float, max: float, t: eTargetType):
         self._comparison_type = self.eComparisonType.Range
         self._target_type = t
         self._target = np.nan
         self._target_max = max
         self._target_min = min
-
-    def compute_error(self) -> bool:
-        if self._target_type == self.eTargetType.Minimum:
-            self._comparison_value = min(self._data)
-        elif self._target_type == self.eTargetType.Maximum:
-            self._comparison_value = max(self._data)
-        elif self._target_type == self.eTargetType.Mean:
-            self._comparison_value = sum(self._data) / len(self._data) if self._data else np.nan
-        else:
-            return False
-
-        min_error = percent_tolerance(self._target_min, self._comparison_value, 1E-9)
-        max_error = percent_tolerance(self._target_max, self._comparison_value, 1E-9)
-
-        # No error if we are in range
-        if self._comparison_value >= self._target_min and self._comparison_value <= self._target_max:
-            self._error = 0.
-            return True
-        elif self._comparison_value > self._target_max:
-            self._error = max_error
-        elif self._comparison_value < self._target_min:
-            self._error = min_error
-
-        # Close enough
-        if abs(self._error) < 1E-15:
-            self._error = 0.
-
-        return True
-    def get_error(self) -> float:
-        return self._error
-    def get_data_value(self) -> float:
-        return self._comparison_value
-    def get_data(self) -> List[float]:
-        return self._data
 
 
 class ILoggerForward():

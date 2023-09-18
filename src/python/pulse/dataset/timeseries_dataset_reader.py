@@ -15,7 +15,7 @@ from openpyxl.worksheet.worksheet import Worksheet
 from openpyxl.utils.cell import get_column_letter
 from typing import Dict, List, Optional, Union
 
-from pulse.cdm.engine import SETimeSeriesValidationTarget
+from pulse.cdm.engine import SETimeSeriesValidationTarget, SEDataRequest
 from pulse.cdm.patient import SEPatient, eSex
 from pulse.cdm.scalars import LengthUnit, MassUnit
 from pulse.cdm.scenario import SEScenarioLog
@@ -132,19 +132,24 @@ def generate_data_requests(xls_file: Path, output_dir: Path):
     # Generate a data request file for each target file
     ignore_sheets = ["Patient"]
     workbook = load_workbook(filename=xls_file, data_only=True)
+    dr_dict = dict()
     for system in workbook.sheetnames:
         if system in ignore_sheets:
             continue
         if not generate_sheet_requests(
                 sheet=workbook[system],
-                output_dir=output_dir
+                dr_dict=dr_dict
         ):
             _pulse_logger.error(f"Unable to generate requests for {system} sheet")
 
+    for dr_file, drs in dr_dict.items():
+        filename = output_dir / f"{dr_file}.json"
+        _pulse_logger.info(f"Writing {filename}")
+        serialize_data_request_list_to_file(drs, filename)
 
-def generate_sheet_requests(sheet: Worksheet, output_dir: Path) -> bool:
+
+def generate_sheet_requests(sheet: Worksheet, dr_dict: Dict[str, List[SEDataRequest]]) -> bool:
     system = sheet.title.replace(" ", "")
-    dr_dict = dict()
 
     # Get header to dataclass mapping
     ws_headers = [cell.value for cell in sheet[1]]
@@ -177,6 +182,7 @@ def generate_sheet_requests(sheet: Worksheet, output_dir: Path) -> bool:
             request_type=r[DRB_REQUEST_TYPE],
             precision=r[DRB_REQUEST_PRECISION]
         )
+
         if not drb.header:
             continue
 
@@ -214,11 +220,6 @@ def generate_sheet_requests(sheet: Worksheet, output_dir: Path) -> bool:
 
         drs.append(dr)
 
-    for dr_file, drs in dr_dict.items():
-        filename = output_dir / f"{dr_file}.json"
-        _pulse_logger.info(f"Writing {filename}")
-        serialize_data_request_list_to_file(drs, filename)
-
     return True
 
 
@@ -236,6 +237,8 @@ def generate_sheet_targets(
         VTB_UNITS = ws_headers.index('Units')
         VTB_ALGO = ws_headers.index('Algorithm')
         VTB_REF_CELL = ws_headers.index('Reference Values')
+        VTB_REFS = ws_headers.index('References')
+        VTB_NOTES = ws_headers.index('Notes')
         VTB_TGT_DEST = ws_headers.index('Table')
         VTB_REQUEST_TYPE = ws_headers.index('Request Type')
     except ValueError as e:
@@ -250,6 +253,8 @@ def generate_sheet_targets(
         ref_cell: Union[str, numbers.Number]
         tgt_dest: str
         request_type: str
+        references: str
+        notes: str
 
     for row_num, r in enumerate(sheet.iter_rows(min_row=2, values_only=True)):
         vtb = ValidationTargetBuilder(
@@ -258,7 +263,9 @@ def generate_sheet_targets(
             algorithm=r[VTB_ALGO],
             ref_cell=r[VTB_REF_CELL],
             tgt_dest=r[VTB_TGT_DEST] if r[VTB_TGT_DEST] else "Orphaned",
-            request_type=r[VTB_REQUEST_TYPE]
+            request_type=r[VTB_REQUEST_TYPE],
+            references=r[VTB_REFS] if r[VTB_REFS] else "",
+            notes=r[VTB_NOTES] if r[VTB_NOTES] else ""
         )
         if not vtb.header:
             continue
@@ -294,9 +301,10 @@ def generate_sheet_targets(
             unit_str=vtb.units.strip(),
             precision=None
         )
-        # TODO: References and notes
         tgt = SETimeSeriesValidationTarget()
         tgt.set_header(dr.to_string())
+        tgt.set_reference(vtb.references)
+        tgt.set_notes(vtb.notes)
 
         ref_val = vtb.ref_cell
 

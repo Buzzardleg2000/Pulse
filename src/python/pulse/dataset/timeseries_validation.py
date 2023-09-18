@@ -90,7 +90,7 @@ def evaluate(tgt: SETimeSeriesValidationTarget, results: pd.DataFrame) -> List[s
        target_type == SETimeSeriesValidationTarget.eTargetType.MinPerIdealWeight_kg or
        target_type == SETimeSeriesValidationTarget.eTargetType.MaxPerIdealWeight_kg
     ):
-        ideal_weight_kg_series = _get_header("IdealBodyWeight(kg)")
+        ideal_weight_kg_series = _get_header("Patient-IdealBodyWeight(kg)")
         header_series = header_series.div(ideal_weight_kg_series)
 
     # Compute requested comparison value

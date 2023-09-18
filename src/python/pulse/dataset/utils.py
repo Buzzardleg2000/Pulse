@@ -82,7 +82,7 @@ def generate_data_request(request_type: str, property_name: str, unit_str: str, 
             raise ValueError(f"Invalid property name for TissueCompartment Data Request: {property_name}")
     elif category == eDataRequest_category.Substance:
         substance = props[0]
-        property = props[1]
+        property = "-".join(props[1:])
     elif category == eDataRequest_category.AnesthesiaMachine:
         property = property_name
     elif category == eDataRequest_category.BagValveMask:

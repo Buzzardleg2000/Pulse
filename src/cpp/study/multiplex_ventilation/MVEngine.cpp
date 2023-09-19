@@ -177,7 +177,7 @@ namespace pulse::study::multiplex_ventilation
           pc->GetLogger()->LogToConsole(GetLogger()->IsLoggingToConsole());
 
           SEDyspnea dyspnea;
-          dyspnea.GetSeverity().SetValue(1.0);
+          dyspnea.GetTidalVolumeSeverity().SetValue(1.0);
           pc->ProcessAction(dyspnea);
 
           SEIntubation intubation;

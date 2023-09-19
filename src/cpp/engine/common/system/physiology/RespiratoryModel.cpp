@@ -4254,7 +4254,7 @@ namespace pulse
     //Dyspnea
     if (m_PatientActions->HasDyspnea())
     {
-      dyspneaSeverity = MAX(dyspneaSeverity, m_PatientActions->GetDyspnea().GetSeverity().GetValue());
+      dyspneaSeverity = MAX(dyspneaSeverity, m_PatientActions->GetDyspnea().GetTidalVolumeSeverity().GetValue());
     }
 
     //------------------------------------------------------------------------------------------------------

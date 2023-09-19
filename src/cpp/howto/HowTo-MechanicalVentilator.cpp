@@ -98,7 +98,7 @@ void HowToMechanicalVentilator()
 
   //Dyspnea
   SEDyspnea Dyspnea;
-  Dyspnea.GetSeverity().SetValue(1.0);
+  Dyspnea.GetTidalVolumeSeverity().SetValue(1.0);
   pe->ProcessAction(Dyspnea);
   AdvanceAndTrackTime_s(10.0, *pe);
   pe->GetEngineTracker()->LogRequestedValues();

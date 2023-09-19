@@ -997,8 +997,10 @@ namespace Pulse.CDM
     {
       if (src.PatientAction != null)
         Serialize(src.PatientAction, dst);
-      if (src.Severity != null)
-        PBProperty.Load(src.Severity, dst.GetSeverity());
+      if (src.RespirationRateSeverity != null)
+        PBProperty.Load(src.RespirationRateSeverity, dst.GetRespirationRateSeverity());
+      if (src.TidalVolumeSeverity != null)
+        PBProperty.Load(src.TidalVolumeSeverity, dst.GetTidalVolumeSeverity());
     }
     public static pulse.cdm.bind.DyspneaData Unload(SEDyspnea src)
     {
@@ -1010,8 +1012,10 @@ namespace Pulse.CDM
     {
       dst.PatientAction = new pulse.cdm.bind.PatientActionData();
       Serialize(src, dst.PatientAction);
-      if (src.HasSeverity())
-        dst.Severity = PBProperty.Unload(src.GetSeverity());
+      if (src.HasRespirationRateSeverity())
+        dst.RespirationRateSeverity = PBProperty.Unload(src.GetRespirationRateSeverity());
+      if (src.HasTidalVolumeSeverity())
+        dst.TidalVolumeSeverity = PBProperty.Unload(src.GetTidalVolumeSeverity());
     }
     #endregion
 

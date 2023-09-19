@@ -64,7 +64,7 @@ void HowToBagValveMask()
   // You can apply the BVM at any point, the patient may or may not be sedated
   // For this example, the patient is not breathing
   SEDyspnea dyspnea;
-  dyspnea.GetSeverity().SetValue(1.0);
+  dyspnea.GetTidalVolumeSeverity().SetValue(1.0);
   pe->ProcessAction(dyspnea);
 
   // Using the BVM requires 2 actions

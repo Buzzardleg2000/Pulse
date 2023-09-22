@@ -15,6 +15,7 @@ Our version number sematic is Major.Minor.Patch-ReleaseStage, where :
 ## Pulse v4.2.0 (September 2023)
 
 - Software Architecture Improvements
+  - Addressed many compiler warnings
   - iOS build support
   - New utility to translate a log file into a scenario
     - Logs now contain json for patient, actions and conditions
@@ -24,7 +25,9 @@ Our version number sematic is Major.Minor.Patch-ReleaseStage, where :
   - Added support for expanding an engine's systems and/or circuits
     - Provides the ability to define and run a more complex circuit within a common system model
   - Improved BlackBox support for external model coupling
-  - Added Python plotting tools for improved verification, validation, and documentation
+  - We are slowly migrating our Java based documentation and test suite to Python
+    - Python and Java are **Now Required** to run the Pulse test suite
+    - Added Python plotting tools for improved verification, validation, and documentation
   
 - Physiology Model Improvements
   - Patient variability
@@ -36,11 +39,13 @@ Our version number sematic is Major.Minor.Patch-ReleaseStage, where :
     - Additional waveform types
     - Expose more control parameters
     - More validation
+  - Blood Chemistry
+    - Added Base Excess
   - Respiratory
     - Corrected respiratory inhale/exhale transition timing
     - Added hemothorax model 
       - Includes cardiovascular effects
-      - Inclues tube thoracostomy model for relief  
+      - Includes tube thoracostomy model for relief  
     - Added shunting and labored breathing effects to collapsing lung functionality
     - Improved lung collapse (e.g., tension pneumothorax and hemothorax) responses
     - Updated restrictive and obstructive conditions/actions with severity mapping to compartments
@@ -60,16 +65,20 @@ Our version number sematic is Major.Minor.Patch-ReleaseStage, where :
     - Improved End Tidal Carbon Dioxide Pressure response
     - Improved SpO2 response
     - Improved recovery transition model
+  - Dyspnea
+    - Split single severity into a Respiration Rate severity and Tidal Volume severity
+    - This allows users to define breathing impairments with more precision
+    - Note any previous scenarios using Dyspnea severity should apply that value to the Tidal Volume severity
   - Hemorrhage
     - Improved Baroreceptor response
-    - Severity now calculates resitance using compartment inflow average
+    - Severity now calculates resistance using compartment inflow average
   - CPR
     - Automation Support - Set a frequency and severity or depth to repeat
     - Single Squeeze - Set a severity or depth for a single squeeze
     - Instantaneous - Set a severity or depth to apply (Intended for hardware integration)
   - ECMO support
     - End user can adjust substance values and flow rates back into Pulse
-    - *NOT A MODEL* Intended for external users to perscribe flow rates and substance concentrations
+    - *NOT A MODEL* Intended for external users to prescribe flow rates and substance concentrations
   - Removed Pulmonary Function Test Assessment
 
 

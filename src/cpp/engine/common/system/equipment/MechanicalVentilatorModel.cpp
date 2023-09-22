@@ -453,7 +453,11 @@ namespace pulse
         previousDriverPressure_cmH2O = m_PreviousDriverPressure_cmH2O;
       }
 
-      driverPressure_cmH2O = GeneralMath::Damper(driverPressure_cmH2O, previousDriverPressure_cmH2O, driverDampingParameter_Per_s, m_data.GetTimeStep_s());
+      if (driverPressure_cmH2O != 0.0) //Don't dampen if it's 0 because that's probably from a limit
+      {
+        driverPressure_cmH2O = GeneralMath::Damper(driverPressure_cmH2O, previousDriverPressure_cmH2O, driverDampingParameter_Per_s, m_data.GetTimeStep_s());
+      }
+
       if (m_DriverPressure_cmH2O > previousDriverPressure_cmH2O)
       {
         driverPressure_cmH2O = LIMIT(driverPressure_cmH2O, previousDriverPressure_cmH2O, m_DriverPressure_cmH2O);
@@ -479,7 +483,11 @@ namespace pulse
         previousDriverFlow_L_Per_s = m_PreviousDriverFlow_L_Per_s;
       }
 
-      driverFlow_L_Per_s = GeneralMath::Damper(driverFlow_L_Per_s, previousDriverFlow_L_Per_s, driverDampingParameter_Per_s, m_data.GetTimeStep_s());
+      if (driverFlow_L_Per_s != 0.0) //Don't dampen if it's 0 because that's probably from a limit
+      {
+        driverFlow_L_Per_s = GeneralMath::Damper(driverFlow_L_Per_s, previousDriverFlow_L_Per_s, driverDampingParameter_Per_s, m_data.GetTimeStep_s());
+      }
+
       if (m_DriverFlow_L_Per_s > previousDriverFlow_L_Per_s)
       {
         driverFlow_L_Per_s = LIMIT(driverFlow_L_Per_s, previousDriverFlow_L_Per_s, m_DriverFlow_L_Per_s);

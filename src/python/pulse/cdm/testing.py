@@ -12,7 +12,7 @@ from pulse.cdm.scalars import SEScalarTime, TimeUnit
 _pulse_logger = logging.getLogger('pulse')
 
 
-class SETestCase():
+class SETestCase:
     __slots__ = ["name", "duration", "failures", "warnings", "eq_opts"]
 
     def __init__(self):
@@ -81,7 +81,7 @@ class SETestCaseHandler(logging.Handler):
         self.test_case = tc
 
 
-class SETestSuite():
+class SETestSuite:
     __slots__ = ["name", "performed", "requirements", "test_cases", "active_case", "active_case_listener"]
 
     def __init__(self):
@@ -160,7 +160,7 @@ class SETestSuite():
         return time
 
 
-class SETestReport():
+class SETestReport:
     __slots__ = ["name", "file_name", "report_dir", "test_suites", "known_failing_suites"]
 
     @dataclass

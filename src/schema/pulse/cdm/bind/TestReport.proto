@@ -4,27 +4,7 @@ option java_package = "com.kitware.pulse.cdm.bind";
 option csharp_namespace = "pulse.cdm.bind";
 option optimize_for = SPEED;
 
-import "pulse/cdm/bind/Engine.proto";
 import "pulse/cdm/bind/Properties.proto";
-
-message PropertyValidationData
-{
-  ValidationTargetData                                  ValidationTarget            = 1;
-  double                                                ExpectedValue               = 2;
-  double                                                ComputedValue               = 3;
-  double                                                Error                       = 4;
-  int32                                                 TablePrecision              = 5;/**<< @brief How many digits we want to display in the decimal mantissa when generating tables */
-  
-  bool                                                  PatientSpecific             = 6;/**<< @brief Is the expected value specific to any patient properties, if false, the expected value is only valid for standard patients. */
-}
-message PropertyValidationListData
-{
-  repeated PropertyValidationData                       Property                    = 1;
-}
-message PropertyValidationMapData
-{
-  map<string,pulse.cdm.bind.PropertyValidationListData> ValidationMap               = 1;
-}
 
 message TestErrorStatisticsData
 {

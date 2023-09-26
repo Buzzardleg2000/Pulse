@@ -5,9 +5,10 @@ import numpy as np
 from enum import Enum
 from dataclasses import dataclass
 from abc import ABC, abstractmethod
-from typing import List, Optional, Union
+from typing import Dict, List, Optional, Union
 
 from pulse.cdm.scalars import SEScalarTime, SEScalarUnit, TimeUnit
+
 
 class eSerializationFormat(Enum):
     JSON = 0
@@ -815,28 +816,90 @@ class SESerializeState(SEAction):
                 "  Filename: {}\n"
                 "  Mode: {}").format(self._filename, self._mode.name)
 
+class SEPropertyValidation:
+    __slots__ = ["_computed_value", "_error_value", "_table_format_specification", "_patient_specific"]
 
-class SEValidationTarget():
+    def __init__(self):
+        self.clear()
+
+    def clear(self) -> None:
+        self._computed_value = None
+        self._error_value = None
+        self._table_format_specification = None
+        self._patient_specific = None
+
+    def __repr__(self) -> str:
+        return f"SEPropertyValidation({self._computed_value}, {self._error_value}, " \
+               f"{self._table_format_specification}, {self._patient_specific})"
+
+    def __str__(self) -> str:
+        return f"SEPropertyValidation:\n\tComputed Value: {self._computed_value}\n\t" \
+               f"Error Value: {self._error_value}\n\t" \
+               f"Table Format Specification: {self._table_format_specification}" \
+               f"\n\tPatient Specific: {self._patient_specific}"
+
+    def is_valid(self) -> bool:
+        return self.has_computed_value() and self.has_error_value()
+
+    def has_computed_value(self) -> bool:
+        return self._computed_value is not None
+    def get_computed_value(self) -> Optional[float]:
+        return self._computed_value
+    def set_computed_value(self, val: float) -> None:
+        self._computed_value = val
+    def invalidate_computed_value(self) -> None:
+        self._computed_value = None
+
+
+    def has_error_value(self) -> bool:
+        return self._error_value is not None
+    def get_error_value(self) -> Optional[float]:
+        return self._error_value
+    def set_error_value(self, err: float) -> None:
+        self._error_value = err
+    def invalidate_error_value(self) -> None:
+        self._error_value = None
+
+    def has_table_format_specification(self) -> bool:
+        return self._table_format_specification is not None
+    def get_table_format_specification(self) -> Optional[str]:
+        return self._table_format_specification
+    def set_table_format_specification(self, specification: str) -> None:
+        self._table_format_specification = specification
+    def invalidate_table_format_specification(self) -> None:
+        self._table_format_specification = None
+
+    def has_patient_specific_setting(self) -> bool:
+        return self._patient_specific is not None
+    def is_patient_specific(self) -> Optional[bool]:
+        return self._patient_specific
+    def set_patient_specific_setting(self, patient_specific: bool) -> None:
+        self._patient_specific = patient_specific
+    def invalidate_patient_specific_setting(self) -> None:
+        self._patient_specific = None
+
+
+class SEValidationTarget:
     __slots__ = ["_header", "_reference", "_notes", "_target", "_target_min", "_target_max"]
 
     def __init__(self):
         self.clear()
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f'SEValidationTarget({self._header}, {self._reference}, {self._notes}, ' \
                f'{self._target}, {self._target_min}, {self._target_max})'
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f'SEValidationTarget:\n\tHeader: {self._header}\n\tReference: {self._reference}' \
                 f'\n\tNotes: {self._notes}\n\tTarget: {self._target}\n\tTarget Range: '\
                 f'[{self._target_min}, {self._target_max}]'
 
-    def is_valid() -> bool:
+    def is_valid(self) -> bool:
         if np.isnan(self._target) and np.isnan(self._target_max):
             return False
         return True
 
-    def clear(self):
+    def clear(self) -> None:
         self._header = ""
         self._reference = ""
         self._notes = ""
@@ -1020,7 +1083,7 @@ class SESegmentValidationConfig:
 
 
 class SETimeSeriesValidationTarget(SEValidationTarget):
-    __slots__ = ["_target_type", "_comparison_type"]
+    __slots__ = ["_target_type", "_comparison_type", "_property_validation"]
 
     class eComparisonType(Enum):
         NotValidating = 0
@@ -1039,11 +1102,13 @@ class SETimeSeriesValidationTarget(SEValidationTarget):
         super().__init__()
         self._comparison_type = self.eComparisonType.NotValidating
         self._target_type = self.eTargetType.Mean
+        self._property_validation = None
 
     def clear(self):
         super().clear()
         self._comparison_type = self.eComparisonType.NotValidating
         self._target_type = self.eTargetType.Mean
+        self._property_validation = None
 
     def get_comparison_type(self) -> eComparisonType:
         return self._comparison_type
@@ -1062,6 +1127,40 @@ class SETimeSeriesValidationTarget(SEValidationTarget):
         self._target = np.nan
         self._target_max = max
         self._target_min = min
+
+    def has_property_validation(self) -> bool:
+        return self._property_validation is not None
+    def get_property_validation(self) -> SEPropertyValidation:
+        if self._property_validation is None:
+            self._property_validation = SEPropertyValidation()
+        return self._property_validation
+
+
+class SETimeSeriesValidationTargetMap:
+    from pulse.cdm.patient import SEPatient
+    __slots__ = ["_patient", "_targets"]
+
+    def __init__(self):
+        self.clear()
+
+    def clear(self) -> None:
+        self._patient = None
+        self._targets = dict()
+
+    def get_targets(self) -> Dict[str, List[SETimeSeriesValidationTarget]]:
+        return self._targets
+    def invalidate_targets(self) -> None:
+        self._targets = dict()
+
+    def has_patient(self) -> bool:
+        return self._patient is not None
+    def get_patient(self) -> SEPatient:
+        from pulse.cdm.patient import SEPatient
+        if self._patient is None:
+            self._patient = SEPatient()
+        return self._patient
+    def invalidate_patient(self) -> None:
+        self._patient = None
 
 
 class ILoggerForward():

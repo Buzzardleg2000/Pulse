@@ -13,7 +13,7 @@ class SEScalar():
             self._value = value
 
     def set(self, scalar):
-        if isinstance(SEScalar, scalar):
+        if isinstance(scalar, SEScalar):
             self._value = scalar._value
         else:
             raise Exception("Provided argument must be a SEScalar")
@@ -108,7 +108,7 @@ class SEScalarAmountPerTime(SEScalarQuantity):
             self.set_value(value,units)
 
     def set(self, scalar):
-        if isinstance(SEScalarAmountPerTime, scalar):
+        if isinstance(scalar, SEScalarAmountPerTime):
             self._value = scalar._value
             self._units = scalar._units
         else:
@@ -169,7 +169,7 @@ class SEScalarAmountPerVolume(SEScalarQuantity):
             self.set_value(value,units)
 
     def set(self, scalar):
-        if isinstance(SEScalarAmountPerVolume, scalar):
+        if isinstance(scalar, SEScalarAmountPerVolume):
             self._value = scalar._value
             self._units = scalar._units
         else:
@@ -212,7 +212,7 @@ class SEScalarArea(SEScalarQuantity):
             self.set_value(value,units)
 
     def set(self, scalar):
-        if isinstance(SEScalarArea, scalar):
+        if isinstance(scalar, SEScalarArea):
             self._value = scalar._value
             self._units = scalar._units
         else:
@@ -255,7 +255,7 @@ class SEScalarElectricPotential(SEScalarQuantity):
             self.set_value(value,units)
 
     def set(self, scalar):
-        if isinstance(SEScalarElectricPotential, scalar):
+        if isinstance(scalar, SEScalarElectricPotential):
             self._value = scalar._value
             self._units = scalar._units
         else:
@@ -303,7 +303,7 @@ class SEScalarEnergy(SEScalarQuantity):
             self.set_value(value,units)
 
     def set(self, scalar):
-        if isinstance(SEScalarEnergy, scalar):
+        if isinstance(scalar, SEScalarEnergy):
             self._value = scalar._value
             self._units = scalar._units
         else:
@@ -352,7 +352,7 @@ class SEScalarEquivalentWeightPerVolume(SEScalarQuantity):
             self.set_value(value,units)
 
     def set(self, scalar):
-        if isinstance(SEScalarEquivalentWeightPerVolume, scalar):
+        if isinstance(scalar, SEScalarEquivalentWeightPerVolume):
             self._value = scalar._value
             self._units = scalar._units
         else:
@@ -398,7 +398,7 @@ class SEScalarForce(SEScalarQuantity):
             self.set_value(value,units)
 
     def set(self, scalar):
-        if isinstance(SEScalarForce, scalar):
+        if isinstance(scalar, SEScalarForce):
             self._value = scalar._value
             self._units = scalar._units
         else:
@@ -446,7 +446,7 @@ class SEScalarFrequency(SEScalarQuantity):
             self.set_value(value,units)
 
     def set(self, scalar):
-        if isinstance(SEScalarFrequency, scalar):
+        if isinstance(scalar, SEScalarFrequency):
             self._value = scalar._value
             self._units = scalar._units
         else:
@@ -494,7 +494,7 @@ class SEScalarHeatCapacitancePerMass(SEScalarQuantity):
             self.set_value(value, units)
 
     def set(self, scalar):
-        if isinstance(SEScalarHeatCapacitancePerMass, scalar):
+        if isinstance(scalar, SEScalarHeatCapacitancePerMass):
             self._value = scalar._value
             self._units = scalar._units
         else:
@@ -542,7 +542,7 @@ class SEScalarHeatResistanceArea(SEScalarQuantity):
             self.set_value(value,units)
 
     def set(self, scalar):
-        if isinstance(SEScalarHeatResistanceArea, scalar):
+        if isinstance(scalar, SEScalarHeatResistanceArea):
             self._value = scalar._value
             self._units = scalar._units
         else:
@@ -590,7 +590,7 @@ class SEScalarInversePressure(SEScalarQuantity):
             self.set_value(value,units)
 
     def set(self, scalar):
-        if isinstance(SEScalarInversePressure, scalar):
+        if isinstance(scalar, SEScalarInversePressure):
             self._value = scalar._value
             self._units = scalar._units
         else:
@@ -644,7 +644,7 @@ class SEScalarLength(SEScalarQuantity):
             self.set_value(value,units)
 
     def set(self, scalar):
-        if isinstance(SEScalarLength, scalar):
+        if isinstance(scalar, SEScalarLength):
             self._value = scalar._value
             self._units = scalar._units
         else:
@@ -701,7 +701,7 @@ class SEScalarLengthPerTime(SEScalarQuantity):
             self.set_value(value,units)
 
     def set(self, scalar):
-        if isinstance(SEScalarLengthPerTime, scalar):
+        if isinstance(scalar, SEScalarLengthPerTime):
             self._value = scalar._value
             self._units = scalar._units
         else:
@@ -753,7 +753,7 @@ class SEScalarMass(SEScalarQuantity):
             self.set_value(value,units)
 
     def set(self, scalar):
-        if isinstance(SEScalarMass, scalar):
+        if isinstance(scalar, SEScalarMass):
             self._value = scalar._value
             self._units = scalar._units
         else:
@@ -822,7 +822,7 @@ class SEScalarMassPerAmount(SEScalarQuantity):
             self.set_value(value,units)
 
     def set(self, scalar):
-        if isinstance(SEScalarMassPerAmount, scalar):
+        if isinstance(scalar, SEScalarMassPerAmount):
             self._value = scalar._value
             self._units = scalar._units
         else:
@@ -861,7 +861,7 @@ class SEScalarMassPerAreaTime(SEScalarQuantity):
             self.set_value(value,units)
 
     def set(self, scalar):
-        if isinstance(SEScalarMassPerAreaTime, scalar):
+        if isinstance(scalar, SEScalarMassPerAreaTime):
             self._value = scalar._value
             self._units = scalar._units
         else:
@@ -921,7 +921,7 @@ class SEScalarMassPerTime(SEScalarQuantity):
             self.set_value(value,units)
 
     def set(self, scalar):
-        if isinstance(SEScalarMassPerTime, scalar):
+        if isinstance(scalar, SEScalarMassPerTime):
             self._value = scalar._value
             self._units = scalar._units
         else:
@@ -999,7 +999,7 @@ class SEScalarMassPerVolume(SEScalarQuantity):
             self.set_value(value,units)
 
     def set(self, scalar):
-        if isinstance(SEScalarMassPerVolume, scalar):
+        if isinstance(scalar, SEScalarMassPerVolume):
             self._value = scalar._value
             self._units = scalar._units
         else:
@@ -1041,7 +1041,7 @@ class SEScalarOsmolality(SEScalarQuantity):
             self.set_value(value,units)
 
     def set(self, scalar):
-        if isinstance(SEScalarOsmolality, scalar):
+        if isinstance(scalar, SEScalarOsmolality):
             self._value = scalar._value
             self._units = scalar._units
         else:
@@ -1083,7 +1083,7 @@ class SEScalarOsmolarity(SEScalarQuantity):
             self.set_value(value,units)
 
     def set(self, scalar):
-        if isinstance(SEScalarOsmolarity, scalar):
+        if isinstance(scalar, SEScalarOsmolarity):
             self._value = scalar._value
             self._units = scalar._units
         else:
@@ -1137,7 +1137,7 @@ class SEScalarPower(SEScalarQuantity):
             self.set_value(value,units)
 
     def set(self, scalar):
-        if isinstance(SEScalarPower, scalar):
+        if isinstance(scalar, SEScalarPower):
             self._value = scalar._value
             self._units = scalar._units
         else:
@@ -1188,7 +1188,7 @@ class SEScalarPressure(SEScalarQuantity):
             self.set_value(value,units)
 
     def set(self, scalar):
-        if isinstance(SEScalarPressure, scalar):
+        if isinstance(scalar, SEScalarPressure):
             self._value = scalar._value
             self._units = scalar._units
         else:
@@ -1234,7 +1234,7 @@ class SEScalarPressurePerVolume(SEScalarQuantity):
             self.set_value(value,units)
 
     def set(self, scalar):
-        if isinstance(SEScalarPressurePerVolume, scalar):
+        if isinstance(scalar, SEScalarPressurePerVolume):
             self._value = scalar._value
             self._units = scalar._units
         else:
@@ -1288,7 +1288,7 @@ class SEScalarPressureTimePerVolume(SEScalarQuantity):
             self.set_value(value,units)
 
     def set(self, scalar):
-        if isinstance(SEScalarPressureTimePerVolume, scalar):
+        if isinstance(scalar, SEScalarPressureTimePerVolume):
             self._value = scalar._value
             self._units = scalar._units
         else:
@@ -1333,7 +1333,7 @@ class SEScalarPressureTimePerVolumeArea(SEScalarQuantity):
             self.set_value(value,units)
 
     def set(self, scalar):
-        if isinstance(SEScalarPressureTimePerVolumeArea, scalar):
+        if isinstance(scalar, SEScalarPressureTimePerVolumeArea):
             self._value = scalar._value
             self._units = scalar._units
         else:
@@ -1381,7 +1381,7 @@ class SEScalarTemperature(SEScalarQuantity):
             self.set_value(value,units)
 
     def set(self, scalar):
-        if isinstance(SEScalarTemperature, scalar):
+        if isinstance(scalar, SEScalarTemperature):
             self._value = scalar._value
             self._units = scalar._units
         else:
@@ -1432,7 +1432,7 @@ class SEScalarTime(SEScalarQuantity):
             self.set_value(value,units)
 
     def set(self, scalar):
-        if isinstance(SEScalarTime, scalar):
+        if isinstance(scalar, SEScalarTime):
             self._value = scalar._value
             self._units = scalar._units
         else:
@@ -1480,7 +1480,7 @@ class SEScalarVolume(SEScalarQuantity):
             self.set_value(value,units)
 
     def set(self, scalar):
-        if isinstance(SEScalarVolume, scalar):
+        if isinstance(scalar, SEScalarVolume):
             self._value = scalar._value
             self._units = scalar._units
         else:
@@ -1531,7 +1531,7 @@ class SEScalarVolumePerPressure(SEScalarQuantity):
             self.set_value(value,units)
 
     def set(self, scalar):
-        if isinstance(SEScalarVolumePerPressure, scalar):
+        if isinstance(scalar, SEScalarVolumePerPressure):
             self._value = scalar._value
             self._units = scalar._units
         else:
@@ -1591,7 +1591,7 @@ class SEScalarVolumePerTime(SEScalarQuantity):
             self.set_value(value,units)
 
     def set(self, scalar):
-        if isinstance(SEScalarVolumePerTime, scalar):
+        if isinstance(scalar, SEScalarVolumePerTime):
             self._value = scalar._value
             self._units = scalar._units
         else:
@@ -1636,7 +1636,7 @@ class SEScalarVolumePerTimeArea(SEScalarQuantity):
             self.set_value(value,units)
 
     def set(self, scalar):
-        if isinstance(SEScalarVolumePerTimeArea, scalar):
+        if isinstance(scalar, SEScalarVolumePerTimeArea):
             self._value = scalar._value
             self._units = scalar._units
         else:
@@ -1687,7 +1687,7 @@ class SEScalarVolumePerTimeMass(SEScalarQuantity):
             self.set_value(value,units)
 
     def set(self, scalar):
-        if isinstance(SEScalarVolumePerTimeMass, scalar):
+        if isinstance(scalar, SEScalarVolumePerTimeMass):
             self._value = scalar._value
             self._units = scalar._units
         else:
@@ -1735,7 +1735,7 @@ class SEScalarVolumePerTimePressure(SEScalarQuantity):
             self.set_value(value,units)
 
     def set(self, scalar):
-        if isinstance(SEScalarVolumePerTimePressure, scalar):
+        if isinstance(scalar, SEScalarVolumePerTimePressure):
             self._value = scalar._value
             self._units = scalar._units
         else:
@@ -1777,7 +1777,7 @@ class SEScalarVolumePerTimePressureArea(SEScalarQuantity):
             self.set_value(value,units)
 
     def set(self, scalar):
-        if isinstance(SEScalarVolumePerTimePressureArea, scalar):
+        if isinstance(scalar, SEScalarVolumePerTimePressureArea):
             self._value = scalar._value
             self._units = scalar._units
         else:

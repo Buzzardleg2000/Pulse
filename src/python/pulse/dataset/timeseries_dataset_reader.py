@@ -15,7 +15,7 @@ from openpyxl.worksheet.worksheet import Worksheet
 from openpyxl.utils.cell import get_column_letter
 from typing import Dict, List, Optional, Union
 
-from pulse.cdm.engine import SETimeSeriesValidationTarget, SEDataRequest
+from pulse.cdm.engine import SETimeSeriesValidationTarget, SETimeSeriesValidationTargetMap, SEDataRequest
 from pulse.cdm.patient import SEPatient, eSex
 from pulse.cdm.scalars import LengthUnit, MassUnit
 from pulse.cdm.scenario import SEScenarioLog
@@ -31,17 +31,36 @@ from pulse.dataset.utils import generate_data_request
 _pulse_logger = logging.getLogger('pulse')
 
 
-def generate_validation_targets(xls_file: Path, patient_file: Path, output_file: Path) -> bool:
+def generate_validation_targets(
+    xls_file: Path,
+    patient_file: Path,
+    output_file: Optional[Path]=None
+) -> Optional[SETimeSeriesValidationTargetMap]:
+    """
+    Generates timeseries validation targets.
+
+    :param xls_file: Path to xls file.
+    :param patient_file: Path to patient/log file containing
+        patient information.
+    :param output_file: (Optional) If provided, generated targets
+        will be serialized to this location.
+
+    :raises ValueError: Unknown patient file type.
+
+    :return: Generated targets. If targets could not be generated,
+        None will be returned.
+    """
     if not xls_file.is_file():
         _pulse_logger.error(f"Could not find xls file {xls_file}")
-        return False
+        return None
 
     if not patient_file.is_file():
         _pulse_logger.error(f"Please provide a valid patient file {patient_file}")
-        return False
+        return None
 
     # Either load patient directly from patient file or extract from log
-    p = SEPatient()
+    tgt_map = SETimeSeriesValidationTargetMap()
+    p = tgt_map.get_patient()
     if patient_file.suffix.lower() == ".json":
         serialize_patient_from_file(patient_file, p)
     elif patient_file.suffix.lower() == ".log":
@@ -59,9 +78,13 @@ def generate_validation_targets(xls_file: Path, patient_file: Path, output_file:
                 return self._patient
 
         log = SEScenarioLogPatient(log_file=patient_file)
-        p = log.get_patient()
+        p.copy(log.get_patient())
     else:
         raise ValueError("Unknown patient file type: {patient_file}")
+
+    # If no name, set to filename for potential table filenames
+    if not p.has_name() or not p.get_name():
+        p.set_name(patient_file.stem)
 
     # Temp file to preserve original state through patient updates.
     # We're saving a temporary file so that pycel can get openpyxl's
@@ -73,37 +96,45 @@ def generate_validation_targets(xls_file: Path, patient_file: Path, output_file:
     # xlsx sheets to skip when generating targets and requests
     ignore_sheets = ["Patient"]
 
-    # Iterate through patients, generating targets for each
-    patient_dir = Path("./patients/")
     try:
         # Update patient sheet so formulas can be re-evaluated with correct parameters
         update_patient_sheet(patient=p, xls_file=xls_file, new_file=tmp_xls_path)
 
+        # Generate targets for every xls sheet, organized by table name
         workbook = load_workbook(filename=tmp_xls_path, data_only=False)
         evaluator = ExcelCompiler(filename=tmp_xls_path)
-        tgts = dict()
         for system in workbook.sheetnames:
             if system in ignore_sheets:
                 continue
             if not generate_sheet_targets(
                 sheet=workbook[system],
                 evaluator=evaluator,
-                targets=tgts
+                target_map=tgt_map
             ):
                 _pulse_logger.error(f"Unable to generate targets for {system} sheet")
 
-        _pulse_logger.info(f"Writing {output_file}")
-        output_file.parent.mkdir(parents=True, exist_ok=True)
-        serialize_time_series_validation_target_map_to_file(tgts, output_file)
+        # Serialize generated targets, if requested
+        if output_file is not None:
+            _pulse_logger.info(f"Writing {output_file}")
+            output_file.parent.mkdir(parents=True, exist_ok=True)
+            serialize_time_series_validation_target_map_to_file(tgt_map, output_file)
     except Exception as e:
         raise
     finally:  # Always clean up temp file
         tmp_xls.close()
 
-    return True
+    return tgt_map
 
 
 def update_patient_sheet(patient: SEPatient, xls_file: Path, new_file: Optional[Path]=None) -> None:
+    """
+    Updates workbook with given patient information.
+
+    :param patient: Relevant patient.
+    :param xls_file: Original xls_file path.
+    :param new_file: (Optional) If provided, the original file will remain
+        unchanged and edits will be saved to this file.
+    """
     workbook = load_workbook(filename=xls_file)
     sheet = workbook["Patient"]
     sheet["C2"] = "Male" if patient.get_sex() == eSex.Male else "Female"
@@ -116,12 +147,18 @@ def update_patient_sheet(patient: SEPatient, xls_file: Path, new_file: Optional[
     if patient.has_body_fat_fraction():
         sheet["C12"] = patient.get_body_fat_fraction().get_value()
 
-    if not new_file:
+    if new_file is None:
         new_file = xls_file
     workbook.save(filename=new_file)
 
 
-def generate_data_requests(xls_file: Path, output_dir: Path):
+def generate_data_requests(xls_file: Path, output_dir: Path) -> None:
+    """
+    Generates all data requests for given xls file.
+
+    :param xls_file: Path to xls_file containing data request information.
+    :param output_dir: Path to directory to save generated data requests.
+    """
     try:
         if output_dir.is_dir():
             shutil.rmtree(output_dir)
@@ -129,7 +166,8 @@ def generate_data_requests(xls_file: Path, output_dir: Path):
     except OSError as e:
         _pulse_logger.error(f"Unable to clean directories")
         return
-    # Generate a data request file for each target file
+
+    # Generate data requests for every xls sheet, organized by table name
     ignore_sheets = ["Patient"]
     workbook = load_workbook(filename=xls_file, data_only=True)
     dr_dict = dict()
@@ -142,6 +180,7 @@ def generate_data_requests(xls_file: Path, output_dir: Path):
         ):
             _pulse_logger.error(f"Unable to generate requests for {system} sheet")
 
+    # Serialize data request files (one for each table name)
     for dr_file, drs in dr_dict.items():
         filename = output_dir / f"{dr_file}.json"
         _pulse_logger.info(f"Writing {filename}")
@@ -149,6 +188,14 @@ def generate_data_requests(xls_file: Path, output_dir: Path):
 
 
 def generate_sheet_requests(sheet: Worksheet, dr_dict: Dict[str, List[SEDataRequest]]) -> bool:
+    """
+    Generates data requests from given worksheet.
+
+    :param sheet: Relevant xls worksheet.
+    :param dr_dict: Dictionary to store generated data requests. Key is table name.
+
+    :return: Whether generating data requests for this sheet was successful.
+    """
     system = sheet.title.replace(" ", "")
 
     # Get header to dataclass mapping
@@ -226,9 +273,19 @@ def generate_sheet_requests(sheet: Worksheet, dr_dict: Dict[str, List[SEDataRequ
 def generate_sheet_targets(
     sheet: Worksheet,
     evaluator: ExcelCompiler,
-    targets: Dict[str, List[SETimeSeriesValidationTarget]]
+    target_map: SETimeSeriesValidationTargetMap
 ) -> bool:
+    """
+    Generates validation targets from given worksheet.
+
+    :param sheet: Relevant xls worksheet.
+    :param evaluator: xls evaluator to retrieve computed cell values.
+    :param target_map: Where generated validation targets will be stored.
+
+    :return: Whether generating validation targets for this sheet was successful.
+    """
     system = sheet.title
+    targets = target_map.get_targets()
 
     # Get header to dataclass mapping
     ws_headers = [cell.value for cell in sheet[1]]
@@ -241,6 +298,8 @@ def generate_sheet_targets(
         VTB_NOTES = ws_headers.index('Notes')
         VTB_TGT_DEST = ws_headers.index('Table')
         VTB_REQUEST_TYPE = ws_headers.index('Request Type')
+        VTB_TABLE_PRECISION = ws_headers.index('Table Precision')
+        VTB_PATIENT_SPECIFIC = ws_headers.index('PatientSpecific')
     except ValueError as e:
         _pulse_logger.error(f"Missing required header {str(e)[:str(e).find(' is not in list')]}")
         return False
@@ -255,6 +314,8 @@ def generate_sheet_targets(
         request_type: str
         references: str
         notes: str
+        table_precision: str
+        patient_specific: bool
 
     for row_num, r in enumerate(sheet.iter_rows(min_row=2, values_only=True)):
         vtb = ValidationTargetBuilder(
@@ -265,7 +326,9 @@ def generate_sheet_targets(
             tgt_dest=r[VTB_TGT_DEST] if r[VTB_TGT_DEST] else "Orphaned",
             request_type=r[VTB_REQUEST_TYPE],
             references=r[VTB_REFS] if r[VTB_REFS] else "",
-            notes=r[VTB_NOTES] if r[VTB_NOTES] else ""
+            notes=r[VTB_NOTES] if r[VTB_NOTES] else "",
+            table_precision=f".{r[VTB_TABLE_PRECISION]}" if r[VTB_TABLE_PRECISION] else "",
+            patient_specific=True if r[VTB_PATIENT_SPECIFIC] and r[VTB_PATIENT_SPECIFIC].lower() == "y" else False
         )
         if not vtb.header:
             continue
@@ -294,10 +357,9 @@ def generate_sheet_targets(
             targets[vtb.tgt_dest] = list()
         vts = targets[vtb.tgt_dest]
 
-        prop_split = [s.strip() for s in vtb.header.split("-")]
         dr = generate_data_request(
             request_type=vtb.request_type,
-            property_name=vtb.header.replace("*", ""),
+            property_name=vtb.header,
             unit_str=vtb.units.strip(),
             precision=None
         )
@@ -305,6 +367,9 @@ def generate_sheet_targets(
         tgt.set_header(dr.to_string())
         tgt.set_reference(vtb.references)
         tgt.set_notes(vtb.notes)
+        property_validation = tgt.get_property_validation()
+        property_validation.set_patient_specific_setting(vtb.patient_specific)
+        property_validation.set_table_format_specification(vtb.table_precision)
 
         ref_val = vtb.ref_cell
 
@@ -321,13 +386,13 @@ def generate_sheet_targets(
             _pulse_logger.error(f"Unknown validation target type: {algo}. Skipping validation target for {vtb.header} in {system}.")
             continue
 
-        # Evaluate if needed
+        # Evaluate cell if needed
         if isinstance(ref_val, str) and ref_val.startswith("="):
             if ref_val.startswith("="):
                 cell_loc = f"{system}!{get_column_letter(VTB_REF_CELL+1)}{row_num+2}"
                 ref_val = evaluator.evaluate(cell_loc)
 
-        # TODO: Support other comparison types
+        # TODO: Support other comparison types?
         if isinstance(ref_val, str):
             s_vals = ref_val.strip()
             s_vals = s_vals.replace('[', ' ')
@@ -376,7 +441,7 @@ if __name__ == "__main__":
         _pulse_logger.error(f"Unable to clean directories")
         sys.exit(1)
 
-    # Generate validation targets for every patient file
+    # Generate system validation targets for every patient file
     patient_dir = Path("./patients/")
     if patient_dir.is_dir():
         for patient_file in patient_dir.glob("*.json"):

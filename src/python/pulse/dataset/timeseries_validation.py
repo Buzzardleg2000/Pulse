@@ -1,66 +1,91 @@
 # Distributed under the Apache License, Version 2.0.
 # See accompanying NOTICE file for details.
 
+import copy
 import logging
 import numpy as np
 import pandas as pd
 from pathlib import Path
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 import PyPulse
-from pulse.cdm.engine import SETimeSeriesValidationTarget
+from pulse.cdm.engine import SETimeSeriesValidationTarget, SETimeSeriesValidationTargetMap
 from pulse.cdm.utils.csv_utils import read_csv_into_df
 from pulse.cdm.utils.markdown import table
 from pulse.cdm.utils.math_utils import generate_percentage_span, percent_tolerance
-from pulse.cdm.io.engine import serialize_time_series_validation_target_map_from_file
+from pulse.cdm.io.engine import serialize_time_series_validation_target_map_to_file
 
 
 _pulse_logger = logging.getLogger('pulse')
 
 
-def validate(targets_filename: Path, csv_filename: Path, table_dir: Path) -> None:
-    _pulse_logger.info(f"Validating {csv_filename} against {targets_filename}")
-    targets = serialize_time_series_validation_target_map_from_file(targets_filename)
+def validate(
+    target_map: SETimeSeriesValidationTargetMap,
+    csv_filename: Path,
+    output_file: Optional[Path]
+) -> None:
+    """
+    Validates given targets against given results csv.
+
+    :param target_map: Validation targets to validate. Will
+        be modified with results.
+    :param csv_filename: Path to csv results file.
+    :param output_file: (Optional) If provided, serialize
+        results to this location.
+    """
+    _pulse_logger.info(f"Validating {csv_filename}")
     df = read_csv_into_df(csv_filename)
 
-    headers = ["Property Name", "Expected Value", "Engine Value", "Percent Error", "Notes"]
-    fields = list(range(len(headers)))
-    align = [('<', '<')] * len(headers)
-
-    table_dir.mkdir(parents=True, exist_ok=True)
+    targets = target_map.get_targets()
     for tgt_table, tgts in targets.items():
         # No validation targets for this table
         if not tgts:
             continue
 
         # Evaluate results against targets
-        table_data = []
         for tgt in tgts:
-            tgt_eval = evaluate(tgt, df)
-            if tgt_eval:
-                table_data.append(tgt_eval)
+            evaluate(tgt=tgt, results=df)
 
-        # Write out table
-        md_filename = table_dir / f"{tgt_table}ValidationTable.md"
-        with open(md_filename, "w") as md_file:
-            _pulse_logger.info(f"Writing {md_filename}")
-            table(md_file, table_data, fields, headers, align)
+    # Serialize results, if requested
+    if output_file is not None:
+        _pulse_logger.info(f"Writing {output_file}")
+        output_file.parent.mkdir(parents=True, exist_ok=True)
+        serialize_time_series_validation_target_map_to_file(target_map, output_file)
 
 
-def evaluate(tgt: SETimeSeriesValidationTarget, results: pd.DataFrame) -> List[str]:
+def evaluate(tgt: SETimeSeriesValidationTarget, results: pd.DataFrame, epsilon: float=1E-9) -> None:
+    """
+    Evaluates given target.
+
+    :param tgt: Validation target of interest. Will be modified with results.
+    :param results: Data frame containing results for comparison.
+    :param epsilon: Absolute tolerance in error.
+
+    :raises ValueError: Required header (of any compatible unit) is not present in
+        results data frame.
+    """
     tgt_header = tgt.get_header()
     compare_type = tgt.get_comparison_type()
     target_type = tgt.get_target_type()
 
     if compare_type == SETimeSeriesValidationTarget.eComparisonType.NotValidating:
-        return list()
+        return
 
-    epsilon = 1E-9
-    value_precision = 4
-    percent_precision = 1
-    err_str = ""
+    property_validation = tgt.get_property_validation()
 
     def _get_header(header: str) -> Optional[pd.Series]:
+        """
+        Attempts to retrieve series corresponding to header from data
+        frame. If exact match is not found, will attempt to perform
+        unit conversion.
+
+        :param header: Header of interest.
+
+        :raises ValueError: Header (of any compatible unit) is not
+            present in data frame.
+
+        :returns: Series corresponding to header.
+        """
         series = None
         if header not in results.columns:
             # Attempt to locate header with different unit and convert
@@ -111,7 +136,7 @@ def evaluate(tgt: SETimeSeriesValidationTarget, results: pd.DataFrame) -> List[s
         comparison_value = header_series.mean() if not header_series.empty else np.nan
     else:
         raise ValueError(f"Unknown target type: {target_type}")
-    engine_val_str = f"{target_type.name.replace('_kg', '(kg)')} of {comparison_value:.{value_precision}G}"
+    property_validation.set_computed_value(comparison_value)
 
     # Compute error
     tgt_min = tgt.get_target_minimum()
@@ -136,25 +161,107 @@ def evaluate(tgt: SETimeSeriesValidationTarget, results: pd.DataFrame) -> List[s
     if abs(error) < 1E-15:
         error = 0.
 
-    # Generate expected value string
-    if compare_type == SETimeSeriesValidationTarget.eComparisonType.EqualToValue:
-        expected_str = f"{tgt.get_target():.{value_precision}G}"
-    elif compare_type == SETimeSeriesValidationTarget.eComparisonType.Range:
-        expected_str = f"[{tgt_min:.{value_precision}G},{tgt_max:.{value_precision}G}]"
-    else:
-        raise ValueError(f"Unknown comparison type: {compare_type}")
+    property_validation.set_error_value(error)
 
-    if tgt.get_reference():
-        references = [ref.strip() for ref in tgt.get_reference().replace("\n", "").split(",")]
-        for ref in references:
-            expected_str += f" @cite {ref}"
 
-    err_str = generate_percentage_span(error, percent_precision)
+def generate_validation_tables(
+    target_map: SETimeSeriesValidationTargetMap,
+    table_dir: Path,
+    percent_precision: int=1
+) -> None:
+    """
+    Generates validation tables for given target map.
 
-    return [
-        tgt_header,
-        expected_str if expected_str else "&nbsp;",
-        engine_val_str if engine_val_str else "&nbsp;",
-        err_str if err_str else "&nbsp;",
-        tgt.get_notes() if tgt.get_notes() else "&nbsp;",
-    ]
+    :param target_map: Validation targets.
+    :param table_dir: Tables will be saved to this directory.
+    :param percent_precision: Error percentages will be displayed with this precision.
+
+    :raises ValueError: Unknown comparison type
+    :raises ValueError: Unknown patient (patient has no name so table file cannot be named)
+    """
+    headers = ["Property Name", "Expected Value", "Engine Value", "Percent Error", "Notes"]
+    fields = list(range(len(headers)))
+    align = [('<', '<')] * len(headers)
+
+    def _gen_expected_str(tgt: SETimeSeriesValidationTarget) -> str:
+        """
+        Generates string representing expected value.
+
+        :param tgt: The validation target.
+
+        :raises ValueError: Unknown comparision type.
+
+        :returns: Expected value string.
+        """
+        compare_type = tgt.get_comparison_type()
+        value_precision = tgt.get_property_validation().get_table_format_specification()
+        if compare_type == SETimeSeriesValidationTarget.eComparisonType.EqualToValue:
+            expected_str = f"{tgt.get_target():{value_precision}}"
+        elif compare_type == SETimeSeriesValidationTarget.eComparisonType.Range:
+            expected_str = f"[{tgt.get_target_minimum():{value_precision}},{tgt.get_target_maximum():{value_precision}}]"
+        else:
+            raise ValueError(f"Unknown comparison type: {compare_type}")
+
+        # Add any references
+        if tgt.get_reference():
+            references = [ref.strip() for ref in tgt.get_reference().replace("\n", "").split(",")]
+            for ref in references:
+                expected_str += f" @cite {ref}"
+
+        if not expected_str:
+            return "&nbsp;"
+
+        return expected_str
+
+    def _gen_engine_val_str(tgt: SETimeSeriesValidationTarget) -> str:
+        """
+        Generates string representing engine value.
+
+        :param tgt: The validation target.
+
+        :returns: Engine value string.
+        """
+        target_type = tgt.get_target_type()
+        property_validation = tgt.get_property_validation()
+        value_precision = property_validation.get_table_format_specification()
+        engine_val_str = f"{target_type.name.replace('_kg', '(kg)')} of " \
+                         f"{property_validation.get_computed_value():{value_precision}}"
+
+        if not engine_val_str:
+            return "&nbsp;"
+
+        return engine_val_str
+
+    table_dir.mkdir(parents=True, exist_ok=True)
+    patient_name = target_map.get_patient().get_name()
+    if not patient_name:
+        # Shouldn't really happen as dataset reader sets to patient filename if one doesn't exist
+        raise ValueError("Unknown patient found, cannot write table as I don't know what to name it.")
+
+    targets = target_map.get_targets()
+    for tgt_table, tgts in targets.items():
+        # No validation targets for this table
+        if not tgts:
+            continue
+
+        table_data = []
+        for tgt in tgts:
+            # Not validated
+            if not tgt.has_property_validation() or not tgt.get_property_validation().is_valid():
+                continue
+
+            property_validation = tgt.get_property_validation()
+
+            table_data.append([
+                tgt.get_header(),
+                _gen_expected_str(tgt),
+                _gen_engine_val_str(tgt),
+                generate_percentage_span(property_validation.get_error_value(), percent_precision),
+                notes if (notes := tgt.get_notes()) else "&nbsp;"
+            ])
+
+        # Write out table
+        md_filename = table_dir / f"{tgt_table}-{patient_name}ValidationTable.md"
+        with open(md_filename, "w") as md_file:
+            _pulse_logger.info(f"Writing {md_filename}")
+            table(md_file, table_data, fields, headers, align)

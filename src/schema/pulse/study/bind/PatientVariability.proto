@@ -5,7 +5,7 @@ option csharp_namespace = "pulse.study.bind.patient_variability";
 option optimize_for = SPEED;
 
 import "pulse/cdm/bind/Patient.proto";
-import "pulse/cdm/bind/TestReport.proto";
+import "pulse/cdm/bind/Engine.proto";
 import "pulse/engine/bind/Scenario.proto";
 
 enum eGenStyle
@@ -26,7 +26,7 @@ message PatientIterationData
   string                                           IterationName               = 2;
   string                                           ScenarioDirectory           = 3;/**<< @brief Directory to generate scenarios in. */
   string                                           StateDirectory              = 4;/**<< @brief Directory to generate states in. */
-  
+
   pulse.cdm.bind.PatientData.eSex                  Sex                         = 5;
   ParameterIterationData                           Age_yr                      = 6;
   ParameterIterationData                           Height_cm                   = 7;
@@ -36,7 +36,7 @@ message PatientIterationData
   ParameterIterationData                           MeanArtierialPressure_mmHg  = 11;
   ParameterIterationData                           PulsePressure_mmHg          = 12;
   ParameterIterationData                           RespirationRate_bpm         = 13;
-  
+
 }
 
 message ScenarioIterationData
@@ -46,7 +46,7 @@ message ScenarioIterationData
   string                                           IterationName               = 3;
   string                                           ScenarioDirectory           = 4;/**<< @brief Directory to generate scenarios in. */
   string                                           StateDirectory              = 5;/**<< @brief Directory to generate states in. */
-  
+
   bool                                             CreateStates                = 6;
   double                                           BaselineDuration_s          = 7;/**<< @brief How much time to advance before we add actions. */
   double                                           MaxSimTime_min              = 8;/**<< @brief Maximum amount of time to run this scenario. */

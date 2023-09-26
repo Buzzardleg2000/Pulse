@@ -100,6 +100,19 @@ message DataRequestedListData
 // This encapsulates a row from our System/Patient validation spreedsheet
 // It also encapsulates a segment property cell from a scenario validation spreedsheet
 
+message PropertyValidationData
+{
+  optional double                                       ComputedValue               = 1;
+  optional double                                       Error                       = 2;
+  string                                                TableFormatSpecification    = 3;/**<< @brief Specification string for floating point formatting in tables */
+
+  bool                                                  PatientSpecific             = 4;/**<< @brief Is the expected value specific to any patient properties, if false, the expected value is only valid for standard patients. */
+}
+message PropertyValidationListData
+{
+  repeated PropertyValidationData                       Property                    = 1;
+}
+
 message RangeData
 {
   double                                                Minimum                         = 1;
@@ -107,11 +120,11 @@ message RangeData
 }
 message ValidationTargetData
 {
-
   string                                                Header                          = 1;
   string                                                Reference                       = 2;
   string                                                Notes                           = 3;
 }
+
 message SegmentValidationTargetData
 {
 
@@ -163,7 +176,9 @@ message TimeSeriesValidationTargetData
     double                                              EqualToValue                    = 3;
     RangeData                                           Range                           = 4;
   }
-  int32                                                 TablePrecision                  = 5;/**<< @brief How many digits we want to display in the decimal mantissa when generating tables */
+
+  PropertyValidationData                                PropertyValidation              = 5;
+
 }
 message TimeSeriesValidationTargetListData
 {
@@ -171,7 +186,12 @@ message TimeSeriesValidationTargetListData
 }
 message TimeSeriesValidationTargetMapData
 {
-  map<string,TimeSeriesValidationTargetListData>        TimeSeriesValidationTargetMap   = 1;
+  PatientData                                           Patient                         = 1;
+  map<string,TimeSeriesValidationTargetListData>        TimeSeriesValidationTargetMap   = 2;
+}
+message TimeSeriesValidationTargetMapListData
+{
+  repeated TimeSeriesValidationTargetMapData            TimeSeriesValidationTargetMap   = 1;
 }
 
 message AnyConditionData

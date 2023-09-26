@@ -6,7 +6,8 @@ from typing import List, Dict
 from pulse.cdm.engine import SEDataRequestManager, SEDataRequest, SEDataRequested, SEDecimalFormat, \
                              SEConditionManager, SEEngineInitialization, SEValidationTarget, \
                              SESegmentValidationTarget, SESegmentValidationSegment, \
-                             SETimeSeriesValidationTarget
+                             SETimeSeriesValidationTarget, SETimeSeriesValidationTargetMap, \
+                             SEPropertyValidation
 from pulse.cdm.bind.Engine_pb2 import AnyActionData, \
                                       ActionListData, ActionMapData, \
                                       AnyConditionData, ConditionListData, \
@@ -18,7 +19,8 @@ from pulse.cdm.bind.Engine_pb2 import AnyActionData, \
                                       SegmentValidationTargetData, SegmentValidationSegmentData,\
                                       SegmentValidationSegmentListData, SegmentValidationConfigurationData, \
                                       TimeSeriesValidationTargetData, TimeSeriesValidationTargetListData, \
-                                      TimeSeriesValidationTargetMapData
+                                      TimeSeriesValidationTargetMapData, TimeSeriesValidationTargetMapListData, \
+                                      PropertyValidationData
 from pulse.cdm.bind.Events_pb2 import ActiveEventListData, EventChangeListData
 
 from pulse.cdm.patient import SEPatientConfiguration
@@ -584,6 +586,25 @@ def serialize_decimal_format_from_bind(src: DecimalFormatData, dst: SEDecimalFor
     dst.set_precision(dst.Precision)
 
 # Validation Targets
+def serialize_property_validation_to_bind(src: SEPropertyValidation, dst: PropertyValidationData) -> None:
+    if src.has_computed_value():
+        dst.ComputedValue = src.get_computed_value()
+    if src.has_error_value():
+        dst.Error = src.get_error_value()
+    if src.has_table_format_specification():
+        dst.TableFormatSpecification = src.get_table_format_specification()
+    if src.has_patient_specific_setting():
+        dst.PatientSpecific = src.is_patient_specific()
+def serialize_property_validation_from_bind(src: PropertyValidationData, dst: SEPropertyValidation) -> None:
+    dst.clear()
+    if src.HasField("ComputedValue"):
+        dst.set_computed_value(src.ComputedValue)
+    if src.HasField("Error"):
+        dst.set_error_value(src.Error)
+    dst.set_table_format_specification(src.TableFormatSpecification)
+    dst.set_patient_specific_setting(src.PatientSpecific)
+
+
 def serialize_validation_target_to_bind(src: SEValidationTarget, dst: ValidationTargetData):
     dst.Header = src.get_header()
     dst.Reference = src.get_reference()
@@ -705,8 +726,14 @@ def serialize_segment_validation_config_from_bind(src: SegmentValidationConfigur
 
     serialize_plotter_list_from_bind(src.Plots, dst.get_plotters())
 
-def serialize_time_series_validation_target_to_bind(src: SETimeSeriesValidationTarget, dst: TimeSeriesValidationTargetData):
+def serialize_time_series_validation_target_to_bind(
+    src: SETimeSeriesValidationTarget,
+    dst: TimeSeriesValidationTargetData
+) -> None:
     serialize_validation_target_to_bind(src, dst.ValidationTarget)
+    if src.has_property_validation():
+        serialize_property_validation_to_bind(src.get_property_validation(), dst.PropertyValidation)
+
     if src.get_comparison_type() == SETimeSeriesValidationTarget.eComparisonType.EqualToValue:
         dst.EqualToValue = src.get_target()
     elif src.get_comparison_type() == SETimeSeriesValidationTarget.eComparisonType.Range:
@@ -717,9 +744,14 @@ def serialize_time_series_validation_target_to_bind(src: SETimeSeriesValidationT
     else:
         raise ValueError(f"Unknown comparison type: {src.get_comparison_type()}")
     dst.Type = src.get_target_type().value
-def serialize_time_series_validation_target_from_bind(src: TimeSeriesValidationTargetData, dst: SETimeSeriesValidationTarget):
+def serialize_time_series_validation_target_from_bind(
+    src: TimeSeriesValidationTargetData,
+    dst: SETimeSeriesValidationTarget
+) -> None:
     dst.clear()
     serialize_validation_target_from_bind(src.ValidationTarget, dst)
+    serialize_property_validation_from_bind(src.PropertyValidation, dst.get_property_validation())
+
     if src.HasField("EqualToValue"):
         dst.set_equal_to(src.EqualToValue, SETimeSeriesValidationTarget.eTargetType(src.Type))
     elif src.HasField("Range"):
@@ -728,69 +760,132 @@ def serialize_time_series_validation_target_from_bind(src: TimeSeriesValidationT
         pass
     else:
         raise ValueError(f"Unknown expected field: {src.WhichOneOf('Expected')}")
-def serialize_time_series_validation_target_list_to_bind(src: List[SETimeSeriesValidationTarget], dst: TimeSeriesValidationTargetListData):
+def serialize_time_series_validation_target_list_to_bind(
+    src: List[SETimeSeriesValidationTarget],
+    dst: TimeSeriesValidationTargetListData
+) -> None:
     for tgt in src:
         serialize_time_series_validation_target_to_bind(tgt, dst.TimeSeriesValidationTarget.add())
-def serialize_time_series_validation_target_list_from_bind(src: TimeSeriesValidationTargetListData):
-    dst = []
+def serialize_time_series_validation_target_list_from_bind(
+    src: TimeSeriesValidationTargetListData,
+    dst: List[SETimeSeriesValidationTarget]
+) -> None:
     for tgtData in src.TimeSeriesValidationTarget:
         tgt = SETimeSeriesValidationTarget()
         serialize_time_series_validation_target_from_bind(tgtData, tgt)
         dst.append(tgt)
-
-    return dst
-def serialize_time_series_validation_target_list_to_string(src: List[SETimeSeriesValidationTarget], fmt: eSerializationFormat):
+def serialize_time_series_validation_target_list_to_string(
+    src: List[SETimeSeriesValidationTarget],
+    fmt: eSerializationFormat
+) -> str:
     dst = TimeSeriesValidationTargetListData()
     serialize_time_series_validation_target_list_to_bind(src, dst)
     return json_format.MessageToJson(dst, True, True)
-def serialize_time_series_validation_target_list_to_file(src: List[SETimeSeriesValidationTarget], filename: str):
+def serialize_time_series_validation_target_list_to_file(
+    src: List[SETimeSeriesValidationTarget],
+    filename: str
+) -> None:
     string = serialize_time_series_validation_target_list_to_string(src, eSerializationFormat.JSON)
     with open(filename, "w") as f:
         f.write(string)
-def serialize_time_series_validation_target_list_from_string(string: str, fmt: eSerializationFormat):
+def serialize_time_series_validation_target_list_from_string(
+    string: str,
+    dst: List[SETimeSeriesValidationTarget],
+    fmt: eSerializationFormat
+) -> None:
     src = TimeSeriesValidationTargetListData()
     json_format.Parse(string, src)
-    return serialize_time_series_validation_target_list_from_bind(src)
-def serialize_time_series_validation_target_list_from_file(filename: str):
+    serialize_time_series_validation_target_list_from_bind(src, dst)
+def serialize_time_series_validation_target_list_from_file(filename: str, dst: List[SETimeSeriesValidationTarget]) -> None:
     with open(filename) as f:
         string = f.read()
-    return serialize_time_series_validation_target_list_from_string(string, eSerializationFormat.JSON)
+    serialize_time_series_validation_target_list_from_string(string, dst, eSerializationFormat.JSON)
 
 def serialize_time_series_validation_target_map_to_bind(
-    src: Dict[str, List[SETimeSeriesValidationTarget]],
+    src: SETimeSeriesValidationTargetMap,
     dst: TimeSeriesValidationTargetMapData
 ) -> None:
-    for tgt_dest, tgts in src.items():
+    if src.has_patient():
+        serialize_patient_to_bind(src.get_patient(), dst.Patient)
+    for tgt_dest, tgts in src.get_targets().items():
         serialize_time_series_validation_target_list_to_bind(tgts, dst.TimeSeriesValidationTargetMap[tgt_dest])
 def serialize_time_series_validation_target_map_to_string(
-    src: Dict[str, List[SETimeSeriesValidationTarget]],
+    src: SETimeSeriesValidationTargetMap,
     fmt: eSerializationFormat
 ) -> None:
     dst = TimeSeriesValidationTargetMapData()
     serialize_time_series_validation_target_map_to_bind(src, dst)
     return json_format.MessageToJson(dst, True, True)
 def serialize_time_series_validation_target_map_to_file(
-    src: Dict[str, List[SETimeSeriesValidationTarget]],
+    src: SETimeSeriesValidationTargetMap,
     filename: str
 ) -> None:
     string = serialize_time_series_validation_target_map_to_string(src, eSerializationFormat.JSON)
     with open(filename, "w") as f:
         f.write(string)
 def serialize_time_series_validation_target_map_from_bind(
-    src: TimeSeriesValidationTargetMapData
-) -> Dict[str, List[SETimeSeriesValidationTarget]]:
-    dst = dict()
+    src: TimeSeriesValidationTargetMapData,
+    dst: SETimeSeriesValidationTargetMap
+) -> None:
+    dst.clear()
+    serialize_patient_from_bind(src.Patient, dst.get_patient())
+    tgt_map = dst.get_targets()
     for tgt_dest, tgts in src.TimeSeriesValidationTargetMap.items():
-        dst[tgt_dest] = serialize_time_series_validation_target_list_from_bind(tgts)
-    return dst
+        tgt_map[tgt_dest] = serialize_time_series_validation_target_list_from_bind(tgts)
 def serialize_time_series_validation_target_map_from_string(
     string: str,
+    dst: SETimeSeriesValidationTargetMap,
     fmt: eSerializationFormat
-) -> Dict[str, List[SETimeSeriesValidationTarget]]:
+) -> None:
     src = TimeSeriesValidationTargetMapData()
     json_format.Parse(string, src)
-    return serialize_time_series_validation_target_map_from_bind(src)
-def serialize_time_series_validation_target_map_from_file(filename: str) -> Dict[str, List[SETimeSeriesValidationTarget]]:
+    serialize_time_series_validation_target_map_from_bind(src, dst)
+def serialize_time_series_validation_target_map_from_file(filename: str, dst: SETimeSeriesValidationTargetMap) -> None:
     with open(filename) as f:
         string = f.read()
-    return serialize_time_series_validation_target_map_from_string(string, eSerializationFormat.JSON)
+    serialize_time_series_validation_target_map_from_string(string, dst, eSerializationFormat.JSON)
+
+def serialize_time_series_validation_target_map_list_to_bind(
+    src: List[SETimeSeriesValidationTargetMap],
+    dst: TimeSeriesValidationTargetMapListData
+) -> None:
+    for tgt_map in src:
+        serialize_time_series_validation_target_map_to_bind(tgt_map, dst.TimeSeriesValidationTargetMap.add())
+def serialize_time_series_validation_target_map_list_from_bind(
+    src: TimeSeriesValidationTargetMapListData,
+    dst: List[SETimeSeriesValidationTargetMap]
+) -> None:
+    for tgtMapData in src.TimeSeriesValidationTargetMap:
+        tgtMap = SETimeSeriesValidationTargetMap()
+        serialize_time_series_validation_target_map_from_bind(tgtMapData, tgtMap)
+        dst.append(tgtMap)
+
+def serialize_time_series_validation_target_map_list_to_string(
+    src: List[SETimeSeriesValidationTargetMap],
+    fmt: eSerializationFormat
+) -> str:
+    dst = TimeSeriesValidationTargetMapListData()
+    serialize_time_series_validation_target_map_list_to_bind(src, dst)
+    return json_format.MessageToJson(dst, True, True)
+def serialize_time_series_validation_target_map_list_to_file(
+    src: List[SETimeSeriesValidationTargetMap],
+    filename: str
+) -> None:
+    string = serialize_time_series_validation_target_map_list_to_string(src, eSerializationFormat.JSON)
+    with open(filename, "w") as f:
+        f.write(string)
+def serialize_time_series_validation_target_map_list_from_string(
+    string: str,
+    dst: List[SETimeSeriesValidationTargetMap],
+    fmt: eSerializationFormat
+) -> None:
+    src = TimeSeriesValidationTargetMapListData()
+    json_format.Parse(string, src)
+    serialize_time_series_validation_target_map_list_from_bind(src, dst)
+def serialize_time_series_validation_target_map_list_from_file(
+    filename: str,
+    dst: List[SETimeSeriesValidationTargetMap]
+) -> None:
+    with open(filename) as f:
+        string = f.read()
+    serialize_time_series_validation_target_map_list_from_string(string, dst, eSerializationFormat.JSON)

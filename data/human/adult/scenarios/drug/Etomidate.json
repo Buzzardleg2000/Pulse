@@ -3,7 +3,8 @@
   "Description": "Inject standard patient with Etomidate.",
   "PatientConfiguration": { "PatientFile": "StandardMale.json" },
   "DataRequestFile": [
-    "StandardDataRequests.json"
+    "StandardDataRequests.json",
+    "DrugDataRequests.json"
   ],
   "DataRequestManager": {
     "DataRequest":

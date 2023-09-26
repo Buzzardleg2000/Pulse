@@ -3,7 +3,8 @@
   "Description": "The patient receives varying levels of acute stress.",
   "PatientConfiguration": { "PatientFile": "StandardMale.json" },
   "DataRequestFile": [
-    "StandardDataRequests.json"
+    "StandardDataRequests.json",
+    "DrugDataRequests.json"
   ],
   "DataRequestManager":
   {
@@ -28,7 +29,7 @@
       "AcuteStress": {
         "Severity": {
           "Scalar0To1": {
-            "Value": 0.4
+            "Value": 0.3
           }
         }
       }
@@ -65,7 +66,7 @@
       "AcuteStress": {
         "Severity": {
           "Scalar0To1": {
-            "Value": 0.8
+            "Value": 0.6
           }
         }
       }
@@ -102,7 +103,7 @@
       "AcuteStress": {
         "Severity": {
           "Scalar0To1": {
-            "Value": 1.0
+            "Value": 0.9
           }
         }
       }

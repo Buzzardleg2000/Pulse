@@ -498,7 +498,7 @@ class SEReportModule(metaclass=abc.ABCMeta):
     def handle_event(self, change: SEEventChange) -> None:
         """ Process given event change """
 
-    def handle_action(self, action: str) -> None:
+    def handle_action(self, action: str, action_time: SEScalarTime) -> None:
         """ Process action """
 
     @abc.abstractmethod
@@ -712,8 +712,8 @@ class SEScenarioReport(SEScenarioLog):
 
             # Send event changes to each module
             for next_event_idx, event_info in enumerate(self._events[event_idx:]):
-                event_time_s, change = event_info
-                if event_time_s.get_value(TimeUnit.s) == time_s:  # TODO: Floating point errors?
+                event_time, change = event_info
+                if event_time.get_value(TimeUnit.s) == time_s:  # TODO: Floating point errors?
                     for module in self._timestep_modules:
                         module.handle_event(change)
                     for module in self._observation_modules:
@@ -724,14 +724,14 @@ class SEScenarioReport(SEScenarioLog):
 
             # Send action changes to each module
             for next_action_idx, action_info in enumerate(self._actions[action_idx:]):
-                action_time_s, action = action_info
-                if action_time_s.get_value(TimeUnit.s) == time_s:  # TODO: Floating point errors?
+                action_time, action = action_info
+                if action_time.get_value(TimeUnit.s) == time_s:  # TODO: Floating point errors?
                     for module in self._timestep_modules:
-                        module.handle_action(action)
+                        module.handle_action(action=action, action_time=action_time)
                     for module in self._observation_modules:
-                        module.handle_action(action)
+                        module.handle_action(action=action, action_time=action_time)
                     if self._death_check_module is not None:
-                        self._death_check_module.handle_action(action)
+                        self._death_check_module.handle_action(action=action, action_time=action_time)
                     action_idx = action_idx + 1
 
             # Send data to each module for processing

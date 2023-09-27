@@ -41,7 +41,8 @@ message TestCaseData
   string                            Name                        = 1;
   ScalarTimeData                    Duration                    = 2;
   repeated string                   Failure                     = 3;
-  repeated TestErrorStatisticsData  ErrorStats                  = 4;
+  repeated string                   Warning                     = 4;
+  repeated TestErrorStatisticsData  ErrorStats                  = 5;
 }
 
 message TestSuiteData
@@ -49,11 +50,12 @@ message TestSuiteData
   string                            Name                        = 1;
   bool                              Performed                   = 2;
   uint32                            Errors                      = 3;
-  uint32                            Tests                       = 4;
-  
-  repeated string                   Requirement                 = 5;
-  repeated TestErrorStatisticsData  ErrorStats                  = 6;
-  repeated TestCaseData             TestCase                    = 7;
+  uint32                            Warnings                    = 4;
+  uint32                            Tests                       = 5;
+
+  repeated string                   Requirement                 = 6;
+  repeated TestErrorStatisticsData  ErrorStats                  = 7;
+  repeated TestCaseData             TestCase                    = 8;
 
 }
 

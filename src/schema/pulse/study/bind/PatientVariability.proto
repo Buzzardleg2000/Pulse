@@ -5,7 +5,6 @@ option csharp_namespace = "pulse.study.bind.patient_variability";
 option optimize_for = SPEED;
 
 import "pulse/cdm/bind/Patient.proto";
-import "pulse/cdm/bind/Engine.proto";
 import "pulse/engine/bind/Scenario.proto";
 
 enum eGenStyle
@@ -89,11 +88,6 @@ message PatientStateData
   // Stabilization Info
   eFailure                                                Failure                           = 9;
   double                                                  StabilizationTime_s               = 10;
-
-  message ValidationData
-  {
-    map<string,pulse.cdm.bind.PropertyValidationListData> ValidationMap                     = 1;
-  }
 }
 
 message PatientStateListData

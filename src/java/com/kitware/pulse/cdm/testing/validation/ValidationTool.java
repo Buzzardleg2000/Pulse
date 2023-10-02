@@ -32,8 +32,8 @@ import com.google.protobuf.util.JsonFormat;
 import com.kitware.pulse.cdm.bind.Engine.ValidationTargetData;
 import com.kitware.pulse.cdm.bind.Patient.PatientData.eSex;
 import com.kitware.pulse.cdm.bind.Properties.ScalarData;
-import com.kitware.pulse.cdm.bind.TestReport.PropertyValidationData;
-import com.kitware.pulse.cdm.bind.TestReport.PropertyValidationListData;
+import com.kitware.pulse.cdm.bind.Engine.TimeSeriesValidationTargetData;
+import com.kitware.pulse.cdm.bind.Engine.TimeSeriesValidationTargetListData;
 import com.kitware.pulse.cdm.patient.SEPatient;
 import com.kitware.pulse.cdm.patient.assessments.SEPatientAssessment;
 import com.kitware.pulse.cdm.properties.SEScalar;
@@ -1597,19 +1597,19 @@ public abstract class ValidationTool
   }
   protected void WriteValidationJson(List<ValidationRow> vData, String filepath) throws InvalidProtocolBufferException
   {
-    PropertyValidationListData.Builder pvList = PropertyValidationListData.newBuilder();
+    TimeSeriesValidationTargetListData.Builder vtList = TimeSeriesValidationTargetListData.newBuilder();
     for(ValidationRow vRow : vData)
     {
-      PropertyValidationData.Builder pvd = pvList.addPropertyBuilder();
+      TimeSeriesValidationTargetData.Builder pvd = vtList.addTimeSeriesValidationTargetBuilder();
       ValidationTargetData.Builder vtd = pvd.getValidationTargetBuilder();
       vtd.setHeader(vRow.header+"-"+vRow.dType.toString());
-      pvd.setExpectedValue(vRow.refValue);
+      pvd.setEqualToValue(vRow.refValue);
       pvd.setComputedValue(vRow.result);
       pvd.setError(vRow.resultError);
       pvd.setPatientSpecific(vRow.patientSpecific);
       
     }
-    pvList.build();
-    FileUtils.writeFile(filepath, JsonFormat.printer().print(pvList));
+    vtList.build();
+    FileUtils.writeFile(filepath, JsonFormat.printer().print(vtList));
   }
 }

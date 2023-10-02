@@ -816,83 +816,25 @@ class SESerializeState(SEAction):
                 "  Filename: {}\n"
                 "  Mode: {}").format(self._filename, self._mode.name)
 
-class SEPropertyValidation:
-    __slots__ = ["_computed_value", "_error_value", "_table_format_specification", "_patient_specific"]
-
-    def __init__(self):
-        self.clear()
-
-    def clear(self) -> None:
-        self._computed_value = None
-        self._error_value = None
-        self._table_format_specification = None
-        self._patient_specific = None
-
-    def __repr__(self) -> str:
-        return f"SEPropertyValidation({self._computed_value}, {self._error_value}, " \
-               f"{self._table_format_specification}, {self._patient_specific})"
-
-    def __str__(self) -> str:
-        return f"SEPropertyValidation:\n\tComputed Value: {self._computed_value}\n\t" \
-               f"Error Value: {self._error_value}\n\t" \
-               f"Table Format Specification: {self._table_format_specification}" \
-               f"\n\tPatient Specific: {self._patient_specific}"
-
-    def is_valid(self) -> bool:
-        return self.has_computed_value() and self.has_error_value()
-
-    def has_computed_value(self) -> bool:
-        return self._computed_value is not None
-    def get_computed_value(self) -> Optional[float]:
-        return self._computed_value
-    def set_computed_value(self, val: float) -> None:
-        self._computed_value = val
-    def invalidate_computed_value(self) -> None:
-        self._computed_value = None
-
-
-    def has_error_value(self) -> bool:
-        return self._error_value is not None
-    def get_error_value(self) -> Optional[float]:
-        return self._error_value
-    def set_error_value(self, err: float) -> None:
-        self._error_value = err
-    def invalidate_error_value(self) -> None:
-        self._error_value = None
-
-    def has_table_format_specification(self) -> bool:
-        return self._table_format_specification is not None
-    def get_table_format_specification(self) -> Optional[str]:
-        return self._table_format_specification
-    def set_table_format_specification(self, specification: str) -> None:
-        self._table_format_specification = specification
-    def invalidate_table_format_specification(self) -> None:
-        self._table_format_specification = None
-
-    def has_patient_specific_setting(self) -> bool:
-        return self._patient_specific is not None
-    def is_patient_specific(self) -> Optional[bool]:
-        return self._patient_specific
-    def set_patient_specific_setting(self, patient_specific: bool) -> None:
-        self._patient_specific = patient_specific
-    def invalidate_patient_specific_setting(self) -> None:
-        self._patient_specific = None
-
-
 class SEValidationTarget:
-    __slots__ = ["_header", "_reference", "_notes", "_target", "_target_min", "_target_max"]
+    __slots__ = ["_header", "_reference", "_notes", "_table_formatting",
+                 "_target", "_target_min", "_target_max"]
 
     def __init__(self):
         self.clear()
 
     def __repr__(self) -> str:
         return f'SEValidationTarget({self._header}, {self._reference}, {self._notes}, ' \
-               f'{self._target}, {self._target_min}, {self._target_max})'
+               f'{self._table_formatting}, {self._target}, {self._target_min}, {self._target_max})'
 
     def __str__(self) -> str:
-        return f'SEValidationTarget:\n\tHeader: {self._header}\n\tReference: {self._reference}' \
-                f'\n\tNotes: {self._notes}\n\tTarget: {self._target}\n\tTarget Range: '\
-                f'[{self._target_min}, {self._target_max}]'
+        return f'SEValidationTarget:' \
+                f'\n\tHeader: {self._header}' \
+                f'\n\tReference: {self._reference}' \
+                f'\n\tNotes: {self._notes}' \
+                f'\n\tTable Formatting: {self._table_formatting}' \
+                f'\n\tTarget: {self._target}' \
+                f'\n\tTarget Range: [{self._target_min}, {self._target_max}]'
 
     def is_valid(self) -> bool:
         if np.isnan(self._target) and np.isnan(self._target_max):
@@ -903,6 +845,7 @@ class SEValidationTarget:
         self._header = ""
         self._reference = ""
         self._notes = ""
+        self._table_formatting = None
         self._target = np.nan
         self._target_min = np.nan
         self._target_max = np.nan
@@ -922,6 +865,15 @@ class SEValidationTarget:
     def set_notes(self, n: str):
         self._notes = n
 
+    def has_table_formatting(self) -> bool:
+        return self._table_formatting is not None
+    def get_table_formatting(self) -> Optional[str]:
+        return self._table_formatting
+    def set_table_formatting(self, specification: str) -> None:
+        self._table_formatting = specification
+    def invalidate_table_formatting(self) -> None:
+        self._table_formatting = None
+
     def get_target_maximum(self) -> float:
         return self._target_max
     def get_target_minimum(self) -> float:
@@ -931,7 +883,7 @@ class SEValidationTarget:
 
 
 class SESegmentValidationTarget(SEValidationTarget):
-    __slots__ = ["_comparison_type", "_target_segment"]
+    __slots__ = ["_comparison_type", "_target_segment", "_computed_value", "_error_value"]
 
     class eComparisonType(Enum):
         NotValidating = 0
@@ -947,16 +899,18 @@ class SESegmentValidationTarget(SEValidationTarget):
 
     def __init__(self):
         super().__init__()
-        self._comparison_type = self.eComparisonType.NotValidating
-        self._target_segment = np.nan
+        self.clear()
 
     def __repr__(self):
-        return f'SESegmentValidationTarget({super().__repr__()}, {self._segment}, {self._comparison_type})'
+        return f'SESegmentValidationTarget({super().__repr__()}, {self._segment}, {self._comparison_type}' \
+               f'{self._computed_value}, {self._error_value})'
 
     def clear(self):
         super().clear()
         self._comparison_type = self.eComparisonType.NotValidating
         self._target_segment = np.nan
+        self._computed_value = None
+        self._error_value = None
 
     def get_comparison_type(self) -> eComparisonType:
         return self._comparison_type
@@ -1018,6 +972,24 @@ class SESegmentValidationTarget(SEValidationTarget):
         self._target_min = min
         self._target_segment = 0
 
+    def has_computed_value(self) -> bool:
+        return self._computed_value is not None
+    def get_computed_value(self) -> Optional[float]:
+        return self._computed_value
+    def set_computed_value(self, val: float) -> None:
+        self._computed_value = val
+    def invalidate_computed_value(self) -> None:
+        self._computed_value = None
+
+    def has_error_value(self) -> bool:
+        return self._error_value is not None
+    def get_error_value(self) -> Optional[float]:
+        return self._error_value
+    def set_error_value(self, err: float) -> None:
+        self._error_value = err
+    def invalidate_error_value(self) -> None:
+        self._error_value = None
+
 
 class SESegmentValidationSegment:
     __slots__ = ["_segment_id", "_notes", "_validation_targets", "_actions"]
@@ -1070,7 +1042,7 @@ class SESegmentValidationSegment:
     def invalidate_actions(self) -> None:
         self._actions = []
 
-class SESegmentValidationConfig:
+class SESegmentValidationPipelineConfig:
     __slots__ = ["_plotters"]
     def __init__(self):
         self.clear()
@@ -1083,7 +1055,8 @@ class SESegmentValidationConfig:
 
 
 class SETimeSeriesValidationTarget(SEValidationTarget):
-    __slots__ = ["_target_type", "_comparison_type", "_property_validation"]
+    __slots__ = ["_target_type", "_comparison_type", "_patient_specific",
+                 "_computed_value", "_error_value"]
 
     class eComparisonType(Enum):
         NotValidating = 0
@@ -1100,15 +1073,15 @@ class SETimeSeriesValidationTarget(SEValidationTarget):
 
     def __init__(self):
         super().__init__()
-        self._comparison_type = self.eComparisonType.NotValidating
-        self._target_type = self.eTargetType.Mean
-        self._property_validation = None
+        self.clear()
 
     def clear(self):
         super().clear()
         self._comparison_type = self.eComparisonType.NotValidating
         self._target_type = self.eTargetType.Mean
-        self._property_validation = None
+        self._computed_value = None
+        self._error_value = None
+        self._patient_specific = None
 
     def get_comparison_type(self) -> eComparisonType:
         return self._comparison_type
@@ -1128,15 +1101,35 @@ class SETimeSeriesValidationTarget(SEValidationTarget):
         self._target_max = max
         self._target_min = min
 
-    def has_property_validation(self) -> bool:
-        return self._property_validation is not None
-    def get_property_validation(self) -> SEPropertyValidation:
-        if self._property_validation is None:
-            self._property_validation = SEPropertyValidation()
-        return self._property_validation
+    def has_computed_value(self) -> bool:
+        return self._computed_value is not None
+    def get_computed_value(self) -> Optional[float]:
+        return self._computed_value
+    def set_computed_value(self, val: float) -> None:
+        self._computed_value = val
+    def invalidate_computed_value(self) -> None:
+        self._computed_value = None
+
+    def has_error_value(self) -> bool:
+        return self._error_value is not None
+    def get_error_value(self) -> Optional[float]:
+        return self._error_value
+    def set_error_value(self, err: float) -> None:
+        self._error_value = err
+    def invalidate_error_value(self) -> None:
+        self._error_value = None
+
+    def has_patient_specific_setting(self) -> bool:
+        return self._patient_specific is not None
+    def is_patient_specific(self) -> Optional[bool]:
+        return self._patient_specific
+    def set_patient_specific_setting(self, patient_specific: bool) -> None:
+        self._patient_specific = patient_specific
+    def invalidate_patient_specific_setting(self) -> None:
+        self._patient_specific = None
 
 
-class SETimeSeriesValidationTargetMap:
+class SEPatientTimeSeriesValidation:
     from pulse.cdm.patient import SEPatient
     __slots__ = ["_patient", "_targets"]
 

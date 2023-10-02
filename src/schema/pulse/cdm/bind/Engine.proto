@@ -100,19 +100,6 @@ message DataRequestedListData
 // This encapsulates a row from our System/Patient validation spreedsheet
 // It also encapsulates a segment property cell from a scenario validation spreedsheet
 
-message PropertyValidationData
-{
-  optional double                                       ComputedValue               = 1;
-  optional double                                       Error                       = 2;
-  string                                                TableFormatSpecification    = 3;/**<< @brief Specification string for floating point formatting in tables */
-
-  bool                                                  PatientSpecific             = 4;/**<< @brief Is the expected value specific to any patient properties, if false, the expected value is only valid for standard patients. */
-}
-message PropertyValidationListData
-{
-  repeated PropertyValidationData                       Property                    = 1;
-}
-
 message RangeData
 {
   double                                                Minimum                         = 1;
@@ -123,6 +110,8 @@ message ValidationTargetData
   string                                                Header                          = 1;
   string                                                Reference                       = 2;
   string                                                Notes                           = 3;
+  string                                                TableFormatting                 = 4;/**<< @brief Specification string for floating point formatting of computed values in tables */
+  
 }
 
 message SegmentValidationTargetData
@@ -141,6 +130,8 @@ message SegmentValidationTargetData
     int32                                               TrendsToSegment                 = 9;
     RangeData                                           Range                           = 10;
   }
+  optional double                                       ComputedValue                   = 11;
+  optional double                                       Error                           = 12;
 }
 message SegmentValidationSegmentData
 {
@@ -151,9 +142,9 @@ message SegmentValidationSegmentData
 }
 message SegmentValidationSegmentListData
 {
-  repeated SegmentValidationSegmentData                 SegmentValidationSegment   = 1;
+  repeated SegmentValidationSegmentData                 SegmentValidationSegment        = 1;
 }
-message SegmentValidationConfigurationData
+message SegmentValidationPipelineConfigurationData
 {
   PlotterListData                                       Plots                           = 1;
 }
@@ -170,28 +161,30 @@ message TimeSeriesValidationTargetData
     MaxPerIdealWeight_kg = 5;
   }
   ValidationTargetData                                  ValidationTarget                = 1;
-  eType                                                 Type                            = 2;
+  bool                                                  PatientSpecific                 = 2;/**<< @brief Should the target value change due to patient properties, if false, the expected value is only valid for standard patients. */
+  eType                                                 Type                            = 3;
   oneof Expected
   {
-    double                                              EqualToValue                    = 3;
-    RangeData                                           Range                           = 4;
+    double                                              EqualToValue                    = 4;
+    RangeData                                           Range                           = 5;
   }
 
-  PropertyValidationData                                PropertyValidation              = 5;
-
+  optional double                                       ComputedValue                   = 6;
+  optional double                                       Error                           = 7;
 }
 message TimeSeriesValidationTargetListData
 {
   repeated TimeSeriesValidationTargetData               TimeSeriesValidationTarget      = 1;
 }
-message TimeSeriesValidationTargetMapData
+
+message PatientTimeSeriesValidationData
 {
   PatientData                                           Patient                         = 1;
-  map<string,TimeSeriesValidationTargetListData>        TimeSeriesValidationTargetMap   = 2;
+  map<string,TimeSeriesValidationTargetListData>        TimeSeriesValidationTargetMap   = 2;/**< @brief key is intended to be a table name, and the list is the table content. */
 }
-message TimeSeriesValidationTargetMapListData
+message PatientTimeSeriesValidationListData
 {
-  repeated TimeSeriesValidationTargetMapData            TimeSeriesValidationTargetMap   = 1;
+  repeated PatientTimeSeriesValidationData              PatientTimeSeriesValidation     = 1;
 }
 
 message AnyConditionData

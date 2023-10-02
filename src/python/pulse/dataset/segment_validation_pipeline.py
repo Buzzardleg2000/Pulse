@@ -10,9 +10,8 @@ import matplotlib.pyplot as plt
 from enum import Enum
 from pathlib import Path
 
-from pulse.cdm.engine import SESegmentValidationConfig, eSwitch
-from pulse.cdm.io.engine import serialize_segment_validation_config_from_file, \
-                                serialize_data_requested_result_from_file
+from pulse.cdm.engine import SESegmentValidationPipelineConfig
+from pulse.cdm.io.engine import serialize_segment_validation_pipeline_config_from_file
 from pulse.cdm.utils.markdown import process_file
 from pulse.cdm.utils.file_utils import get_root_dir, get_validation_dir
 from pulse.cdm.utils.plotter import create_plots, plot_with_test_results
@@ -133,8 +132,8 @@ def segment_validation_pipeline(xls_file: Path, exec_opt: eExecOpt, use_test_res
 
     plots = None
     if plots_file is not None:
-        plots = SESegmentValidationConfig()
-        serialize_segment_validation_config_from_file(plots_file, plots)
+        plots = SESegmentValidationPipelineConfig()
+        serialize_segment_validation_pipeline_config_from_file(plots_file, plots)
 
     # Carry out validation on each scenario
     targets = [item.name for item in scenario_dir.glob("*")

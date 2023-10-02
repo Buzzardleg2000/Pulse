@@ -8,9 +8,7 @@ from typing import Optional
 from pulse.cdm.engine import SEDataRequest, eDataRequest_category
 from pulse.cdm.scalars import get_unit
 
-
 _pulse_logger = logging.getLogger('pulse')
-
 
 def generate_data_request(request_type: str, property_name: str, unit_str: str, precision: Optional[int]) -> SEDataRequest:
     request_type = request_type.strip()
@@ -21,7 +19,6 @@ def generate_data_request(request_type: str, property_name: str, unit_str: str, 
     action = None
     compartment = None
     substance = None
-    property = None
     unit = None
     if unit_str.strip().lower() != "unitless":
         try:

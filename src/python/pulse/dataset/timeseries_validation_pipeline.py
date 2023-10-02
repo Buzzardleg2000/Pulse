@@ -6,17 +6,17 @@ import logging
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Union
 
-from pulse.cdm.engine import SETimeSeriesValidationTarget, SETimeSeriesValidationTargetMap
+from pulse.cdm.engine import SEPatientTimeSeriesValidation
 from pulse.cdm.utils.file_utils import get_validation_dir
 from pulse.dataset.timeseries_dataset_reader import generate_validation_targets
 from pulse.dataset.timeseries_validation import validate, generate_validation_tables
-from pulse.cdm.io.engine import serialize_time_series_validation_target_map_list_to_file
+from pulse.cdm.io.engine import serialize_patient_time_series_validation_list_to_file
 
 
 _pulse_logger = logging.getLogger('pulse')
 
 
-def gen_system_targets(log_file: Path, output_file: Path) -> Optional[SETimeSeriesValidationTargetMap]:
+def gen_system_targets(log_file: Path, output_file: Path) -> Optional[SEPatientTimeSeriesValidation]:
     """
     Generate system validation timeseries validation targets.
 
@@ -36,7 +36,7 @@ def gen_system_targets(log_file: Path, output_file: Path) -> Optional[SETimeSeri
     )
 
 
-def gen_patient_targets(log_file: Path, output_file: Optional[Path]=None) -> Optional[SETimeSeriesValidationTargetMap]:
+def gen_patient_targets(log_file: Path, output_file: Optional[Path]=None) -> Optional[SEPatientTimeSeriesValidation]:
     """
     Generate patient validation timeseries validation targets.
 
@@ -50,14 +50,14 @@ def gen_patient_targets(log_file: Path, output_file: Optional[Path]=None) -> Opt
     xls_file = Path(get_validation_dir() + "/PatientValidationData.xlsx")
 
     # TODO: Actually generate targets
-    return SETimeSeriesValidationTargetMap()
+    return SEPatientTimeSeriesValidation()
 
 
 def timeseries_validation_pipeline(
     log_file: Path,
     csv_file: Path,
     table_dir: Optional[Path]=None
-) -> Tuple[SETimeSeriesValidationTargetMap, SETimeSeriesValidationTargetMap]:
+) -> Tuple[SEPatientTimeSeriesValidation, SEPatientTimeSeriesValidation]:
     """
     Processes given log and csv file through the timeseries validation
     pipeline.
@@ -80,7 +80,7 @@ def timeseries_validation_pipeline(
         _pulse_logger.error("Unable to generate patient targets")
         return False
 
-    validate(target_map=sys_tgts, csv_filename=csv_file, output_file=None)
+    validate(patient_val=sys_tgts, csv_filename=csv_file, output_file=None)
     # TODO: Repeat with patient targets
 
     # Generate Tables (Optional)
@@ -125,9 +125,17 @@ def bulk_timeseries_validation_pipeline(
     try:
         # Run the pipeline on each input file
         for filename_base, t_dir in zip(filename_base_paths, table_dirs):
+            # Check if the csv file should have *Results
+            log_file = filename_base.parent / f"{filename_base.stem}.log"
+            csv_file = filename_base.parent / f"{filename_base.stem}.csv"
+            if not csv_file.exists():
+                csv_file = filename_base.parent / f"{filename_base.stem}Results.csv"
+                if not csv_file.exists():
+                    _pulse_logger.error(f'CSV file does not exist for {filename_base_paths}')
+                    continue
             sys_tgts, patient_tgts = timeseries_validation_pipeline(
-                log_file=filename_base.parent / f"{filename_base.stem}.log",
-                csv_file=filename_base.parent / f"{filename_base.stem}.csv",
+                log_file=log_file,
+                csv_file=csv_file,
                 table_dir=t_dir
             )
             all_sys_tgts.append(sys_tgts)
@@ -141,17 +149,17 @@ def bulk_timeseries_validation_pipeline(
         patient_out_file = output_basename.parent / f"{output_basename.stem}PatientTargets.json"
 
         _pulse_logger.info(f"Writing {sys_out_file}")
-        serialize_time_series_validation_target_map_list_to_file(all_sys_tgts, sys_out_file)
+        serialize_patient_time_series_validation_list_to_file(all_sys_tgts, sys_out_file)
 
         _pulse_logger.info(f"Writing {patient_out_file}")
-        serialize_time_series_validation_target_map_list_to_file(all_patient_tgts, patient_out_file)
+        serialize_patient_time_series_validation_list_to_file(all_patient_tgts, patient_out_file)
 
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
     logging.getLogger("pycel").setLevel(logging.WARNING)
 
-    if len(sys.argv) < 3:
+    if len(sys.argv) < 2:
         _pulse_logger.error(
             "Expected inputs : <filename base path where there is a csv and log file by the name>"
             " <output basename> [table dir]"
@@ -160,11 +168,11 @@ if __name__ == "__main__":
         sys.exit(1)
 
     table_dir = None
-    if len(sys.argv) > 3:
-        table_dir = Path(sys.argv[3])
+    if len(sys.argv) > 2:
+        table_dir = Path(sys.argv[2])
 
     bulk_timeseries_validation_pipeline(
         filename_base_paths=[Path(sys.argv[1])],
-        output_basename=Path(sys.argv[2]),
+        output_basename=Path(sys.argv[1]),
         table_dir=table_dir
     )

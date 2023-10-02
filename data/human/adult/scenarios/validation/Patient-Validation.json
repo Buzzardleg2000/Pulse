@@ -1,11 +1,11 @@
 {
   "Scenario": {
-    "Name": "Patient-Validation",
-    "Description": "Validation of the patient data.",
+    "Name": "System-Validation",
+    "Description": "Validation of all system data.",
     "PatientConfiguration": { "PatientFile": "StandardMale.json" },
-    "DataRequestManager": {
-      "DataRequest": 
-      [
+    "DataRequestManager":
+    {
+      "DataRequest": [
         { "Category": "Patient",    "PropertyName": "Age",                               "Unit": "yr",       "DecimalFormat": {                } },
         { "Category": "Patient",    "PropertyName": "Weight",                            "Unit": "kg",       "DecimalFormat": { "Precision": 1 } },
         { "Category": "Patient",    "PropertyName": "Height",                            "Unit": "in",       "DecimalFormat": {                } },
@@ -34,23 +34,33 @@
         { "Category": "Patient",    "PropertyName": "InspiratoryReserveVolume",          "Unit": "mL",       "DecimalFormat": {                } },
         { "Category": "Patient",    "PropertyName": "ResidualVolume",                    "Unit": "mL",       "DecimalFormat": {                } },
         { "Category": "Patient",    "PropertyName": "TotalLungCapacity",                 "Unit": "mL",       "DecimalFormat": {                } },
-        { "Category": "Patient",    "PropertyName": "VitalCapacity",                     "Unit": "mL",       "DecimalFormat": {                } },
-
-
-        { "Category": "Physiology", "PropertyName": "TotalMetabolicRate",                "Unit": "kcal/day", "DecimalFormat": {                } },
-        { "Category": "Physiology", "PropertyName": "BloodVolume",                       "Unit": "mL",       "DecimalFormat": { "Precision": 4 } },
-        { "Category": "Physiology", "PropertyName": "DiastolicArterialPressure",         "Unit": "mmHg",     "DecimalFormat": { "Precision": 4 } },
-        { "Category": "Physiology", "PropertyName": "HeartRate",                         "Unit": "1/min",    "DecimalFormat": {                } },
-        { "Category": "Physiology", "PropertyName": "MeanArterialPressure",              "Unit": "mmHg",     "DecimalFormat": { "Precision": 4 } },
-        { "Category": "Physiology", "PropertyName": "RespirationRate",                   "Unit": "1/min",    "DecimalFormat": {                } },
-        { "Category": "Physiology", "PropertyName": "SystolicArterialPressure",          "Unit": "mmHg",     "DecimalFormat": { "Precision": 4 } },
-        { "Category": "Physiology", "PropertyName": "TidalVolume",                       "Unit": "mL",       "DecimalFormat": {                } }
+        { "Category": "Patient",    "PropertyName": "VitalCapacity",                     "Unit": "mL",       "DecimalFormat": {                } }
       ]
     },
+    "DataRequestFile":
+    [
+      "./validation/requests/BloodChemistry.json",
+      "./validation/requests/Cardiovascular.json",
+      "./validation/requests/CardiovascularCompartments.json",
+      "./validation/requests/Endocrine.json",
+      "./validation/requests/Energy.json",
+      "./validation/requests/Gastrointestinal.json",
+      "./validation/requests/Renal.json",
+      "./validation/requests/RenalCompartments.json",
+      "./validation/requests/RenalSubstances.json",
+      "./validation/requests/Respiratory.json",
+      "./validation/requests/RespiratoryCompartments.json",
+      "./validation/requests/Tissue.json",
+      "./validation/requests/TissueCompartments.json",
+      "./validation/requests/TissueSubstances.json"
+    ],
     "AnyAction": 
     [
-      { "AdvanceTime": { "Time": { "ScalarTime": { "Value": 2.0, "Unit": "min" }}}}
+      { "AdvanceTime": { "Time": { "ScalarTime": { "Value": 2.0, "Unit": "min" }}}},
+      { "PatientAction": { "Assessment": { "Type": "ArterialBloodGasTest" }}},
+      { "PatientAction": { "Assessment": { "Type": "CompleteBloodCount" }}},
+      { "PatientAction": { "Assessment": { "Type": "ComprehensiveMetabolicPanel" }}},
+      { "PatientAction": { "Assessment": { "Type": "Urinalysis" }}}
     ]
-  },
-  "Configuration": { "WritePatientBaselineFile": "On" }
+  }
 }

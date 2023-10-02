@@ -9,25 +9,25 @@ from pathlib import Path
 from typing import Dict, List, Optional
 
 import PyPulse
-from pulse.cdm.engine import SETimeSeriesValidationTarget, SETimeSeriesValidationTargetMap
+from pulse.cdm.engine import SETimeSeriesValidationTarget, SEPatientTimeSeriesValidation
 from pulse.cdm.utils.csv_utils import read_csv_into_df
 from pulse.cdm.utils.markdown import table
 from pulse.cdm.utils.math_utils import generate_percentage_span, percent_tolerance
-from pulse.cdm.io.engine import serialize_time_series_validation_target_map_to_file
+from pulse.cdm.io.engine import serialize_patient_time_series_validation_to_file
 
 
 _pulse_logger = logging.getLogger('pulse')
 
 
 def validate(
-    target_map: SETimeSeriesValidationTargetMap,
+    patient_val: SEPatientTimeSeriesValidation,
     csv_filename: Path,
     output_file: Optional[Path]
 ) -> None:
     """
     Validates given targets against given results csv.
 
-    :param target_map: Validation targets to validate. Will
+    :param patient_val: Validation targets to validate. Will
         be modified with results.
     :param csv_filename: Path to csv results file.
     :param output_file: (Optional) If provided, serialize
@@ -36,7 +36,7 @@ def validate(
     _pulse_logger.info(f"Validating {csv_filename}")
     df = read_csv_into_df(csv_filename)
 
-    targets = target_map.get_targets()
+    targets = patient_val.get_targets()
     for tgt_table, tgts in targets.items():
         # No validation targets for this table
         if not tgts:
@@ -50,7 +50,7 @@ def validate(
     if output_file is not None:
         _pulse_logger.info(f"Writing {output_file}")
         output_file.parent.mkdir(parents=True, exist_ok=True)
-        serialize_time_series_validation_target_map_to_file(target_map, output_file)
+        serialize_patient_time_series_validation_to_file(patient_val, output_file)
 
 
 def evaluate(tgt: SETimeSeriesValidationTarget, results: pd.DataFrame, epsilon: float=1E-9) -> None:
@@ -70,8 +70,6 @@ def evaluate(tgt: SETimeSeriesValidationTarget, results: pd.DataFrame, epsilon: 
 
     if compare_type == SETimeSeriesValidationTarget.eComparisonType.NotValidating:
         return
-
-    property_validation = tgt.get_property_validation()
 
     def _get_header(header: str) -> Optional[pd.Series]:
         """
@@ -136,7 +134,12 @@ def evaluate(tgt: SETimeSeriesValidationTarget, results: pd.DataFrame, epsilon: 
         comparison_value = header_series.mean() if not header_series.empty else np.nan
     else:
         raise ValueError(f"Unknown target type: {target_type}")
-    property_validation.set_computed_value(comparison_value)
+
+    if np.isnan(comparison_value):
+        _pulse_logger.error(f"Computed value for {tgt_header} is nan")
+        return
+
+    tgt.set_computed_value(comparison_value)
 
     # Compute error
     tgt_min = tgt.get_target_minimum()
@@ -161,11 +164,11 @@ def evaluate(tgt: SETimeSeriesValidationTarget, results: pd.DataFrame, epsilon: 
     if abs(error) < 1E-15:
         error = 0.
 
-    property_validation.set_error_value(error)
+    tgt.set_error_value(error)
 
 
 def generate_validation_tables(
-    target_map: SETimeSeriesValidationTargetMap,
+    target_map: SEPatientTimeSeriesValidation,
     table_dir: Path,
     percent_precision: int=1
 ) -> None:

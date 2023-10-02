@@ -55,7 +55,7 @@ void HowToSepsis()
   
   SESepsisExacerbation sepsis;
   sepsis.GetInfectionSeverity().SetValue(0.5);
-  sepsis.GetProgressionSeverity().SetValue(0.5);
+  sepsis.GetProgressionSeverity().SetValue(0.3);
   pe->ProcessAction(sepsis);
 
   AdvanceAndTrackTime_s(60*60, *pe);

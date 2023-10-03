@@ -54,7 +54,7 @@ The synthesis rate is defined by:
 <center>
 *Equation 1.*
 </center><br>
-Where *G* is glucose concentration of the blood. 
+Where <i>G</i> is glucose concentration of the blood. 
 This linear function is valid for glucose levels of 80-150 mg/dL, and will compute an insulin synthesis rate between 100-475 pmol/min accordingly.
 
 Because the %Cardiovascular System does not contain a pancreas compartment, the insulin is synthesized directly in the splanchnic.

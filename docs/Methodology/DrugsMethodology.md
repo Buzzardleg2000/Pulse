@@ -21,7 +21,7 @@ System Design
 
 Background and Scope
 --------------------
-*Pharmacokinetics* is the study of the relationship between the dose of a drug and the time-evolution of the concentration of the drug throughout the body. The relationship between the concentration of a drug and the physiological response is described by the *pharmacodynamics* @cite rosenbaum2012basic. The engine has both pharmacokinetic and pharmacodynamic models. Because it is physiologically-based, the pharmacokinetic model has resolution at the same scale as the cardiovascular and respiratory systems. Physiologically-based pharmacokinetic (PBPK) modeling is a technique that mathematically models the distribution, uptake, metabolism, and clearance of a drug with consideration of the relevant physiological processes @cite khalil2011physiologically. The PBPK model provides more resolution than the classic one and two compartment models. The PBPK model also provides a base on which to build a receptor-based pharmacodynamic (PD) model, although the PD model is currently a lower-fidelity phenomenological model based solely on the concentration of a drug in the blood. %Drugs impact body-level physiologic behavior such as heart rate, respiration rate, and blood pressure as result of cellular-level interactions caused by a drug that changes the behavior of physiologic entities, such as blood vessels and electrical activity in the heart. The cellular-level processes are not modeled in the engine, and instead the PD model is a direct relationship between concentration and maximum effect for a body-level response.
+<i>Pharmacokinetics</i> is the study of the relationship between the dose of a drug and the time-evolution of the concentration of the drug throughout the body. The relationship between the concentration of a drug and the physiological response is described by the <i>pharmacodynamics</i> @cite rosenbaum2012basic. The engine has both pharmacokinetic and pharmacodynamic models. Because it is physiologically-based, the pharmacokinetic model has resolution at the same scale as the cardiovascular and respiratory systems. Physiologically-based pharmacokinetic (PBPK) modeling is a technique that mathematically models the distribution, uptake, metabolism, and clearance of a drug with consideration of the relevant physiological processes @cite khalil2011physiologically. The PBPK model provides more resolution than the classic one and two compartment models. The PBPK model also provides a base on which to build a receptor-based pharmacodynamic (PD) model, although the PD model is currently a lower-fidelity phenomenological model based solely on the concentration of a drug in the blood. %Drugs impact body-level physiologic behavior such as heart rate, respiration rate, and blood pressure as result of cellular-level interactions caused by a drug that changes the behavior of physiologic entities, such as blood vessels and electrical activity in the heart. The cellular-level processes are not modeled in the engine, and instead the PD model is a direct relationship between concentration and maximum effect for a body-level response.
 
 @anchor drugs-data-flow
 Data Flow
@@ -59,7 +59,7 @@ For moderate to strong bases, Equation 2 is used to calculate the partition coef
 <i>Equation 2.</i>
 </center><br>
 
-Where *X* and *Y* are the different relationships for pH, as shown in Table 1, *f<sub>IW</sub>* is the fraction of intracellular water, *f<sub>EW</sub>* is the fraction of extracellular water,  *f<sub>NP</sub>* is the fraction of neutral phospholipids in the tissue, *f<sub>NL</sub>* is the fraction of lipids in the tissue, *P* is the octanol:water partition coefficient for the drug, *f<sub>u</sub>* is the fraction of the drug unbound in plasma,  *f<sub>NL,P</sub>* is the fraction of neutral lipids in plasma, *f<sub>NP,P</sub>* is the fraction of phospholipids in plasma,  and *PR<sub>T</sub>* / *PR<sub>B</sub>* is the tissue to plasma ratio of the binding protein. 
+Where <i>X</i> and <i>Y</i> are the different relationships for pH, as shown in Table 1, <i>f<sub>IW</sub></i> is the fraction of intracellular water, <i>f<sub>EW</sub></i> is the fraction of extracellular water,  <i>f<sub>NP</sub></i> is the fraction of neutral phospholipids in the tissue, <i>f<sub>NL</sub></i> is the fraction of lipids in the tissue, <i>P</i> is the octanol:water partition coefficient for the drug, <i>f<sub>u</sub></i> is the fraction of the drug unbound in plasma,  *f<sub>NL,P</sub>* is the fraction of neutral lipids in plasma, *f<sub>NP,P</sub>* is the fraction of phospholipids in plasma,  and <i>PR<sub>T</sub></i> / <i>PR<sub>B</sub></i> is the tissue to plasma ratio of the binding protein. 
 
 <center>
 <i>Table 1. The pH effects on the partition coefficient are described based on the drug type, i.e., very weak base, acid, or neutral. X relates the drug property pK<sub>a</sub> to the pH<sub>IW</sub>, intracellular water pH, while Y relates the pK<sub>a</sub> to the pH of the plasma.</i> </center>
@@ -76,7 +76,7 @@ A number of these values are drug parameters found in the substance file definit
 <i>Table 2. The volume fractions for neutral lipids and phospholipids vary by compartment. These values are specified for each compartment as outlined below and used to calculate the partition coefficient of each drug for each tissue compartment in the engine. These values were found in @cite rodgers2005physiologically.</i>
 </center>
 
-|	%Tissue Compartment	|	Extracellular Water (*f<sub>EW</sub>*) 	|   Intracellular Water (*f<sub>IW</sub>*)  |    Neutral Lipd (*f<sub>NL</sub>*)  |  Neutral Phospholipid (*f<sub>NP</sub>*)   |
+|	%Tissue Compartment	|	Extracellular Water (<i>f<sub>EW</sub></i>) 	|   Intracellular Water (<i>f<sub>IW</sub></i>)  |    Neutral Lipd (<i>f<sub>NL</sub></i>)  |  Neutral Phospholipid (<i>f<sub>NP</sub></i>)   |
 | :---- | :---- | :---- |  :---- | :---- |
 |	Adipose (Fat)	|  0.135  |  0.017  |  0.853  |  0.0016  |
 |	Bone	        |  0.1    |  0.346  |  0.017  |  0.0017  |
@@ -128,7 +128,7 @@ The PBPK model represents renal, hepatic, and systemic clearance. The renal clea
 <i>Equation 3.</i>
 </center><br>
 
-Where *Cl<sub>H</sub>* is the hepatic clearance, *f<sub>u</sub>* is the fraction of the drug unbound in plasma, *Cl<sub>I</sub>* is the intrinsic clearance, and *BW* is the patient body weight.
+Where <i>Cl<sub>H</sub></i> is the hepatic clearance, <i>f<sub>u</sub></i> is the fraction of the drug unbound in plasma, <i>Cl<sub>I</sub></i> is the intrinsic clearance, and <i>BW</i> is the patient body weight.
 
 The amount of drug removed (cleared) from the system is found by calculating the amount of fluid volume that can be cleared by a healthy organ. The volume is calculated, as shown in Equation 4. This process is completed for the renal and hepatic clearance. 
 
@@ -137,21 +137,21 @@ The amount of drug removed (cleared) from the system is found by calculating the
 <i>Equation 4.</i>
 </center><br>
 
-Where *V<sub>cl</sub>* is the volume cleared, *Cl<sub>H</sub>* is the organ clearance rate, *BW* is the body weight, and *dt* is the time step. The actual mass of the substance removed during this process is found by determining the amount of the drug in the volume cleared, as shown in Equation 5.
+Where <i>V<sub>cl</sub></i> is the volume cleared, <i>Cl<sub>H</sub></i> is the organ clearance rate, <i>BW</i> is the body weight, and <i>dt</i> is the time step. The actual mass of the substance removed during this process is found by determining the amount of the drug in the volume cleared, as shown in Equation 5.
 
 \f[M_{Cl} = V_{Cl}*C \f]
 <center>
 <i>Equation 5.</i>
 </center><br>
 
-Where *M<sub>cl</sub>* is the mass cleared, *V<sub>cl</sub>* is the volume cleared, and *C* is the concentration in the tissue. The systemic clearance represents the total clearance for the body, including the renal and hepatic clearance. Therefore, the total volume cleared is calculated, then the renal and hepatic clearance volumes are removed, as shown in Equation 6. The &ldquo;remaining&rdquo; systemic mass cleared is calculated as shown in Equation 5. Half of the mass cleared from renal clearance is removed from each of the kidney tissue compartments, the mass cleared from hepatic clearance is removed from the liver tissue compartment, and the mass removed from the &ldquo;remaining&rdquo; systemic clearance is removed from the vena cava compartment. This is assumed to be from various metabolic processes in the plasma.
+Where <i>M<sub>cl</sub></i> is the mass cleared, <i>V<sub>cl</sub></i> is the volume cleared, and <i>C</i> is the concentration in the tissue. The systemic clearance represents the total clearance for the body, including the renal and hepatic clearance. Therefore, the total volume cleared is calculated, then the renal and hepatic clearance volumes are removed, as shown in Equation 6. The &ldquo;remaining&rdquo; systemic mass cleared is calculated as shown in Equation 5. Half of the mass cleared from renal clearance is removed from each of the kidney tissue compartments, the mass cleared from hepatic clearance is removed from the liver tissue compartment, and the mass removed from the &ldquo;remaining&rdquo; systemic clearance is removed from the vena cava compartment. This is assumed to be from various metabolic processes in the plasma.
 
 \f[V_{Cl} = \left(Cl_{s}*BW*dt\right) - V_{ClR} - V_{ClH} \f]
 <center>
 <i>Equation 6.</i>
 </center><br>
 
-Where *V<sub>cl</sub>* is the remaining systemic volume cleared, *Cl<sub>s</sub>* is the systemic clearance rate, *BW* is the patient body weight, *dt* is the time step, *V<sub>clR</sub>* is the renal volume cleared, and *V<sub>clH</sub>* is the hepatic volume cleared.
+Where <i>V<sub>cl</sub></i> is the remaining systemic volume cleared, <i>Cl<sub>s</sub></i> is the systemic clearance rate, <i>BW</i> is the patient body weight, <i>dt</i> is the time step, <i>V<sub>clR</sub></i> is the renal volume cleared, and <i>V<sub>clH</sub></i> is the hepatic volume cleared.
 
 @anchor drugs-pharmacodynamics
 ### Pharmacodynamics
@@ -187,18 +187,18 @@ The drug effects are specified for each drug in the substance file. The level of
 <i>Equation 7.</i>
 </center><br>
 
-Where *E<sub>m</sub>* is the expected (or maximum) effect of the drug, *EC<sub>50</sub>* is the concentration at 50% of the effect, *C<sub>p</sub>* is the drug concentration in plasma, *E<sub>bl</sub>* is the baseline for that effect (i.e., heart rate baseline), <i>&Delta;E</i> is the calculated effect of the drug, and <i>&eta;</i> is the slope factor @cite rosenbaum2012basic. This calculation is repeated for each of the effects in Table 4. 
+Where <i>E<sub>m</sub></i> is the expected (or maximum) effect of the drug, <i>EC<sub>50</sub></i> is the concentration at 50% of the effect, <i>C<sub>p</sub></i> is the drug concentration in plasma, <i>E<sub>bl</sub></i> is the baseline for that effect (i.e., heart rate baseline), <i>&Delta;E</i> is the calculated effect of the drug, and <i>&eta;</i> is the slope factor @cite rosenbaum2012basic. This calculation is repeated for each of the effects in Table 4. 
 
 The drug effect is applied as a fraction of the baseline for the biomarker, which is a patient variable in the engine. For example, a person with a resting heart rate of 72 bpm may have a physiological process happening during simulation, perhaps as a condition, which increases his/her baseline heart rate to 80 bpm. If this patient is given a drug with a heart rate effect of 0.2, then at maximum the patient's heart rate will be 96 bpm (80 + 0.2 * 80). If the same drug were given to the same patient but without the condition, the maximum heart rate will be 86.4 bpm (72 + 0.2 * 72).
 
-The *EC<sub>50</sub>* values were unknown for the majority of the drugs, so it was estimated from the maximum concentration of the drug at a standard adult dose, as shown in Equation 8.
+The <i>EC<sub>50</sub></i> values were unknown for the majority of the drugs, so it was estimated from the maximum concentration of the drug at a standard adult dose, as shown in Equation 8.
 
 \f[EC_{50} = \frac{C_{max}}{32} \f]
 <center>
 <i>Equation 8.</i>
 </center><br>
 
-Where *C<sub>max</sub>* is the maximum plasma concentration for the standard adult dose and *EC<sub>50</sub>* is the concentration at which 50% of the effect should be present.
+Where <i>C<sub>max</sub></i> is the maximum plasma concentration for the standard adult dose and <i>EC<sub>50</sub></i> is the concentration at which 50% of the effect should be present.
 
 @anchor drugs-cardiovascular-effects
 ##### Cardiovascular Effects
@@ -214,7 +214,7 @@ Equation 7 provides a straightforward calculation for the heart rate. However, t
 <i>Equation 10.</i>
 </center><br>
 
-Where *MAP* is the mean arterial blood pressure, *DBP* is the diastolic blood pressure, and *SBP* is the systolic blood pressure. These changes to the heart rate, mean arterial pressure, and pulse pressure are then system outputs for the drug system. The changes are then applied in the %Cardiovascular System. For more details on the implementation of the effects see the @ref CardiovascularMethodology.
+Where <i>MAP</i> is the mean arterial blood pressure, <i>DBP</i> is the diastolic blood pressure, and <i>SBP</i> is the systolic blood pressure. These changes to the heart rate, mean arterial pressure, and pulse pressure are then system outputs for the drug system. The changes are then applied in the %Cardiovascular System. For more details on the implementation of the effects see the @ref CardiovascularMethodology.
 
 @anchor drugs-respiratory-effects
 ##### Respiratory Effects

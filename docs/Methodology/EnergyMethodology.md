@@ -223,9 +223,9 @@ The energy flow rate into the endurance energy store, indicated by the large ora
 </center><br>
 
 There are three output parameters associated with the exercise action: the achieved exercise level, the fatigue level, and the total work rate level.
-- **Achieved exercise level**: This is the fraction of requested work that the body is able to achieve. For instance, if a work rate of 300 Watts is requested and the body is able to deliver 300 Watts, then the achieved exercise level will be 1.0. After some time, the body's energy levels will be depleted, and it will only be able to produce a fraction of the requested work rate, so the achieved exercise level will be less than 1.0.
-- **Fatigue level**: This is the exhaustion level of the body. A fatigue level of 1.0 indicates that the body has no energy available to do work. At low work rates the fatigue level increases slowly, and the rate of fatigue increase is related to type of metabolism producing the energy (i.e. aerobic or anaerobic).
-- **Total work rate level**: This is the fraction of the full work rate capacity of the body at which the body is currently working. For example, if the rested body is capable of producing a maximum of 1200 Watts of power for some amount of time, then that body working a rate of 600 Watts would have a work rate level of 0.5. This output is similar to the exercise intensity input.
+- <b>Achieved exercise level</b>: This is the fraction of requested work that the body is able to achieve. For instance, if a work rate of 300 Watts is requested and the body is able to deliver 300 Watts, then the achieved exercise level will be 1.0. After some time, the body's energy levels will be depleted, and it will only be able to produce a fraction of the requested work rate, so the achieved exercise level will be less than 1.0.
+- <b>Fatigue level</b>: This is the exhaustion level of the body. A fatigue level of 1.0 indicates that the body has no energy available to do work. At low work rates the fatigue level increases slowly, and the rate of fatigue increase is related to type of metabolism producing the energy (i.e. aerobic or anaerobic).
+- <b>Total work rate level</b>: This is the fraction of the full work rate capacity of the body at which the body is currently working. For example, if the rested body is capable of producing a maximum of 1200 Watts of power for some amount of time, then that body working a rate of 600 Watts would have a work rate level of 0.5. This output is similar to the exercise intensity input.
 
 @anchor energy-conditions
 Conditions

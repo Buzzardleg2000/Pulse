@@ -1083,6 +1083,9 @@ class SETimeSeriesValidationTarget(SEValidationTarget):
         self._error_value = None
         self._patient_specific = None
 
+    def is_evaluated(self) -> bool:
+        return self.has_computed_value() and self.has_error_value()
+
     def get_comparison_type(self) -> eComparisonType:
         return self._comparison_type
     def get_target_type(self) -> eTargetType:

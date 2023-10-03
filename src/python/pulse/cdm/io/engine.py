@@ -587,7 +587,8 @@ def serialize_validation_target_to_bind(src: SEValidationTarget, dst: Validation
     dst.Header = src.get_header()
     dst.Reference = src.get_reference()
     dst.Notes = src.get_notes()
-    dst.TableFormatting = src.get_table_formatting()
+    if src.has_table_formatting():
+        dst.TableFormatting = src.get_table_formatting()
 def serialize_validation_target_from_bind(src: ValidationTargetData, dst: SEValidationTarget):
     dst.clear()
     dst.set_header(src.Header)

@@ -197,7 +197,7 @@ def generate_validation_tables(
         :returns: Expected value string.
         """
         compare_type = tgt.get_comparison_type()
-        value_precision = tgt.get_property_validation().get_table_format_specification()
+        value_precision = tgt.get_table_formatting()
         if compare_type == SETimeSeriesValidationTarget.eComparisonType.EqualToValue:
             expected_str = f"{tgt.get_target():{value_precision}}"
         elif compare_type == SETimeSeriesValidationTarget.eComparisonType.Range:
@@ -225,10 +225,9 @@ def generate_validation_tables(
         :returns: Engine value string.
         """
         target_type = tgt.get_target_type()
-        property_validation = tgt.get_property_validation()
-        value_precision = property_validation.get_table_format_specification()
+        value_precision = tgt.get_table_formatting()
         engine_val_str = f"{target_type.name.replace('_kg', '(kg)')} of " \
-                         f"{property_validation.get_computed_value():{value_precision}}"
+                         f"{tgt.get_computed_value():{value_precision}}"
 
         if not engine_val_str:
             return "&nbsp;"
@@ -250,16 +249,14 @@ def generate_validation_tables(
         table_data = []
         for tgt in tgts:
             # Not validated
-            if not tgt.has_property_validation() or not tgt.get_property_validation().is_valid():
+            if not tgt.is_evaluated():
                 continue
-
-            property_validation = tgt.get_property_validation()
 
             table_data.append([
                 tgt.get_header(),
                 _gen_expected_str(tgt),
                 _gen_engine_val_str(tgt),
-                generate_percentage_span(property_validation.get_error_value(), percent_precision),
+                generate_percentage_span(tgt.get_error_value(), percent_precision),
                 notes if (notes := tgt.get_notes()) else "&nbsp;"
             ])
 

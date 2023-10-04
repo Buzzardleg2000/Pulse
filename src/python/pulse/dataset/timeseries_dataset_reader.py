@@ -31,38 +31,22 @@ from pulse.dataset.utils import generate_data_request
 _pulse_logger = logging.getLogger('pulse')
 
 
-def generate_validation_targets(
-    xls_file: Path,
-    patient_file: Path,
-    output_file: Optional[Path]=None
-) -> Optional[SEPatientTimeSeriesValidation]:
+def extract_patient(patient_file: Path) -> SEPatient:
     """
-    Generates timeseries validation targets.
+    Attempts to extract patient from given file. Expected
+    to be a log or json patient file.
 
-    :param xls_file: Path to xls file.
     :param patient_file: Path to patient/log file containing
         patient information.
-    :param output_file: (Optional) If provided, generated targets
-        will be serialized to this location.
 
     :raises ValueError: Unknown patient file type.
 
-    :return: Generated targets. If targets could not be generated,
-        None will be returned.
+    :return: Extracted patient
     """
-    if not xls_file.is_file():
-        _pulse_logger.error(f"Could not find xls file {xls_file}")
-        return None
-
-    if not patient_file.is_file():
-        _pulse_logger.error(f"Please provide a valid patient file {patient_file}")
-        return None
-
-    # Either load patient directly from patient file or extract from log
-    patient_val = SEPatientTimeSeriesValidation()
-    p = patient_val.get_patient()
     if patient_file.suffix.lower() == ".json":
+        p = SEPatient()
         serialize_patient_from_file(patient_file, p)
+        return p
     elif patient_file.suffix.lower() == ".log":
         class SEScenarioLogPatient(SEScenarioLog):
             def __init__(self, log_file: Path):
@@ -78,9 +62,42 @@ def generate_validation_targets(
                 return self._patient
 
         log = SEScenarioLogPatient(log_file=patient_file)
-        p.copy(log.get_patient())
+        return log.get_patient()
     else:
         raise ValueError("Unknown patient file type: {patient_file}")
+
+
+def generate_validation_targets(
+    xls_file: Path,
+    patient_file: Path,
+    patient_validation: SEPatientTimeSeriesValidation,
+    output_file: Optional[Path]=None
+) -> bool:
+    """
+    Generates timeseries validation targets.
+
+    :param xls_file: Path to xls file.
+    :param patient_file: Path to patient/log file containing
+        patient information.
+    :param patient_validation: Where generated targets will be stored.
+    :param output_file: (Optional) If provided, generated targets
+        will be serialized to this location.
+
+    :raises ValueError: Unknown patient file type.
+
+    :return: Whether or not validation target generation was successful.
+    """
+    if not xls_file.is_file():
+        _pulse_logger.error(f"Could not find xls file {xls_file}")
+        return False
+
+    if not patient_file.is_file():
+        _pulse_logger.error(f"Please provide a valid patient file {patient_file}")
+        return False
+
+    # Either load patient directly from patient file or extract from log
+    p = patient_validation.get_patient()
+    p.copy(extract_patient(patient_file=patient_file))
 
     # If no name, set to filename for potential table filenames
     if not p.has_name() or not p.get_name():
@@ -109,7 +126,7 @@ def generate_validation_targets(
             if not generate_sheet_targets(
                 sheet=workbook[system],
                 evaluator=evaluator,
-                patient_val=patient_val
+                patient_validation=patient_validation
             ):
                 _pulse_logger.error(f"Unable to generate targets for {system} sheet")
 
@@ -117,14 +134,13 @@ def generate_validation_targets(
         if output_file is not None:
             _pulse_logger.info(f"Writing {output_file}")
             output_file.parent.mkdir(parents=True, exist_ok=True)
-            serialize_patient_time_series_validation_to_file(patient_val, output_file)
+            serialize_patient_time_series_validation_to_file(patient_validation, output_file)
     except Exception as e:
         raise
     finally:  # Always clean up temp file
         tmp_xls.close()
 
-    return patient_val
-
+    return True
 
 def update_patient_sheet(patient: SEPatient, xls_file: Path, new_file: Optional[Path]=None) -> None:
     """
@@ -273,19 +289,19 @@ def generate_sheet_requests(sheet: Worksheet, dr_dict: Dict[str, List[SEDataRequ
 def generate_sheet_targets(
     sheet: Worksheet,
     evaluator: ExcelCompiler,
-    patient_val: SEPatientTimeSeriesValidation
+    patient_validation: SEPatientTimeSeriesValidation
 ) -> bool:
     """
     Generates validation targets from given worksheet.
 
     :param sheet: Relevant xls worksheet.
     :param evaluator: xls evaluator to retrieve computed cell values.
-    :param patient_val: Where generated validation targets will be stored.
+    :param patient_validation: Where generated validation targets will be stored.
 
     :return: Whether generating validation targets for this sheet was successful.
     """
     system = sheet.title
-    targets = patient_val.get_targets()
+    targets = patient_validation.get_targets()
 
     # Get header to dataclass mapping
     ws_headers = [cell.value for cell in sheet[1]]

@@ -20,14 +20,14 @@ _pulse_logger = logging.getLogger('pulse')
 
 
 def validate(
-    patient_val: SEPatientTimeSeriesValidation,
+    patient_validation: SEPatientTimeSeriesValidation,
     csv_filename: Path,
     output_file: Optional[Path]
 ) -> None:
     """
     Validates given targets against given results csv.
 
-    :param patient_val: Validation targets to validate. Will
+    :param patient_validation: Validation targets to validate. Will
         be modified with results.
     :param csv_filename: Path to csv results file.
     :param output_file: (Optional) If provided, serialize
@@ -36,7 +36,7 @@ def validate(
     _pulse_logger.info(f"Validating {csv_filename}")
     df = read_csv_into_df(csv_filename)
 
-    targets = patient_val.get_targets()
+    targets = patient_validation.get_targets()
     for tgt_table, tgts in targets.items():
         # No validation targets for this table
         if not tgts:
@@ -50,7 +50,7 @@ def validate(
     if output_file is not None:
         _pulse_logger.info(f"Writing {output_file}")
         output_file.parent.mkdir(parents=True, exist_ok=True)
-        serialize_patient_time_series_validation_to_file(patient_val, output_file)
+        serialize_patient_time_series_validation_to_file(patient_validation, output_file)
 
 
 def evaluate(tgt: SETimeSeriesValidationTarget, results: pd.DataFrame, epsilon: float=1E-9) -> None:

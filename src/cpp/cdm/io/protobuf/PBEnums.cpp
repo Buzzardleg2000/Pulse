@@ -2,9 +2,15 @@
    See accompanying NOTICE file for details.*/
 
 #include "cdm/CommonDefs.h"
+#include "cdm/PhysiologyEngine.h"
 PUSH_PROTO_WARNINGS
 #include "pulse/cdm/bind/Enums.pb.h"
 POP_PROTO_WARNINGS
+
+const std::string& eEngineInitializationFailure_Name(eEngineInitializationFailure to)
+{
+  return CDM_BIND::eEngineInitializationFailure_Name((CDM_BIND::eEngineInitializationFailure)to);
+}
 
 const std::string& eSide_Name(eSide m)
 {

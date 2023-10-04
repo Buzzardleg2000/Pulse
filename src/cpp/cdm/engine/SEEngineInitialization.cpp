@@ -156,3 +156,34 @@ void SEEngineInitialization::KeepEventChanges(bool b)
 {
   m_KeepEventChanges = b;
 }
+
+SEEngineInitializationStatus::SEEngineInitializationStatus(Logger* logger) : Loggable(logger)
+{
+  Clear();
+}
+SEEngineInitializationStatus::~SEEngineInitializationStatus()
+{
+
+}
+
+void SEEngineInitializationStatus::Clear()
+{
+  m_IsReady = false;
+  m_Failure = eEngineInitializationFailure::None;
+  m_CSVFilename = "";
+  m_LogFilename = "";
+  m_StabilizationTime_s = 0;
+}
+
+void SEEngineInitializationStatus::Copy(const SEEngineInitializationStatus& from)
+{
+  PBEngine::Copy(from, *this);
+}
+bool SEEngineInitializationStatus::SerializeToString(std::string& output, eSerializationFormat m) const
+{
+  return PBEngine::SerializeToString(*this, output, m);
+}
+bool SEEngineInitializationStatus::SerializeFromString(const std::string& src, eSerializationFormat m)
+{
+  return PBEngine::SerializeFromString(src, *this, m);
+}

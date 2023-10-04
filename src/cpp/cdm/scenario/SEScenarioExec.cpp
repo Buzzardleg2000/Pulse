@@ -52,6 +52,7 @@ void SEScenarioExec::Clear()
   m_ScenarioContent = "";
   m_ScenarioFilename = "";
   m_ScenarioDirectory = "";
+  m_ScenarioExecListFilename = "";
   m_ContentFormat = eSerializationFormat::JSON;
 
   m_ScenarioLogFilename = "";
@@ -79,13 +80,13 @@ void SEScenarioExec::Copy(const SEScenarioExec& src)
   PBScenario::Copy(src, *this);
 }
 
-bool SEScenarioExec::SerializeToString(std::string& output, eSerializationFormat m, Logger* logger) const
+bool SEScenarioExec::SerializeToString(std::string& output, eSerializationFormat m) const
 {
-  return PBScenario::SerializeToString(*this, output, m, logger);
+  return PBScenario::SerializeToString(*this, output, m, GetLogger());
 }
-bool SEScenarioExec::SerializeFromString(const std::string& src, eSerializationFormat m, Logger* logger)
+bool SEScenarioExec::SerializeFromString(const std::string& src, eSerializationFormat m)
 {
-  return PBScenario::SerializeFromString(src, *this, m, logger);
+  return PBScenario::SerializeFromString(src, *this, m, GetLogger());
 }
 
 void SEScenarioExec::SetOutputRootDirectory(const std::string& d)
@@ -514,4 +515,33 @@ bool SEScenarioExec::ConvertLog()
   Info("Successfully wrote scenario file: " + outScenarioFilename);
 
   return true;
+}
+
+SEScenarioExecStatus::SEScenarioExecStatus(Logger* logger) : SEEngineInitializationStatus(logger)
+{
+  Clear();
+}
+SEScenarioExecStatus::~SEScenarioExecStatus()
+{
+
+}
+
+void SEScenarioExecStatus::Clear()
+{
+  SEEngineInitializationStatus::Clear();
+  m_ScenarioFilename = "";
+  m_FinalSimulationTime_s = 0;
+}
+
+void SEScenarioExecStatus::Copy(const SEScenarioExecStatus& from)
+{
+  PBScenario::Copy(from, *this);
+}
+bool SEScenarioExecStatus::SerializeToString(std::string& output, eSerializationFormat m) const
+{
+  return PBScenario::SerializeToString(*this, output, m);
+}
+bool SEScenarioExecStatus::SerializeFromString(const std::string& src, eSerializationFormat m)
+{
+  return PBScenario::SerializeFromString(src, *this, m);
 }

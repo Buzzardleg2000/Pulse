@@ -61,13 +61,29 @@ message ScenarioExecData
     string                         ScenarioContent               = 11;/**<< @brief Scenario json/binary inline*/
     string                         ScenarioFilename              = 12;/**<< @brief Single Scenario filename*/
     string                         ScenarioDirectory             = 13;/**<< @brief A directory, where each file is assumed to be a scenario.*/
-    string                         ScenarioLogFilename           = 14;/**<< @brief A directory, where each file is assumed to be a scenario.*/
-    string                         ScenarioLogDirectory          = 15;/**<< @brief A directory, where each file is assumed to be a scenario.*/
+    string                         ScenarioExecListFilename      = 14;/**<< @brief A Scenario exec list filename*/
+    string                         ScenarioLogFilename           = 15;/**<< @brief A scenario log file to convert to a scenario and run.*/
+    string                         ScenarioLogDirectory          = 16;/**<< @brief A directory of log files to convert to scenarios and run.*/
   }
 
-  eSerializationFormat             ContentFormat                 = 16;/**<< @brief Set what Content is*/
-  int32                            ThreadCount                   = 17;/**<< @brief Number of threads to use when processing a Directory: >0 NumThreads to use; 0 NumThreads=NumCores; <0 NumThreads=NumCores-ThreadCount */
+  eSerializationFormat             ContentFormat                 = 17;/**<< @brief Set what Content is*/
+  int32                            ThreadCount                   = 18;/**<< @brief Number of threads to use when processing a Directory: >0 NumThreads to use; 0 NumThreads=NumCores; <0 NumThreads=NumCores-ThreadCount */
 
-  repeated string                  DataRequestFilesSearch        = 18;/**<< @brief A list of directories to find any data request files referenced in the scenario. */
+  repeated string                  DataRequestFilesSearch        = 19;/**<< @brief A list of directories to find any data request files referenced in the scenario. */
 
 }
+
+message ScenarioExecStatusData
+{
+  EngineInitializationStatusData   InitializationStatus              = 1;
+  string                           ScenarioFilename                  = 2;
+  bool                             RuntimeError                      = 3;/**<< @brief Was there an Error running the engine. */
+  bool                             FatalRuntimeError                 = 4;/**<< @brief Was there a FatalError running the engine. */
+  double                           FinalSimulationTime_s             = 5;
+}
+
+message ScenarioExecStatusListData
+{
+  repeated ScenarioExecStatusData      ScenarioExecStatus               = 1;
+}
+

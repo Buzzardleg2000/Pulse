@@ -41,6 +41,15 @@ class SEEventManager;
 class SEEngineTracker;
 class SEEngineConfiguration;
 
+enum class eEngineInitializationFailure
+{
+  None = 0,
+  FailedState = 1,
+  FailedSetup = 2,
+  FailedStabilization = 3
+};
+extern const std::string& eEngineInitializationFailure_Name(eEngineInitializationFailure e);
+
 /** 
  * @brief
  * Base exception class that all CDM classes throw when an error occurs

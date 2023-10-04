@@ -15,6 +15,20 @@ import "pulse/cdm/bind/EnvironmentConditions.proto";
 import "pulse/cdm/bind/EquipmentActions.proto";
 import "pulse/cdm/bind/Properties.proto";
 
+message EngineInitializationStatusData
+{
+  bool                                                 IsReady                          = 1;/**<<@brief If the engine was successfully initialized or not. */
+  eEngineInitializationFailure                         InitializationFailure            = 2;/**<<@brief Why was the engine unable to initialize. */
+  string                                               CSVFilename                      = 3;/**<<@brief Optional csv file location. */
+  string                                               LogFilename                      = 4;/**<<@brief Optional log file location. */
+  double                                               StabilizationTime_s              = 5;/**<<@brief How long did stabilization take, 0 if a state was loaded. */
+}
+
+message EngineInitializationStatusListData
+{
+  repeated EngineInitializationStatusData              EngineInitializationStatus       = 1;
+}
+
 message DecimalFormatData
 {
 enum eType

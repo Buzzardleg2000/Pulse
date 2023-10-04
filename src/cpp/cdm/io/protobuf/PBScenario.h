@@ -4,6 +4,7 @@
 #pragma once
 CDM_BIND_DECL2(Scenario)
 CDM_BIND_DECL2(ScenarioExec)
+CDM_BIND_DECL2(ScenarioExecStatus)
 
 class CDM_DECL PBScenario
 {
@@ -28,4 +29,14 @@ public:
 
   static bool SerializeToString(const SEScenarioExec& src, std::string& output, eSerializationFormat m, Logger* logger);
   static bool SerializeFromString(const std::string& src, SEScenarioExec& dst, eSerializationFormat m, Logger* logger);
+
+  static void Load(const CDM_BIND::ScenarioExecStatusData& src, SEScenarioExecStatus& dst);
+  static CDM_BIND::ScenarioExecStatusData* Unload(const SEScenarioExecStatus& src);
+  static void Serialize(const CDM_BIND::ScenarioExecStatusData& src, SEScenarioExecStatus& dst);
+  static void Serialize(const SEScenarioExecStatus& src, CDM_BIND::ScenarioExecStatusData& dst);
+  static bool SerializeToString(const SEScenarioExecStatus& src, std::string& output, eSerializationFormat m);
+  static bool SerializeToString(const std::vector<SEScenarioExecStatus*>& src, std::string& output, eSerializationFormat m);
+  static bool SerializeFromString(const std::string& src, SEScenarioExecStatus& dst, eSerializationFormat m);
+  static bool SerializeFromString(const std::string& src, std::vector<SEScenarioExecStatus*>& dst, eSerializationFormat m, Logger* logger);
+  static void Copy(const SEScenarioExecStatus& src, SEScenarioExecStatus& dst);
 };

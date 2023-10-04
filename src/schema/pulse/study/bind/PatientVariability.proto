@@ -64,33 +64,3 @@ message TCCCIterationData
   ParameterIterationData                           ChestWrapAvailable          = 9;// Should only contain 0 and/or 1
 }
 
-message PatientStateData
-{
-  /** @brief Enumeration for engine failure types */
-  enum eFailure
-  {
-    None=0;               /**<< @brief No stabilization failures. */
-    FailedSetup=1;        /**<< @brief SetupPatient could not create a valid Pulse patient with provided patient values. */
-    FailedStabilization=2;/**<< @brief Pulse was unable to stabilize to provided/computed patient values. */
-    RuntimeError=3;       /**<< @brief Error running the engine with (optional) actions. */
-    FatalRuntimeError=4;  /**<< @brief Fatal error running the engine with (optional) actions. */
-  }
-
-  uint32                                                  ID                                = 1;
-  string                                                  OutputBaseFilename                = 2;
-  string                                                  StateFilename                     = 3;
-  string                                                  Description                       = 4;
-  double                                                  MaxSimulationTime_s               = 5;
-  double                                                  FinalSimulationTime_s             = 6;/**<< @brief We could stop the sim early (ex. due to hemorrhage) */
-  // Requested Patient
-  pulse.cdm.bind.PatientData                              Patient                           = 7;
-  pulse.cdm.bind.PatientData                              SetupPatient                      = 8;
-  // Stabilization Info
-  eFailure                                                Failure                           = 9;
-  double                                                  StabilizationTime_s               = 10;
-}
-
-message PatientStateListData
-{
-  repeated PatientStateData      PatientState               = 1;
-}

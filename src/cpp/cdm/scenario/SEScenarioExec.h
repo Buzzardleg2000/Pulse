@@ -2,6 +2,7 @@
    See accompanying NOTICE file for details.*/
 
 #pragma once
+#include "engine/SEEngineInitialization.h"
 #include "cdm/utils/Logger.h"
 #include "cdm/utils/FileUtils.h"
 
@@ -16,6 +17,7 @@ extern const std::string& eRelativeSerialization_Name(eRelativeSerialization rt)
 
 class CDM_DECL SEScenarioExec : public Loggable
 {
+  friend class PBScenario;//friend the serialization class
 public:
   SEScenarioExec(Logger* logger);
   virtual ~SEScenarioExec();
@@ -44,6 +46,7 @@ public:
     m_ScenarioContent = sc;
     m_ScenarioFilename = "";
     m_ScenarioDirectory = "";
+    m_ScenarioExecListFilename = "";
     m_ScenarioLogFilename = "";
     m_ScenarioLogDirectory = "";
   }
@@ -53,6 +56,7 @@ public:
     m_ScenarioContent = "";
     m_ScenarioFilename = fn;
     m_ScenarioDirectory = "";
+    m_ScenarioExecListFilename = "";
     m_ScenarioLogFilename = "";
     m_ScenarioLogDirectory = "";
   }
@@ -62,6 +66,18 @@ public:
     m_ScenarioContent = "";
     m_ScenarioFilename = "";
     m_ScenarioDirectory = dir;
+    m_ScenarioExecListFilename = "";
+    m_ScenarioLogFilename = "";
+    m_ScenarioLogDirectory = "";
+  }
+
+  std::string GetScenarioExecListFilename() const { return m_ScenarioExecListFilename; }
+  void SetScenarioExecListFilename(const std::string& fn)
+  {
+    m_ScenarioContent = "";
+    m_ScenarioFilename = "";
+    m_ScenarioDirectory = "";
+    m_ScenarioExecListFilename = fn;
     m_ScenarioLogFilename = "";
     m_ScenarioLogDirectory = "";
   }
@@ -74,6 +90,7 @@ public:
     m_ScenarioContent = "";
     m_ScenarioFilename = "";
     m_ScenarioDirectory = "";
+    m_ScenarioExecListFilename = "";
   }
   std::string GetScenarioLogDirectory() const { return m_ScenarioLogDirectory; }
   void SetScenarioLogDirectory(const std::string& dir)
@@ -83,6 +100,7 @@ public:
     m_ScenarioContent = "";
     m_ScenarioFilename = "";
     m_ScenarioDirectory = "";
+    m_ScenarioExecListFilename = "";
   }
 
   std::set<std::string>& GetDataRequestFilesSearch() { return m_DataRequestFilesSearch; }
@@ -133,8 +151,8 @@ public:
   eSwitch TimeStampSerializedStates() const { return m_TimeStampSerializedStates; }
   void TimeStampSerializedStates(eSwitch s) { m_TimeStampSerializedStates = s; }
 
-  bool SerializeToString(std::string& output, eSerializationFormat m, Logger* logger=nullptr) const;
-  bool SerializeFromString(const std::string& src, eSerializationFormat m, Logger* logger=nullptr);
+  bool SerializeToString(std::string& output, eSerializationFormat m) const;
+  bool SerializeFromString(const std::string& src, eSerializationFormat m);
 
 protected:
   bool ConvertLog();
@@ -165,6 +183,7 @@ protected:
   std::string m_ScenarioContent;
   std::string m_ScenarioFilename;
   std::string m_ScenarioDirectory;
+  std::string m_ScenarioExecListFilename;
 
   std::string m_ScenarioLogFilename;
   std::string m_ScenarioLogDirectory;
@@ -189,4 +208,29 @@ protected:
   eSwitch                    m_ReloadSerializedState;
   std::stringstream          m_SerializationOutput;
   std::stringstream          m_SerializationActions;
+};
+
+class CDM_DECL SEScenarioExecStatus : public SEEngineInitializationStatus
+{
+  friend class PBScenario;//friend the serialization class
+public:
+  SEScenarioExecStatus(Logger* logger);
+  virtual ~SEScenarioExecStatus();
+
+  void Clear() override;
+  void Copy(const SEScenarioExecStatus& src);
+
+  bool SerializeToString(std::string& output, eSerializationFormat m) const override;
+  bool SerializeFromString(const std::string& src, eSerializationFormat m) override;
+
+  bool HasScenarioFilename() const { return !m_ScenarioFilename.empty(); }
+  std::string GetScenarioFilename() const { return m_ScenarioFilename; }
+  void SetScenarioFilename(const std::string& fn) { m_ScenarioFilename = fn; }
+
+  double GetFinalSimulationTime_s() const { return m_FinalSimulationTime_s; }
+  void SetFinalSimulationTime_s(double t) { m_FinalSimulationTime_s = t; }
+
+protected:
+  std::string                m_ScenarioFilename;
+  double                     m_FinalSimulationTime_s;
 };

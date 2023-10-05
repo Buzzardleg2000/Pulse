@@ -155,14 +155,16 @@ def gen_patient_targets(
 
     for header, unit, table_precision, patient_attr in validated_headers:
         tgt = SETimeSeriesValidationTarget()
-        tgt.set_header(f"{header}({unit})")
+        tgt.set_header(f"{header}({unit})" if unit else header)
         tgt.set_patient_specific_setting(True)
         tgt.set_table_formatting(table_precision)
         algo = SETimeSeriesValidationTarget.eTargetType.Mean
 
         # Only create target if patient has this attribute
         if getattr(p, f"has{patient_attr}")():
-            ref_val = getattr(p, f"get{patient_attr}")().get_value(units=get_unit(unit))
+            scalar = getattr(p, f"get{patient_attr}")()
+            ref_val = scalar.get_value(units=get_unit(unit)) if unit else scalar.get_value()
+
             tgt.set_equal_to(ref_val, algo)
             patient_val_tgts.append(tgt)
 

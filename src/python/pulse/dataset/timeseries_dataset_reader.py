@@ -219,7 +219,6 @@ def generate_sheet_requests(sheet: Worksheet, dr_dict: Dict[str, List[SEDataRequ
     try:
         DRB_HEADER = ws_headers.index('Output')
         DRB_UNITS = ws_headers.index('Units')
-        DRB_REF_CELL = ws_headers.index('Reference Values')
         DRB_TABLE = ws_headers.index('Table')
         DRB_REQUEST_TYPE = ws_headers.index('Request Type')
         DRB_REQUEST_PRECISION = ws_headers.index('Request Precision')
@@ -231,7 +230,6 @@ def generate_sheet_requests(sheet: Worksheet, dr_dict: Dict[str, List[SEDataRequ
     class DataRequestBuilder:
         header: str
         units: str
-        ref_cell: Union[str, numbers.Number]
         dr_file: str
         request_type: str
         precision: Union[str, numbers.Number]
@@ -240,7 +238,6 @@ def generate_sheet_requests(sheet: Worksheet, dr_dict: Dict[str, List[SEDataRequ
         drb = DataRequestBuilder(
             header=r[DRB_HEADER],
             units=r[DRB_UNITS] if r[DRB_UNITS] else "unitless",
-            ref_cell=r[DRB_REF_CELL],
             dr_file=r[DRB_TABLE] if r[DRB_TABLE] else "Orphaned",
             request_type=r[DRB_REQUEST_TYPE],
             precision=r[DRB_REQUEST_PRECISION]
@@ -251,15 +248,6 @@ def generate_sheet_requests(sheet: Worksheet, dr_dict: Dict[str, List[SEDataRequ
 
         # Skip header rows
         if drb.dr_file == "Table":
-            continue
-
-        # Nothing to validate to
-        if '*' in drb.header:
-            # _pulse_logger.info(f"Ignoring request {drb.header} (has asterisks)")
-            continue
-
-        if drb.ref_cell is None:
-            _pulse_logger.info(f"Not generating request {drb.header} (no reference value)")
             continue
 
         if not drb.request_type:
@@ -276,7 +264,7 @@ def generate_sheet_requests(sheet: Worksheet, dr_dict: Dict[str, List[SEDataRequ
 
         dr = generate_data_request(
             request_type=drb.request_type,
-            property_name=drb.header,
+            property_name=drb.header.replace("*", ""),
             unit_str=drb.units.strip(),
             precision=int(drb.precision) if drb.precision else None
         )

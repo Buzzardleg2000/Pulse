@@ -103,6 +103,12 @@ message ScalarNegative1To1Data
   ScalarData ScalarNegative1To1 = 1;
 }
 
+/** @brief An unsigned scalar greater or equal to 0. */
+message ScalarUnsignedData 
+{
+  ScalarData ScalarUnsigned = 1;
+}
+
 /** @brief A scalar for holding amount quantities (ex. ct, mol) */
 message ScalarAmountData
 {

@@ -46,6 +46,8 @@
 #include "cdm/system/physiology/SEBloodChemistrySystem.h"
 #include "cdm/system/physiology/SEDrugSystem.h"
 #include "cdm/system/physiology/SEEnergySystem.h"
+#include "cdm/system/physiology/SERespiratoryMechanics.h"
+#include "cdm/system/physiology/SERespiratoryMechanicsModifiers.h"
 // CDM
 #include "cdm/patient/SEPatient.h"
 #include "cdm/engine/SEEventManager.h"
@@ -622,11 +624,17 @@ namespace pulse
       }
     }
 
-    // Respiratory Mechanics
+    // Configure Mechanics
     if (m_PatientActions->HasRespiratoryMechanicsConfiguration())
     {
-      GetRespiratoryMechanics().ProcessConfiguration(m_PatientActions->GetRespiratoryMechanicsConfiguration());
+      GetMechanics().ProcessConfiguration(m_PatientActions->GetRespiratoryMechanicsConfiguration());
       m_PatientActions->RemoveRespiratoryMechanicsConfiguration();
+    }
+    // Modify Mechanics
+    if (m_PatientActions->HasRespiratoryMechanicsModification())
+    {
+      GetMechanicsModifiers().ProcessModifiers(m_PatientActions->GetRespiratoryMechanicsModification());
+      m_PatientActions->RemoveRespiratoryMechanicsModification();
     }
 
     CalculateWork();
@@ -1442,17 +1450,17 @@ namespace pulse
       }
     }
 
-    if (HasActiveRespiratoryMechanics())
+    if (HasActiveMechanics())
     {
-      if (m_RespiratoryMechanics->GetDefaultType() == eDefaultType::Zero)
+      if (m_Mechanics->GetDefaultType() == eDefaultType::Zero)
       {
         m_PeakInspiratoryPressure_cmH2O = 0.0;
         m_PeakExpiratoryPressure_cmH2O = 0.0;
       }
-      if (m_RespiratoryMechanics->HasInspiratoryPeakPressure())
-        m_PeakInspiratoryPressure_cmH2O = m_RespiratoryMechanics->GetInspiratoryPeakPressure(PressureUnit::cmH2O);
-      if (m_RespiratoryMechanics->HasExpiratoryPeakPressure())
-        m_PeakExpiratoryPressure_cmH2O = m_RespiratoryMechanics->GetExpiratoryPeakPressure(PressureUnit::cmH2O);
+      if (m_Mechanics->HasInspiratoryPeakPressure())
+        m_PeakInspiratoryPressure_cmH2O = m_Mechanics->GetInspiratoryPeakPressure(PressureUnit::cmH2O);
+      if (m_Mechanics->HasExpiratoryPeakPressure())
+        m_PeakExpiratoryPressure_cmH2O = m_Mechanics->GetExpiratoryPeakPressure(PressureUnit::cmH2O);
       SetBreathCycleFractions();
     }
   }
@@ -1584,9 +1592,9 @@ namespace pulse
     m_ExpiratoryReleaseFraction = 0.0;
     m_ResidueFraction = 0.0;
 
-    if (HasActiveRespiratoryMechanics())
+    if (HasActiveMechanics())
     {
-      if (m_RespiratoryMechanics->GetDefaultType() == eDefaultType::Zero)
+      if (m_Mechanics->GetDefaultType() == eDefaultType::Zero)
       {
         m_InspiratoryRiseFraction = 0.0;
         m_InspiratoryHoldFraction = 0.0;
@@ -1600,22 +1608,22 @@ namespace pulse
 
       double totalBreathCycleTime_s = GetBreathCycleTime();
 
-      if(m_RespiratoryMechanics->HasInspiratoryRiseTime())
-        m_InspiratoryRiseFraction = m_RespiratoryMechanics->GetInspiratoryRiseTime(TimeUnit::s) / totalBreathCycleTime_s;
-      if (m_RespiratoryMechanics->HasInspiratoryHoldTime())
-        m_InspiratoryHoldFraction = m_RespiratoryMechanics->GetInspiratoryHoldTime(TimeUnit::s) / totalBreathCycleTime_s;
-      if (m_RespiratoryMechanics->HasInspiratoryReleaseTime())
-        m_InspiratoryReleaseFraction = m_RespiratoryMechanics->GetInspiratoryReleaseTime(TimeUnit::s) / totalBreathCycleTime_s;
-      if (m_RespiratoryMechanics->HasInspiratoryToExpiratoryPauseTime())
-        m_InspiratoryToExpiratoryPauseFraction = m_RespiratoryMechanics->GetInspiratoryToExpiratoryPauseTime(TimeUnit::s) / totalBreathCycleTime_s;
-      if (m_RespiratoryMechanics->HasExpiratoryRiseTime())
-        m_ExpiratoryRiseFraction = m_RespiratoryMechanics->GetExpiratoryRiseTime(TimeUnit::s) / totalBreathCycleTime_s;
-      if (m_RespiratoryMechanics->HasExpiratoryHoldTime())
-        m_ExpiratoryHoldFraction = m_RespiratoryMechanics->GetExpiratoryHoldTime(TimeUnit::s) / totalBreathCycleTime_s;
-      if (m_RespiratoryMechanics->HasExpiratoryReleaseTime())
-        m_ExpiratoryReleaseFraction = m_RespiratoryMechanics->GetExpiratoryReleaseTime(TimeUnit::s) / totalBreathCycleTime_s;
-      if (m_RespiratoryMechanics->HasResidueTime())
-        m_ResidueFraction = m_RespiratoryMechanics->GetResidueTime(TimeUnit::s) / totalBreathCycleTime_s;
+      if(m_Mechanics->HasInspiratoryRiseTime())
+        m_InspiratoryRiseFraction = m_Mechanics->GetInspiratoryRiseTime(TimeUnit::s) / totalBreathCycleTime_s;
+      if (m_Mechanics->HasInspiratoryHoldTime())
+        m_InspiratoryHoldFraction = m_Mechanics->GetInspiratoryHoldTime(TimeUnit::s) / totalBreathCycleTime_s;
+      if (m_Mechanics->HasInspiratoryReleaseTime())
+        m_InspiratoryReleaseFraction = m_Mechanics->GetInspiratoryReleaseTime(TimeUnit::s) / totalBreathCycleTime_s;
+      if (m_Mechanics->HasInspiratoryToExpiratoryPauseTime())
+        m_InspiratoryToExpiratoryPauseFraction = m_Mechanics->GetInspiratoryToExpiratoryPauseTime(TimeUnit::s) / totalBreathCycleTime_s;
+      if (m_Mechanics->HasExpiratoryRiseTime())
+        m_ExpiratoryRiseFraction = m_Mechanics->GetExpiratoryRiseTime(TimeUnit::s) / totalBreathCycleTime_s;
+      if (m_Mechanics->HasExpiratoryHoldTime())
+        m_ExpiratoryHoldFraction = m_Mechanics->GetExpiratoryHoldTime(TimeUnit::s) / totalBreathCycleTime_s;
+      if (m_Mechanics->HasExpiratoryReleaseTime())
+        m_ExpiratoryReleaseFraction = m_Mechanics->GetExpiratoryReleaseTime(TimeUnit::s) / totalBreathCycleTime_s;
+      if (m_Mechanics->HasResidueTime())
+        m_ResidueFraction = m_Mechanics->GetResidueTime(TimeUnit::s) / totalBreathCycleTime_s;
     }
    }
 
@@ -2689,12 +2697,12 @@ namespace pulse
         lungPath = m_RightAlveoliToRightPleuralConnection;
         healthyChestWallCompliance_L_Per_cmH2O = m_RightPleuralToRespiratoryMuscle->GetComplianceBaseline(VolumePerPressureUnit::L_Per_cmH2O);
 
-        if (HasActiveRespiratoryMechanics())
+        if (HasActiveMechanics())
         {
-          hasRespiratoryMechanicsCompliance = m_RespiratoryMechanics->HasRightComplianceCurve();
+          hasRespiratoryMechanicsCompliance = m_Mechanics->HasRightComplianceCurve();
           if (hasRespiratoryMechanicsCompliance)
           {
-            segments = m_RespiratoryMechanics->GetRightComplianceCurve().GetSegments();
+            segments = m_Mechanics->GetRightComplianceCurve().GetSegments();
           }
         }
       }
@@ -2706,12 +2714,12 @@ namespace pulse
         lungPath = m_LeftAlveoliToLeftPleuralConnection;
         healthyChestWallCompliance_L_Per_cmH2O = m_LeftPleuralToRespiratoryMuscle->GetComplianceBaseline(VolumePerPressureUnit::L_Per_cmH2O);
 
-        if (HasActiveRespiratoryMechanics())
+        if (HasActiveMechanics())
         {
-          hasRespiratoryMechanicsCompliance = m_RespiratoryMechanics->HasLeftComplianceCurve();
+          hasRespiratoryMechanicsCompliance = m_Mechanics->HasLeftComplianceCurve();
           if (hasRespiratoryMechanicsCompliance)
           {
-            segments = m_RespiratoryMechanics->GetLeftComplianceCurve().GetSegments();
+            segments = m_Mechanics->GetLeftComplianceCurve().GetSegments();
           }
         }
       }
@@ -2755,8 +2763,8 @@ namespace pulse
       double chestWallCompliance_L_Per_cmH2O = healthyChestWallCompliance_L_Per_cmH2O;
 
       if (segment == nullptr &&
-        HasActiveRespiratoryMechanics() &&
-        m_RespiratoryMechanics->GetDefaultType() == eDefaultType::Zero)
+        HasActiveMechanics() &&
+        m_Mechanics->GetDefaultType() == eDefaultType::Zero)
       {
         //Left blank, so set to zero
         chestWallPath->GetNextCompliance().SetValue(0.0, VolumePerPressureUnit::L_Per_cmH2O);
@@ -3088,9 +3096,9 @@ namespace pulse
 
     //Specified externally
     //Resistances in series sum
-    if (HasActiveRespiratoryMechanics())
+    if (HasActiveMechanics())
     {
-      if (m_RespiratoryMechanics->GetDefaultType() == eDefaultType::Zero)
+      if (m_Mechanics->GetDefaultType() == eDefaultType::Zero)
       {
         tracheaResistance_cmH2O_s_Per_L = m_RespClosedResistance_cmH2O_s_Per_L;
         rightBronchiResistance_cmH2O_s_Per_L = m_RespClosedResistance_cmH2O_s_Per_L;
@@ -3104,34 +3112,34 @@ namespace pulse
       double alveoliDuctResistanceFraction = 0.4;
       if (inhaling)
       {
-        if(m_RespiratoryMechanics->HasUpperInspiratoryResistance())
-          tracheaResistance_cmH2O_s_Per_L = m_RespiratoryMechanics->GetUpperInspiratoryResistance(PressureTimePerVolumeUnit::cmH2O_s_Per_L);
-        if (m_RespiratoryMechanics->HasLeftInspiratoryResistance())
+        if(m_Mechanics->HasUpperInspiratoryResistance())
+          tracheaResistance_cmH2O_s_Per_L = m_Mechanics->GetUpperInspiratoryResistance(PressureTimePerVolumeUnit::cmH2O_s_Per_L);
+        if (m_Mechanics->HasLeftInspiratoryResistance())
         {
-          double leftResistance_cmH2O_s_Per_L = m_RespiratoryMechanics->GetLeftInspiratoryResistance(PressureTimePerVolumeUnit::cmH2O_s_Per_L);
+          double leftResistance_cmH2O_s_Per_L = m_Mechanics->GetLeftInspiratoryResistance(PressureTimePerVolumeUnit::cmH2O_s_Per_L);
           leftBronchiResistance_cmH2O_s_Per_L = leftResistance_cmH2O_s_Per_L * bronchiResistanceFraction;
           leftAlveoliResistance_cmH2O_s_Per_L = leftResistance_cmH2O_s_Per_L * alveoliDuctResistanceFraction;
         }
-        if (m_RespiratoryMechanics->HasRightInspiratoryResistance())
+        if (m_Mechanics->HasRightInspiratoryResistance())
         {
-          double rightResistance_cmH2O_s_Per_L = m_RespiratoryMechanics->GetRightInspiratoryResistance(PressureTimePerVolumeUnit::cmH2O_s_Per_L);
+          double rightResistance_cmH2O_s_Per_L = m_Mechanics->GetRightInspiratoryResistance(PressureTimePerVolumeUnit::cmH2O_s_Per_L);
           rightAlveoliResistance_cmH2O_s_Per_L = rightResistance_cmH2O_s_Per_L * alveoliDuctResistanceFraction;
           rightBronchiResistance_cmH2O_s_Per_L = rightResistance_cmH2O_s_Per_L * bronchiResistanceFraction;
         }
       }
       else //exhaling
       {
-        if (m_RespiratoryMechanics->HasUpperExpiratoryResistance())
-          tracheaResistance_cmH2O_s_Per_L = m_RespiratoryMechanics->GetUpperExpiratoryResistance(PressureTimePerVolumeUnit::cmH2O_s_Per_L);
-        if (m_RespiratoryMechanics->HasLeftExpiratoryResistance())
+        if (m_Mechanics->HasUpperExpiratoryResistance())
+          tracheaResistance_cmH2O_s_Per_L = m_Mechanics->GetUpperExpiratoryResistance(PressureTimePerVolumeUnit::cmH2O_s_Per_L);
+        if (m_Mechanics->HasLeftExpiratoryResistance())
         {
-          double leftResistance_cmH2O_s_Per_L = m_RespiratoryMechanics->GetLeftExpiratoryResistance(PressureTimePerVolumeUnit::cmH2O_s_Per_L);
+          double leftResistance_cmH2O_s_Per_L = m_Mechanics->GetLeftExpiratoryResistance(PressureTimePerVolumeUnit::cmH2O_s_Per_L);
           leftBronchiResistance_cmH2O_s_Per_L = leftResistance_cmH2O_s_Per_L * bronchiResistanceFraction;
           leftAlveoliResistance_cmH2O_s_Per_L = leftResistance_cmH2O_s_Per_L * alveoliDuctResistanceFraction;
         }
-        if (m_RespiratoryMechanics->HasRightExpiratoryResistance())
+        if (m_Mechanics->HasRightExpiratoryResistance())
         {
-          double rightResistance_cmH2O_s_Per_L = m_RespiratoryMechanics->GetRightExpiratoryResistance(PressureTimePerVolumeUnit::cmH2O_s_Per_L);
+          double rightResistance_cmH2O_s_Per_L = m_Mechanics->GetRightExpiratoryResistance(PressureTimePerVolumeUnit::cmH2O_s_Per_L);
           rightAlveoliResistance_cmH2O_s_Per_L = rightResistance_cmH2O_s_Per_L * alveoliDuctResistanceFraction;
           rightBronchiResistance_cmH2O_s_Per_L = rightResistance_cmH2O_s_Per_L * bronchiResistanceFraction;
         }
@@ -3457,16 +3465,16 @@ namespace pulse
       {
         if (cpt.Side == eSide::Right)
         {
-          if (!HasActiveRespiratoryMechanics() ||
-            (HasActiveRespiratoryMechanics() && !m_RespiratoryMechanics->HasRightComplianceCurve()))
+          if (!HasActiveMechanics() ||
+            (HasActiveMechanics() && !m_Mechanics->HasRightComplianceCurve()))
           {
             positivePressureComplianceScalingFactor = 0.38;
           }
         }
         else //Left
         {
-          if (!HasActiveRespiratoryMechanics() ||
-            (HasActiveRespiratoryMechanics() && !m_RespiratoryMechanics->HasLeftComplianceCurve()))
+          if (!HasActiveMechanics() ||
+            (HasActiveMechanics() && !m_Mechanics->HasLeftComplianceCurve()))
           {
             positivePressureComplianceScalingFactor = 0.38;
           }
@@ -4447,25 +4455,25 @@ namespace pulse
       TotalBreathingCycleTime_s = 60.0 / m_VentilationFrequency_Per_min;
     }
 
-    if (HasActiveRespiratoryMechanics())
+    if (HasActiveMechanics())
     {
       TotalBreathingCycleTime_s = 0.0;
-      if (m_RespiratoryMechanics->HasInspiratoryRiseTime())
-        TotalBreathingCycleTime_s += m_RespiratoryMechanics->GetInspiratoryRiseTime(TimeUnit::s);
-      if (m_RespiratoryMechanics->HasInspiratoryHoldTime())
-        TotalBreathingCycleTime_s += m_RespiratoryMechanics->GetInspiratoryHoldTime(TimeUnit::s);
-      if (m_RespiratoryMechanics->HasInspiratoryReleaseTime())
-        TotalBreathingCycleTime_s += m_RespiratoryMechanics->GetInspiratoryReleaseTime(TimeUnit::s);
-      if (m_RespiratoryMechanics->HasInspiratoryToExpiratoryPauseTime())
-        TotalBreathingCycleTime_s += m_RespiratoryMechanics->GetInspiratoryToExpiratoryPauseTime(TimeUnit::s);
-      if (m_RespiratoryMechanics->HasExpiratoryRiseTime())
-        TotalBreathingCycleTime_s += m_RespiratoryMechanics->GetExpiratoryRiseTime(TimeUnit::s);
-      if (m_RespiratoryMechanics->HasExpiratoryHoldTime())
-        TotalBreathingCycleTime_s += m_RespiratoryMechanics->GetExpiratoryHoldTime(TimeUnit::s);
-      if (m_RespiratoryMechanics->HasExpiratoryReleaseTime())
-        TotalBreathingCycleTime_s += m_RespiratoryMechanics->GetExpiratoryReleaseTime(TimeUnit::s);
-      if (m_RespiratoryMechanics->HasResidueTime())
-        TotalBreathingCycleTime_s += m_RespiratoryMechanics->GetResidueTime(TimeUnit::s);
+      if (m_Mechanics->HasInspiratoryRiseTime())
+        TotalBreathingCycleTime_s += m_Mechanics->GetInspiratoryRiseTime(TimeUnit::s);
+      if (m_Mechanics->HasInspiratoryHoldTime())
+        TotalBreathingCycleTime_s += m_Mechanics->GetInspiratoryHoldTime(TimeUnit::s);
+      if (m_Mechanics->HasInspiratoryReleaseTime())
+        TotalBreathingCycleTime_s += m_Mechanics->GetInspiratoryReleaseTime(TimeUnit::s);
+      if (m_Mechanics->HasInspiratoryToExpiratoryPauseTime())
+        TotalBreathingCycleTime_s += m_Mechanics->GetInspiratoryToExpiratoryPauseTime(TimeUnit::s);
+      if (m_Mechanics->HasExpiratoryRiseTime())
+        TotalBreathingCycleTime_s += m_Mechanics->GetExpiratoryRiseTime(TimeUnit::s);
+      if (m_Mechanics->HasExpiratoryHoldTime())
+        TotalBreathingCycleTime_s += m_Mechanics->GetExpiratoryHoldTime(TimeUnit::s);
+      if (m_Mechanics->HasExpiratoryReleaseTime())
+        TotalBreathingCycleTime_s += m_Mechanics->GetExpiratoryReleaseTime(TimeUnit::s);
+      if (m_Mechanics->HasResidueTime())
+        TotalBreathingCycleTime_s += m_Mechanics->GetResidueTime(TimeUnit::s);
     }
 
     return TotalBreathingCycleTime_s;

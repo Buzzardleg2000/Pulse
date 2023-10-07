@@ -25,6 +25,7 @@
 #include "cdm/patient/actions/SEPericardialEffusion.h"
 // Dependent Systems
 #include "cdm/system/physiology/SEBloodChemistrySystem.h"
+#include "cdm/system/physiology/SECardiovascularMechanicsModifiers.h"
 #include "cdm/system/physiology/SEDrugSystem.h"
 #include "cdm/system/physiology/SEEnergySystem.h"
 #include "cdm/system/physiology/SENervousSystem.h"
@@ -1498,6 +1499,13 @@ namespace pulse
     Hemorrhage();
     PericardialEffusion();
     CPR();
+
+    // Modify Mechanics
+    if (m_data.GetActions().GetPatientActions().HasCardiovascularMechanicsModification())
+    {
+      GetMechanicsModifiers().ProcessModifiers(m_data.GetActions().GetPatientActions().GetCardiovascularMechanicsModification());
+      m_data.GetActions().GetPatientActions().RemoveCardiovascularMechanicsModification();
+    }
   }
 
   //--------------------------------------------------------------------------------------------------

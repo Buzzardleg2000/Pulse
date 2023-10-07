@@ -3,6 +3,7 @@
 
 #pragma once
 #include "cdm/system/SESystem.h"
+class SECardiovascularMechanicsModifiers;
 
 // Keep enums in sync with appropriate schema/cdm/Physiology.proto file !!
 enum class eHeartRhythm
@@ -191,6 +192,11 @@ public:
   virtual SEScalarVolumePerTime& GetTotalPulmonaryPerfusion();
   virtual double GetTotalPulmonaryPerfusion(const VolumePerTimeUnit& unit) const;
 
+  virtual bool HasActiveMechanicsModifiers() const;
+  virtual bool HasMechanicsModifiers() const;
+  virtual SECardiovascularMechanicsModifiers& GetMechanicsModifiers();
+  virtual const SECardiovascularMechanicsModifiers* GetMechanicsModifiers() const;
+
 protected:
 
   SEScalarPressure*                      m_ArterialPressure;
@@ -233,4 +239,6 @@ protected:
   SEScalarVolumePerTime*                 m_TotalHemorrhageRate;
   SEScalarVolume*                        m_TotalHemorrhagedVolume;
   SEScalarVolumePerTime*                 m_TotalPulmonaryPerfusion;
+
+  SECardiovascularMechanicsModifiers*    m_MechanicsModifiers;
 };

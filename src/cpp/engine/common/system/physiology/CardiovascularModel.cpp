@@ -17,6 +17,7 @@
 #include "cdm/engine/SEPatientActionCollection.h"
 #include "cdm/patient/actions/SEArrhythmia.h"
 #include "cdm/patient/actions/SEBrainInjury.h"
+#include "cdm/patient/actions/SECardiovascularMechanicsModification.h"
 #include "cdm/patient/actions/SEChestCompression.h"
 #include "cdm/patient/actions/SEChestCompressionAutomated.h"
 #include "cdm/patient/actions/SEChestCompressionInstantaneous.h"
@@ -336,6 +337,10 @@ namespace pulse
   //--------------------------------------------------------------------------------------------------
   void CardiovascularModel::SetUp()
   {
+    // Grab the modifiers pointer from the action manager
+    m_MechanicsModifiers = &m_data.GetActions().GetPatientActions().GetCardiovascularMechanicsModification().GetModifiers();
+    m_MechanicsModifiers->Activate(); // Ensure all multipliers have a value so we can write cleaner code
+
     m_HemorrhageTrack.clear();
 
     m_LeftCardiacCyclePerfusionVolumes_mL.clear();
@@ -1499,13 +1504,6 @@ namespace pulse
     Hemorrhage();
     PericardialEffusion();
     CPR();
-
-    // Modify Mechanics
-    if (m_data.GetActions().GetPatientActions().HasCardiovascularMechanicsModification())
-    {
-      GetMechanicsModifiers().ProcessModifiers(m_data.GetActions().GetPatientActions().GetCardiovascularMechanicsModification());
-      m_data.GetActions().GetPatientActions().RemoveCardiovascularMechanicsModification();
-    }
   }
 
   //--------------------------------------------------------------------------------------------------
@@ -2429,6 +2427,8 @@ namespace pulse
       // Chemoreceptor and drug effects are deltas rather than multipliers, so they are added.
       HeartDriverFrequency_Per_Min += m_data.GetNervous().GetChemoreceptorHeartRateScale().GetValue();
     }
+    // Custom modifier
+    HeartDriverFrequency_Per_Min *= m_MechanicsModifiers->GetHeartRateMultiplier().GetValue();
 
     // Apply drug effects
     if (m_data.GetDrugs().HasHeartRateChange())

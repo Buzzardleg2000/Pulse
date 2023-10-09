@@ -14,6 +14,8 @@ public:
   virtual ~SECardiovascularMechanicsModifiers();
 
   virtual void Clear();// Deletes all members
+  virtual void Activate();
+  virtual bool IsActive() const;
 
   /** @name GetScalar
   *   @brief - A reflextion type call that will return the Scalar associated
@@ -29,13 +31,6 @@ public:
   bool SerializeToFile(const std::string& filename) const;
   bool SerializeFromString(const std::string& src, eSerializationFormat m);
   bool SerializeFromFile(const std::string& filename);
-
-  virtual void Merge(const SECardiovascularMechanicsModifiers& from);
-  virtual void ProcessModifiers(SECardiovascularMechanicsModification& config);
-
-  virtual bool HasActive() const;
-  virtual eSwitch GetActive() const;
-  virtual void SetActive(eSwitch s);
 
   virtual bool HasArterialComplianceMultiplier() const;
   virtual SEScalarUnsigned& GetArterialComplianceMultiplier();
@@ -81,8 +76,6 @@ public:
   virtual void ToString(std::ostream& str) const;
 
 protected:
-  eSwitch           m_Active;
-
   SEScalarUnsigned* m_ArterialComplianceMultiplier;
   SEScalarUnsigned* m_ArterialResistanceMultiplier;
   SEScalarUnsigned* m_PulmonaryComplianceMultiplier;

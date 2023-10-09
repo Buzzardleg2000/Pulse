@@ -14,6 +14,8 @@ public:
   virtual ~SERespiratoryMechanicsModifiers();
 
   virtual void Clear();// Deletes all members
+  virtual void Activate();
+  virtual bool IsActive() const;
 
   /** @name GetScalar
   *   @brief - A reflextion type call that will return the Scalar associated
@@ -29,13 +31,6 @@ public:
   bool SerializeToFile(const std::string& filename) const;
   bool SerializeFromString(const std::string& src, eSerializationFormat m);
   bool SerializeFromFile(const std::string& filename);
-
-  virtual void Merge(const SERespiratoryMechanicsModifiers& from);
-  virtual void ProcessModifiers(SERespiratoryMechanicsModification& config);
-
-  virtual bool HasActive() const;
-  virtual eSwitch GetActive() const;
-  virtual void SetActive(eSwitch s);
 
   virtual bool HasLeftComplianceMultiplier() const;
   virtual SEScalarUnsigned& GetLeftComplianceMultiplier();
@@ -88,8 +83,6 @@ public:
   virtual void ToString(std::ostream& str) const;
 
 protected:
-  eSwitch                m_Active;
-
   SEScalarUnsigned*      m_LeftComplianceMultiplier;
   SEScalarUnsigned*      m_RightComplianceMultiplier;
 

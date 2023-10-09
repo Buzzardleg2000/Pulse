@@ -73,19 +73,17 @@ message BloodChemistrySystemData
 
 message CardiovascularMechanicsModifiersData
 {
-  eSwitch                              Active                                         = 1; /**<< @brief Turn on or off the use of this structure in the physiology implementation. */
+  ScalarUnsignedData                   ArterialComplianceMultiplier                   = 1; /**<< @brief Updates the aorta compliance.*/
+  ScalarUnsignedData                   ArterialResistanceMultiplier                   = 2; /**<< @brief Updates the aorta resistance.*/
+  ScalarUnsignedData                   PulmonaryComplianceMultiplier                  = 3; /**<< @brief Updates the pulmonary veins, capillaries, and arteries compliances.*/
+  ScalarUnsignedData                   PulmonaryResistanceMultiplier                  = 4; /**<< @brief Updates the pulmonary veins, capillaries, and arteries resistances.*/
+  ScalarUnsignedData                   SystemicResistanceMultiplier                   = 5; /**<< @brief Updates the the entire systemic vasculature resistances, excluding pulmonary.*/
+  ScalarUnsignedData                   SystemicComplianceMultiplier                   = 6; /**<< @brief Updates the the entire systemic vasculature compliances, excluding pulmonary.*/
+  ScalarUnsignedData                   VenousComplianceMultiplier                     = 7; /**<< @brief Updates the vena cava compliance.*/
+  ScalarUnsignedData                   VenousResistanceMultiplier                     = 8; /**<< @brief Updates the vena cava resistance.*/
   
-  ScalarUnsignedData                   ArterialComplianceMultiplier                   = 2; /**<< @brief Updates the aorta compliance.*/
-  ScalarUnsignedData                   ArterialResistanceMultiplier                   = 3; /**<< @brief Updates the aorta resistance.*/
-  ScalarUnsignedData                   PulmonaryComplianceMultiplier                  = 4; /**<< @brief Updates the pulmonary veins, capillaries, and arteries compliances.*/
-  ScalarUnsignedData                   PulmonaryResistanceMultiplier                  = 5; /**<< @brief Updates the pulmonary veins, capillaries, and arteries resistances.*/
-  ScalarUnsignedData                   SystemicResistanceMultiplier                   = 6; /**<< @brief Updates the the entire systemic vasculature resistances, excluding pulmonary.*/
-  ScalarUnsignedData                   SystemicComplianceMultiplier                   = 7; /**<< @brief Updates the the entire systemic vasculature compliances, excluding pulmonary.*/
-  ScalarUnsignedData                   VenousComplianceMultiplier                     = 8; /**<< @brief Updates the vena cava compliance.*/
-  ScalarUnsignedData                   VenousResistanceMultiplier                     = 9; /**<< @brief Updates the vena cava resistance.*/
-  
-  ScalarUnsignedData                   HeartRateMultiplier                            = 10;/**<< @brief Updates the heart driver frequency.*/
-  ScalarUnsignedData                   StrokeVolumeMultiplier                         = 11;/**<< @brief Updates the heart driver amplitude.*/
+  ScalarUnsignedData                   HeartRateMultiplier                            = 9; /**<< @brief Updates the heart driver frequency.*/
+  ScalarUnsignedData                   StrokeVolumeMultiplier                         = 10;/**<< @brief Updates the heart driver amplitude.*/
 }
 
 /** @brief Provides a representation of the human vasculature.
@@ -309,21 +307,20 @@ message RespiratoryMechanicsData
 
 message RespiratoryMechanicsModifiersData
 {
-  eSwitch                              Active                                         = 1; /**<< @brief Turn on or off the use of this structure in the physiology implementation. */
-  ScalarUnsignedData                   LeftComplianceMultiplier                       = 2; /**<< @brief Updates the left lung static compliance.*/
-  ScalarUnsignedData                   RightComplianceMultiplier                      = 3; /**<< @brief Updates the right lung static compliance.*/
+  ScalarUnsignedData                   LeftComplianceMultiplier                       = 1; /**<< @brief Updates the left lung static compliance.*/
+  ScalarUnsignedData                   RightComplianceMultiplier                      = 2; /**<< @brief Updates the right lung static compliance.*/
   
-  ScalarUnsignedData                   LeftExpiratoryResistanceMultiplier             = 4; /**<< @brief Updates the left lung resistance during expiration.*/
-  ScalarUnsignedData                   LeftInspiratoryResistanceMultiplier            = 5; /**<< @brief Updates the left lung resistance during inspiration.*/
-  ScalarUnsignedData                   RightExpiratoryResistanceMultiplier            = 6; /**<< @brief Updates the right lung resistance during expiration.*/
-  ScalarUnsignedData                   RightInspiratoryResistanceMultiplier           = 7; /**<< @brief Updates the right lung resistance during inspiration.*/
-  ScalarUnsignedData                   UpperExpiratoryResistanceMultiplier            = 8; /**<< @brief Updates the upper airway resistance during expiration.*/
-  ScalarUnsignedData                   UpperInspiratoryResistanceMultiplier           = 9; /**<< @brief Updates the upper airway resistance during inspiration.*/
+  ScalarUnsignedData                   LeftExpiratoryResistanceMultiplier             = 3; /**<< @brief Updates the left lung resistance during expiration.*/
+  ScalarUnsignedData                   LeftInspiratoryResistanceMultiplier            = 4; /**<< @brief Updates the left lung resistance during inspiration.*/
+  ScalarUnsignedData                   RightExpiratoryResistanceMultiplier            = 5; /**<< @brief Updates the right lung resistance during expiration.*/
+  ScalarUnsignedData                   RightInspiratoryResistanceMultiplier           = 6; /**<< @brief Updates the right lung resistance during inspiration.*/
+  ScalarUnsignedData                   UpperExpiratoryResistanceMultiplier            = 7; /**<< @brief Updates the upper airway resistance during expiration.*/
+  ScalarUnsignedData                   UpperInspiratoryResistanceMultiplier           = 8; /**<< @brief Updates the upper airway resistance during inspiration.*/
   
-  ScalarUnsignedData                   RespirationRateMultiplier                      = 10;/**<< @brief Updates the spontaneous inspiration period.*/
-  ScalarUnsignedData                   TidalVolumeMultiplier                          = 11;/**<< @brief Updates the maximum negative pressure during spontaneous inspiration.*/
+  ScalarUnsignedData                   RespirationRateMultiplier                      = 9;/**<< @brief Updates the spontaneous inspiration period.*/
+  ScalarUnsignedData                   TidalVolumeMultiplier                          = 10;/**<< @brief Updates the maximum negative pressure during spontaneous inspiration.*/
   
-  repeated LungVolumeIncrementData     VolumeIncrement                                = 12;/**<< @brief Updates the volume in the specified lung compartment (e.g., dead space).*/
+  repeated LungVolumeIncrementData     VolumeIncrement                                = 11;/**<< @brief Updates the volume in the specified lung compartment (e.g., dead space).*/
 }
 
 
@@ -419,7 +416,6 @@ message RespiratorySystemData
   ScalarData                           VentilationPerfusionRatio                      = 60;/**<< @brief (AKA V/Q Ratio) The ratio of the air that reaches the alveoli (ventilation) to the blood that reaches the alveoli via the capillaries (perfusion).*/
   
   RespiratoryMechanicsData             Mechanics                                      = 61;
-  RespiratoryMechanicsModifiersData    MechanicsModifiers                             = 62;
 }
 
 /** @brief Provides data pertaining to the extracellular and intracelluar space */

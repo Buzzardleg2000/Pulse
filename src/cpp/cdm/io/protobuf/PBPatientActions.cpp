@@ -302,7 +302,6 @@ void PBPatientAction::Serialize(const CDM_BIND::CardiovascularMechanicsModificat
     dst.SetModifiersFile(src.modifiersfile());
   else if (src.has_modifiers())
     PBPhysiology::Load(src.modifiers(), dst.GetModifiers());
-  dst.SetMergeType((eMergeType)src.mergetype());
 }
 CDM_BIND::CardiovascularMechanicsModificationData* PBPatientAction::Unload(const SECardiovascularMechanicsModification& src)
 {
@@ -317,7 +316,6 @@ void PBPatientAction::Serialize(const SECardiovascularMechanicsModification& src
     dst.set_modifiersfile(src.m_ModifiersFile);
   else if (src.HasModifiers())
     dst.set_allocated_modifiers(PBPhysiology::Unload(*src.m_Modifiers));
-  dst.set_mergetype((CDM_BIND::eMergeType)src.m_MergeType);
 }
 void PBPatientAction::Copy(const SECardiovascularMechanicsModification& src, SECardiovascularMechanicsModification& dst)
 {
@@ -1303,7 +1301,6 @@ void PBPatientAction::Serialize(const CDM_BIND::RespiratoryMechanicsModification
     dst.SetModifiersFile(src.modifiersfile());
   else if (src.has_modifiers())
     PBPhysiology::Load(src.modifiers(), dst.GetModifiers());
-  dst.SetMergeType((eMergeType)src.mergetype());
 }
 CDM_BIND::RespiratoryMechanicsModificationData* PBPatientAction::Unload(const SERespiratoryMechanicsModification& src)
 {
@@ -1318,7 +1315,6 @@ void PBPatientAction::Serialize(const SERespiratoryMechanicsModification& src, C
     dst.set_modifiersfile(src.m_ModifiersFile);
   else if (src.HasModifiers())
     dst.set_allocated_modifiers(PBPhysiology::Unload(*src.m_Modifiers));
-  dst.set_mergetype((CDM_BIND::eMergeType)src.m_MergeType);
 }
 void PBPatientAction::Copy(const SERespiratoryMechanicsModification& src, SERespiratoryMechanicsModification& dst)
 {

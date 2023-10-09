@@ -63,7 +63,6 @@ void HowToRespiratoryMechanicsModification()
 
   SERespiratoryMechanicsModification config;
   SERespiratoryMechanicsModifiers& mechanics = config.GetModifiers();
-  mechanics.SetActive(eSwitch::On);
 
   mechanics.GetRespirationRateMultiplier().SetValue(1.2);
   pe->ProcessAction(config);

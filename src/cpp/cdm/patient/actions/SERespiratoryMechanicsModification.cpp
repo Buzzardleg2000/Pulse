@@ -10,7 +10,6 @@ SERespiratoryMechanicsModification::SERespiratoryMechanicsModification(Logger* l
 {
   m_ModifiersFile = "";
   m_Modifiers = nullptr;
-  m_MergeType = eMergeType::Append;
 }
 
 SERespiratoryMechanicsModification::~SERespiratoryMechanicsModification()
@@ -25,7 +24,6 @@ void SERespiratoryMechanicsModification::Clear()
   m_ModifiersFile = "";
   if (m_Modifiers)
     m_Modifiers->Clear();
-  m_MergeType = eMergeType::Append;
 }
 
 void SERespiratoryMechanicsModification::Copy(const SERespiratoryMechanicsModification& src, bool /*preserveState*/)
@@ -81,13 +79,4 @@ void SERespiratoryMechanicsModification::SetModifiersFile(const std::string& fil
 bool SERespiratoryMechanicsModification::HasModifiersFile() const
 {
   return !m_ModifiersFile.empty();
-}
-
-void SERespiratoryMechanicsModification::SetMergeType(eMergeType m)
-{
-  m_MergeType = m;
-}
-eMergeType SERespiratoryMechanicsModification::GetMergeType() const
-{
-  return m_MergeType;
 }

@@ -3,7 +3,6 @@
 
 #include "cdm/CommonDefs.h"
 #include "cdm/system/physiology/SECardiovascularSystem.h"
-#include "cdm/system/physiology/SECardiovascularMechanicsModifiers.h"
 #include "cdm/properties/SEScalar0To1.h"
 #include "cdm/properties/SEScalarFrequency.h"
 #include "cdm/properties/SEScalarPressure.h"
@@ -57,8 +56,6 @@ SECardiovascularSystem::SECardiovascularSystem(Logger* logger) : SESystem(logger
   m_TotalHemorrhageRate = nullptr;
   m_TotalHemorrhagedVolume = nullptr;
   m_TotalPulmonaryPerfusion = nullptr;
-
-  m_MechanicsModifiers = nullptr;
 }
 
 SECardiovascularSystem::~SECardiovascularSystem()
@@ -106,7 +103,6 @@ SECardiovascularSystem::~SECardiovascularSystem()
   SAFE_DELETE(m_TotalHemorrhagedVolume);
   SAFE_DELETE(m_TotalPulmonaryPerfusion);
 
-  SAFE_DELETE(m_MechanicsModifiers);
 }
 
 void SECardiovascularSystem::Clear()
@@ -151,9 +147,6 @@ void SECardiovascularSystem::Clear()
   INVALIDATE_PROPERTY(m_TotalHemorrhageRate);
   INVALIDATE_PROPERTY(m_TotalHemorrhagedVolume);
   INVALIDATE_PROPERTY(m_TotalPulmonaryPerfusion);
-
-  if (m_MechanicsModifiers != nullptr)
-    m_MechanicsModifiers->Clear();
 }
 
 const SEScalar* SECardiovascularSystem::GetScalar(const std::string& name)
@@ -236,9 +229,6 @@ const SEScalar* SECardiovascularSystem::GetScalar(const std::string& name)
     return &GetTotalHemorrhagedVolume();
   if (name.compare("TotalPulmonaryPerfusion") == 0)
     return &GetTotalPulmonaryPerfusion();
-
-  if (m_MechanicsModifiers != nullptr)
-    return m_MechanicsModifiers->GetScalar(name);
 
   return nullptr;
 }
@@ -913,23 +903,4 @@ double SECardiovascularSystem::GetTotalPulmonaryPerfusion(const VolumePerTimeUni
   if (m_TotalPulmonaryPerfusion == nullptr)
     return SEScalar::dNaN();
   return m_TotalPulmonaryPerfusion->GetValue(unit);
-}
-
-bool SECardiovascularSystem::HasActiveMechanicsModifiers() const
-{
-  return m_MechanicsModifiers != nullptr && m_MechanicsModifiers->GetActive() == eSwitch::On;
-}
-bool SECardiovascularSystem::HasMechanicsModifiers() const
-{
-  return m_MechanicsModifiers != nullptr;
-}
-SECardiovascularMechanicsModifiers& SECardiovascularSystem::GetMechanicsModifiers()
-{
-  if (m_MechanicsModifiers == nullptr)
-    m_MechanicsModifiers = new SECardiovascularMechanicsModifiers(GetLogger());
-  return *m_MechanicsModifiers;
-}
-const SECardiovascularMechanicsModifiers* SECardiovascularSystem::GetMechanicsModifiers() const
-{
-  return m_MechanicsModifiers;
 }

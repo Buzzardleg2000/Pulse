@@ -18,6 +18,7 @@ class SEFluidCircuit;
 class SEFluidCircuitNode;
 class SEFluidCircuitPath;
 class SEFluidCircuitCalculator;
+class SECardiovascularMechanicsModifiers;
 
 namespace pulse
 {
@@ -161,7 +162,7 @@ namespace pulse
 
 
     // Stateless member variable (Set in SetUp())
-
+    SECardiovascularMechanicsModifiers* m_MechanicsModifiers;
     // Hemorrhage
     struct HemorrhageTrack
     {

@@ -33,11 +33,7 @@ public:
   virtual void SetModifiersFile(const std::string& fileName);
   virtual bool HasModifiersFile() const;
 
-  virtual eMergeType GetMergeType() const;
-  virtual void SetMergeType(eMergeType m);
-
 protected:
-  eMergeType                        m_MergeType;
   std::string                       m_ModifiersFile;
   SERespiratoryMechanicsModifiers*  m_Modifiers;
 };

@@ -39,6 +39,7 @@
 #include "cdm/patient/actions/SEPulmonaryShuntExacerbation.h"
 #include "cdm/patient/actions/SERespiratoryFatigue.h"
 #include "cdm/patient/actions/SERespiratoryMechanicsConfiguration.h"
+#include "cdm/patient/actions/SERespiratoryMechanicsModification.h"
 #include "cdm/patient/actions/SESupplementalOxygen.h"
 #include "cdm/patient/actions/SETensionPneumothorax.h"
 #include "cdm/patient/actions/SETubeThoracostomy.h"
@@ -391,6 +392,10 @@ namespace pulse
   //--------------------------------------------------------------------------------------------------
   void RespiratoryModel::SetUp()
   {
+    // Grab the modifiers pointer from the action manager
+    m_MechanicsModifiers = &m_data.GetActions().GetPatientActions().GetRespiratoryMechanicsModification().GetModifiers();
+    m_MechanicsModifiers->Activate(); // Ensure all multipliers have a value so we can write cleaner code
+
     //Patient
     m_PatientActions = &m_data.GetActions().GetPatientActions();
     //Driver
@@ -629,12 +634,6 @@ namespace pulse
     {
       GetMechanics().ProcessConfiguration(m_PatientActions->GetRespiratoryMechanicsConfiguration());
       m_PatientActions->RemoveRespiratoryMechanicsConfiguration();
-    }
-    // Modify Mechanics
-    if (m_PatientActions->HasRespiratoryMechanicsModification())
-    {
-      GetMechanicsModifiers().ProcessModifiers(m_PatientActions->GetRespiratoryMechanicsModification());
-      m_PatientActions->RemoveRespiratoryMechanicsModification();
     }
 
     CalculateWork();

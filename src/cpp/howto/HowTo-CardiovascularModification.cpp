@@ -54,7 +54,7 @@ void HowToCardiovascularMechanicsModification()
   pe->GetEngineTracker()->GetDataRequestManager().CreatePhysiologyDataRequest("TotalPulmonaryVentilation", VolumePerTimeUnit::L_Per_min);
   pe->GetEngineTracker()->GetDataRequestManager().SetResultsFilename("./test_results/howto/HowTo_CardiovascularMechanicsModification.cpp.csv");
 
-  for (size_t i = 0; i < 6; i++)
+  for (size_t i = 0; i < 3; i++)
   {
     AdvanceAndTrackTime_s(10, *pe);
     pe->GetEngineTracker()->LogRequestedValues();
@@ -62,9 +62,7 @@ void HowToCardiovascularMechanicsModification()
 
   SECardiovascularMechanicsModification config;
   SECardiovascularMechanicsModifiers& mechanics = config.GetModifiers();
-  mechanics.SetActive(eSwitch::On);
-
-  mechanics.GetHeartRateMultiplier().SetValue(1.2);
+  mechanics.GetHeartRateMultiplier().SetValue(1.05);
   pe->ProcessAction(config);
 
   for (size_t i = 0; i < 12; i++)

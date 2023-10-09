@@ -18,6 +18,7 @@ class SEFluidCircuitNode;
 class SEFluidCircuitPath;
 class SEFluidCircuitCalculator;
 class SEConsciousRespirationCommand;
+class SERespiratoryMechanicsModifiers;
 
 namespace pulse
 {
@@ -161,6 +162,7 @@ namespace pulse
     double m_RespiratoryComplianceOverride_L_Per_cmH2O;
 
     // Stateless member variable (Set in SetUp())
+    SERespiratoryMechanicsModifiers* m_MechanicsModifiers;
     // Respiratory Driver
     double m_MaxDriverPressure_cmH2O;
     // Configuration parameters

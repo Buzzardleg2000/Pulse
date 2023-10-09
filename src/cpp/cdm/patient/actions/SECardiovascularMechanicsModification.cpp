@@ -10,7 +10,6 @@ SECardiovascularMechanicsModification::SECardiovascularMechanicsModification(Log
 {
   m_ModifiersFile = "";
   m_Modifiers = nullptr;
-  m_MergeType = eMergeType::Append;
 }
 
 SECardiovascularMechanicsModification::~SECardiovascularMechanicsModification()
@@ -25,7 +24,6 @@ void SECardiovascularMechanicsModification::Clear()
   m_ModifiersFile = "";
   if (m_Modifiers)
     m_Modifiers->Clear();
-  m_MergeType = eMergeType::Append;
 }
 
 void SECardiovascularMechanicsModification::Copy(const SECardiovascularMechanicsModification& src, bool /*preserveState*/)
@@ -35,6 +33,17 @@ void SECardiovascularMechanicsModification::Copy(const SECardiovascularMechanics
   //if(preserveState) // Put back any state
 }
 
+void SECardiovascularMechanicsModification::Activate()
+{
+  SEPatientAction::Activate();
+  if (HasModifiersFile())
+  {
+    if (!GetModifiers().SerializeFromFile(GetModifiersFile()))
+      Error("Unable to serialize cardiovascular modifier file: " + GetModifiersFile());
+    m_ModifiersFile = "";
+  }
+  GetModifiers().Activate();
+}
 bool SECardiovascularMechanicsModification::IsValid() const
 {
   return SEPatientAction::IsValid() &&(HasModifiers() || HasModifiersFile());
@@ -42,12 +51,13 @@ bool SECardiovascularMechanicsModification::IsValid() const
 
 bool SECardiovascularMechanicsModification::IsActive() const
 {
-  return SEPatientAction::IsActive();
+  return SEPatientAction::IsActive() && GetModifiers()->IsActive();
 }
 void SECardiovascularMechanicsModification::Deactivate()
 {
   SEPatientAction::Deactivate();
   Clear();//No stateful properties
+  GetModifiers().Activate();
 }
 
 const SEScalar* SECardiovascularMechanicsModification::GetScalar(const std::string& name)
@@ -81,13 +91,4 @@ void SECardiovascularMechanicsModification::SetModifiersFile(const std::string& 
 bool SECardiovascularMechanicsModification::HasModifiersFile() const
 {
   return !m_ModifiersFile.empty();
-}
-
-void SECardiovascularMechanicsModification::SetMergeType(eMergeType m)
-{
-  m_MergeType = m;
-}
-eMergeType SECardiovascularMechanicsModification::GetMergeType() const
-{
-  return m_MergeType;
 }

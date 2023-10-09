@@ -2,8 +2,8 @@
    See accompanying NOTICE file for details.*/
 
 #include "cdm/CommonDefs.h"
+#include "cdm/system/physiology/SERespiratorySystem.h"
 #include "cdm/system/physiology/SERespiratoryMechanics.h"
-#include "cdm/system/physiology/SERespiratoryMechanicsModifiers.h"
 #include "cdm/properties/SEScalarArea.h"
 #include "cdm/properties/SEScalarEnergy.h"
 #include "cdm/properties/SEScalarVolumePerPressure.h"
@@ -103,7 +103,6 @@ SERespiratorySystem::SERespiratorySystem(Logger* logger) : SESystem(logger)
   m_VentilationPerfusionRatio = nullptr;
 
   m_Mechanics = nullptr;
-  m_MechanicsModifiers = nullptr;
 }
 
 SERespiratorySystem::~SERespiratorySystem()
@@ -170,7 +169,6 @@ SERespiratorySystem::~SERespiratorySystem()
   SAFE_DELETE(m_VentilationPerfusionRatio);
 
   SAFE_DELETE(m_Mechanics);
-  SAFE_DELETE(m_MechanicsModifiers);
 }
 
 void SERespiratorySystem::Clear()
@@ -240,8 +238,6 @@ void SERespiratorySystem::Clear()
 
   if (m_Mechanics != nullptr)
     m_Mechanics->Clear();
-  if (m_MechanicsModifiers != nullptr)
-    m_MechanicsModifiers->Clear();
 }
 
 const SEScalar* SERespiratorySystem::GetScalar(const std::string& name)
@@ -369,8 +365,6 @@ const SEScalar* SERespiratorySystem::GetScalar(const std::string& name)
 
   if (m_Mechanics != nullptr)
     return m_Mechanics->GetScalar(name);
-  if (m_MechanicsModifiers != nullptr)
-    return m_MechanicsModifiers->GetScalar(name);
 
   return nullptr;
 }
@@ -1411,25 +1405,6 @@ SERespiratoryMechanics& SERespiratorySystem::GetMechanics()
 const SERespiratoryMechanics* SERespiratorySystem::GetMechanics() const
 {
   return m_Mechanics;
-}
-
-bool SERespiratorySystem::HasActiveMechanicsModifiers() const
-{
-  return m_MechanicsModifiers != nullptr && m_MechanicsModifiers->GetActive() == eSwitch::On;
-}
-bool SERespiratorySystem::HasMechanicsModifiers() const
-{
-  return m_MechanicsModifiers != nullptr;
-}
-SERespiratoryMechanicsModifiers& SERespiratorySystem::GetMechanicsModifiers()
-{
-  if (m_MechanicsModifiers == nullptr)
-    m_MechanicsModifiers = new SERespiratoryMechanicsModifiers(GetLogger());
-  return *m_MechanicsModifiers;
-}
-const SERespiratoryMechanicsModifiers* SERespiratorySystem::GetMechanicsModifiers() const
-{
-  return m_MechanicsModifiers;
 }
 
 SEScalar0To1* GetSeverity(LungImpairmentMap& map, eLungCompartment c)

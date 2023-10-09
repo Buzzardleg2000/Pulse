@@ -165,8 +165,6 @@ void PBPhysiology::Load(const CDM_BIND::CardiovascularMechanicsModifiersData& sr
 }
 void PBPhysiology::Serialize(const CDM_BIND::CardiovascularMechanicsModifiersData& src, SECardiovascularMechanicsModifiers& dst)
 {
-  dst.m_Active = (eSwitch)src.active();
-
   if (src.has_arterialcompliancemultiplier())
     PBProperty::Load(src.arterialcompliancemultiplier(), dst.GetArterialComplianceMultiplier());
   if (src.has_arterialresistancemultiplier())
@@ -197,8 +195,6 @@ CDM_BIND::CardiovascularMechanicsModifiersData* PBPhysiology::Unload(const SECar
 }
 void PBPhysiology::Serialize(const SECardiovascularMechanicsModifiers& src, CDM_BIND::CardiovascularMechanicsModifiersData& dst)
 {
-  dst.set_active((CDM_BIND::eSwitch)src.m_Active);
-
   if (src.HasArterialComplianceMultiplier())
     dst.set_allocated_arterialcompliancemultiplier(PBProperty::Unload(*src.m_ArterialComplianceMultiplier));
   if (src.HasArterialResistanceMultiplier())
@@ -337,9 +333,6 @@ void PBPhysiology::Serialize(const CDM_BIND::CardiovascularSystemData& src, SECa
     PBProperty::Load(src.totalhemorrhagedvolume(), dst.GetTotalHemorrhagedVolume());
   if (src.has_totalpulmonaryperfusion())
     PBProperty::Load(src.totalpulmonaryperfusion(), dst.GetTotalPulmonaryPerfusion());
-
-  if (src.has_mechanicsmodifiers())
-    PBPhysiology::Load(src.mechanicsmodifiers(), dst.GetMechanicsModifiers());
 }
 
 CDM_BIND::CardiovascularSystemData* PBPhysiology::Unload(const SECardiovascularSystem& src)
@@ -425,9 +418,6 @@ void PBPhysiology::Serialize(const SECardiovascularSystem& src, CDM_BIND::Cardio
     dst.set_allocated_totalhemorrhagedvolume(PBProperty::Unload(*src.m_TotalHemorrhagedVolume));
   if (src.HasTotalPulmonaryPerfusion())
     dst.set_allocated_totalpulmonaryperfusion(PBProperty::Unload(*src.m_TotalPulmonaryPerfusion));
-
-  if (src.HasMechanicsModifiers())
-    dst.set_allocated_mechanicsmodifiers(PBPhysiology::Unload(*src.m_MechanicsModifiers));
 }
 
 
@@ -1090,8 +1080,6 @@ void PBPhysiology::Load(const CDM_BIND::RespiratoryMechanicsModifiersData& src, 
 }
 void PBPhysiology::Serialize(const CDM_BIND::RespiratoryMechanicsModifiersData& src, SERespiratoryMechanicsModifiers& dst)
 {
-  dst.m_Active = (eSwitch)src.active();
-
   if (src.has_leftcompliancemultiplier())
     PBProperty::Load(src.leftcompliancemultiplier(), dst.GetLeftComplianceMultiplier());
   if (src.has_rightcompliancemultiplier())
@@ -1128,8 +1116,6 @@ CDM_BIND::RespiratoryMechanicsModifiersData* PBPhysiology::Unload(const SERespir
 }
 void PBPhysiology::Serialize(const SERespiratoryMechanicsModifiers& src, CDM_BIND::RespiratoryMechanicsModifiersData& dst)
 {
-  dst.set_active((CDM_BIND::eSwitch)src.m_Active);
-
   if (src.HasLeftComplianceMultiplier())
     dst.set_allocated_leftcompliancemultiplier(PBProperty::Unload(*src.m_LeftComplianceMultiplier));
   if (src.HasRightComplianceMultiplier())
@@ -1319,8 +1305,6 @@ void PBPhysiology::Serialize(const CDM_BIND::RespiratorySystemData& src, SERespi
 
   if (src.has_mechanics())
     PBPhysiology::Load(src.mechanics(), dst.GetMechanics());
-  if (src.has_mechanicsmodifiers())
-    PBPhysiology::Load(src.mechanicsmodifiers(), dst.GetMechanicsModifiers());
 }
 
 CDM_BIND::RespiratorySystemData* PBPhysiology::Unload(const SERespiratorySystem& src)
@@ -1454,8 +1438,6 @@ void PBPhysiology::Serialize(const SERespiratorySystem& src, CDM_BIND::Respirato
 
   if (src.HasMechanics())
     dst.set_allocated_mechanics(PBPhysiology::Unload(*src.m_Mechanics));
-  if (src.HasMechanicsModifiers())
-    dst.set_allocated_mechanicsmodifiers(PBPhysiology::Unload(*src.m_MechanicsModifiers));
 }
 
 

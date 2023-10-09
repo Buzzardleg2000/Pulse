@@ -20,7 +20,6 @@ using LungImpairmentMap = std::map<eLungCompartment, SEScalar0To1*>;
 using LungVolumeIncrementMap = std::map<eLungCompartment, SEScalarVolume*>;
 
 class  SERespiratoryMechanics;
-class SERespiratoryMechanicsModifiers;
 
 class CDM_DECL SERespiratorySystem : public SESystem
 {
@@ -280,11 +279,6 @@ public:
   virtual SERespiratoryMechanics& GetMechanics();
   virtual const SERespiratoryMechanics* GetMechanics() const;
 
-  virtual bool HasActiveMechanicsModifiers() const;
-  virtual bool HasMechanicsModifiers() const;
-  virtual SERespiratoryMechanicsModifiers& GetMechanicsModifiers();
-  virtual const SERespiratoryMechanicsModifiers* GetMechanicsModifiers() const;
-
 protected:
   
   SEScalarPressure*                m_AirwayPressure;
@@ -349,5 +343,4 @@ protected:
   SEScalar*                        m_VentilationPerfusionRatio;
 
   SERespiratoryMechanics*          m_Mechanics;
-  SERespiratoryMechanicsModifiers* m_MechanicsModifiers;
 };

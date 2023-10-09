@@ -10,7 +10,6 @@
 
 SECardiovascularMechanicsModifiers::SECardiovascularMechanicsModifiers(Logger* logger) : Loggable(logger)
 {
-  m_Active = eSwitch::NullSwitch;
   m_ArterialComplianceMultiplier = nullptr;
   m_ArterialResistanceMultiplier = nullptr;
   m_PulmonaryComplianceMultiplier = nullptr;
@@ -41,7 +40,6 @@ SECardiovascularMechanicsModifiers::~SECardiovascularMechanicsModifiers()
 
 void SECardiovascularMechanicsModifiers::Clear()
 {
-  m_Active = eSwitch::NullSwitch;
   INVALIDATE_PROPERTY(m_ArterialComplianceMultiplier);
   INVALIDATE_PROPERTY(m_ArterialResistanceMultiplier);
   INVALIDATE_PROPERTY(m_PulmonaryComplianceMultiplier);
@@ -53,6 +51,56 @@ void SECardiovascularMechanicsModifiers::Clear()
 
   INVALIDATE_PROPERTY(m_HeartRateMultiplier);
   INVALIDATE_PROPERTY(m_StrokeVolumeMultiplier);
+}
+
+// We want our models to have the assumption that all modifiers are present
+// So if we don't have anything, just use 1, as this would be a no op in code
+void SECardiovascularMechanicsModifiers::Activate()
+{
+  if (!HasArterialComplianceMultiplier())
+    GetArterialComplianceMultiplier().SetValue(1.0);
+  if (!HasArterialResistanceMultiplier())
+    GetArterialResistanceMultiplier().SetValue(1.0);
+  if (!HasPulmonaryComplianceMultiplier())
+    GetPulmonaryComplianceMultiplier().SetValue(1.0);
+  if (!HasPulmonaryResistanceMultiplier())
+    GetPulmonaryResistanceMultiplier().SetValue(1.0);
+  if (!HasSystemicResistanceMultiplier())
+    GetSystemicResistanceMultiplier().SetValue(1.0);
+  if (!HasSystemicComplianceMultiplier())
+    GetSystemicComplianceMultiplier().SetValue(1.0);
+  if (!HasVenousComplianceMultiplier())
+    GetVenousComplianceMultiplier().SetValue(1.0);
+  if (!HasVenousResistanceMultiplier())
+    GetVenousResistanceMultiplier().SetValue(1.0);
+  if (!HasHeartRateMultiplier())
+    GetHeartRateMultiplier().SetValue(1.0);
+  if (!HasStrokeVolumeMultiplier())
+    GetStrokeVolumeMultiplier().SetValue(1.0);
+}
+bool SECardiovascularMechanicsModifiers::IsActive() const
+{
+  if (GetArterialComplianceMultiplier() != 1.0)
+    return true;
+  if (GetArterialResistanceMultiplier() != 1.0)
+    return true;
+  if (GetPulmonaryComplianceMultiplier() != 1.0)
+    return true;
+  if (GetPulmonaryResistanceMultiplier() != 1.0)
+    return true;
+  if (GetSystemicResistanceMultiplier() != 1.0)
+    return true;
+  if (GetSystemicComplianceMultiplier() != 1.0)
+    return true;
+  if (GetVenousComplianceMultiplier() != 1.0)
+    return true;
+  if (GetVenousResistanceMultiplier() != 1.0)
+    return true;
+  if (GetHeartRateMultiplier() != 1.0)
+    return true;
+  if (GetStrokeVolumeMultiplier() != 1.0)
+    return true;
+  return false;
 }
 
 bool SECardiovascularMechanicsModifiers::SerializeToString(std::string& output, eSerializationFormat m) const
@@ -70,40 +118,6 @@ bool SECardiovascularMechanicsModifiers::SerializeFromString(const std::string& 
 bool SECardiovascularMechanicsModifiers::SerializeFromFile(const std::string& filename)
 {
   return PBPhysiology::SerializeFromFile(filename, *this);
-}
-
-void SECardiovascularMechanicsModifiers::ProcessModifiers(SECardiovascularMechanicsModification& config)
-{
-  if (config.GetMergeType() == eMergeType::Replace)
-    Clear();
-  if (config.HasModifiers())
-    Merge(config.GetModifiers());
-  else if (config.HasModifiersFile())
-  {
-    // Update the action with the file contents
-    std::string cfg_file = config.GetModifiersFile();
-    if (!config.GetModifiers().SerializeFromFile(cfg_file))
-      Error("Unable to load modifier file");
-    Merge(config.GetModifiers());
-  }
-}
-void SECardiovascularMechanicsModifiers::Merge(const SECardiovascularMechanicsModifiers& from)
-{
-  if (from.m_Active != eSwitch::NullSwitch)
-    SetActive(from.m_Active);
-
-  COPY_PROPERTY(ArterialComplianceMultiplier);
-  COPY_PROPERTY(ArterialResistanceMultiplier);
-  COPY_PROPERTY(PulmonaryComplianceMultiplier);
-  COPY_PROPERTY(PulmonaryResistanceMultiplier);
-  COPY_PROPERTY(SystemicResistanceMultiplier);
-  COPY_PROPERTY(SystemicComplianceMultiplier);
-  COPY_PROPERTY(VenousComplianceMultiplier);
-  COPY_PROPERTY(VenousResistanceMultiplier);
-  COPY_PROPERTY(HeartRateMultiplier);
-  COPY_PROPERTY(StrokeVolumeMultiplier);
-
-  //std::cout << this->ToString() << std::endl;
 }
 
 const SEScalar* SECardiovascularMechanicsModifiers::GetScalar(const std::string& name)
@@ -131,20 +145,6 @@ const SEScalar* SECardiovascularMechanicsModifiers::GetScalar(const std::string&
     return &GetStrokeVolumeMultiplier();
 
   return nullptr;
-}
-
-
-bool SECardiovascularMechanicsModifiers::HasActive() const
-{
-  return m_Active!=eSwitch::NullSwitch;
-}
-void SECardiovascularMechanicsModifiers::SetActive(eSwitch s)
-{
-  m_Active = s;
-}
-eSwitch SECardiovascularMechanicsModifiers::GetActive() const
-{
-  return m_Active;
 }
 
 bool SECardiovascularMechanicsModifiers::HasArterialComplianceMultiplier() const
@@ -321,7 +321,6 @@ double SECardiovascularMechanicsModifiers::GetStrokeVolumeMultiplier() const
 std::string SECardiovascularMechanicsModifiers::ToString() const
 {
   std::string str = "Cardiovascular Mechanics Modifiers";
-  str += "\n\tActive: "; HasActive() ? str += eSwitch_Name(m_Active) : str += "Not Set";
   str += "\n\tArterialComplianceMultiplier: "; HasArterialComplianceMultiplier() ? str += m_ArterialComplianceMultiplier->ToString() : str += "Not Set";
   str += "\n\tArterialResistanceMultiplier: "; HasArterialResistanceMultiplier() ? str += m_ArterialResistanceMultiplier->ToString() : str += "Not Set";
   str += "\n\tPulmonaryComplianceMultiplier: "; HasPulmonaryComplianceMultiplier() ? str += m_PulmonaryComplianceMultiplier->ToString() : str += "Not Set";

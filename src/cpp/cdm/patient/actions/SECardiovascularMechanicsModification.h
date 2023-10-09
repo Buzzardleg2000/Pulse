@@ -20,7 +20,8 @@ public:
   void Copy(const SECardiovascularMechanicsModification& src, bool /*preserveState*/=false);
 
   const SEScalar* GetScalar(const std::string& name) override;
-
+  
+  void Activate() override;
   bool IsValid() const override;
   bool IsActive() const override;
   void Deactivate() override;
@@ -33,11 +34,7 @@ public:
   virtual void SetModifiersFile(const std::string& fileName);
   virtual bool HasModifiersFile() const;
 
-  virtual eMergeType GetMergeType() const;
-  virtual void SetMergeType(eMergeType m);
-
 protected:
-  eMergeType                           m_MergeType;
   std::string                          m_ModifiersFile;
   SECardiovascularMechanicsModifiers*  m_Modifiers;
 };

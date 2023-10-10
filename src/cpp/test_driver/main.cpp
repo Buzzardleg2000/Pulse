@@ -1,6 +1,6 @@
 /* Distributed under the Apache License, Version 2.0.
    See accompanying NOTICE file for details.*/
-#include "CommonDataModelTest.h"
+#include "cdm/test/CommonDataModelTest.h"
 
 #define ENGINE_TESTS
 #ifdef ENGINE_TESTS

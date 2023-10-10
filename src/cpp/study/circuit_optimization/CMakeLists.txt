@@ -4,9 +4,7 @@ add_library_ex(CircuitOptimizationEngine
   CPP_FILES
     CircuitOptimizer.cpp
   PUBLIC_DEPENDS
-    PulseEngine
-  PRIVATE_DEPENDS
-    protobuf::libprotobuf
+    Pulse
   INSTALL_HEADER_DIR
     study/circuit_optimization
   NO_INSTALL

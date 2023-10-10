@@ -4,22 +4,7 @@
 #pragma once
 #include "cdm/CommonDefs.h"
 
-#define ENGINE_TEST_DECL
-#ifdef SHARED_ENGINE_TEST
-  #if defined (__clang__)
-    #define ENGINE_TEST_DECL
-  #elif defined(__gnu_linux__)
-    #define ENGINE_TEST_DECL __attribute__ ((visibility ("default")))
-  #else
-    #ifdef SHARED_ENGINE_TEST
-      #define ENGINE_TEST_DECL __declspec(dllexport)
-    #else
-      #define ENGINE_TEST_DECL __declspec(dllimport)
-   #endif
-  #endif
-#endif
-
-class ENGINE_TEST_DECL SETestManager : public Loggable
+class CDM_DECL SETestManager : public Loggable
 {
 public:
   SETestManager(Logger* logger = nullptr) : Loggable(logger) {};

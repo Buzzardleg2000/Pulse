@@ -9,10 +9,17 @@ Our version number sematic is Major.Minor.Patch-ReleaseStage, where :
 - PATCH changes when we make backwards-compatible bug fixes.
 - Release Stage - We have extended this versioning with a <a href="http://en.wikipedia.org/wiki/Software_release_life_cycle">release stage</a>
 
+---
+
+## Pulse Integration (Current new feature set)
+
+- Software Architecture Improvements
+
+- Physiology Model Improvements
 
 ---
 
-## Pulse v4.2.0 (September 2023)
+## Pulse v4.2.0 (October 2023)
 
 - Software Architecture Improvements
   - Addressed many compiler warnings
@@ -65,10 +72,6 @@ Our version number sematic is Major.Minor.Patch-ReleaseStage, where :
     - Improved End Tidal Carbon Dioxide Pressure response
     - Improved SpO2 response
     - Improved recovery transition model
-  - Dyspnea
-    - Split single severity into a Respiration Rate severity and Tidal Volume severity
-    - This allows users to define breathing impairments with more precision
-    - Note any previous scenarios using Dyspnea severity should apply that value to the Tidal Volume severity
   - Hemorrhage
     - Improved Baroreceptor response
     - Severity now calculates resistance using compartment inflow average

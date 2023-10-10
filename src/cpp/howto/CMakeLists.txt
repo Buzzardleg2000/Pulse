@@ -40,4 +40,4 @@ add_executable_ex(HowToDriver
   HowTo-TestSystemCapability.cpp
   HowTo-VentilationMechanics.cpp
 )
-target_link_libraries(HowToDriver PulseEngine)
+target_link_libraries(HowToDriver Pulse)

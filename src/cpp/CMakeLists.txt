@@ -1,8 +1,49 @@
-add_subdirectory(bind)
-add_subdirectory(cdm)
-add_subdirectory(engine)
+include(bind/files.cmake)
+include(cdm/files.cmake)
+include(engine/files.cmake)
 
-if(${PROJECT_NAME}_C_STATIC)
+set(_filesystem)# Support for std::filesystem::experimental
+if (CMAKE_COMPILER_IS_GNUCC AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9)
+  set(_filesystem stdc++fs)
+endif()
+
+add_library_ex(Pulse ${${PROJECT_NAME}_LIB_TYPE}
+  H_FILES
+    ${CDM_H_FILES}
+    ${ENGINE_H_FILES}
+  CPP_FILES
+    ${CDM_CPP_FILES}
+    ${ENGINE_CPP_FILES}
+  BIND_H_FILES
+    ${BIND_H_FILES}
+  BIND_CPP_FILES
+    ${BIND_CPP_FILES}
+  BIND_ROOT
+    ${DST_ROOT}/cpp/pulse
+  CONFIG_CPP_FILES
+    PulseBuildInformation.cpp
+  PUBLIC_DEPENDS
+    protobuf::libprotobuf
+  PRIVATE_DEPENDS
+    ${_filesystem}
+)
+target_include_directories(Pulse PRIVATE ${EIGEN3_INCLUDE_DIR})
+
+add_library_ex(PulseTests ${${PROJECT_NAME}_LIB_TYPE}
+  H_FILES
+    ${CDM_TEST_H_FILES}
+    ${ENGINE_TEST_H_FILES}
+  CPP_FILES
+    ${CDM_TEST_CPP_FILES}
+    ${ENGINE_TEST_CPP_FILES}
+  PUBLIC_DEPENDS
+    Pulse
+  LIB_INSTALL_ONLY
+
+)
+target_include_directories(PulseTests PRIVATE ${EIGEN3_INCLUDE_DIR})
+
+if(${PROJECT_NAME}_C_AS_STATIC)
   return()
 endif()
 

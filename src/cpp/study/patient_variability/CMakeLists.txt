@@ -6,9 +6,7 @@ add_library_ex(PatientVariabilityEngine
     PVGenerator.cpp
     PVRunner.cpp
   PUBLIC_DEPENDS
-    PulseEngine
-  PRIVATE_DEPENDS
-    protobuf::libprotobuf
+    Pulse
   INSTALL_HEADER_DIR
     study/patient_variability
   NO_INSTALL

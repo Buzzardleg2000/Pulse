@@ -31,7 +31,7 @@ else()
 endif()
 
 set(BUILD_PROTOC_BINARIES ON)
-if(${PROJECT_NAME}_C_STATIC)
+if(${PROJECT_NAME}_C_AS_STATIC)
   set(BUILD_PROTOC_BINARIES OFF)
 endif()
 

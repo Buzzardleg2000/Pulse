@@ -1,3 +1,2 @@
-add_executable_ex(PulseTestDriver main.cpp)
-target_link_libraries(PulseTestDriver CommonDataModelTests
-                                      PulseEngineTests)
+add_executable_ex(PulseTestsDriver main.cpp)
+target_link_libraries(PulseTestsDriver PulseTests)

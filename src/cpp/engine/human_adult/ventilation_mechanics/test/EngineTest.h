@@ -7,7 +7,7 @@
 
 namespace pulse { namespace human_adult_ventilation_mechanics
 {
-  class ENGINE_TEST_DECL EngineTest : public SETestManager
+  class PULSE_DECL EngineTest : public SETestManager
   {
   public:
     EngineTest(Logger* logger = nullptr);

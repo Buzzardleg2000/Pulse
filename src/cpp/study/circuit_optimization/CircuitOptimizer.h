@@ -7,7 +7,7 @@
 #include "PulseConfiguration.h"
 #include "cdm/substance/SESubstanceManager.h"
 
-#include "SEValidationTarget.h"
+#include "cdm/engine/SEValidationTarget.h"
 
 namespace pulse::study::circuit_optimization
 {

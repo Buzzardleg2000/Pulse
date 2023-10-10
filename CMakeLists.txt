@@ -60,7 +60,8 @@ set(CMAKE_MODULE_PATH
     )
 set(${PROJECT_NAME}_CMAKE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
-option(${PROJECT_NAME}_C_STATIC "Only build static libraries for the Pulse C interface" OFF)
+option(${PROJECT_NAME}_AS_SHARED "Build all Pulse libraries as shared libraries" OFF)
+option(${PROJECT_NAME}_C_AS_STATIC "Only build the PulseC as static (ex. for use in iOS/WASM builds)" OFF)
 option(${PROJECT_NAME}_DOWNLOAD_BASELINES "Download all V&V Scenarios and their baseline result files" OFF)
 option(${PROJECT_NAME}_CSHARP_API "Build C# API" OFF)
 option(${PROJECT_NAME}_JAVA_API "Build Java API and utils for data generation and testing" ON)
@@ -77,6 +78,18 @@ if(EXISTS ${${PROJECT_NAME}_NATIVE_BUILD_DIR})
     message(FATAL_ERROR "Could not find expected binding directory in provided NATIVE_BUILD_DIR, expecting:  ${NATIVE_BIND_DIR}")
   endif()
 endif()
+# Variable configurations between a static and a shared build
+set(_private_protobuf)
+set(${PROJECT_NAME}_LIB_TYPE STATIC)
+if (NOT ${PROJECT_NAME}_AS_SHARED)
+  set(_private_protobuf protobuf::libprotobuf)
+else()
+  if(${PROJECT_NAME}_C_AS_STATIC)
+    set(${PROJECT_NAME}_C_AS_STATIC OFF CACHE BOOL INTERNAL FORCE)
+    message(STATUS "Disabling Pulse_C_AS_STATIC, as Pulse_AS_SHARED is enabled")
+  endif()
+  set(${PROJECT_NAME}_LIB_TYPE SHARED)
+endif()
 
 #-----------------------------------------------------------------------------
 # iOS Support
@@ -88,8 +101,7 @@ if(iOS_TOOLCHAIN)
     cmake_policy(SET CMP0114 NEW)
   endif()
 
-
-  set(${PROJECT_NAME}_C_STATIC ON CACHE BOOL INTERNAL FORCE)
+  set(${PROJECT_NAME}_C_AS_STATIC ON CACHE BOOL INTERNAL FORCE)
   if(${PROJECT_NAME}_CSHARP_API)
     set(${PROJECT_NAME}_CSHARP_API OFF CACHE BOOL INTERNAL FORCE)
     message(STATUS "Disabling C# API for iOS build")
@@ -305,7 +317,7 @@ else()
   set(export_git_hash "unknown")
 endif()
 
-configure_file(cmake/PulseBuildInformation.cpp.in ${CMAKE_BINARY_DIR}/src/cpp/engine/PulseBuildInformation.cpp)
+configure_file(cmake/PulseBuildInformation.cpp.in ${CMAKE_BINARY_DIR}/src/cpp/PulseBuildInformation.cpp)
 
 #------------------------------------------------------------------------------
 # Configure ${PROJECT_NAME}ConfigVersion.cmake common to build and install tree

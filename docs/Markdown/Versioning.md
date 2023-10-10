@@ -14,6 +14,8 @@ Our version number sematic is Major.Minor.Patch-ReleaseStage, where :
 ## Pulse Integration (Current new feature set)
 
 - Software Architecture Improvements
+  - Combined DataModelBindings, CommonDataModel and PulseEngine into a single Pulse library
+    - Plan is to provide an option to build a shared Pulse library rather than a static one
 
 - Physiology Model Improvements
 

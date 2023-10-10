@@ -227,10 +227,18 @@ public:
   std::string GetScenarioFilename() const { return m_ScenarioFilename; }
   void SetScenarioFilename(const std::string& fn) { m_ScenarioFilename = fn; }
 
+  bool HasRuntimeError() const { return m_RuntimeError; }
+  void SetRuntimeError(bool e) { m_RuntimeError = e; }
+
+  bool HasFatalRuntimeError() const { return m_FatalRuntimeError; }
+  void SetFatalRuntimeError(bool e) { m_FatalRuntimeError = e; }
+
   double GetFinalSimulationTime_s() const { return m_FinalSimulationTime_s; }
   void SetFinalSimulationTime_s(double t) { m_FinalSimulationTime_s = t; }
 
 protected:
   std::string                m_ScenarioFilename;
+  bool                       m_RuntimeError;
+  bool                       m_FatalRuntimeError;
   double                     m_FinalSimulationTime_s;
 };

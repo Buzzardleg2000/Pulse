@@ -43,14 +43,14 @@ class SEEngineConfiguration;
 
 enum class eEngineInitializationFailure
 {
-  None = 0,
+  NoFailures = 0,
   FailedState = 1,
   FailedSetup = 2,
   FailedStabilization = 3
 };
 extern const std::string& eEngineInitializationFailure_Name(eEngineInitializationFailure e);
 
-/** 
+/**
  * @brief
  * Base exception class that all CDM classes throw when an error occurs
  */
@@ -78,7 +78,7 @@ public:
   //--------------------------------------------------------------------------------------------------
   /// \brief
   /// Reset engine and set it to the state in the provided file.
-  /// The file may contain json or binary. 
+  /// The file may contain json or binary.
   /// Anything but an extension of .json will be interpreted as binary.
   /// Return value indicates engine was able to load provided state file.
   /// Engine will be in a cleared state if this method fails.
@@ -126,7 +126,7 @@ public:
   /// \brief
   ///
   /// This will create an engine that you can send instructions (patient,actions,conditions) to dynamically.
-  /// The return value will indicate success failure of the creation of the engine.  
+  /// The return value will indicate success failure of the creation of the engine.
   /// Some combinations of patients and conditions may prevent the engine from stabilizing
   ///
   //--------------------------------------------------------------------------------------------------
@@ -197,7 +197,7 @@ public:
   /// executes one pass through the time loop of the engine at the fixed timestep
   ///
   /// Events, errors, and warning as are logged to file not errors are returned
-  /// through the API at this time. 
+  /// through the API at this time.
   ///
   //--------------------------------------------------------------------------------------------------
   virtual bool AdvanceModelTime() = 0;
@@ -252,30 +252,30 @@ public:
 
   //--------------------------------------------------------------------------------------------------
   /// \brief
-  /// Returns the patient object used by the engine 
+  /// Returns the patient object used by the engine
   ///
   //--------------------------------------------------------------------------------------------------
   virtual const SEPatient& GetPatient() const = 0;
 
   //--------------------------------------------------------------------------------------------------
   /// \brief
-  /// Returns the initial simulation patient object used by the engine 
+  /// Returns the initial simulation patient object used by the engine
   ///
   //--------------------------------------------------------------------------------------------------
   virtual const SEPatient& GetInitialPatient() const = 0;
 
   //--------------------------------------------------------------------------------------------------
   /// \brief
-  /// Determines the assessment type and fills the data object with current data. 
+  /// Determines the assessment type and fills the data object with current data.
   ///
-  /// Assessments can be queried at any point in the calculation and as many times are desired. 
+  /// Assessments can be queried at any point in the calculation and as many times are desired.
   ///
   //--------------------------------------------------------------------------------------------------
   virtual bool GetPatientAssessment(SEPatientAssessment& assessment) const = 0;
 
   //--------------------------------------------------------------------------------------------------
   /// \brief
-  /// Returns the environment object used by the engine 
+  /// Returns the environment object used by the engine
   ///
   //--------------------------------------------------------------------------------------------------
   virtual const SEEnvironment* GetEnvironment() const = 0;
@@ -296,7 +296,7 @@ public:
 
   //--------------------------------------------------------------------------------------------------
   /// \brief
-  /// Returns the current state of the drug system  
+  /// Returns the current state of the drug system
   ///
   //--------------------------------------------------------------------------------------------------
   virtual const SEDrugSystem* GetDrugSystem() const = 0;
@@ -352,7 +352,7 @@ public:
 
   //--------------------------------------------------------------------------------------------------
   /// \brief
-  /// Returns the current state of the tissue system  
+  /// Returns the current state of the tissue system
   ///
   //--------------------------------------------------------------------------------------------------
   virtual const SETissueSystem* GetTissueSystem() const = 0;

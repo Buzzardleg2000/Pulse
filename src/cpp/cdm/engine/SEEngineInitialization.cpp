@@ -75,7 +75,7 @@ SEPatientConfiguration& SEEngineInitialization::GetPatientConfiguration()
     m_PatientConfiguration = new SEPatientConfiguration(GetLogger());
   return *m_PatientConfiguration;
 }
-const SEPatientConfiguration* SEEngineInitialization::GetPatientConfiguration() const 
+const SEPatientConfiguration* SEEngineInitialization::GetPatientConfiguration() const
 {
   return m_PatientConfiguration;
 }
@@ -169,7 +169,7 @@ SEEngineInitializationStatus::~SEEngineInitializationStatus()
 void SEEngineInitializationStatus::Clear()
 {
   m_IsReady = false;
-  m_Failure = eEngineInitializationFailure::None;
+  m_Failure = eEngineInitializationFailure::NoFailures;
   m_CSVFilename = "";
   m_LogFilename = "";
   m_StabilizationTime_s = 0;

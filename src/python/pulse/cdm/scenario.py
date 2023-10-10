@@ -11,8 +11,8 @@ from pathlib import Path
 from typing import Any, Dict, Hashable, Iterable, List, NamedTuple, Optional, Set, Tuple
 
 import PyPulse
-from pulse.cdm.engine import eEvent, eSerializationFormat, eSwitch, SEAction, SEDataRequestManager, \
-                             SEEventChange
+from pulse.cdm.engine import eEngineInitializationFailure, eEvent, eSerializationFormat, eSwitch, SEAction, \
+                             SEDataRequestManager, SEEngineInitializationStatus, SEEventChange
 from pulse.cdm.patient import eSex, SEPatient, SEPatientConfiguration
 from pulse.cdm.scalars import SEScalarTime, TimeUnit, get_unit
 from pulse.cdm.io.patient import serialize_patient_from_string
@@ -240,6 +240,49 @@ class SEScenarioExec:
         return self._thread_count
     def set_thread_count(self, c: int) -> None:
         self._thread_count = c
+
+
+class SEScenarioExecStatus(SEEngineInitializationStatus):
+    __slots__ = ("_scenario_filename", "_runtime_error", "_fatal_runtime_error", "_final_simulation_time_s")
+
+    def __init__(self):
+        self.clear()
+
+    def clear(self) -> None:
+        super().clear()
+        self._scenario_filename = ""
+        self._final_simulation_time_s = 0.
+        self._runtime_error = False
+        self._fatal_runtime_error = False
+
+    def copy(self, other: "SEScnarioExecStatus") -> None:
+        super().copy()
+        self._scenario_filename = other._scenario_filename
+        self._final_simulation_time_s = other._final_simulation_time_s
+        self._runtime_error = other._runtime_error
+        self._fatal_runtime_error = other._fatal_runtime_error
+
+    def has_scenario_filename(self) -> bool:
+        return bool(self._scenario_filename)
+    def get_scenario_filename(self) -> str:
+        return self._scenario_filename
+    def set_scenario_filename(self, fn: str) -> None:
+        self._scenario_filename = fn
+
+    def has_runtime_error(self) -> bool:
+        return self._runtime_error
+    def set_runtime_error(self, e: bool) -> None:
+        self._runtime_error = e
+
+    def has_fatal_runtime_error(self) -> bool:
+        return self._fatal_runtime_error
+    def set_fatal_runtime_error(self, e: bool) -> None:
+        self._fatal_runtime_error = e
+
+    def get_final_simulation_time_s(self) -> float:
+        return self._final_simulation_time_s
+    def set_final_simulation_time_s(self, t: float) -> None:
+        self._final_simulation_time_s = t
 
 
 class SEScenarioLog:

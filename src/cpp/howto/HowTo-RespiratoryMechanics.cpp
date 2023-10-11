@@ -123,7 +123,7 @@ void HowToRespiratoryMechanics()
   mechanics.GetExpiratoryHoldTime().SetValue(ExpiratoryHoldFraction * totalBreathTime_s, TimeUnit::s);
   mechanics.GetExpiratoryReleaseTime().SetValue(ExpiratoryReleaseFraction * totalBreathTime_s, TimeUnit::s);
 
-  mechanics.GetInspiratoryPeakPressure().SetValue(-13.0, PressureUnit::cmH2O);
+  mechanics.GetInspiratoryPeakPressure().SetValue(-musclePressure_cmH2O, PressureUnit::cmH2O);
   mechanics.GetExpiratoryPeakPressure().SetValue(0.0, PressureUnit::cmH2O);
 
   pe->ProcessAction(config);

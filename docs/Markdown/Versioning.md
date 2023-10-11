@@ -24,10 +24,12 @@ Our version number sematic is Major.Minor.Patch-ReleaseStage, where :
   Created an Advance To Stable Action, this will run the engine until stable criteria is met
 
 - Physiology Model Improvements
-- Dyspnea
+  - Dyspnea
     - Split single severity into a Respiration Rate severity and Tidal Volume severity
     - This allows users to define breathing impairments with more precision
     - **Note** any previous scenarios using Dyspnea severity should apply that value to the Tidal Volume severity
+  - Mechanical Ventilator Model
+    - Ventilation will immediately stop at limits.
 ---
 
 ## Pulse v4.2.0 (October 2023)

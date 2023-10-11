@@ -610,8 +610,10 @@ void PBPatientAction::Load(const CDM_BIND::DyspneaData& src, SEDyspnea& dst)
 void PBPatientAction::Serialize(const CDM_BIND::DyspneaData& src, SEDyspnea& dst)
 {
   PBPatientAction::Serialize(src.patientaction(), dst);
-  if (src.has_severity())
-    PBProperty::Load(src.severity(), dst.GetSeverity());
+  if (src.has_respirationrateseverity())
+    PBProperty::Load(src.respirationrateseverity(), dst.GetRespirationRateSeverity());
+  if (src.has_tidalvolumeseverity())
+    PBProperty::Load(src.tidalvolumeseverity(), dst.GetTidalVolumeSeverity());
 }
 CDM_BIND::DyspneaData* PBPatientAction::Unload(const SEDyspnea& src)
 {
@@ -622,8 +624,10 @@ CDM_BIND::DyspneaData* PBPatientAction::Unload(const SEDyspnea& src)
 void PBPatientAction::Serialize(const SEDyspnea& src, CDM_BIND::DyspneaData& dst)
 {
   PBPatientAction::Serialize(src, *dst.mutable_patientaction());
-  if (src.HasSeverity())
-    dst.set_allocated_severity(PBProperty::Unload(*src.m_Severity));
+  if (src.HasRespirationRateSeverity())
+    dst.set_allocated_respirationrateseverity(PBProperty::Unload(*src.m_RespirationRateSeverity));
+  if (src.HasTidalVolumeSeverity())
+    dst.set_allocated_tidalvolumeseverity(PBProperty::Unload(*src.m_TidalVolumeSeverity));
 }
 void PBPatientAction::Copy(const SEDyspnea& src, SEDyspnea& dst)
 {

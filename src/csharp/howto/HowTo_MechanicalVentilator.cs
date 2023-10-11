@@ -70,7 +70,7 @@ namespace HowTo_MechanicalVentilator
 
       // Give the patient Dyspnea
       SEDyspnea dyspnea = new SEDyspnea();
-      dyspnea.GetSeverity().SetValue(1.0);
+      dyspnea.GetTidalVolumeSeverity().SetValue(1.0);
       pulse.ProcessAction(dyspnea);
       pulse.AdvanceTime_s(10);
       // Get the values of the data you requested at this time

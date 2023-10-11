@@ -155,7 +155,7 @@ namespace pulse::study::multiplex_ventilation
     const SESubstance* Oxygen = engine->GetSubstanceManager().GetSubstance("Oxygen");
 
     SEDyspnea dyspnea;
-    dyspnea.GetSeverity().SetValue(1.0);
+    dyspnea.GetTidalVolumeSeverity().SetValue(1.0);
 
     SEIntubation intubation;
     intubation.SetType(eIntubation_Type::Tracheal);

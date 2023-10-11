@@ -90,7 +90,7 @@ public class HowTo_MechanicalVentilator
     pulse.processAction(ards);
     
     SEDyspnea dyspnea = new SEDyspnea();
-    dyspnea.getSeverity().setValue(1.0);
+    dyspnea.getTidalVolumeSeverity().setValue(1.0);
     pulse.processAction(dyspnea);
     
  // We have action support for several commonly used ventilator modes

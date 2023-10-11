@@ -275,7 +275,7 @@ void HowToMechanicalVentilation()
   //Dyspnea
   //Maybe the muscles are getting weak?
   SEDyspnea Dyspnea;
-  Dyspnea.GetSeverity().SetValue(0.3);
+  Dyspnea.GetTidalVolumeSeverity().SetValue(0.3);
   pe->ProcessAction(Dyspnea);
 
   //Succs

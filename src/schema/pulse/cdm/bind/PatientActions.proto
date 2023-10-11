@@ -184,11 +184,12 @@ message ChronicObstructivePulmonaryDiseaseExacerbationData
   repeated LungImpairmentData               EmphysemaSeverity               = 3;/**<<@brief A list of impairment severities for the lung compartments*/
 }
 
-/** @brief Reduction of achieved tidal volume by inhibiting the respiratory breathing mechanism (i.e., muscles of respiration).  Maximum severity will stop breathing completely. */
+/** @brief Reduction of achieved respiration rate and/or tidal volume by inhibiting the respiratory breathing mechanism (i.e., muscles of respiration).  Maximum severity of either will stop breathing completely. */
 message DyspneaData
 {
   PatientActionData                         PatientAction                   = 1;
-  Scalar0To1Data                            Severity                        = 2;/**<<@brief Scale of affect, 0 being none, 1 being the highest possible. */
+  Scalar0To1Data                            RespirationRateSeverity         = 2;/**<<@brief Scale of affect for frequency of spontaneous breathing. */
+  Scalar0To1Data                            TidalVolumeSeverity             = 3;/**<<@brief Scale of affect for amplitude of spontaneous breathing. */
 }
 
 /** @brief Force air out of the lungs. */

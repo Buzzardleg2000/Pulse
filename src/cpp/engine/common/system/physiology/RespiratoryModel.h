@@ -91,6 +91,8 @@ namespace pulse
     /**/void ConsciousRespiration();
     /**/double VolumeToDriverPressure(double TargetVolume);
     /**/void UpdateDriverPressure();
+    /**/void UpdateDriverPeriod();
+    /**/double UpdateTargetVentilation(double targetAlveolarVentilation_L_Per_min);
     // Aerosol Deposition and various Effects
     void ProcessAerosolSubstances();
 

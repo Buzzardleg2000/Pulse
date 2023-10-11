@@ -218,8 +218,8 @@ void CommonDataModelTest::ActionTest(const std::string& rptDirectory)
   TestAction<SEConsumeNutrients>(testSuite.CreateTestCase(), subMgr, cn, "-Water");
 
   SEDyspnea d;
-  d.GetSeverity().SetValue(0.1);
-  TestAction<SEDyspnea>(testSuite.CreateTestCase(), subMgr, d, "-Severity");
+  d.GetTidalVolumeSeverity().SetValue(0.1);
+  TestAction<SEDyspnea>(testSuite.CreateTestCase(), subMgr, d, "-TidalVolumeSeverity");
 
   SEExercise e;
   e.GetIntensity().SetValue(0.75);

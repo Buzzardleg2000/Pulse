@@ -1287,11 +1287,6 @@ namespace pulse
           double PeripheralCO2PartialPressureSetPoint = m_data.GetConfiguration().GetPeripheralControllerCO2PressureSetPoint(PressureUnit::mmHg);
           double CentralCO2PartialPressureSetPoint = m_data.GetConfiguration().GetCentralControllerCO2PressureSetPoint(PressureUnit::mmHg);
 
-          double metabolicModifier = 1.0;
-          double TMR_W = m_data.GetEnergy().GetTotalMetabolicRate(PowerUnit::W);
-          double BMR_W = m_data.GetCurrentPatient().GetBasalMetabolicRate(PowerUnit::W);
-          double metabolicFraction = TMR_W / BMR_W;
-
           //Get Drug Effects
           SEDrugSystem& Drugs = m_data.GetDrugs();
           double DrugRRChange_Per_min = Drugs.GetRespirationRateChange(FrequencyUnit::Per_min);
@@ -1335,15 +1330,10 @@ namespace pulse
               }
           }
 
-          double dTargetAlveolarVentilation_L_Per_min = m_PeripheralControlGainConstant * exp(-0.05 * m_ArterialO2PartialPressure_mmHg) * MAX(0., m_ArterialCO2PartialPressure_mmHg - peripheralCO2SetPoint); //Peripheral portion
-          dTargetAlveolarVentilation_L_Per_min += m_CentralControlGainConstant * MAX(0., m_ArterialCO2PartialPressure_mmHg - centralCO2SetPoint); //Central portion
+          double targetAlveolarVentilation_L_Per_min = m_PeripheralControlGainConstant * exp(-0.05 * m_ArterialO2PartialPressure_mmHg) * MAX(0., m_ArterialCO2PartialPressure_mmHg - peripheralCO2SetPoint); //Peripheral portion
+          targetAlveolarVentilation_L_Per_min += m_CentralControlGainConstant * MAX(0., m_ArterialCO2PartialPressure_mmHg - centralCO2SetPoint); //Central portion
 
-          //Metabolic modifier is used to drive the system to reasonable levels achievable during increased metabolic exertion
-          //The modifier is tuned to achieve the correct respiratory response for near maximal exercise. A linear relationship is assumed
-          // for the respiratory effects due to increased metabolic exertion    
-          double tunedVolumeMetabolicSlope = 0.2; //Tuned fractional increase of the tidal volume due to increased metabolic rate
-          metabolicModifier = 1.0 + tunedVolumeMetabolicSlope * (metabolicFraction - 1.0);
-          dTargetAlveolarVentilation_L_Per_min *= metabolicModifier;
+          targetAlveolarVentilation_L_Per_min = UpdateTargetVentilation(targetAlveolarVentilation_L_Per_min);
 
           //Only move it part way to where it wants to be.
           //If it stays there, it will get there, just more controlled/slowly.
@@ -1366,41 +1356,41 @@ namespace pulse
           changeFraction = 1.0;
   #endif
 
-          dTargetAlveolarVentilation_L_Per_min = m_PreviousTargetAlveolarVentilation_L_Per_min + (dTargetAlveolarVentilation_L_Per_min - m_PreviousTargetAlveolarVentilation_L_Per_min) * changeFraction;
-          m_PreviousTargetAlveolarVentilation_L_Per_min = dTargetAlveolarVentilation_L_Per_min;
+          targetAlveolarVentilation_L_Per_min = m_PreviousTargetAlveolarVentilation_L_Per_min + (targetAlveolarVentilation_L_Per_min - m_PreviousTargetAlveolarVentilation_L_Per_min) * changeFraction;
+          m_PreviousTargetAlveolarVentilation_L_Per_min = targetAlveolarVentilation_L_Per_min;
 
           //Target Tidal Volume (i.e. Driver amplitude) *************************************************************************
           //Calculate the target Tidal Volume based on the Alveolar Ventilation
-          double dTargetPulmonaryVentilation_L_Per_min = dTargetAlveolarVentilation_L_Per_min;
+          double targetPulmonaryVentilation_L_Per_min = targetAlveolarVentilation_L_Per_min;
 
           double dMaximumPulmonaryVentilationRate = m_data.GetConfiguration().GetPulmonaryVentilationRateMaximum(VolumePerTimeUnit::L_Per_min);
-          if (dTargetPulmonaryVentilation_L_Per_min > dMaximumPulmonaryVentilationRate)
+          if (targetPulmonaryVentilation_L_Per_min > dMaximumPulmonaryVentilationRate)
           {
-            dTargetPulmonaryVentilation_L_Per_min = dMaximumPulmonaryVentilationRate;
+            targetPulmonaryVentilation_L_Per_min = dMaximumPulmonaryVentilationRate;
             m_data.GetEvents().SetEvent(eEvent::MaximumPulmonaryVentilationRate, true, m_data.GetSimulationTime());
           }
 
-          if (dTargetPulmonaryVentilation_L_Per_min < dMaximumPulmonaryVentilationRate && m_data.GetEvents().IsEventActive(eEvent::MaximumPulmonaryVentilationRate))
+          if (targetPulmonaryVentilation_L_Per_min < dMaximumPulmonaryVentilationRate && m_data.GetEvents().IsEventActive(eEvent::MaximumPulmonaryVentilationRate))
           {
             m_data.GetEvents().SetEvent(eEvent::MaximumPulmonaryVentilationRate, false, m_data.GetSimulationTime());
           }
 
           //Calculate the target Tidal Volume based on the calculated target pulmonary ventilation, plot slope (determined during initialization), and x-intercept
-          double dTargetTidalVolume_L = dTargetPulmonaryVentilation_L_Per_min / m_VentilationToTidalVolumeSlope + m_VentilationTidalVolumeIntercept;
+          double targetTidalVolume_L = targetPulmonaryVentilation_L_Per_min / m_VentilationToTidalVolumeSlope + m_VentilationTidalVolumeIntercept;
 
           //Modify the target tidal volume due to other external effects - probably eventually replaced by the Nervous system
-          dTargetTidalVolume_L *= NMBModifier;
+          targetTidalVolume_L *= NMBModifier;
 
           //Apply Drug Effects to the target tidal volume
-          dTargetTidalVolume_L += DrugsTVChange_L;
+          targetTidalVolume_L += DrugsTVChange_L;
 
           //This is a piecewise function that plateaus at the Tidal Volume equal to 1/2 * Vital Capacity
           //The Respiration Rate will make up for the Alveoli Ventilation difference
           double dHalfVitalCapacity_L = m_data.GetInitialPatient().GetVitalCapacity(VolumeUnit::L) / 2.0;
-          dTargetTidalVolume_L = MIN(dTargetTidalVolume_L, dHalfVitalCapacity_L);
+          targetTidalVolume_L = MIN(targetTidalVolume_L, dHalfVitalCapacity_L);
 
           //Map the Target Tidal Volume to the Driver
-          double TargetVolume_L = m_data.GetInitialPatient().GetFunctionalResidualCapacity(VolumeUnit::L) + dTargetTidalVolume_L;
+          double TargetVolume_L = m_data.GetInitialPatient().GetFunctionalResidualCapacity(VolumeUnit::L) + targetTidalVolume_L;
           m_PeakInspiratoryPressure_cmH2O = VolumeToDriverPressure(TargetVolume_L);
           //There's a maximum force the driver can try to achieve
           m_PeakInspiratoryPressure_cmH2O = MAX(m_PeakInspiratoryPressure_cmH2O, m_MaxDriverPressure_cmH2O);
@@ -1410,14 +1400,14 @@ namespace pulse
 
           //Respiration Rate (i.e. Driver frequency) *************************************************************************
           //Calculate the Respiration Rate given the Alveolar Ventilation and the Target Tidal Volume
-          if (SEScalar::IsZero(dTargetTidalVolume_L, ZERO_APPROX)) //Can't divide by zero
+          if (SEScalar::IsZero(targetTidalVolume_L, ZERO_APPROX)) //Can't divide by zero
           {
             m_VentilationFrequency_Per_min = 0.0;
             m_NotBreathing = true;
           }
           else
           {
-            m_VentilationFrequency_Per_min = dTargetPulmonaryVentilation_L_Per_min / (dTargetTidalVolume_L - DrugsTVChange_L); //breaths/min
+            m_VentilationFrequency_Per_min = targetPulmonaryVentilation_L_Per_min / (targetTidalVolume_L - DrugsTVChange_L); //breaths/min
             m_VentilationFrequency_Per_min *= NMBModifier * SedationModifier;
             m_VentilationFrequency_Per_min += DrugRRChange_Per_min;
             m_NotBreathing = false;
@@ -1439,6 +1429,8 @@ namespace pulse
             //Put bounds on this
             m_VentilationToTidalVolumeSlope = LIMIT(m_VentilationToTidalVolumeSlope, 1.0, 100.0);
           }
+
+          UpdateDriverPeriod();
 
   #ifdef TUNING
           m_VentilationToTidalVolumeSlope = 40.0;
@@ -4252,9 +4244,9 @@ namespace pulse
 
     //------------------------------------------------------------------------------------------------------
     //Dyspnea
-    if (m_PatientActions->HasDyspnea())
+    if (m_PatientActions->HasDyspnea() && m_PatientActions->GetDyspnea().HasTidalVolumeSeverity())
     {
-      dyspneaSeverity = MAX(dyspneaSeverity, m_PatientActions->GetDyspnea().GetSeverity().GetValue());
+      dyspneaSeverity = MAX(dyspneaSeverity, m_PatientActions->GetDyspnea().GetTidalVolumeSeverity().GetValue());
     }
 
     //------------------------------------------------------------------------------------------------------
@@ -4324,6 +4316,67 @@ namespace pulse
 #ifdef DEBUG
     m_data.GetDataTrack().Probe("dyspneaSeverity", dyspneaSeverity);
 #endif
+  }
+
+//--------------------------------------------------------------------------------------------------
+/// \brief
+/// Reduce the driver period based on actions and conditions.
+///
+/// \details
+/// This method scales the driver period lower than "requested" by the chemoreceptors and other
+/// nervous system / PD effects. This ultamitely caused lower O2 in the blood and higher tidal 
+/// volumes compared to lower respiration rates volumes.
+//--------------------------------------------------------------------------------------------------
+  void RespiratoryModel::UpdateDriverPeriod()
+  {
+    //Dyspnea
+    if (m_PatientActions->HasDyspnea() && m_PatientActions->GetDyspnea().HasRespirationRateSeverity())
+    {
+      double dyspneaSeverity = m_PatientActions->GetDyspnea().GetRespirationRateSeverity().GetValue();
+      m_VentilationFrequency_Per_min = m_VentilationFrequency_Per_min * (1 - dyspneaSeverity);
+    }
+  }
+
+  //--------------------------------------------------------------------------------------------------
+/// \brief
+/// Reduce the driver respiration rate and tidal volume based on actions and conditions.
+///
+/// \details
+/// This method scales the chemoreceptor driver and results in higher arterial CO2 and lower O2.
+//--------------------------------------------------------------------------------------------------
+  double RespiratoryModel::UpdateTargetVentilation(double targetAlveolarVentilation_L_Per_min)
+  {
+    //Metabolic modifier is used to drive the system to reasonable levels achievable during increased metabolic exertion
+    //The modifier is tuned to achieve the correct respiratory response for near maximal exercise. A linear relationship is assumed
+    // for the respiratory effects due to increased metabolic exertion
+    double tunedVolumeMetabolicSlope = 0.2; //Tuned fractional increase of the tidal volume due to increased metabolic rate
+    double metabolicModifier = 1.0;
+    double TMR_W = m_data.GetEnergy().GetTotalMetabolicRate(PowerUnit::W);
+    double BMR_W = m_data.GetCurrentPatient().GetBasalMetabolicRate(PowerUnit::W);
+    double metabolicFraction = TMR_W / BMR_W;
+    
+    metabolicModifier = 1.0 + tunedVolumeMetabolicSlope * (metabolicFraction - 1.0);
+    double newTargetAlveolarVentilation_L_Per_min = metabolicModifier * targetAlveolarVentilation_L_Per_min;
+
+    //Don't let dyspnea just max out by backing off of what the chemoreceptors want to acheive
+    if (m_PatientActions->HasDyspnea())
+    {
+      double dyspneaSeverity = 0.0; //This is a sum, so value between 0 and 2
+
+      if (m_PatientActions->GetDyspnea().HasRespirationRateSeverity())
+      {
+        dyspneaSeverity += m_PatientActions->GetDyspnea().GetRespirationRateSeverity().GetValue();
+      }
+      if (m_PatientActions->GetDyspnea().HasTidalVolumeSeverity())
+      {
+        dyspneaSeverity += m_PatientActions->GetDyspnea().GetTidalVolumeSeverity().GetValue();
+      }
+
+      double modifier = GeneralMath::LinearInterpolator(0.0, 2.0, 1.0, 0.0, dyspneaSeverity);
+      newTargetAlveolarVentilation_L_Per_min *= modifier;
+    }
+
+    return newTargetAlveolarVentilation_L_Per_min;
   }
 
   //--------------------------------------------------------------------------------------------------

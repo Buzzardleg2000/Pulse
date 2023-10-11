@@ -979,17 +979,3 @@ that allows spontaneous breathing along with positive-pressure ventilation, simi
 
 ETT - Endotracheal tube
 
-## Compartments
-
-* AnesthesiaConnection
-* ExpiratoryLimb
-* GasInlet
-* GasSource
-* InspiratoryLimb
-* ReliefValve
-* Scrubber
-* Selector
-* Squeeze
-* Ventilator
-* VentilatorConnection
-* YPiece

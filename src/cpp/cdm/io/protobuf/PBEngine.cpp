@@ -1095,16 +1095,12 @@ void PBEngine::Serialize(const CDM_BIND::DynamicStabilizationData& src, SEDynami
 {
   if (src.trackingstabilization() != CDM_BIND::eSwitch::NullSwitch)
     dst.TrackStabilization((eSwitch)src.trackingstabilization());
-  if (src.has_restingconvergence())
-    PBEngine::Load(src.restingconvergence(), dst.GetRestingConvergence());
-  if (src.has_feedbackconvergence())
-    PBEngine::Load(src.feedbackconvergence(), dst.GetFeedbackConvergence());
 
-  for (auto itr : src.conditionconvergence())
+  for (auto itr : src.convergencecriteria())
   {
     SEDynamicStabilizationEngineConvergence* c = new SEDynamicStabilizationEngineConvergence(dst.GetLogger());
     PBEngine::Load(itr.second, *c);
-    dst.m_ConditionConvergence[itr.first] = c;
+    dst.m_ConvergenceCriteria[itr.first] = c;
   }
 }
 CDM_BIND::DynamicStabilizationData* PBEngine::Unload(const SEDynamicStabilization& src)
@@ -1116,13 +1112,10 @@ CDM_BIND::DynamicStabilizationData* PBEngine::Unload(const SEDynamicStabilizatio
 void PBEngine::Serialize(const SEDynamicStabilization& src, CDM_BIND::DynamicStabilizationData& dst)
 {
   dst.set_trackingstabilization((CDM_BIND::eSwitch)src.m_TrackingStabilization);
-  dst.set_allocated_restingconvergence(PBEngine::Unload(*src.m_RestingConvergence));
-  if (src.HasFeedbackConvergence())
-    dst.set_allocated_feedbackconvergence(PBEngine::Unload(*src.m_FeedbackConvergence));
-  for (auto &c : src.m_ConditionConvergence)
+  for (auto &c : src.m_ConvergenceCriteria)
   {
     CDM_BIND::DynamicStabilizationEngineConvergenceData* cData = PBEngine::Unload(*c.second);
-    (*dst.mutable_conditionconvergence())[c.first] = *cData;
+    (*dst.mutable_convergencecriteria())[c.first] = *cData;
     delete cData;
   }
 }
@@ -1185,15 +1178,11 @@ void PBEngine::Serialize(const CDM_BIND::TimedStabilizationData& src, SETimedSta
 {
   if (src.trackingstabilization() != CDM_BIND::eSwitch::NullSwitch)
     dst.TrackStabilization((eSwitch)src.trackingstabilization());
-  if (src.has_restingstabilizationtime())
-    PBProperty::Load(src.restingstabilizationtime(), dst.GetRestingStabilizationTime());
-  if (src.has_feedbackstabilizationtime())
-    PBProperty::Load(src.feedbackstabilizationtime(), dst.GetFeedbackStabilizationTime());
-  for (auto itr : src.conditionstabilization())
+  for (auto itr : src.convergencecriteria())
   {
     SEScalarTime* time = new SEScalarTime();
     PBProperty::Load(itr.second, *time);
-    dst.m_ConditionTimes[itr.first] = time;
+    dst.m_ConvergenceCriteria[itr.first] = time;
   }
 }
 CDM_BIND::TimedStabilizationData* PBEngine::Unload(const SETimedStabilization& src)
@@ -1205,15 +1194,12 @@ CDM_BIND::TimedStabilizationData* PBEngine::Unload(const SETimedStabilization& s
 void PBEngine::Serialize(const SETimedStabilization& src, CDM_BIND::TimedStabilizationData& dst)
 {
   dst.set_trackingstabilization((CDM_BIND::eSwitch)src.m_TrackingStabilization);
-  dst.set_allocated_restingstabilizationtime(PBProperty::Unload(*src.m_RestingStabilizationTime));
-  if (src.HasFeedbackStabilizationTime())
-    dst.set_allocated_feedbackstabilizationtime(PBProperty::Unload(*src.m_FeedbackStabilizationTime));
-  for (auto cc : src.m_ConditionTimes)
+  for (auto cc : src.m_ConvergenceCriteria)
   {
     if (cc.second == nullptr)
       continue;
     CDM_BIND::ScalarTimeData* time = PBProperty::Unload(*cc.second);
-    (*dst.mutable_conditionstabilization())[cc.first] = *time;
+    (*dst.mutable_convergencecriteria())[cc.first] = *time;
     delete time;
   }
 }

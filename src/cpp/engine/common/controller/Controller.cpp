@@ -495,7 +495,7 @@ namespace pulse
     }
 
     m_State = EngineState::InitialStabilization;
-    if (!m_Config->GetStabilization()->StabilizeRestingState(*m_Stabilizer))
+    if (!m_Config->GetStabilization()->Stabilize(*m_Stabilizer, SEEngineStabilization::Resting))
       return false;
 
     // Copy any changes to the current patient to the initial patient
@@ -648,7 +648,7 @@ namespace pulse
     if (adv2Stable != nullptr)
     {
       m_Config->GetStabilization()->TrackStabilization(eSwitch::On);
-      if (!m_Config->GetStabilization()->StabilizeRestingState(*m_Stabilizer))
+      if (!m_Config->GetStabilization()->Stabilize(*m_Stabilizer, SEEngineStabilization::AdvanceUntilStable))
         Error("Engine was unable to AdvanceUntilStable");
       return true;
     }

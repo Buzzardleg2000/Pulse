@@ -2096,26 +2096,3 @@ Data Model Implementation
 -------------------------
 
 @ref RespiratorySystemTable "Respiratory"
-
-Compartments
-------------
-
-* Mouth
-* Stomach
-* Carina
-* Lungs
-	* LeftLung
-		* LeftAnatomicDeadSpace
-		* LeftAlveolarDeadSpace
-		* LeftAlveoli
-	* RightLung, RightLungPulmonary
-		* RightAnatomicDeadSpace
-		* RightAlveolarDeadSpace
-		* RightAlveoli
-* PleuralCavity
-	* LeftPleuralCavity
-	* RightPleuralCavity
-* LeftAlveoliLeak
-* LeftChestLeak
-* RightAlveoliLeak
-* RightChestLeak

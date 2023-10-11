@@ -208,11 +208,3 @@ FiO2 - Fraction of Inpspired Oxygen
 PEEP - Positive End Expired Pressure
 
 SpO2 - Oxygen Saturation
-
-## Compartments
-
-* Reservoir
-* Bag
-* Valve
-* Filter
-* Connection

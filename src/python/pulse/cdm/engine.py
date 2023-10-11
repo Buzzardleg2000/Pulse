@@ -962,13 +962,13 @@ class SESegmentValidationSegment:
         self._validation_targets = []
 
         # Not serializing
-        self._actions = ""
+        self._actions = []
 
     def clear(self) -> None:
         self._notes = ""
         self._validation_targets = []
 
-        self._actions = ""
+        self._actions = []
 
     def get_segment_id(self) -> int:
         return self._segment_id
@@ -997,12 +997,12 @@ class SESegmentValidationSegment:
 
     def has_actions(self) -> bool:
         return len(self._actions) > 0
-    def get_actions(self) -> str:
+    def get_actions(self) -> List[str]:
         return self._actions
-    def set_actions(self, actions: str) -> None:
+    def set_actions(self, actions: List[str]) -> None:
         self._actions = actions
     def invalidate_actions(self) -> None:
-        self._actions = ""
+        self._actions = []
 
 class SESegmentValidationConfig:
     __slots__ = ["_plotters"]

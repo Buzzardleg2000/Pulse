@@ -16,9 +16,18 @@ Our version number sematic is Major.Minor.Patch-ReleaseStage, where :
 - Software Architecture Improvements
   - Combined DataModelBindings, CommonDataModel and PulseEngine into a single Pulse library
     - Plan is to provide an option to build a shared Pulse library rather than a static one
+  - Initial architecture for automated validation
+    - Currently only AirwayObstruction has been migrated
+    - Created a xlsx template for automating the our validation of our models (is currently being done by hand)
+    - The validation pipeline can also create a single doxygen report with a plot file and md files associated with an xlsx
+    - Added the ability to create vitals monitor and ventilator monitor plots from CSV files
+  Created an Advance To Stable Action, this will run the engine until stable criteria is met
 
 - Physiology Model Improvements
-
+- Dyspnea
+    - Split single severity into a Respiration Rate severity and Tidal Volume severity
+    - This allows users to define breathing impairments with more precision
+    - **Note** any previous scenarios using Dyspnea severity should apply that value to the Tidal Volume severity
 ---
 
 ## Pulse v4.2.0 (October 2023)

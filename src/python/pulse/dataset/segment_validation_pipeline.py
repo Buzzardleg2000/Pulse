@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 from enum import Enum
 from pathlib import Path
 
-from pulse.cdm.engine import SESegmentValidationConfig
+from pulse.cdm.engine import SESegmentValidationConfig, eSwitch
 from pulse.cdm.io.engine import serialize_segment_validation_config_from_file, \
                                 serialize_data_requested_result_from_file
 from pulse.cdm.utils.markdown import process_file
@@ -126,6 +126,7 @@ def segment_validation_pipeline(xls_file: Path, exec_opt: eExecOpt, use_test_res
         for scenario in scenarios:
             scenario_file = scenario_dir / scenario
             sce_exec = PulseScenarioExec()
+            sce_exec.set_log_to_console(eSwitch.On)
             sce_exec.set_scenario_filename(scenario_file.as_posix())
             if not sce_exec.execute_scenario():
                 _pulse_logger.warning("Scenario {scenario} was not successfully run.")

@@ -144,7 +144,7 @@ set(ENGINE_CPP_FILES
 set(ENGINE_H_FILES ${BINDING_H_FILES} PARENT_SCOPE)
 set(ENGINE_CPP_FILES ${BINDING_CPP_FILES} PARENT_SCOPE)
 
-set(ENGINE_TEST_HEADER_FILES
+set(ENGINE_TEST_H_FILES
   # Human Adult
   #  Whole Body
   engine/human_adult/whole_body/test/EngineTest.h
@@ -163,6 +163,7 @@ set(ENGINE_TEST_CPP_FILES
   engine/human_adult/whole_body/test/EngineTest.cpp
   engine/human_adult/whole_body/test/EngineTest.h
   engine/human_adult/whole_body/test/FourCompartmentTest.cpp
+  engine/human_adult/whole_body/test/ImmuneTests.cpp
   engine/human_adult/whole_body/test/MechanicalVentilatorCircuit.cpp
   engine/human_adult/whole_body/test/NervousTests.cpp
   engine/human_adult/whole_body/test/ReadScenarios.cpp

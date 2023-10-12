@@ -149,10 +149,17 @@ namespace pulse { namespace human_adult_whole_body
     void GenericExcretionTest(SETestSuite& testSuite);
 
   public:
-      ///////////////////
-      // Nervous Tests //
-      ///////////////////
-      void BrainInjuryTest(const std::string& rptDirectory);
+    ///////////////////
+    // Nervous Tests //
+    ///////////////////
+    void BrainInjuryTest(const std::string& rptDirectory);
+  protected:
+
+  public:
+    ///////////////////
+    // Immune Tests //
+    ///////////////////
+    void SepsisTest(const std::string& rptDirectory);
   protected:
 
   public:
@@ -166,10 +173,10 @@ namespace pulse { namespace human_adult_whole_body
     void AcidBaseFiveCompartmentTestWithDiffusion(const std::string& sOutputDirectory);
     void AcidBaseFiveCompartmentTestWithProductionConsumptionAndDiffusion(const std::string& sOutputDirectory);
    protected:
-     void FourCompartmentTest(bool usingAcidBase, bool usingProductionConsumption, bool usingDiffusion, const std::string& sOutputDirectory);
-     bool usingAcidBase;
-     bool usingProductionConsumption;
-     bool usingDiffusion;
+    void FourCompartmentTest(bool usingAcidBase, bool usingProductionConsumption, bool usingDiffusion, const std::string& sOutputDirectory);
+    bool usingAcidBase;
+    bool usingProductionConsumption;
+    bool usingDiffusion;
 
   public:
      /////////////////////

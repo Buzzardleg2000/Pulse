@@ -120,6 +120,8 @@ namespace pulse { namespace human_adult_whole_body
 
     testMap.insert(std::make_pair("BrainInjuryTest", &EngineTest::BrainInjuryTest));
 
+    testMap.insert(std::make_pair("SepsisTest", &EngineTest::SepsisTest));
+
     testMap.insert(std::make_pair("ConditionCombinations", &EngineTest::ConditionCombinations));
     testMap.insert(std::make_pair("SolverSpeedTest", &EngineTest::SolverSpeedTest));
 

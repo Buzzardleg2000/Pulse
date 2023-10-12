@@ -317,11 +317,12 @@ namespace pulse
   {
     ::PBPhysiology::Serialize(src.common(), dst);
 
-    dst.m_PathogenGrowthRate = src.pathogengrowthrate();
-    dst.m_PathogenCount = src.pathogencount();
     dst.m_ActivatedPhagocytes = src.activatedphagocytes();
-    dst.m_TissueDamage = src.tissuedamage();
     dst.m_AntiInflammatoryMediators = src.antiinflammatorymediators();
+    dst.m_PathogenCount = src.pathogencount();
+    dst.m_InitialPathogenCount = src.initialpathogencount();
+    dst.m_PathogenGrowthRate = src.pathogengrowthrate();
+    dst.m_TissueDamage = src.tissuedamage();
   }
   PULSE_BIND::ImmuneData* PBPhysiology::Unload(const ImmuneModel& src)
   {
@@ -333,11 +334,12 @@ namespace pulse
   {
     ::PBPhysiology::Serialize(src, *dst.mutable_common());
 
-    dst.set_pathogengrowthrate(src.m_PathogenGrowthRate);
-    dst.set_pathogencount(src.m_PathogenCount);
     dst.set_activatedphagocytes(src.m_ActivatedPhagocytes);
-    dst.set_tissuedamage(src.m_TissueDamage);
     dst.set_antiinflammatorymediators(src.m_AntiInflammatoryMediators);
+    dst.set_initialpathogencount(src.m_InitialPathogenCount);
+    dst.set_pathogencount(src.m_PathogenCount);
+    dst.set_pathogengrowthrate(src.m_PathogenGrowthRate);
+    dst.set_tissuedamage(src.m_TissueDamage);
   }
 
   void PBPhysiology::Load(const PULSE_BIND::NervousData& src, NervousModel& dst)

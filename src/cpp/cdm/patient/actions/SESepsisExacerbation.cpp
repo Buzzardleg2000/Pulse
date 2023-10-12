@@ -34,7 +34,7 @@ void SESepsisExacerbation::Copy(const SESepsisExacerbation& src, bool /*preserve
 
 bool SESepsisExacerbation::IsValid() const
 {
-  return HasInfectionSeverity() || HasProgressionSeverity();
+  return HasProgressionSeverity();
 }
 bool SESepsisExacerbation::IsActive() const
 {

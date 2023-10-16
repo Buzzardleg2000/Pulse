@@ -33,7 +33,7 @@ void SEEventManager::SetEvent(eEvent type, bool active, const SEScalarTime& time
   if (active != b)
   {
     m_ss.str("");
-    m_ss << "[Event] " << time << ", ";
+    m_ss << "[Event " << eEvent_Name(type) <<" " << active << "] ";
     if (active)
     {
       switch (type)

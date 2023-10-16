@@ -723,17 +723,8 @@ void PBEngine::Serialize(const CDM_BIND::TimeSeriesValidationTargetData& src, SE
   case CDM_BIND::TimeSeriesValidationTargetData::kEqualToValue:
     dst.SetEqualTo(src.equaltovalue(), (SETimeSeriesValidationTarget::eTargetType)src.type());
     break;
-  case CDM_BIND::TimeSeriesValidationTargetData::kGreaterThanValue:
-    dst.SetGreaterThan(src.greaterthanvalue(), (SETimeSeriesValidationTarget::eTargetType)src.type());
-    break;
-  case CDM_BIND::TimeSeriesValidationTargetData::kLessThanValue:
-    dst.SetLessThan(src.lessthanvalue(), (SETimeSeriesValidationTarget::eTargetType)src.type());
-    break;
   case CDM_BIND::TimeSeriesValidationTargetData::kRange:
     dst.SetRange(src.range().minimum(), src.range().maximum(), (SETimeSeriesValidationTarget::eTargetType)src.type());
-    break;
-  case CDM_BIND::TimeSeriesValidationTargetData::kTrendsToValue:
-    dst.SetGreaterThan(src.trendstovalue(), (SETimeSeriesValidationTarget::eTargetType)src.type());
     break;
   default: break;
   }
@@ -752,15 +743,6 @@ void PBEngine::Serialize(const SETimeSeriesValidationTarget& src, CDM_BIND::Time
   {
   case SETimeSeriesValidationTarget::eComparisonType::EqualToValue:
     dst.set_equaltovalue(src.m_Target);
-    break;
-  case SETimeSeriesValidationTarget::eComparisonType::GreaterThanValue:
-    dst.set_greaterthanvalue(src.m_Target);
-    break;
-  case SETimeSeriesValidationTarget::eComparisonType::LessThanValue:
-    dst.set_lessthanvalue(src.m_Target);
-    break;
-  case SETimeSeriesValidationTarget::eComparisonType::TrendsToValue:
-    dst.set_trendstovalue(src.m_Target);
     break;
   case SETimeSeriesValidationTarget::eComparisonType::Range:
     dst.mutable_range()->set_minimum(src.m_TargetMinimum);

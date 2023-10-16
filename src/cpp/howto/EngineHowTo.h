@@ -39,7 +39,6 @@ void HowToRespiratoryMechanics();
 void HowToSmoke();
 void HowToTensionPneumothorax();
 
-void HowToConcurrentEngines();
 void HowToRunScenario();
 void HowToScenarioFromLog();
 void HowToDynamicHemorrhage();

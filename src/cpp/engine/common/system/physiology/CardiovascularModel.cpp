@@ -356,6 +356,10 @@ namespace pulse
     m_RightHeart = m_data.GetCompartments().GetLiquidCompartment(pulse::VascularCompartment::RightHeart);
     m_Abdomen = m_data.GetCompartments().GetLiquidCompartment(pulse::VascularCompartment::Abdomen);
     m_AbdominalCavity = m_data.GetCompartments().GetLiquidCompartment(pulse::VascularCompartment::AbdominalCavity);
+    m_LeftArm = m_data.GetCompartments().GetLiquidCompartment(pulse::VascularCompartment::LeftArm);
+    m_LeftLeg = m_data.GetCompartments().GetLiquidCompartment(pulse::VascularCompartment::LeftLeg);
+    m_RightArm = m_data.GetCompartments().GetLiquidCompartment(pulse::VascularCompartment::RightArm);
+    m_RightLeg = m_data.GetCompartments().GetLiquidCompartment(pulse::VascularCompartment::RightLeg);
     //Respiratory Compartments
     m_LeftPleuralCavity = m_data.GetCompartments().GetGasCompartment(pulse::PulmonaryCompartment::LeftPleuralCavity);
     m_RightPleuralCavity = m_data.GetCompartments().GetGasCompartment(pulse::PulmonaryCompartment::RightPleuralCavity);
@@ -1151,6 +1155,14 @@ namespace pulse
     if (RHeartPressure_mmHg < m_CardiacCycleRightHeartPressureLow_mmHg)
       m_CardiacCycleRightHeartPressureLow_mmHg = RHeartPressure_mmHg;
 
+    // Record high and low values to compute for peripheral perfusion index:
+    double totalPeripheralVolume_mL = m_LeftArm->GetVolume(VolumeUnit::mL);
+    totalPeripheralVolume_mL += m_LeftLeg->GetVolume(VolumeUnit::mL);
+    totalPeripheralVolume_mL += m_RightArm->GetVolume(VolumeUnit::mL);
+    totalPeripheralVolume_mL += m_RightLeg->GetVolume(VolumeUnit::mL);
+    m_PeripheralVolumeHigh_mL = MAX(m_PeripheralVolumeHigh_mL, totalPeripheralVolume_mL);
+    m_PeripheralVolumeLow_mL = MIN(m_PeripheralVolumeLow_mL, totalPeripheralVolume_mL);
+
     // Get Max of Left Ventricle Volume over the course of a heart beat for end diastolic volume
     if (LHeartVolume_mL > m_CardiacCycleDiastolicVolume_mL)
       m_CardiacCycleDiastolicVolume_mL = LHeartVolume_mL;
@@ -1315,6 +1327,26 @@ namespace pulse
     GetCardiacOutput().SetValue(m_CardiacCycleStrokeVolume_mL * GetHeartRate().GetValue(FrequencyUnit::Per_min), VolumePerTimeUnit::mL_Per_min);
     GetCardiacIndex().SetValue(GetCardiacOutput().GetValue(VolumePerTimeUnit::mL_Per_min) / m_data.GetCurrentPatient().GetSkinSurfaceArea(AreaUnit::m2), VolumePerTimeAreaUnit::mL_Per_min_m2);
 
+    double peripheralPerfusionIndex = (m_PeripheralVolumeHigh_mL - m_PeripheralVolumeLow_mL) / m_PeripheralVolumeLow_mL;
+
+    //The normal value of PPI was suggested to range between 0.2% and 20%;
+    // however, an observational study showed a median(quartiles) normal value of PPI of 4.3 (2.9–6.2)
+    ///\cite savastano2021post
+
+    //In patients with severe sepsis or septic shock, a PPI < 0.3 can predict the need for vasopressor therapy.
+    // Furthermore, a PPI < 0.2 can predict patient mortality ///\cite elshal2021plethysmographic
+
+    double max = 0.003;
+    std::vector<std::pair<double, double>> interpolatorPoints =
+    { {0, 0},
+      {0.00038, 0.001},  //Just before hemorrhage decompensation
+      {0.00065, 0.003},  //~1L hemorrhage
+      {0.00142, 0.043},  //Healthy value
+      {max, 0.2} };      //20% max
+    peripheralPerfusionIndex = LIMIT(peripheralPerfusionIndex, 0.0, max);
+    peripheralPerfusionIndex = GeneralMath::PiecewiseLinearInterpolator(interpolatorPoints, peripheralPerfusionIndex);
+    GetPeripheralPerfusionIndex().SetValue(peripheralPerfusionIndex);
+
     double heartRate_Per_s = GetHeartRate(FrequencyUnit::Per_s);
     double totalPulmonaryPerfusion_mL_Per_s = 0.0;
     size_t leftPulmonaryCapillariesSize = 1;
@@ -1440,6 +1472,9 @@ namespace pulse
     m_CardiacCycleRightHeartPressureLow_mmHg = 10000.0;
     m_CardiacCycleDiastolicVolume_mL = 0;
     m_CardiacCycleStrokeVolume_mL = 0;
+
+    m_PeripheralVolumeHigh_mL = 0.0;
+    m_PeripheralVolumeLow_mL = 10000.0;
   }
 
   //--------------------------------------------------------------------------------------------------

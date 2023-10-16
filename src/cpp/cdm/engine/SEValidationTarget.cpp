@@ -166,30 +166,6 @@ void SETimeSeriesValidationTarget::SetEqualTo(double d, eTargetType t)
   m_TargetMaximum = d;
   m_TargetMinimum = d;
 }
-void SETimeSeriesValidationTarget::SetGreaterThan(double d, eTargetType t)
-{
-  m_ComparisonType = eComparisonType::GreaterThanValue;
-  m_TargetType = t;
-  m_Target = d;
-  m_TargetMaximum = d;
-  m_TargetMinimum = d;
-}
-void SETimeSeriesValidationTarget::SetLessThan(double d, eTargetType t)
-{
-  m_ComparisonType = eComparisonType::LessThanValue;
-  m_TargetType = t;
-  m_Target = d;
-  m_TargetMaximum = d;
-  m_TargetMinimum = d;
-}
-void SETimeSeriesValidationTarget::SetTrendsTo(double d, eTargetType t)
-{
-  m_ComparisonType = eComparisonType::TrendsToValue;
-  m_TargetType = t;
-  m_Target = d;
-  m_TargetMaximum = d;
-  m_TargetMinimum = d;
-}
 void SETimeSeriesValidationTarget::SetRange(double min, double max, eTargetType t)
 {
   m_ComparisonType = eComparisonType::Range;

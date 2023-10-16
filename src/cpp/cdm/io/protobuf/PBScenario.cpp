@@ -13,6 +13,12 @@ POP_PROTO_WARNINGS
 #include "cdm/scenario/SEScenarioExec.h"
 #include "cdm/utils/FileUtils.h"
 
+
+const std::string& eRelativeSerialization_Name(eRelativeSerialization to)
+{
+  return CDM_BIND::ScenarioExecData::eRelativeSerialization_Name((CDM_BIND::ScenarioExecData::eRelativeSerialization)to);
+}
+
 void PBScenario::Load(const CDM_BIND::ScenarioData& src, SEScenario& dst)
 {
   dst.Clear();
@@ -117,6 +123,7 @@ void PBScenario::Load(const CDM_BIND::ScenarioExecData& src, SEScenarioExec& dst
 void PBScenario::Serialize(const CDM_BIND::ScenarioExecData& src, SEScenarioExec& dst)
 {
   dst.LogToConsole((eSwitch)src.logtoconsole());
+  dst.SetRelativeSerialization((eRelativeSerialization)src.relativeserialization());
   dst.SetDataRootDirectory(src.datarootdirectory());
   dst.SetOutputRootDirectory(src.outputrootdirectory());
   dst.OrganizeOutputDirectory((eSwitch)src.organizeoutputdirectory());
@@ -192,6 +199,7 @@ CDM_BIND::ScenarioExecData* PBScenario::Unload(const SEScenarioExec& src)
 void PBScenario::Serialize(const SEScenarioExec& src, CDM_BIND::ScenarioExecData& dst)
 {
   dst.set_logtoconsole((CDM_BIND::eSwitch)src.LogToConsole());
+  dst.set_relativeserialization((CDM_BIND::ScenarioExecData::eRelativeSerialization)src.GetRelativeSerialization());
   dst.set_datarootdirectory(src.GetDataRootDirectory());
   dst.set_outputrootdirectory(src.GetOutputRootDirectory());
   dst.set_organizeoutputdirectory((CDM_BIND::eSwitch)src.OrganizeOutputDirectory());

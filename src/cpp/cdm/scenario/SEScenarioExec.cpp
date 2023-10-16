@@ -40,6 +40,7 @@ void SEScenarioExec::Clear()
   m_DataRootDirectory = ".";
   m_OutputRootDirectory = "";
   m_OrganizeOutputDirectory = eSwitch::Off;
+  m_RelativeSerialization = eRelativeSerialization::ToWorkingDir;
 
   m_BaseFilename = "";
   m_LogFilename = "";
@@ -90,9 +91,12 @@ bool SEScenarioExec::SerializeFromString(const std::string& src, eSerializationF
 void SEScenarioExec::SetOutputRootDirectory(const std::string& d)
 {
   m_OutputRootDirectory = d;
-  std::replace(m_OutputRootDirectory.begin(), m_OutputRootDirectory.end(), '\\', '/');
-  if (m_OutputRootDirectory.back() != '/')
-    m_OutputRootDirectory += "/";
+  if (!m_OutputRootDirectory.empty())
+  {
+    std::replace(m_OutputRootDirectory.begin(), m_OutputRootDirectory.end(), '\\', '/');
+    if (m_OutputRootDirectory.back() != '/')
+      m_OutputRootDirectory += "/";
+  }
 }
 
 bool SEScenarioExec::Execute(PhysiologyEngine& pe, SEScenario& sce)
@@ -126,7 +130,11 @@ bool SEScenarioExec::Process(PhysiologyEngine& pe, SEScenario& sce)
       m_OutputRootDirectory = resultsFilename;
     }
     else
+    {
+      if (resultsFilename.rfind("./") == 0 || resultsFilename.rfind(".\\") == 0)
+        resultsFilename = m_OutputRootDirectory + "/" + resultsFilename.substr(2);
       SplitPathFilenameExt(resultsFilename, m_OutputRootDirectory, m_BaseFilename, ext);
+    }
   }
   else if (!m_ScenarioFilename.empty())
   {
@@ -238,6 +246,7 @@ bool SEScenarioExec::Process(PhysiologyEngine& pe, SEScenario& sce)
         sce.Info("Creating CSV File : " + m_DataRequestCSVFilename);
         pe.GetEngineTracker()->GetDataRequestManager().SetResultsFilename(m_DataRequestCSVFilename);
       }
+      pe.GetEngineTracker()->TrackData(pe.GetSimulationTime(TimeUnit::s));
     }
     else if (sce.HasPatientConfiguration())
     {
@@ -376,7 +385,7 @@ bool SEScenarioExec::ProcessAction(PhysiologyEngine& pe, SEAction& action)
     m_SerializationActions << "AfterActions";
   }
   SESerializeState* ss = dynamic_cast<SESerializeState*>(&action);
-  if (ss != nullptr && ss->GetType() == eSerialization_Type::Save)
+  if (ss != nullptr && ss->GetMode() == eSerialization_Mode::Save)
   {
     if (!ss->HasFilename())
     {
@@ -388,10 +397,23 @@ bool SEScenarioExec::ProcessAction(PhysiologyEngine& pe, SEAction& action)
       // If its relative, we add the serialization directory
       if (IsRelativePath(ss->GetFilename()))
       {
-        std::string fp = ss->GetFilename();
-        if (ss->GetFilename().rfind("./", 0) == 0)
-          fp = fp.substr(2);
-        ss->SetFilename(m_OutputRootDirectory + fp);
+        switch (m_RelativeSerialization)
+        {
+        case eRelativeSerialization::ToWorkingDir:
+        {
+          break;
+        }
+        case eRelativeSerialization::ToOutputDir:
+        {
+          ss->SetFilename(m_OutputRootDirectory + ss->GetFilename().substr(2));
+          break;
+        }
+        case eRelativeSerialization::ToScenarioDir:
+        {
+          Error("TODO: Implement relative to scenario dir");
+          break;
+        }
+        }
       }
     }
   }

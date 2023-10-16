@@ -5,14 +5,67 @@ option csharp_namespace = "pulse.study.bind.patient_variability";
 option optimize_for = SPEED;
 
 import "pulse/cdm/bind/Patient.proto";
-import "pulse/cdm/bind/PatientActions.proto";
-import "pulse/cdm/bind/TestReport.proto";
+import "pulse/engine/bind/Scenario.proto";
 
+enum eGenStyle
+{
+  Combinatorial = 0; /**<<@brief Classic combinatorial of all factors. */
+  Slice         = 1; /**<<@brief Iterate 1 property at a time, hold other properties to their slice index value. */
+}
 
+message ParameterIterationData
+{
+  uint32          SliceIndex = 1;
+  repeated double Values     = 2;
+}
+
+message PatientIterationData
+{
+  eGenStyle                                        GenStyle                    = 1;
+  string                                           IterationName               = 2;
+  string                                           ScenarioDirectory           = 3;/**<< @brief Directory to generate scenarios in. */
+  string                                           StateDirectory              = 4;/**<< @brief Directory to generate states in. */
+
+  pulse.cdm.bind.PatientData.eSex                  Sex                         = 5;
+  ParameterIterationData                           Age_yr                      = 6;
+  ParameterIterationData                           Height_cm                   = 7;
+  ParameterIterationData                           BodyMassIndex               = 8;
+  ParameterIterationData                           BodyFatFraction             = 9;
+  ParameterIterationData                           HeartRate_bpm               = 10;
+  ParameterIterationData                           MeanArtierialPressure_mmHg  = 11;
+  ParameterIterationData                           PulsePressure_mmHg          = 12;
+  ParameterIterationData                           RespirationRate_bpm         = 13;
+
+}
+
+message ScenarioIterationData
+{
+  pulse.engine.bind.ScenarioData                   Scenario                    = 1;
+  eGenStyle                                        GenStyle                    = 2;
+  string                                           IterationName               = 3;
+  string                                           ScenarioDirectory           = 4;/**<< @brief Directory to generate scenarios in. */
+  string                                           StateDirectory              = 5;/**<< @brief Directory to generate states in. */
+
+  bool                                             CreateStates                = 6;
+  double                                           BaselineDuration_s          = 7;/**<< @brief How much time to advance before we add actions. */
+  double                                           MaxSimTime_min              = 8;/**<< @brief Maximum amount of time to run this scenario. */
+}
+
+message TCCCIterationData
+{
+  ScenarioIterationData                            ScenarioIteration           = 1;
+  bool                                             PerformInterventions        = 2;// Set to false to study injury effects only
+  ParameterIterationData                           AirwayObstructionSeverity   = 3;
+  ParameterIterationData                           HemorrhageSeverity          = 4;
+  ParameterIterationData                           TensionPneumothoraxSeverity = 5;
+  ParameterIterationData                           InsultDuration_s            = 6;
+  ParameterIterationData                           SalineAvailable             = 7;// Should only contain 0 and/or 1
+  ParameterIterationData                           NeedleAvaiable              = 8;// Should only contain 0 and/or 1
+  ParameterIterationData                           ChestWrapAvailable          = 9;// Should only contain 0 and/or 1
+}
 
 message PatientStateData
 {
-
   /** @brief Enumeration for engine failure types */
   enum eFailure
   {
@@ -25,65 +78,19 @@ message PatientStateData
 
   uint32                                                  ID                                = 1;
   string                                                  OutputBaseFilename                = 2;
-  double                                                  MaxSimulationTime_s               = 3;
-  double                                                  FinalSimulationTime_s             = 4;/**<< @brief We could stop the sim early (ex. due to hemorrhage) */
+  string                                                  StateFilename                     = 3;
+  string                                                  Description                       = 4;
+  double                                                  MaxSimulationTime_s               = 5;
+  double                                                  FinalSimulationTime_s             = 6;/**<< @brief We could stop the sim early (ex. due to hemorrhage) */
   // Requested Patient
-  pulse.cdm.bind.PatientData                              Patient                           = 5;
-  pulse.cdm.bind.PatientData                              SetupPatient                      = 6;
+  pulse.cdm.bind.PatientData                              Patient                           = 7;
+  pulse.cdm.bind.PatientData                              SetupPatient                      = 8;
   // Stabilization Info
-  eFailure                                                Failure                           = 7;
-  double                                                  StabilizationTime_s               = 8;
-  
-  // Run Modes
-  oneof RunMode
-  {
-    HemorrhageData                                        Hemorrhage                        = 9;
-    ValidationData                                        Validation                        = 10;
-  }
-
-  message ValidationData
-  {
-    map<string,pulse.cdm.bind.PropertyValidationListData> ValidationMap                     = 1;
-  }
-  
-  message HemorrhageData
-  {
-    // Initial Conditions
-    pulse.cdm.bind.HemorrhageData                         Action                            = 1;/**<< @brief Hemorrhage Action. */
-    double                                                StartTime_s                       = 3;/**<< @brief How far into the simulation does the hemorrhage occur. */
-    double                                                TriageTime_s                      = 4;/**<< @brief How far into the simulation does the triage occur. */
-
-    // Results
-    // Values at the time of hemorrhage
-    double                                                InitialBloodVolume_mL             = 5;
-    double                                                InitialCardiacOutput_L_Per_min    = 6;
-    double                                                InitialHeartRate_bpm              = 7;
-    double                                                InitialMeanArterialPressure_mmHg  = 8;
-    double                                                InitialHemorrhageFlow_mL_Per_s    = 9;/**<< @brief Not constant throughout the simulation. */
-    // Values at triage time
-    double                                                TriageBloodLoss_mL                = 10;
-    double                                                TriageCardiacOutput_L_Per_min     = 11;
-    double                                                TriageHeartRate_bpm               = 12;
-    double                                                TriageHemorrhageFlow_mL_Per_s     = 13;/**<< @brief Not constant throughout the simulation. */
-    double                                                TriageMeanArterialPressure_mmHg   = 14;
-    // Values at patient death, or at final sim time, as defined by MaxSimulationTime
-    double                                                FinalBloodLoss_mL                 = 15;
-    double                                                FinalCardiacOutput_L_Per_min      = 16;
-    double                                                FinalHeartRate_bpm                = 17;
-    double                                                FinalHemorrhageFlow_mL_Per_s      = 18;/**<< @brief Not constant throughout the simulation. */
-    double                                                FinalMeanArterialPressure_mmHg    = 19;
-  }
+  eFailure                                                Failure                           = 9;
+  double                                                  StabilizationTime_s               = 10;
 }
 
 message PatientStateListData
 {
   repeated PatientStateData      PatientState               = 1;
-}
-
-message LogData
-{
-  repeated string                Info                       = 1;
-  repeated string                Warning                    = 2;
-  repeated string                Error                      = 3;
-  repeated string                Fatal                      = 4;
 }

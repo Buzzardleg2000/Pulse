@@ -5,13 +5,16 @@ import numpy as np
 from enum import Enum
 from dataclasses import dataclass
 from abc import ABC, abstractmethod
-from typing import List, Optional, Union
+from typing import Dict, List, Optional, Union
 
-from pulse.cdm.scalars import SEScalarTime, SEScalarUnit
+from pulse.cdm.scalars import SEScalarTime, SEScalarUnit, TimeUnit
+
 
 class eSerializationFormat(Enum):
     JSON = 0
     BINARY = 1
+    VERBOSE_JSON = 2
+    TEXT = 3
 
 class eSide(Enum):
     NullSide = 0
@@ -91,17 +94,22 @@ class eEvent(Enum):
     NonRebreatherMaskOxygenBagEmpty = 1005
 
 class SEEventChange:
-    __slots__ = ["event", "active", "sim_time_s"]
+    __slots__ = ["event", "active", "sim_time"]
 
-    def __init__(self):
-        self.event = None
-        self.active = None
-        self.sim_time_s = SEScalarTime()
+    def __init__(
+        self,
+        event: Optional[eEvent]=None,
+        active: Optional[bool]=None,
+        sim_time_s: Optional[float]=None
+    ):
+        self.event = event
+        self.active = active
+        self.sim_time = SEScalarTime(sim_time_s, TimeUnit.s) if sim_time_s is not None else SEScalarTime()
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return_text = ("{} is {}").format(self.event, "Active" if self.active else "Inactive")
-        if self.sim_time_s.is_valid():
-            return_text += (" @ {}s").format(self.sim_time_s)
+        if self.sim_time.is_valid():
+            return_text += (" @ {}").format(self.sim_time)
         return return_text
 
 class IEventHandler:
@@ -446,8 +454,8 @@ class SEDataRequest(SEDecimalFormat):
     __slots__ = ['_category', '_action_name', '_compartment_name', '_substance_name', '_property_name', '_unit']
 
     def __init__(
-        self, category: eDataRequest_category, action:str=None, compartment:str=None,
-        substance:str=None, property:str=None, unit:SEScalarUnit=None,
+        self, category: eDataRequest_category, action:Optional[str]=None, compartment:Optional[str]=None,
+        substance:Optional[str]=None, property:Optional[str]=None, unit:Optional[SEScalarUnit]=None,
         precision: Optional[int]=None, notation: Optional[eDecimalFormat_type]=None
     ):
         super().__init__(precision, notation)
@@ -474,7 +482,7 @@ class SEDataRequest(SEDecimalFormat):
         else:
             self._unit = unit.get_string()
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         out_string = ""
         if self._category == eDataRequest_category.Action:
             out_string = self._action_name+"-"
@@ -513,7 +521,7 @@ class SEDataRequest(SEDecimalFormat):
 
         return out_string.replace(" ", "_")
 
-    def to_string(self):
+    def to_string(self) -> str:
         return self.__repr__()
 
     @classmethod
@@ -569,6 +577,7 @@ class SEDataRequest(SEDecimalFormat):
     def create_thermal_compartment_request(cls, compartment:str, property:str, unit:SEScalarUnit=None):
         return cls(eDataRequest_category.ThermalCompartment, compartment=compartment, property=property,  unit=unit)
 
+    @classmethod
     def create_tissue_request(cls, compartment:str, property:str, unit:SEScalarUnit=None):
         return cls(eDataRequest_category.TissueCompartment, compartment=compartment, property=property,  unit=unit)
 
@@ -592,32 +601,28 @@ class SEDataRequest(SEDecimalFormat):
     def create_mechanical_ventilator_request(cls, property:str, unit:SEScalarUnit=None):
         return cls(eDataRequest_category.MechanicalVentilator, property=property,  unit=unit)
 
-    def get_category(self):
+    def get_category(self) -> eDataRequest_category:
         return self._category
 
-    def has_action_name(self):
-        return self._action_name is not None
-    def get_action_name(self):
+    def has_action_name(self) -> bool:
+        return bool(self._action_name)
+    def get_action_name(self) -> str:
         return self._action_name
-    def has_compartment_name(self):
-        return self._compartment_name is not None
-    def get_compartment_name(self):
+    def has_compartment_name(self) -> bool:
+        return bool(self._compartment_name)
+    def get_compartment_name(self) -> str:
         return self._compartment_name
-    def has_action_name(self):
-        return self._action_name is not None
-    def get_action_name(self):
-        return self._action_name
-    def has_substance_name(self):
-        return self._substance_name is not None
-    def get_substance_name(self):
+    def has_substance_name(self) -> bool:
+        return bool(self._substance_name)
+    def get_substance_name(self) -> str:
         return self._substance_name
-    def has_property_name(self):
-        return self._property_name is not None
-    def get_property_name(self):
+    def has_property_name(self) -> bool:
+        return bool(self._property_name)
+    def get_property_name(self) -> str:
         return self._property_name
-    def has_unit(self):
-        return self._unit is not None
-    def get_unit(self):
+    def has_unit(self) -> bool:
+        return bool(self._unit)
+    def get_unit(self) -> str:
         return self._unit
 
 
@@ -698,28 +703,27 @@ class SEDataRequested: # Event and Log support
 
 
 class SEDataRequestManager:
-    __slots__ = ["_results_filename", "_samples_per_second", "_data_requests", "_validation_targets"]
+    __slots__ = ["_results_filename", "_samples_per_second", "_data_requests"]
 
-    def __init__(self, data_requests=[]):
+    def __init__(self, data_requests: Optional[List[SEDataRequest]]=None):
         self.clear()
-        self._data_requests = data_requests
+        self._data_requests = data_requests if data_requests is not None else list()
 
     def clear(self):
-        self._data_requests = []
-        self._validation_targets = []
+        self._data_requests = list()
         self._results_filename = ""
         self._samples_per_second = 0
 
-    def has_data_requests(self): return len(self._data_requests)
-    def get_data_requests(self): return self._data_requests
-    def set_data_requests(self, requests): self._data_requests = requests
+    def has_data_requests(self) -> int: return len(self._data_requests)
+    def get_data_requests(self) -> List[SEDataRequest]: return self._data_requests
+    def set_data_requests(self, requests: List[SEDataRequest]) -> None: self._data_requests = requests
 
-    def has_results_filename(self): return self._results_filename is not None
-    def get_results_filename(self): return self._results_filename
-    def set_results_filename(self, filename): self._results_filename = filename
+    def has_results_filename(self) -> bool: return self._results_filename is not None
+    def get_results_filename(self) -> str: return self._results_filename
+    def set_results_filename(self, filename: str) -> None: self._results_filename = filename
 
-    def get_samples_per_second(self): return self._samples_per_second
-    def set_samples_per_second(self, sample): self._samples_per_second = sample
+    def get_samples_per_second(self) -> float: return self._samples_per_second
+    def set_samples_per_second(self, sample: float) -> None: self._samples_per_second = sample
 
     def to_console(self, data_values):
         print("SimulationTime(s)={})".format(data_values[0]))
@@ -772,31 +776,31 @@ class SESerializeRequested(SEAction):
                 "  Filename: {}").format(self._filename)
 
 
-class eSerializationType(Enum):
+class eSerializationMode(Enum):
     Save = 0
     Load = 1
 
 
 class SESerializeState(SEAction):
-    __slots__ = ["_filename", "_type"]
+    __slots__ = ["_filename", "_mode"]
 
     def __init__(self) -> None:
         super().__init__()
         self._filename = ""
-        self._type = eSerializationType.Save
+        self._type = eSerializationMode.Save
 
     def clear(self) -> None:
         super().clear()
         self._filename = ""
-        self._type = eSerializationType.Save
+        self._mode = eSerializationMode.Save
 
     def is_valid(self) -> bool:
         return self.has_filename()
 
-    def get_type(self) -> eSerializationType:
-        return self._type
-    def set_type(self, t: eSerializationType):
-        self._type = t
+    def get_mode(self) -> eSerializationMode:
+        return self._mode
+    def set_mode(self, t: eSerializationMode):
+        self._mode = t
 
     def has_filename(self) -> bool:
         return self._filename != ""
@@ -810,33 +814,38 @@ class SESerializeState(SEAction):
     def __repr__(self) -> str:
         return ("Serialize State\n"
                 "  Filename: {}\n"
-                "  Type: {}").format(self._filename, self._type.name)
+                "  Mode: {}").format(self._filename, self._mode.name)
 
-
-class SEValidationTarget():
-    __slots__ = ["_header", "_reference", "_notes", "_target", "_target_min", "_target_max"]
+class SEValidationTarget:
+    __slots__ = ["_header", "_reference", "_notes", "_table_formatting",
+                 "_target", "_target_min", "_target_max"]
 
     def __init__(self):
         self.clear()
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f'SEValidationTarget({self._header}, {self._reference}, {self._notes}, ' \
-               f'{self._target}, {self._target_min}, {self._target_max})'
+               f'{self._table_formatting}, {self._target}, {self._target_min}, {self._target_max})'
 
-    def __str__(self):
-        return f'SEValidationTarget:\n\tHeader: {self._header}\n\tReference: {self._reference}' \
-                f'\n\tNotes: {self._notes}\n\tTarget: {self._target}\n\tTarget Range: '\
-                f'[{self._target_min}, {self._target_max}]'
+    def __str__(self) -> str:
+        return f'SEValidationTarget:' \
+                f'\n\tHeader: {self._header}' \
+                f'\n\tReference: {self._reference}' \
+                f'\n\tNotes: {self._notes}' \
+                f'\n\tTable Formatting: {self._table_formatting}' \
+                f'\n\tTarget: {self._target}' \
+                f'\n\tTarget Range: [{self._target_min}, {self._target_max}]'
 
-    def is_valid() -> bool:
+    def is_valid(self) -> bool:
         if np.isnan(self._target) and np.isnan(self._target_max):
             return False
         return True
 
-    def clear(self):
+    def clear(self) -> None:
         self._header = ""
         self._reference = ""
         self._notes = ""
+        self._table_formatting = None
         self._target = np.nan
         self._target_min = np.nan
         self._target_max = np.nan
@@ -846,6 +855,8 @@ class SEValidationTarget():
     def set_header(self, h: str):
         self._header = h
 
+    def has_reference(self) -> bool:
+        return self._reference != ""
     def get_reference(self) -> str:
         return self._reference
     def set_reference(self, r: str):
@@ -856,6 +867,15 @@ class SEValidationTarget():
     def set_notes(self, n: str):
         self._notes = n
 
+    def has_table_formatting(self) -> bool:
+        return self._table_formatting is not None
+    def get_table_formatting(self) -> Optional[str]:
+        return self._table_formatting
+    def set_table_formatting(self, specification: str) -> None:
+        self._table_formatting = specification
+    def invalidate_table_formatting(self) -> None:
+        self._table_formatting = None
+
     def get_target_maximum(self) -> float:
         return self._target_max
     def get_target_minimum(self) -> float:
@@ -865,7 +885,7 @@ class SEValidationTarget():
 
 
 class SESegmentValidationTarget(SEValidationTarget):
-    __slots__ = ["_comparison_type", "_target_segment"]
+    __slots__ = ["_comparison_type", "_target_segment", "_computed_value", "_error_value"]
 
     class eComparisonType(Enum):
         NotValidating = 0
@@ -881,16 +901,18 @@ class SESegmentValidationTarget(SEValidationTarget):
 
     def __init__(self):
         super().__init__()
-        self._comparison_type = self.eComparisonType.NotValidating
-        self._target_segment = np.nan
+        self.clear()
 
     def __repr__(self):
-        return f'SESegmentValidationTarget({super().__repr__()}, {self._segment}, {self._comparison_type})'
+        return f'SESegmentValidationTarget({super().__repr__()}, {self._segment}, {self._comparison_type}' \
+               f'{self._computed_value}, {self._error_value})'
 
     def clear(self):
         super().clear()
         self._comparison_type = self.eComparisonType.NotValidating
         self._target_segment = np.nan
+        self._computed_value = None
+        self._error_value = None
 
     def get_comparison_type(self) -> eComparisonType:
         return self._comparison_type
@@ -952,6 +974,24 @@ class SESegmentValidationTarget(SEValidationTarget):
         self._target_min = min
         self._target_segment = 0
 
+    def has_computed_value(self) -> bool:
+        return self._computed_value is not None
+    def get_computed_value(self) -> Optional[float]:
+        return self._computed_value
+    def set_computed_value(self, val: float) -> None:
+        self._computed_value = val
+    def invalidate_computed_value(self) -> None:
+        self._computed_value = None
+
+    def has_error_value(self) -> bool:
+        return self._error_value is not None
+    def get_error_value(self) -> Optional[float]:
+        return self._error_value
+    def set_error_value(self, err: float) -> None:
+        self._error_value = err
+    def invalidate_error_value(self) -> None:
+        self._error_value = None
+
 
 class SESegmentValidationSegment:
     __slots__ = ["_segment_id", "_notes", "_validation_targets", "_actions"]
@@ -1004,7 +1044,7 @@ class SESegmentValidationSegment:
     def invalidate_actions(self) -> None:
         self._actions = []
 
-class SESegmentValidationConfig:
+class SESegmentValidationPipelineConfig:
     __slots__ = ["_plotters"]
     def __init__(self):
         self.clear()
@@ -1017,37 +1057,36 @@ class SESegmentValidationConfig:
 
 
 class SETimeSeriesValidationTarget(SEValidationTarget):
-    __slots__ = ["_target_type", "_error", "_data", "_comparison_type", "_comparison_value"]
+    __slots__ = ["_target_type", "_comparison_type", "_patient_specific",
+                 "_computed_value", "_error_value"]
 
     class eComparisonType(Enum):
         NotValidating = 0
         EqualToValue = 1
-        GreaterThanValue = 2
-        LessThanValue = 3
-        TrendsToValue = 4
         Range = 5
 
     class eTargetType(Enum):
         Mean = 0
         Minimum = 1
         Maximum = 2
+        MeanPerIdealWeight_kg = 3
+        MinPerIdealWeight_kg = 4
+        MaxPerIdealWeight_kg = 5
 
     def __init__(self):
         super().__init__()
-        self._comparison_type = self.eComparisonType.NotValidating
-        self._target_type = self.eTargetType.Mean
-        self._error = 100.0
-        self._data = []
-        self._comparison_value = 0.0
+        self.clear()
 
     def clear(self):
         super().clear()
         self._comparison_type = self.eComparisonType.NotValidating
         self._target_type = self.eTargetType.Mean
+        self._computed_value = None
+        self._error_value = None
+        self._patient_specific = None
 
-        self._error = np.nan
-        self._data = []
-        self._comparison_value = np.nan
+    def is_evaluated(self) -> bool:
+        return self.has_computed_value() and self.has_error_value()
 
     def get_comparison_type(self) -> eComparisonType:
         return self._comparison_type
@@ -1060,24 +1099,6 @@ class SETimeSeriesValidationTarget(SEValidationTarget):
         self._target = d
         self._target_max = d
         self._target_min = d
-    def set_greater_than(self, d: float, t: eTargetType):
-        self._comparison_type = self.eComparisonType.GreaterThanValue
-        self._target_type = t
-        self._target = d
-        self._target_max = d
-        self._target_min = d
-    def set_less_than(self, d: float, t: eTargetType):
-        self._comparison_type = self.eComparisonType.LessThanValue
-        self._target_type = t
-        self._target = d
-        self._target_max = d
-        self._target_min = d
-    def set_trends_to(self, d: float, t: eTargetType):
-        self._comparison_type = self.eComparisonType.TrendsToValue
-        self._target_type = t
-        self._target = np.nan
-        self._target_max = np.nan
-        self._target_min = np.nan
     def set_range(self, min: float, max: float, t: eTargetType):
         self._comparison_type = self.eComparisonType.Range
         self._target_type = t
@@ -1085,39 +1106,59 @@ class SETimeSeriesValidationTarget(SEValidationTarget):
         self._target_max = max
         self._target_min = min
 
-    def compute_error(self) -> bool:
-        if self._target_type == self.eTargetType.Minimum:
-            self._comparison_value = min(self._data)
-        elif self._target_type == self.eTargetType.Maximum:
-            self._comparison_value = max(self._data)
-        elif self._target_type == self.eTargetType.Mean:
-            self._comparison_value = sum(self._data) / len(self._data) if self._data else np.nan
-        else:
-            return False
+    def has_computed_value(self) -> bool:
+        return self._computed_value is not None
+    def get_computed_value(self) -> Optional[float]:
+        return self._computed_value
+    def set_computed_value(self, val: float) -> None:
+        self._computed_value = val
+    def invalidate_computed_value(self) -> None:
+        self._computed_value = None
 
-        min_error = percent_tolerance(self._target_min, self._comparison_value, 1E-9)
-        max_error = percent_tolerance(self._target_max, self._comparison_value, 1E-9)
+    def has_error_value(self) -> bool:
+        return self._error_value is not None
+    def get_error_value(self) -> Optional[float]:
+        return self._error_value
+    def set_error_value(self, err: float) -> None:
+        self._error_value = err
+    def invalidate_error_value(self) -> None:
+        self._error_value = None
 
-        # No error if we are in range
-        if self._comparison_value >= self._target_min and self._comparison_value <= self._target_max:
-            self._error = 0.
-            return True
-        elif self._comparison_value > self._target_max:
-            self._error = max_error
-        elif self._comparison_value < self._target_min:
-            self._error = min_error
+    def has_patient_specific_setting(self) -> bool:
+        return self._patient_specific is not None
+    def is_patient_specific(self) -> Optional[bool]:
+        return self._patient_specific
+    def set_patient_specific_setting(self, patient_specific: bool) -> None:
+        self._patient_specific = patient_specific
+    def invalidate_patient_specific_setting(self) -> None:
+        self._patient_specific = None
 
-        # Close enough
-        if abs(self._error) < 1E-15:
-            self._error = 0.
 
-        return True
-    def get_error(self) -> float:
-        return self._error
-    def get_data_value(self) -> float:
-        return self._comparison_value
-    def get_data(self) -> List[float]:
-        return self._data
+class SEPatientTimeSeriesValidation:
+    from pulse.cdm.patient import SEPatient
+    __slots__ = ["_patient", "_targets"]
+
+    def __init__(self):
+        self.clear()
+
+    def clear(self) -> None:
+        self._patient = None
+        self._targets = dict()
+
+    def get_targets(self) -> Dict[str, List[SETimeSeriesValidationTarget]]:
+        return self._targets
+    def invalidate_targets(self) -> None:
+        self._targets = dict()
+
+    def has_patient(self) -> bool:
+        return self._patient is not None
+    def get_patient(self) -> SEPatient:
+        from pulse.cdm.patient import SEPatient
+        if self._patient is None:
+            self._patient = SEPatient()
+        return self._patient
+    def invalidate_patient(self) -> None:
+        self._patient = None
 
 
 class ILoggerForward():

@@ -47,7 +47,7 @@
         "PlotSource":
         [
           {
-            "CSVData": "$VERIFICATION_DIR/scenarios/validation/systems/CardiovascularValidation-StandardMaleResults.csv"
+            "CSVData": "$VERIFICATION_DIR/scenarios/validation/Patient-Validation-StandardMaleResults.csv"
           }
         ],
         "Series":
@@ -1344,7 +1344,7 @@
         "PlotConfig": { "OutputPathOverride": "./docs/html/plots/Respiratory/", "YBoundsMode": "MinMax" },
         "PlotSource":
         [
-          { "CSVData": "$VERIFICATION_DIR/scenarios/validation/systems/RespiratoryValidation-StandardMaleResults.csv" }
+          { "CSVData": "$VERIFICATION_DIR/scenarios/validation/Patient-Validation-StandardMaleResults.csv" }
         ],
         "Series":
         [
@@ -1356,23 +1356,23 @@
           { "Title": "Transpulmonary Pressure", "XBounds": { "LowerBound": 39.6, "UpperBound": 54.6 },
               "YHeader": [ "TranspulmonaryPressure(cmH2O)" ], "YLabel": "Pressure(cmH2O)" },
           { "Title": "Tidal Volume from Total Lung Volume", "OutputFilename": "TidalVolume_from_TotalLungVolume",
-              "XBounds": { "LowerBound": 39.6, "UpperBound": 54.6 }, "YHeader": [ "TotalLungVolume(mL)" ],
+              "XBounds": { "LowerBound": 39.6, "UpperBound": 54.6 }, "YHeader": [ "TotalLungVolume(L)" ],
               "Y2Header": [ "TidalVolume(mL)" ], "PlotConfig" : { "LegendMode": "NoLegends" } },
           { "Title": "Alveoli and Dead Space Volumes", "XBounds": { "LowerBound": 39.6, "UpperBound": 54.6 },
-              "YHeader": [ "LeftAnatomicDeadSpace-Volume(mL)", "RightAnatomicDeadSpace-Volume(mL)",
-                "LeftAlveoli-Volume(mL)", "RightAlveoli-Volume(mL)" ],
+              "YHeader": [ "LeftAnatomicDeadSpace-Volume(L)", "RightAnatomicDeadSpace-Volume(L)",
+                "LeftAlveoli-Volume(L)", "RightAlveoli-Volume(L)" ],
               "YLabel": "Volumes(mL)" },
           { "Title": "Total Flow Through Trachea", "XBounds": { "LowerBound": 39.6, "UpperBound": 44.6 },
-              "YHeader": [ "InspiratoryFlow(L/s)" ], "Y2Header": [ "TotalLungVolume(mL)" ],
+              "YHeader": [ "InspiratoryFlow(L/s)" ], "Y2Header": [ "TotalLungVolume(L)" ],
               "PlotConfig" : { "LegendMode": "NoLegends" }  },
           { "Title": "Lung Pressure And Volume", "XBounds": { "LowerBound": 39.6, "UpperBound": 44.6 },
-              "YHeader": [ "LeftAlveoli-Pressure(cmH2O)" ], "Y2Header": [ "TotalLungVolume(mL)" ],
+              "YHeader": [ "LeftAlveoli-Pressure(cmH2O)" ], "Y2Header": [ "TotalLungVolume(L)" ],
               "PlotConfig" : { "LegendMode": "NoLegends" }  },
           { "Title": "Engine Pressures", "XBounds": { "LowerBound": 39.6, "UpperBound": 44.6 },
               "YHeader": [ "LeftAlveoli-Pressure(cmH2O)", "LeftPleuralCavity-Pressure(cmH2O)" ],
               "YLabel": "Pressure(cmH2O)", "PlotConfig": { "ImageProperties": { "DimensionMode": "Square" } } },
           { "Title": "Engine Lung Volume", "XBounds": { "LowerBound": 39.6, "UpperBound": 44.6 },
-              "YHeader": [ "TotalLungVolume(mL)" ],
+              "YHeader": [ "TotalLungVolume(L)" ],
               "PlotConfig": { "ImageProperties": { "Height_inch": 5, "Width_inch": 8 } } },
           { "Title": "Alveolar Oxygen Partial Pressure", "XBounds": { "LowerBound": 39.6, "UpperBound": 54.6 },
               "YHeader": [ "LeftAlveoli-Oxygen-PartialPressure(mmHg)", "RightAlveoli-Oxygen-PartialPressure(mmHg)" ],
@@ -1382,13 +1382,13 @@
                 "RightAlveoli-CarbonDioxide-PartialPressure(mmHg)" ],
               "YLabel": "Alveoli-CarbonDioxide-PartialPressure(mmHg)" },
           { "Title": "Trachea Carbon Dioxide Partial Pressure", "XBounds": { "LowerBound": 39.6, "UpperBound": 44.6 },
-              "YHeader": [ "Carina-CarbonDioxide-PartialPressure(mmHg)" ], "Y2Header": [ "TotalLungVolume(mL)" ],
+              "YHeader": [ "Carina-CarbonDioxide-PartialPressure(mmHg)" ], "Y2Header": [ "TotalLungVolume(L)" ],
               "PlotConfig" : { "LegendMode": "NoLegends" }  },
           { "Title": "Trachea Oxygen Partial Pressure", "XBounds": { "LowerBound": 39.6, "UpperBound": 44.6 },
-              "YHeader": [ "Carina-Oxygen-PartialPressure(mmHg)" ], "Y2Header": [ "TotalLungVolume(mL)" ],
+              "YHeader": [ "Carina-Oxygen-PartialPressure(mmHg)" ], "Y2Header": [ "TotalLungVolume(L)" ],
               "PlotConfig" : { "LegendMode": "NoLegends" }  },
           { "Title": "Engine Pulmonary Compliance", "XHeader": "LeftPleuralCavity-Pressure(cmH2O)",
-              "YHeader": [ "TotalLungVolume(mL)" ],
+              "YHeader": [ "TotalLungVolume(L)" ],
               "PlotConfig": { "ImageProperties": { "DimensionMode": "Square" }, "SciLimits": {} } }
         ]
       }

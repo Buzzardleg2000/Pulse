@@ -397,10 +397,13 @@ namespace pulse
 
   bool Controller::Initialize(SEPatient const& patient)
   {
-    m_ss << "[Patient] " << patient;
+    m_ss << "[Provided Patient] " << patient;
     Info(m_ss);
     if (!SetupPatient(patient))
       return false;
+    std::string str;
+    m_InitialPatient->SerializeToString(str, eSerializationFormat::JSON);
+    Info("[Patient] \n" + str);
 
     Info("Resetting Substances");
     m_Substances->LoadSubstanceDirectory(m_DataDir);
@@ -678,7 +681,7 @@ namespace pulse
     const SESerializeState* serializeState = dynamic_cast<const SESerializeState*>(&action);
     if (serializeState != nullptr)
     {
-      if (serializeState->GetType() == eSerialization_Type::Save)
+      if (serializeState->GetMode() == eSerialization_Mode::Save)
       {
         if (serializeState->HasFilename())
         {

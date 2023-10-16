@@ -175,41 +175,43 @@ if __name__ == "__main__":
             table_dir=Path("./test_results/tables"),
             serialize_per_file=False
         )
-        html_file = "./test_results/PatientValidation.html"
-        _pulse_logger.info(f"Writing {html_file}")
-        f = open(html_file, "w")
-        f.writelines("</body>\n")
-        f.write("</html>\n")
-        f.write("<h1>Patient Validation</h1>\n")
-        for validation in all_validation:
-            f.write("<br>\n")
-            for type, tgts in validation.get_targets().items():
-                f.writelines("<table border=\"1\">\n")
-                f.write("<tr>")
-                f.write("<th> " + validation.get_patient().get_name() + " " + type + " Validation </th>")
-                f.write("<th> Expected Value </th>")
-                f.write("<th> Engine Value </th>")
-                f.write("<th> Percent Error </th>")
-                f.write("<th> Notes </th>")
-                f.write("</tr>\n")
-                for tgt in tgts:
-                    if tgt.get_error_value() <= 10.0:
-                        f.write("<tr bgcolor=\"#00FF00\">")
-                    elif tgt.get_error_value() <= 30.0:
-                        f.write("<tr bgcolor=\"#FFFF00\">")
-                    elif tgt.get_error_value() > 30.0:
-                        f.write("<tr bgcolor=\"#FF0000\">")
-                    else:
-                        f.write("<tr bgcolor=\"#FFFFFF\">")
-                    f.write("<td>" + tgt.get_header() + "</td>")
-                    f.write("<td>" + gen_expected_str(tgt) + "</td>")
-                    f.write("<td>" + gen_engine_val_str(tgt) + "</td>")
-                    f.write(f"<td>{tgt.get_error_value():{tgt.get_table_formatting()}}</td>")
-                    f.write("<td>" + tgt.get_notes() + "</td></tr>\n")
-                f.write("</table><br>\n");
-        f.write("</body>\n");
-        f.write("</html>\n");
-        f.close()
+        # Only write a html file for test results
+        if opts.documentation == "test_results":
+            html_file = "./test_results/PatientValidation.html"
+            _pulse_logger.info(f"Writing {html_file}")
+            f = open(html_file, "w")
+            f.writelines("</body>\n")
+            f.write("</html>\n")
+            f.write("<h1>Patient Validation</h1>\n")
+            for validation in all_validation:
+                f.write("<br>\n")
+                for type, tgts in validation.get_targets().items():
+                    f.writelines("<table border=\"1\">\n")
+                    f.write("<tr>")
+                    f.write("<th> " + validation.get_patient().get_name() + " " + type + " Validation </th>")
+                    f.write("<th> Expected Value </th>")
+                    f.write("<th> Engine Value </th>")
+                    f.write("<th> Percent Error </th>")
+                    f.write("<th> Notes </th>")
+                    f.write("</tr>\n")
+                    for tgt in tgts:
+                        if tgt.get_error_value() <= 10.0:
+                            f.write("<tr bgcolor=\"#00FF00\">")
+                        elif tgt.get_error_value() <= 30.0:
+                            f.write("<tr bgcolor=\"#FFFF00\">")
+                        elif tgt.get_error_value() > 30.0:
+                            f.write("<tr bgcolor=\"#FF0000\">")
+                        else:
+                            f.write("<tr bgcolor=\"#FFFFFF\">")
+                        f.write("<td>" + tgt.get_header() + "</td>")
+                        f.write("<td>" + gen_expected_str(tgt) + "</td>")
+                        f.write("<td>" + gen_engine_val_str(tgt) + "</td>")
+                        f.write(f"<td>{tgt.get_error_value():{tgt.get_table_formatting()}}</td>")
+                        f.write("<td>" + tgt.get_notes() + "</td></tr>\n")
+                    f.write("</table><br>\n");
+            f.write("</body>\n");
+            f.write("</html>\n");
+            f.close()
     else:
         json_file = opts.json_file
         if len(opts.filename_base_paths) == 1 and json_file is None:

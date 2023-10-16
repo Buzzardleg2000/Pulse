@@ -14,7 +14,7 @@ from pulse.cdm.engine import SESegmentValidationTarget, SESegmentValidationSegme
 from pulse.cdm.scenario import SEScenario
 from pulse.cdm.utils.file_utils import get_validation_dir
 from pulse.cdm.io.engine import serialize_segment_validation_segment_list_to_file
-from pulse.dataset.utils import generate_data_request
+from pulse.pipelines.dataset.utils import generate_data_request
 
 _pulse_logger = logging.getLogger('pulse')
 

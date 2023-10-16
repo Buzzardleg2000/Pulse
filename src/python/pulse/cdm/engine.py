@@ -855,6 +855,8 @@ class SEValidationTarget:
     def set_header(self, h: str):
         self._header = h
 
+    def has_reference(self) -> bool:
+        return self._reference != ""
     def get_reference(self) -> str:
         return self._reference
     def set_reference(self, r: str):

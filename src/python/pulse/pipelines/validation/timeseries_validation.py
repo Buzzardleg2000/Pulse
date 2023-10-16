@@ -167,6 +167,55 @@ def evaluate(tgt: SETimeSeriesValidationTarget, results: pd.DataFrame, epsilon: 
     tgt.set_error_value(error)
 
 
+def gen_expected_str(tgt: SETimeSeriesValidationTarget) -> str:
+    """
+    Generates string representing expected value.
+
+    :param tgt: The validation target.
+
+    :raises ValueError: Unknown comparision type.
+
+    :returns: Expected value string.
+    """
+    compare_type = tgt.get_comparison_type()
+    value_precision = tgt.get_table_formatting()
+    if compare_type == SETimeSeriesValidationTarget.eComparisonType.EqualToValue:
+        expected_str = f"{tgt.get_target():{value_precision}}"
+    elif compare_type == SETimeSeriesValidationTarget.eComparisonType.Range:
+        expected_str = f"[{tgt.get_target_minimum():{value_precision}},{tgt.get_target_maximum():{value_precision}}]"
+    else:
+        raise ValueError(f"Unknown comparison type: {compare_type}")
+
+    # Add any references
+    if tgt.get_reference():
+        references = [ref.strip() for ref in tgt.get_reference().replace("\n", "").split(",")]
+        for ref in references:
+            expected_str += f" @cite {ref}"
+
+    if not expected_str:
+        return "&nbsp;"
+
+    return expected_str
+
+
+def gen_engine_val_str(tgt: SETimeSeriesValidationTarget) -> str:
+    """
+    Generates string representing engine value.
+
+    :param tgt: The validation target.
+
+    :returns: Engine value string.
+    """
+    target_type = tgt.get_target_type()
+    value_precision = tgt.get_table_formatting()
+    engine_val_str = f"{target_type.name.replace('_kg', '(kg)')} of " \
+                     f"{tgt.get_computed_value():{value_precision}}"
+
+    if not engine_val_str:
+        return "&nbsp;"
+
+    return engine_val_str
+
 def generate_validation_tables(
     target_map: SEPatientTimeSeriesValidation,
     table_dir: Path,
@@ -185,54 +234,6 @@ def generate_validation_tables(
     headers = ["Property Name", "Expected Value", "Engine Value", "Percent Error", "Notes"]
     fields = list(range(len(headers)))
     align = [('<', '<')] * len(headers)
-
-    def _gen_expected_str(tgt: SETimeSeriesValidationTarget) -> str:
-        """
-        Generates string representing expected value.
-
-        :param tgt: The validation target.
-
-        :raises ValueError: Unknown comparision type.
-
-        :returns: Expected value string.
-        """
-        compare_type = tgt.get_comparison_type()
-        value_precision = tgt.get_table_formatting()
-        if compare_type == SETimeSeriesValidationTarget.eComparisonType.EqualToValue:
-            expected_str = f"{tgt.get_target():{value_precision}}"
-        elif compare_type == SETimeSeriesValidationTarget.eComparisonType.Range:
-            expected_str = f"[{tgt.get_target_minimum():{value_precision}},{tgt.get_target_maximum():{value_precision}}]"
-        else:
-            raise ValueError(f"Unknown comparison type: {compare_type}")
-
-        # Add any references
-        if tgt.get_reference():
-            references = [ref.strip() for ref in tgt.get_reference().replace("\n", "").split(",")]
-            for ref in references:
-                expected_str += f" @cite {ref}"
-
-        if not expected_str:
-            return "&nbsp;"
-
-        return expected_str
-
-    def _gen_engine_val_str(tgt: SETimeSeriesValidationTarget) -> str:
-        """
-        Generates string representing engine value.
-
-        :param tgt: The validation target.
-
-        :returns: Engine value string.
-        """
-        target_type = tgt.get_target_type()
-        value_precision = tgt.get_table_formatting()
-        engine_val_str = f"{target_type.name.replace('_kg', '(kg)')} of " \
-                         f"{tgt.get_computed_value():{value_precision}}"
-
-        if not engine_val_str:
-            return "&nbsp;"
-
-        return engine_val_str
 
     table_dir.mkdir(parents=True, exist_ok=True)
     patient_name = target_map.get_patient().get_name()
@@ -254,8 +255,8 @@ def generate_validation_tables(
 
             table_data.append([
                 tgt.get_header(),
-                _gen_expected_str(tgt),
-                _gen_engine_val_str(tgt),
+                gen_expected_str(tgt),
+                gen_engine_val_str(tgt),
                 generate_percentage_span(tgt.get_error_value(), percent_precision),
                 notes if (notes := tgt.get_notes()) else "&nbsp;"
             ])

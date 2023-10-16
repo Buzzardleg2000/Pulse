@@ -11,24 +11,151 @@ from pathlib import Path
 from pycel import ExcelCompiler
 from dataclasses import dataclass
 from openpyxl import load_workbook
+from collections import namedtuple
 from openpyxl.worksheet.worksheet import Worksheet
 from openpyxl.utils.cell import get_column_letter
 from typing import Dict, List, Optional, Union
 
 from pulse.cdm.engine import SEDataRequest, SETimeSeriesValidationTarget, SEPatientTimeSeriesValidation
 from pulse.cdm.patient import SEPatient, eSex
-from pulse.cdm.scalars import LengthUnit, MassUnit
+from pulse.cdm.scalars import get_unit, LengthUnit, MassUnit
 from pulse.cdm.scenario import SEScenarioLog
-from pulse.cdm.utils.file_utils import get_data_dir
-from pulse.cdm.io.engine import (
-    serialize_data_request_list_to_file,
-    serialize_patient_time_series_validation_to_file
-)
+from pulse.cdm.utils.file_utils import get_data_dir, get_validation_dir
+from pulse.cdm.io.engine import serialize_data_request_list_to_file
 from pulse.cdm.io.patient import serialize_patient_from_file
-from pulse.dataset.utils import generate_data_request
-
+from pulse.pipelines.dataset.utils import generate_data_request
 
 _pulse_logger = logging.getLogger('pulse')
+
+
+def gen_patient_targets(
+        log_file: Path
+) -> SEPatientTimeSeriesValidation:
+    """
+    Generate patient validation timeseries validation targets.
+    This will contain targets to
+     1. Validate that the stabilized patient meets the requested patient baseline parameters
+     2. Validate that the stabilized patient meets the expected values cited from literature
+
+    :param log_file: Path to log file. Could alternatively be the relevant patient file.
+
+    :return: validation targets, or None if was not successful.
+    """
+
+    patient_validation = SEPatientTimeSeriesValidation()
+    p = patient_validation.get_patient()
+    p.copy(extract_patient(patient_file=log_file))
+    # If no name, set to filename for potential table filenames
+    if not p.has_name() or not p.get_name():
+        p.set_name(log_file.stem)
+
+    table_name = "Patient"
+    if table_name not in patient_validation.get_targets():
+        patient_validation.get_targets()[table_name] = list()
+    tgts = patient_validation.get_targets()[table_name]
+
+    PatientValidation = namedtuple('PatientValidation', ["header", "unit", "table_precision", "patient_attr"])
+    validated_headers = [
+        PatientValidation(
+            header="TotalMetabolicRate",
+            unit="kcal/day",
+            table_precision=".1f",
+            patient_attr="_basal_metabolic_rate"
+        ), PatientValidation(
+            header="BloodVolume",
+            unit="mL",
+            table_precision=".1f",
+            patient_attr="_blood_volume_baseline"
+        ), PatientValidation(
+            header="DiastolicArterialPressure",
+            unit="mmHg",
+            table_precision=".1f",
+            patient_attr="_diastolic_arterial_pressure_baseline"
+        ), PatientValidation(
+            header="HeartRate",
+            unit="1/min",
+            table_precision=".0f",
+            patient_attr="_heart_rate_baseline"
+        ), PatientValidation(
+            header="MeanArterialPressure",
+            unit="mmHg",
+            table_precision=".1f",
+            patient_attr="_mean_arterial_pressure_baseline"
+        ), PatientValidation(
+            header="RespirationRate",
+            unit="1/min",
+            table_precision=".0f",
+            patient_attr="_respiration_rate_baseline"
+        ), PatientValidation(
+            header="SystolicArterialPressure",
+            unit="mmHg",
+            table_precision=".1f",
+            patient_attr="_systolic_arterial_pressure_baseline"
+        ), PatientValidation(
+            header="TidalVolume",
+            unit="mL",
+            table_precision=".1f",
+            patient_attr="_tidal_volume_baseline"
+        ), PatientValidation(
+            header="Patient-ExpiratoryReserveVolume",
+            unit="mL",
+            table_precision=".1f",
+            patient_attr="_expiratory_reserve_volume"
+        ), PatientValidation(
+            header="Patient-FunctionalResidualCapacity",
+            unit="mL",
+            table_precision=".1f",
+            patient_attr="_functional_residual_capacity"
+        ), PatientValidation(
+            header="Patient-InspiratoryCapacity",
+            unit="mL",
+            table_precision=".1f",
+            patient_attr="_inspiratory_capacity"
+        ), PatientValidation(
+            header="Patient-InspiratoryReserveVolume",
+            unit="mL",
+            table_precision=".1f",
+            patient_attr="_inspiratory_reserve_volume"
+        ), PatientValidation(
+            header="Patient-ResidualVolume",
+            unit="mL",
+            table_precision=".1f",
+            patient_attr="_residual_volume"
+        ), PatientValidation(
+            header="Patient-TotalLungCapacity",
+            unit="mL",
+            table_precision=".1f",
+            patient_attr="_total_lung_capacity"
+        ), PatientValidation(
+            header="Patient-VitalCapacity",
+            unit="mL",
+            table_precision=".1f",
+            patient_attr="_vital_capacity"
+        )
+    ]
+
+    for header, unit, table_precision, patient_attr in validated_headers:
+        tgt = SETimeSeriesValidationTarget()
+        tgt.set_header(f"{header}({unit})" if unit else header)
+        tgt.set_patient_specific_setting(True)
+        tgt.set_table_formatting(table_precision)
+        algo = SETimeSeriesValidationTarget.eTargetType.Mean
+
+        # Only create target if patient has this attribute
+        if getattr(p, f"has{patient_attr}")():
+            scalar = getattr(p, f"get{patient_attr}")()
+            ref_val = scalar.get_value(units=get_unit(unit)) if unit else scalar.get_value()
+
+            tgt.set_equal_to(ref_val, algo)
+            tgts.append(tgt)
+
+    # Pull all the system validation targets from our spreadsheet
+    xls_file = Path(get_validation_dir() + "/SystemValidationData.xlsx")
+    generate_validation_targets(
+        xls_file=xls_file,
+        patient_validation=patient_validation
+    )
+    return patient_validation
 
 
 def extract_patient(patient_file: Path) -> SEPatient:
@@ -69,21 +196,13 @@ def extract_patient(patient_file: Path) -> SEPatient:
 
 def generate_validation_targets(
     xls_file: Path,
-    patient_file: Path,
-    patient_validation: SEPatientTimeSeriesValidation,
-    output_file: Optional[Path]=None
+    patient_validation: SEPatientTimeSeriesValidation
 ) -> bool:
     """
     Generates timeseries validation targets.
 
     :param xls_file: Path to xls file.
-    :param patient_file: Path to patient/log file containing
-        patient information.
     :param patient_validation: Where generated targets will be stored.
-    :param output_file: (Optional) If provided, generated targets
-        will be serialized to this location.
-
-    :raises ValueError: Unknown patient file type.
 
     :return: Whether or not validation target generation was successful.
     """
@@ -91,17 +210,10 @@ def generate_validation_targets(
         _pulse_logger.error(f"Could not find xls file {xls_file}")
         return False
 
-    if not patient_file.is_file():
-        _pulse_logger.error(f"Please provide a valid patient file {patient_file}")
-        return False
-
-    # Either load patient directly from patient file or extract from log
     p = patient_validation.get_patient()
-    p.copy(extract_patient(patient_file=patient_file))
-
-    # If no name, set to filename for potential table filenames
-    if not p.has_name() or not p.get_name():
-        p.set_name(patient_file.stem)
+    if p is None:
+        _pulse_logger.error(f"No patient provided in patient targets")
+        return False
 
     # Temp file to preserve original state through patient updates.
     # We're saving a temporary file so that pycel can get openpyxl's
@@ -130,17 +242,13 @@ def generate_validation_targets(
             ):
                 _pulse_logger.error(f"Unable to generate targets for {system} sheet")
 
-        # Serialize generated targets, if requested
-        if output_file is not None:
-            _pulse_logger.info(f"Writing {output_file}")
-            output_file.parent.mkdir(parents=True, exist_ok=True)
-            serialize_patient_time_series_validation_to_file(patient_validation, output_file)
     except Exception as e:
         raise
     finally:  # Always clean up temp file
         tmp_xls.close()
 
     return True
+
 
 def update_patient_sheet(patient: SEPatient, xls_file: Path, new_file: Optional[Path]=None) -> None:
     """
@@ -216,6 +324,8 @@ def generate_sheet_requests(sheet: Worksheet, dr_dict: Dict[str, List[SEDataRequ
 
     # Get header to dataclass mapping
     ws_headers = [cell.value for cell in sheet[1]]
+    headers = []  # We don't want to make duplicate data request
+    # For example a min and max row for the same property will create 2 requests
     try:
         DRB_HEADER = ws_headers.index('Output')
         DRB_UNITS = ws_headers.index('Units')
@@ -268,8 +378,9 @@ def generate_sheet_requests(sheet: Worksheet, dr_dict: Dict[str, List[SEDataRequ
             unit_str=drb.units.strip(),
             precision=int(drb.precision) if drb.precision else None
         )
-
-        drs.append(dr)
+        if drb.header not in headers:
+            drs.append(dr)
+            headers.append(drb.header)
 
     return True
 

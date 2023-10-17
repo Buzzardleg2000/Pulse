@@ -177,11 +177,16 @@ if __name__ == "__main__":
         )
         # Only write a html file for test results
         if opts.documentation == "test_results":
+            # Push Standard patients to the front
+            all_validation.insert(0, all_validation.pop(
+                [idx for idx, tgt in enumerate(all_validation) if tgt.get_patient().get_name() == "StandardFemale"][0]))
+            all_validation.insert(0, all_validation.pop(
+                [idx for idx, tgt in enumerate(all_validation) if tgt.get_patient().get_name() == "StandardMale"][0]))
             html_file = "./test_results/PatientValidation.html"
             _pulse_logger.info(f"Writing {html_file}")
             f = open(html_file, "w")
-            f.writelines("</body>\n")
-            f.write("</html>\n")
+            f.write("<html>\n")
+            f.writelines("<body>\n")
             f.write("<h1>Patient Validation</h1>\n")
             for validation in all_validation:
                 f.write("<br>\n")

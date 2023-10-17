@@ -1,0 +1,38 @@
+{
+  "Name": "RespirationRate",
+  "Description": "Respiration rate change through modifier action.",
+  "PatientConfiguration": { "PatientFile": "StandardMale.json" },
+  "DataRequestFile": [
+    "StandardDataRequests.json"
+  ],
+  "DataRequestManager":
+  {
+    "DataRequest":
+    [
+      { "DecimalFormat": { "Precision": 3 }, "Category": "Physiology", "PropertyName": "BaroreceptorHeartRateScale",    "Unit": "unitless" },
+      { "DecimalFormat": { "Precision": 3 }, "Category": "Physiology", "PropertyName": "ChemoreceptorHeartRateScale",   "Unit": "unitless" }
+    ]
+  },
+  "AnyAction": [{
+    "AdvanceTime": {
+      "Time": { "ScalarTime": { "Value": 30.0, "Unit": "s" }}}
+  },{
+    "PatientAction": {
+      "RespiratoryMechanicsModification": {
+        "Modifiers": {
+          "RespirationRateMultiplier": { "ScalarUnsigned": { "Value": 1.05 }}
+    }}}
+  },{
+    "AdvanceTime": {
+      "Time": { "ScalarTime": { "Value": 120.0, "Unit": "s" }}}
+  },{
+    "PatientAction": {
+      "RespiratoryMechanicsModification": {
+        "Modifiers": {
+          "RespirationRateMultiplier": { "ScalarUnsigned": { "Value": 1.0 }}
+    }}}
+  },{
+    "AdvanceTime": {
+      "Time": { "ScalarTime": { "Value": 120.0, "Unit": "s" }}}
+  }]
+}

@@ -20,7 +20,7 @@ def serialize_patient_action_from_bind(src: PatientActionData, dst: SEPatientAct
 def serialize_acute_respiratory_distress_syndrome_exacerbation_to_bind(src: SEAcuteRespiratoryDistressSyndromeExacerbation,
                                                                        dst: AcuteRespiratoryDistressSyndromeExacerbationData):
     serialize_patient_action_to_bind(src, dst.PatientAction)
-    for c,s in src._severities.items():
+    for c,s in src.get_severities().items():
         i = dst.Severity.add()
         i.Compartment = c.value
         serialize_scalar_0to1_to_bind(s, i.Severity)
@@ -96,6 +96,18 @@ def serialize_bronchoconstriction_to_bind(src: SEBronchoconstriction, dst: Bronc
 def serialize_bronchoconstriction_from_bind(src: BronchoconstrictionData, dst: SEBronchoconstriction):
     serialize_patient_action_from_bind(src.PatientAction, dst)
     raise Exception("serialize_patient_action_from_bind not implemented")
+
+#################################################################
+
+def serialize_cardiovascular_mechanics_modification_to_bind(src:SECardiovascularMechanicsModification, dst: CardiovascularMechanicsModificationData):
+    serialize_patient_action_to_bind(src, dst.PatientAction)
+    if src.has_modifiers_file():
+        dst.ModifiersFile = src.get_modifiers_file()
+    elif src.has_modifiers():
+        serialize_cardiovascular_mechanics_modifiers_to_bind(src.get_modifiers(), dst.Modifiers)
+def serialize_cardiovascular_mechanics_modification_from_bind(src: CardiovascularMechanicsModificationData, dst: SECardiovascularMechanicsModification):
+    serialize_patient_action_from_bind(src.PatientAction, dst)
+    raise Exception("serialize_cardiovascular_mechanics_modification_from_bind not implemented")
 
 #################################################################
 
@@ -411,7 +423,19 @@ def serialize_respiratory_mechanics_configuration_to_bind(src:SERespiratoryMecha
         serialize_respiratory_mechanics_to_bind(src.get_settings(), dst.Settings)
 def serialize_respiratory_mechanics_configuration_from_bind(src: RespiratoryMechanicsConfigurationData, dst: SERespiratoryMechanicsConfiguration):
     serialize_patient_action_from_bind(src.PatientAction, dst)
-    raise Exception("serialize_patient_action_from_bind not implemented")
+    raise Exception("serialize_respiratory_mechanics_configuration_from_bind not implemented")
+
+#################################################################
+
+def serialize_respiratory_mechanics_modification_to_bind(src:SERespiratoryMechanicsModification, dst: RespiratoryMechanicsModificationData):
+    serialize_patient_action_to_bind(src, dst.PatientAction)
+    if src.has_modifiers_file():
+        dst.ModifiersFile = src.get_modifiers_file()
+    elif src.has_modifiers():
+        serialize_respiratory_mechanics_modifiers_to_bind(src.get_modifiers(), dst.Modifiers)
+def serialize_respiratory_mechanics_modification_from_bind(src: RespiratoryMechanicsModificationData, dst: SERespiratoryMechanicsModification):
+    serialize_patient_action_from_bind(src.PatientAction, dst)
+    raise Exception("serialize_respiratory_mechanics_modification_from_bind not implemented")
 
 #################################################################
 

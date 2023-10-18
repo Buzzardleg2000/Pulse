@@ -20,6 +20,7 @@ from pulse.cdm.scalars import SEScalar, SEScalar0To1, SEScalarNegative1To1, \
                               SEScalarPressurePerVolume, PressurePerVolumeUnit, \
                               SEScalarPressureTimePerVolume, PressureTimePerVolumeUnit, \
                               SEScalarTemperature, TemperatureUnit, \
+                              SEScalarUnsigned, \
                               SEScalarTime, TimeUnit, \
                               SEScalarVolume, VolumeUnit, \
                               SEScalarVolumePerPressure, VolumePerPressureUnit, \
@@ -33,8 +34,8 @@ from pulse.cdm.bind.Properties_pb2 import ScalarData, Scalar0To1Data, ScalarNega
                                           ScalarMassData, ScalarMassPerAmountData, ScalarMassPerAreaTimeData, \
                                           ScalarMassPerTimeData, ScalarMassPerVolumeData, ScalarPowerData, \
                                           ScalarPressureTimePerVolumeData, ScalarPressureData,\
-                                          ScalarPressurePerVolumeData, ScalarTemperatureData, \
-                                          ScalarTimeData, ScalarVolumeData, ScalarVolumePerPressureData, \
+                                          ScalarPressurePerVolumeData, ScalarTemperatureData, ScalarTimeData, \
+                                          ScalarUnsignedData, ScalarVolumeData, ScalarVolumePerPressureData, \
                                           ScalarVolumePerTimeData, ScalarVolumePerTimeMassData, \
                                           ScalarVolumePerTimePressureData
 
@@ -160,6 +161,11 @@ def serialize_scalar_temperature_to_bind(src: SEScalarTemperature, dst: ScalarTe
     dst.ScalarTemperature.Unit = src.get_unit().get_string()
 def serialize_scalar_temperature_from_bind(src: ScalarTemperatureData, dst: SEScalarTemperature):
     dst.set_value(src.ScalarTemperature.Value, TemperatureUnit.from_string(src.ScalarTemperature.Unit))
+
+def serialize_scalar_unsigned_to_bind(src: SEScalarUnsigned, dst: ScalarUnsignedData):
+    dst.ScalarUnsigned.Value = src.get_value()
+def serialize_scalar_unsigned_from_bind(src: ScalarUnsignedData, dst: SEScalarUnsigned):
+    dst.set_value(src.ScalarUnsigned.Value)
 
 def serialize_scalar_time_to_bind(src: SEScalarTime, dst: ScalarTimeData):
     dst.ScalarTime.Value = src.get_value()

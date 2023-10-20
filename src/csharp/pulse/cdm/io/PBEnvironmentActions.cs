@@ -71,7 +71,7 @@ namespace Pulse.CDM
     {
       if (src.EnvironmentAction != null)
         Serialize(src.EnvironmentAction, dst);
-      if (src.EnvironmentalConditionsFile != null)
+      if (!string.IsNullOrEmpty(src.EnvironmentalConditionsFile))
         dst.SetEnvironmentalConditionsFile(src.EnvironmentalConditionsFile);
       else if (src.EnvironmentalConditions != null)
         PBEnvironment.Load(src.EnvironmentalConditions, dst.GetEnvironmentalConditions());

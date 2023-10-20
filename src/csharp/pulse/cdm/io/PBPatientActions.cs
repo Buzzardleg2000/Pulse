@@ -965,9 +965,9 @@ namespace Pulse.CDM
     {
       if (src.PatientAction != null)
         Serialize(src.PatientAction, dst);
-      if (src.NutritionFile != null)
+      if (!string.IsNullOrEmpty(src.NutritionFile))
         dst.SetNutritionFile(src.NutritionFile);
-      if (src.Nutrition != null)
+      else if (src.Nutrition != null)
         PBNutrition.Load(src.Nutrition, dst.GetNutrition());
     }
 
@@ -1379,7 +1379,7 @@ namespace Pulse.CDM
     {
       if (src.PatientAction != null)
         Serialize(src.PatientAction, dst);
-      if (src.SettingsFile != null)
+      if (!string.IsNullOrEmpty(src.SettingsFile))
         dst.SetConfigurationFile(src.SettingsFile);
       else if (src.Settings != null)
         PBPhysiology.Load(src.Settings, dst.GetSettings());

@@ -16,9 +16,9 @@ namespace Pulse.CDM
     {
       dst.Clear();
       dst.SetLogToConsole((eSwitch)(int)src.LogToConsole);
-      if (src.DataRootDirectory.Length > 0)
+      if (!string.IsNullOrEmpty(src.DataRootDirectory))
         dst.SetDataRootDirectory(src.DataRootDirectory);
-      if (src.OutputRootDirectory.Length > 0)
+      if (!string.IsNullOrEmpty(src.OutputRootDirectory))
         dst.SetOutputRootDirectory(src.OutputRootDirectory);
       dst.SetOrganizeOutputDirectory((eSwitch)(int)src.OrganizeOutputDirectory);
 
@@ -26,16 +26,16 @@ namespace Pulse.CDM
       dst.SetAutoSerializePeriod_s(src.AutoSerializePeriodS);
       dst.SetTimeStampSerializedStates((eSwitch)(int)src.TimeStampSerializedStates);
 
-      if (src.EngineConfigurationContent.Length > 0)
+      if (!string.IsNullOrEmpty(src.EngineConfigurationContent))
         dst.SetEngineConfigurationContent(src.EngineConfigurationContent);
-      else if (src.EngineConfigurationFilename.Length > 0)
+      else if (!string.IsNullOrEmpty(src.EngineConfigurationFilename))
         dst.SetEngineConfigurationFilename(src.EngineConfigurationFilename);
 
-      if (src.ScenarioContent.Length > 0)
+      if (!string.IsNullOrEmpty(src.ScenarioContent))
         dst.SetScenarioContent(src.ScenarioContent);
-      else if (src.ScenarioFilename.Length > 0)
+      else if (!string.IsNullOrEmpty(src.ScenarioFilename))
         dst.SetScenarioFilename(src.ScenarioFilename);
-      else if (src.ScenarioDirectory.Length > 0)
+      else if ( !string.IsNullOrEmpty(src.ScenarioDirectory))
         dst.SetScenarioDirectory(src.ScenarioDirectory);
 
       dst.SetContentFormat((eSerializationFormat)(int)src.ContentFormat);
@@ -72,16 +72,16 @@ namespace Pulse.CDM
       dst.AutoSerializePeriodS = src.GetAutoSerializePeriod_s();
       dst.TimeStampSerializedStates = (pulse.cdm.bind.eSwitch)(int)src.GetTimeStampSerializedStates();
 
-      if(src.GetEngineConfigurationContent().Length>0)
+      if(!string.IsNullOrEmpty(src.GetEngineConfigurationContent()))
         dst.EngineConfigurationContent = src.GetEngineConfigurationContent();
-      else if (src.GetEngineConfigurationFilename().Length > 0)
+      else if (!string.IsNullOrEmpty(src.GetEngineConfigurationFilename()))
         dst.EngineConfigurationFilename = src.GetEngineConfigurationFilename();
 
-      if (src.GetScenarioContent().Length > 0)
+      if (!string.IsNullOrEmpty(src.GetScenarioContent()))
         dst.ScenarioContent = src.GetScenarioContent();
-      else if (src.GetScenarioFilename().Length > 0)
+      else if (!string.IsNullOrEmpty(src.GetScenarioFilename()))
         dst.ScenarioFilename = src.GetScenarioFilename();
-      else if (src.GetScenarioDirectory().Length > 0)
+      else if (!string.IsNullOrEmpty(src.GetScenarioDirectory()))
         dst.ScenarioDirectory = src.GetScenarioDirectory();
 
       dst.ContentFormat = (pulse.cdm.bind.eSerializationFormat)(int)src.GetContentFormat();

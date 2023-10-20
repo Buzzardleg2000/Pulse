@@ -58,9 +58,9 @@ namespace Pulse.CDM
     {
       if (src.EnvironmentCondition != null)
         PBEnvironmentCondition.Serialize(src.EnvironmentCondition, dst);
-      if (src.EnvironmentalConditionsFile != null)
+      if (!string.IsNullOrEmpty(src.EnvironmentalConditionsFile))
         dst.SetEnvironmentalConditionsFile(src.EnvironmentalConditionsFile);
-      if (src.EnvironmentalConditions != null)
+      else if (src.EnvironmentalConditions != null)
         PBEnvironment.Load(src.EnvironmentalConditions, dst.GetEnvironmentalConditions());
     }
 

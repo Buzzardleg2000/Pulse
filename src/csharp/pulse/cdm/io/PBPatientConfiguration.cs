@@ -15,7 +15,7 @@ namespace Pulse.CDM
     }
     public static void Serialize(pulse.cdm.bind.PatientConfigurationData src, SEPatientConfiguration dst)
     {
-      if (src.PatientFile != null)
+      if (!string.IsNullOrEmpty(src.PatientFile))
         dst.SetPatientFile(src.PatientFile);
       else if (src.Patient != null)
         PBPatient.Serialize(src.Patient, dst.GetPatient());

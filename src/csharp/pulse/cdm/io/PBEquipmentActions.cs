@@ -358,7 +358,7 @@ namespace Pulse.CDM
     {
       if (src.AnesthesiaMachineAction != null)
         Serialize(src.AnesthesiaMachineAction, dst);
-      if (src.ConfigurationFile != null)
+      if (!string.IsNullOrEmpty(src.ConfigurationFile))
         dst.SetConfigurationFile(src.ConfigurationFile);
       else if (src.Configuration != null)
         PBAnesthesiaMachine.Load(src.Configuration, dst.GetConfiguration());
@@ -733,7 +733,7 @@ namespace Pulse.CDM
     public static void Serialize(pulse.cdm.bind.BagValveMaskConfigurationData src, SEBagValveMaskConfiguration dst)
     {
       Serialize(src.BagValveMaskAction, dst);
-      if (src.ConfigurationFile != null)
+      if (!string.IsNullOrEmpty(src.ConfigurationFile))
         dst.SetConfigurationFile(src.ConfigurationFile);
       else if (src.Configuration != null)
         PBBagValveMask.Load(src.Configuration, dst.GetConfiguration());
@@ -886,7 +886,7 @@ namespace Pulse.CDM
     {
       if (src.ECMOAction != null)
         Serialize(src.ECMOAction, dst);
-      if (src.SettingsFile != null)
+      if (!string.IsNullOrEmpty(src.SettingsFile))
         dst.SetSettingsFile(src.SettingsFile);
       else if (src.Settings != null)
         PBECMO.Load(src.Settings, dst.GetSettings());
@@ -930,7 +930,7 @@ namespace Pulse.CDM
     {
       if (src.InhalerAction != null)
         Serialize(src.InhalerAction, dst);
-      if (src.ConfigurationFile != null)
+      if (!string.IsNullOrEmpty(src.ConfigurationFile))
         dst.SetConfigurationFile(src.ConfigurationFile);
       else if (src.Configuration != null)
         PBInhaler.Load(src.Configuration, dst.GetConfiguration());
@@ -974,7 +974,7 @@ namespace Pulse.CDM
     {
       if (src.MechanicalVentilatorAction != null)
         Serialize(src.MechanicalVentilatorAction, dst);
-      if (src.SettingsFile != null)
+      if (!string.IsNullOrEmpty(src.SettingsFile))
         dst.SetSettingsFile(src.SettingsFile);
       else if (src.Settings != null)
         PBMechanicalVentilator.Load(src.Settings, dst.GetSettings());

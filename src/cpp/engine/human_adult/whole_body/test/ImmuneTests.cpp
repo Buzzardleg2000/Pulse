@@ -28,9 +28,29 @@
 
 namespace pulse { namespace human_adult_whole_body
 {
-  void EngineTest::SepsisTest(const std::string& sTestDirectory)
+  void EngineTest::MildSepsisTest(const std::string &sTestDirectory)
   {
-    std::string tName = "SepsisTest";
+    SepsisTest(0.5, 0.3, sTestDirectory, "MildSepsis");
+  }
+
+  void EngineTest::ModerateSepsisTest(const std::string &sTestDirectory)
+  {
+    SepsisTest(0.5, 0.5, sTestDirectory, "ModerateSepsis");
+  }
+
+  void EngineTest::SevereSepsisTest(const std::string &sTestDirectory)
+  {
+    SepsisTest(0.5, 0.7, sTestDirectory, "SevereSepsis");
+  }
+
+  void EngineTest::AsepticTest(const std::string &sTestDirectory)
+  {
+    SepsisTest(1, 0.3, sTestDirectory, "Aseptic");
+  }
+
+  void EngineTest::SepsisTest(double infectionSeverity, double progressionSeverity, const std::string& sTestDirectory, const std::string& sTestName)
+  {
+    std::string tName = sTestName;
 
     DataTrack outTrk;
     std::ofstream file;
@@ -44,14 +64,14 @@ namespace pulse { namespace human_adult_whole_body
     im.Initialize();
 
     double time_s = 0.0;
-    double testTime_s = 3600;
+    double testTime_s = 60 * 60 * 10;
     double timeStep_s = 1.0 / 50;
 
-    im.m_PathogenCount = 0.5;
+    im.m_PathogenCount = infectionSeverity;
     im.m_ActivatedPhagocytes = 0;
     im.m_TissueDamage = 0;
     im.m_AntiInflammatoryMediators = 0.125;
-    im.m_PathogenGrowthRate = 0.3;
+    im.m_PathogenGrowthRate = progressionSeverity;
     for (unsigned int i = 0; i < (testTime_s / timeStep_s); i++)
     {
       outTrk.Track("PathogenCount", time_s, im.m_PathogenCount);

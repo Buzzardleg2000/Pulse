@@ -38,7 +38,7 @@ namespace pulse
       //    m_TissueDamage += m_h * dydt[2];
       //    m_AntiInflammatoryMediators += m_h * dydt[3];
 
-          // RK4 integrator
+      // RK4 integrator
       auto k1 = dFdt(y);
       auto y1 = y + 0.5 * m_h * k1;
       auto k2 = dFdt(y1);

@@ -159,8 +159,12 @@ namespace pulse { namespace human_adult_whole_body
     ///////////////////
     // Immune Tests //
     ///////////////////
-    void SepsisTest(const std::string& rptDirectory);
+    void MildSepsisTest(const std::string& sTestDirectory);
+    void ModerateSepsisTest(const std::string& sTestDirectory);
+    void SevereSepsisTest(const std::string& sTestDirectory);
+    void AsepticTest(const std::string& sTestDirectory);
   protected:
+    void SepsisTest(double infectionSeverity, double progressionSeverity, const std::string& sTestDirectory, const std::string& sTestName);
 
   public:
     ////////////////////////////

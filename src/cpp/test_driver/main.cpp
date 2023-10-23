@@ -89,7 +89,11 @@ int main(int argc, char* argv[])
 
       //hawbTest.BrainInjuryTest(hawbDir);
 
-      hawbTest.SepsisTest(hawbDir);
+      //Sepsis Tests
+      hawbTest.MildSepsisTest(hawbDir);
+      hawbTest.ModerateSepsisTest(hawbDir);
+      hawbTest.SevereSepsisTest(hawbDir);
+      hawbTest.AsepticTest(hawbDir);
 
       //Acid Base Tests
       //hawbTest.AcidBaseMathTest(hawbDir);

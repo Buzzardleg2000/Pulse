@@ -614,7 +614,7 @@ def serialize_engine_initialization_status_list_to_string(
     serialize_engine_initialization_status_list_to_bind(src, dst)
     return json_format.MessageToJson(dst, True, True)
 
-def serialize_engine_initialization_status_list_to_file(src: List[SEEngineInitializationSatus], filename: str):
+def serialize_engine_initialization_status_list_to_file(src: List[SEEngineInitializationStatus], filename: str):
     string = serialize_engine_initialization_status_list_to_string(src, eSerializationFormat.JSON)
     with open(filename, "w") as file:
         file.write(string)

@@ -51,6 +51,7 @@ namespace pulse
 {
   Data::Data(Logger* logger) : Loggable(logger)
   {
+    m_EngineInitializationFailure = eEngineInitializationFailure::NoFailures;
     m_State = EngineState::NotReady;
     m_AirwayMode = eAirwayMode::Free;
     m_Intubation = eSwitch::Off;
@@ -286,7 +287,12 @@ namespace pulse
   {
     Info("[SerializingFromFile] " + filename);
     LogBuildInfo();
-    return PBState::SerializeFromFile(filename, *this, m_ConfigOverride);
+    if (!PBState::SerializeFromFile(filename, *this, m_ConfigOverride))
+    {
+      m_EngineInitializationFailure = eEngineInitializationFailure::FailedState;
+      return false;
+    }
+    return true;
   }
   bool Controller::SerializeToFile(const std::string& filename) const
   {
@@ -298,7 +304,12 @@ namespace pulse
   {
     Info("[SerializingFromString]");
     LogBuildInfo();
-    return PBState::SerializeFromString(src, *this, m);
+    if (!PBState::SerializeFromString(src, *this, m))
+    {
+      m_EngineInitializationFailure = eEngineInitializationFailure::FailedState;
+      return false;
+    }
+    return true;
   }
   bool Controller::SerializeToString(std::string& output, eSerializationFormat m) const
   {
@@ -338,7 +349,10 @@ namespace pulse
     if (patient_configuration.HasPatient())
     {
       if (!Initialize(*patient_configuration.GetPatient()))
+      {
+        m_EngineInitializationFailure = eEngineInitializationFailure::FailedPatientSetup;
         return false;
+      }
     }
     else if (patient_configuration.HasPatientFile())
     {
@@ -356,12 +370,21 @@ namespace pulse
         }
       }
       if (!patient.SerializeFromFile(pFile))// TODO Support all serialization formats
+      {
+        m_EngineInitializationFailure = eEngineInitializationFailure::FailedPatientSetup;
         return false;
+      }
       if (!Initialize(patient))
+      {
+        m_EngineInitializationFailure = eEngineInitializationFailure::FailedPatientSetup;
         return false;
+      }
     }
     else
+    {
+      m_EngineInitializationFailure = eEngineInitializationFailure::FailedPatientSetup;
       return false;
+    }
 
     InitializeModels();
     AdvanceCallback(-1);
@@ -375,6 +398,7 @@ namespace pulse
     if (!Stabilize(patient_configuration))
     {
       Error("Pulse needs stabilization criteria, none provided in configuration file");
+      m_EngineInitializationFailure = eEngineInitializationFailure::FailedStabilization;
       return false;
     }
 
@@ -539,6 +563,11 @@ namespace pulse
     return true;
   }
 
+  eEngineInitializationFailure Controller::GetInitializationError() const
+  {
+    return m_EngineInitializationFailure;
+  }
+
   void Controller::Clear()
   {
     m_State = EngineState::NotReady;
@@ -546,6 +575,7 @@ namespace pulse
     m_Conditions->Clear();
     m_EventManager->Clear();
 
+    m_EngineInitializationFailure = eEngineInitializationFailure::NoFailures;
     m_AirwayMode = eAirwayMode::Free;
     m_Intubation = eSwitch::Off;
     if (m_EngineTrack)

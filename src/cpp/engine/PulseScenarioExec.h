@@ -12,6 +12,7 @@
 */
 class PULSE_DECL PulseScenarioExec : public SEScenarioExec
 {
+  
 public:
   PulseScenarioExec(Logger* logger) : SEScenarioExec(logger) { Clear(); }
 
@@ -25,9 +26,12 @@ public:
   bool SerializeFromString(const std::string& src, eSerializationFormat m, Logger* logger = nullptr);
 
   bool Execute();
-  bool Execute(PulseScenario& sce);
-  bool ConvertLog();
 
 protected:
+  size_t ComputeNumThreads();
+  static bool ExecuteOpts(PulseScenarioExec*, PulseScenario*, SEScenarioExecStatus*);
+  bool Execute(PulseScenario& sce, SEScenarioExecStatus* status=nullptr);
+  bool ConvertLog();
+
   eModelType m_ModelType = eModelType::HumanAdultWholeBody;
 };

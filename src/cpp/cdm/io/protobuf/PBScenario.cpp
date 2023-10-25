@@ -310,6 +310,30 @@ bool PBScenario::SerializeFromString(const std::string& src, std::vector<SEScena
   return true;
 }
 
+bool PBScenario::SerializeToFile(const std::vector<SEScenarioExecStatus*>& src, const std::string& filename)
+{
+  CDM_BIND::ScenarioExecStatusListData data;
+  for (auto s : src)
+  {
+    PBScenario::Serialize(*s,*data.add_scenarioexecstatus());
+  }
+  return PBUtils::SerializeToFile(data, filename, src[0]->GetLogger());
+}
+bool PBScenario::SerializeFromFile(const std::string& filename, std::vector<SEScenarioExecStatus*>& dst, Logger* logger)
+{
+  dst.clear();
+  CDM_BIND::ScenarioExecStatusListData data;
+  if (!PBUtils::SerializeFromFile(filename, data, logger))
+    return false;
+  for (int i = 0; i < data.scenarioexecstatus_size(); i++)
+  {
+    SEScenarioExecStatus* status = new SEScenarioExecStatus(logger);
+    PBScenario::Load(data.scenarioexecstatus()[i], *status);
+    dst.push_back(status);
+  }
+  return true;
+}
+
 void PBScenario::Copy(const SEScenarioExecStatus& src, SEScenarioExecStatus& dst)
 {
   dst.Clear();

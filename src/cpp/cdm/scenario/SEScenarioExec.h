@@ -11,6 +11,7 @@ class SEScenario;
 class SEScenarioLog;
 class PhysiologyEngine;
 class SEEngineConfiguration;
+class SEScenarioExecStatus;
 
 enum class eRelativeSerialization { ToWorkingDir = 0, ToOutputDir, ToScenarioDir };
 extern const std::string& eRelativeSerialization_Name(eRelativeSerialization rt);
@@ -110,6 +111,9 @@ public:
   void SetContentFormat(eSerializationFormat s) { m_ContentFormat = s; }
 
   int GetThreadCount() const { return m_ThreadCount; }
+  // if > 0, we will create min of (that many threads) or (number of cores available on the host system)
+  // if 0, we will create the number of cores available on the host system many threads
+  // if <0 we will the number of cores available on the host system plus that value many threads
   void SetThreadCount(int c) { m_ThreadCount = c; }
 
   std::string GetEngineConfigurationContent() const { return m_EngineConfigurationContent; }
@@ -156,9 +160,9 @@ public:
 
 protected:
   bool ConvertLog();
-  bool Execute(PhysiologyEngine& pe, SEScenario& sce);
-  bool Process(PhysiologyEngine& pe, SEScenario& sce);
-  bool ProcessActions(PhysiologyEngine& pe, SEScenario& sce);
+  bool Execute(PhysiologyEngine& pe, SEScenario& sce, SEScenarioExecStatus* status=nullptr);
+  bool Process(PhysiologyEngine& pe, SEScenario& sce, SEScenarioExecStatus* status=nullptr);
+  bool ProcessActions(PhysiologyEngine& pe, SEScenario& sce, SEScenarioExecStatus* status=nullptr);
   /// This does not include advance time actions
   /// To override default functionality with those
   /// actions override the ProcessActions method
@@ -182,17 +186,16 @@ protected:
 
   std::string m_ScenarioContent;
   std::string m_ScenarioFilename;
-  std::string m_ScenarioDirectory;
-  std::string m_ScenarioExecListFilename;
+  std::string m_ScenarioDirectory;       // TheadedExec
+  std::string m_ScenarioExecListFilename;// TheadedExec
 
   std::string m_ScenarioLogFilename;
-  std::string m_ScenarioLogDirectory;
+  std::string m_ScenarioLogDirectory;    // TheadedExec
 
   std::set<std::string> m_DataRequestFilesSearch;
 
   // For both the EC and Scenrio Content
-  eSerializationFormat m_ContentFormat;
-
+  eSerializationFormat       m_ContentFormat;
   int                        m_ThreadCount;
 
   // Settings for serialization
@@ -222,6 +225,8 @@ public:
 
   bool SerializeToString(std::string& output, eSerializationFormat m) const override;
   bool SerializeFromString(const std::string& src, eSerializationFormat m) override;
+  static bool SerializeToFile(const std::vector<SEScenarioExecStatus*>& src, const std::string& filename);
+  static bool SerializeFromFile(const std::string& filename, std::vector<SEScenarioExecStatus*>& dst, Logger* logger=nullptr);
 
   bool HasScenarioFilename() const { return !m_ScenarioFilename.empty(); }
   std::string GetScenarioFilename() const { return m_ScenarioFilename; }

@@ -8,7 +8,7 @@ enum eEngineInitializationFailure
 {
   NoFailures=0;         /**<< @brief No initialization failures. */
   FailedState=1;        /**<< @brief Unable to load state file. */
-  FailedSetup=2;        /**<< @brief SetupPatient could not create a valid Pulse patient with provided patient values. */
+  FailedPatientSetup=2; /**<< @brief Failed to setup the Pulse engine to the provided patient values. */
   FailedStabilization=3;/**<< @brief Pulse was unable to stabilize to provided/computed patient values. */
 }
 

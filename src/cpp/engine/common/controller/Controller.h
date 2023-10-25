@@ -173,6 +173,7 @@ namespace pulse
     EngineState                           m_State;
     SEEngineTracker*                      m_EngineTrack;
     SEDataRequested*                      m_DataRequested;
+    eEngineInitializationFailure          m_EngineInitializationFailure;
 
     SEScalarTime                          m_CurrentTime;
     SEScalarTime                          m_SimulationTime;
@@ -252,6 +253,7 @@ namespace pulse
     virtual bool InitializeEngine(const std::string& patient_configuration, eSerializationFormat m);
     virtual bool InitializeEngine(const SEPatientConfiguration& patient_configuration);
     virtual bool IsReady() const;
+    virtual eEngineInitializationFailure GetInitializationError() const;
 
     virtual void Clear();
 

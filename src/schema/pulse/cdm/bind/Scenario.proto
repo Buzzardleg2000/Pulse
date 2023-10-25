@@ -84,6 +84,6 @@ message ScenarioExecStatusData
 
 message ScenarioExecStatusListData
 {
-  repeated ScenarioExecStatusData      ScenarioExecStatus               = 1;
+  repeated ScenarioExecStatusData  ScenarioExecStatus                = 1;
 }
 

@@ -66,6 +66,10 @@ namespace pulse
   {
     return GetController().InitializeEngine(patient_configuration);
   }
+  eEngineInitializationFailure Engine::GetInitializationError() const
+  {
+    return GetController().GetInitializationError();
+  }
 
   void Engine::Clear()
   {

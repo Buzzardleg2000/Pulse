@@ -45,7 +45,7 @@ enum class eEngineInitializationFailure
 {
   NoFailures = 0,
   FailedState = 1,
-  FailedSetup = 2,
+  FailedPatientSetup = 2,
   FailedStabilization = 3
 };
 extern const std::string& eEngineInitializationFailure_Name(eEngineInitializationFailure e);
@@ -131,6 +131,14 @@ public:
   ///
   //--------------------------------------------------------------------------------------------------
   virtual bool InitializeEngine(const SEPatientConfiguration& patient_configuration) = 0;
+
+  //--------------------------------------------------------------------------------------------------
+  /// \brief
+  ///
+  /// If the engine did not initialize, get a bit more detail as to why
+  ///
+  //--------------------------------------------------------------------------------------------------
+  virtual eEngineInitializationFailure GetInitializationError() const = 0;
 
   //--------------------------------------------------------------------------------------------------
   /// \brief

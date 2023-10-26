@@ -1,90 +1,189 @@
 # Distributed under the Apache License, Version 2.0.
 # See accompanying NOTICE file for details.
 
-import json
-import random
 import logging
+import operator
+import numpy as np
+from enum import Enum
+from pathlib import Path
 from string import Template
-from typing import Any, Dict, Hashable, Iterable, List, NamedTuple, Optional, Tuple
+from typing import Any, Dict, List, NamedTuple, Optional, Tuple
 
 from pulse.cdm.engine import SEEventChange
-from pulse.cdm.scalars import TimeUnit, SEScalarTime
-from pulse.cdm.scenario import SEObservationReportModule
 
 
 _pulse_logger = logging.getLogger('pulse')
 
 
-class TCCCUnstructuredText(SEObservationReportModule):
-    __slots__ = ("_seed", "_injury_time", "_elapsed_time")
+class SEUnstructuredTextProperty:
+    __slots__ = ("_property", "_property_type", "_comparison_type", "_target_min", "_target_max",
+                "_target_min_inclusive", "_target_max_inclusive")
 
-    TIME_s = "Time(s)"
+    class eComparisonType(Enum):
+        AnyValue = 0
+        GreaterThan = 1
+        GreaterThanEqualTo = 2
+        LessThan = 3
+        LessThanEqualTo = 4
+        EqualTo = 5
+        Range = 6
+        Active = 7
+        Inactive = 8
 
-    def __init__(self, seed: Optional[int]=None):
-        self._headers = [
-            self.TIME_s
-        ]
+    class ePropertyType(Enum):
+        DataRequest = 0
+        Event = 1
 
-        self._seed = seed
-        if self._seed is not None:
-            random.seed(self._seed)
+    def __init__(self):
+        self.clear()
 
-        self._injury_time = None
+    def __repr__(self):
+        return f'SEUnstructuredTextProperty({self._property}, {self._property_type}, {self._comparison_type}, ' \
+               f'{self._target_min}, {self._target_max})'
 
-        self._init_corpus()
+    def clear(self) -> None:
+        self._property = None
+        self._property_type = self.ePropertyType.DataRequest
+        self._comparison_type = self.eComparisonType.AnyValue
+        self._target_min = np.nan
+        self._target_max = np.nan
+        self._target_min_inclusive = False
+        self._target_max_inclusive = False
 
-    def _init_corpus(self):
-        """
-        Initialize corpus of template phrases.
-        """
-        self._elapsed_time = [
-            Template("The patient was injured $elapsed_time_m ago."),
-            Template("It's been $elapsed_time_m since the incident."),
-            Template("$elapsed_time_m ago, the patient was injured."),
-            Template("The incident occurred $elapsed_time_m earlier."),
-            Template("$elapsed_time_m $elapsed_time_verb elapsed since injury."),
-            Template("$elapsed_time_m $elapsed_time_verb passed since the event.")
-        ]
+    def has_property(self) -> bool:
+        return self._property is not None
+    def get_property(self) -> Optional[str]:
+        return self._property
+    def set_property(self, p: str) -> None:
+        self._property = p
+    def invalidate_property(self) -> None:
+        self._property = None
 
-    def _add_phrase(self, choices: List[Template], out_phrases: List[Template]) -> None:
-        """
-        Add a random phrase from given choices to list of phrases.
-        """
-        out_phrases.append(random.choice(choices))
+    def get_property_type(self) -> ePropertyType:
+        return self._property_type
+    def set_property_type(self, prop_type: ePropertyType) -> None:
+        self._property_type = prop_type
 
-    def handle_event(self, change: SEEventChange) -> None:
-        """ Process given event change """
-        # TODO: Handle events
+    def get_comparison_type(self) -> eComparisonType:
+        return self._comparison_type
 
-    def handle_action(self, action: str, action_time: SEScalarTime) -> None:
-        """ Process action """
-        # TODO: Don't assume first action is injury
-        if self._injury_time is None:
-            self._injury_time = action_time
+    def set_any_value(self) -> None:
+        self._comparison_type = self.eComparisonType.AnyValue
+        self._target_min = np.nan
+        self._target_max = np.nan
+    def set_gt(self, v: float) -> None:
+        self._comparison_type = self.eComparisonType.GreaterThan
+        self._target_min = v
+        self._target_max = np.nan
+    def set_ge(self, v: float) -> None:
+        self._comparison_type = self.eComparisonType.GreaterThanEqualTo
+        self._target_min = v
+        self._target_max = np.nan
+    def set_lt(self, v: float) -> None:
+        self._comparison_type = self.eComparisonType.LessThan
+        self._target_min = np.nan
+        self._target_max = v
+    def set_le(self, v: float) -> None:
+        self._comparison_type = self.eComparisonType.LessThanEqualTo
+        self._target_min = np.nan
+        self._target_max = v
+    def set_eq(self, v: float) -> None:
+        self._comparison_type = self.eComparisonType.EqualTo
+        self._target_min = v
+        self._target_max = v
+    def set_range(self, min: float, max: float, min_inclusive: bool, max_inclusive: bool) -> None:
+        self._comparison_type = self.eComparisonType.Range
+        self._target_min = min
+        self._target_max = max
+        self._target_min_inclusive = min_inclusive
+        self._target_max_inclusive = max_inclusive
+    def set_active(self, active: bool) -> None:
+        if active:
+            self._comparison_type = self.eComparisonType.Active
+        else:
+            self._comparison_type = self.eComparisonType.Inactive
+        self._target_min = np.nan
+        self._target_max = np.nan
 
-    def update(self, data_slice: NamedTuple, slice_idx: Dict[str, int]) -> Iterable[Tuple[Hashable, Any]]:
-        """
-        Generate unstructured text from current vitals and handled actions and events.
-        """
-        phrases = list()
-        template_vals = dict()
+    def evaluate(
+        self,
+        data_slice: NamedTuple,
+        slice_idx: Dict[str, int],
+        events: List[SEEventChange],
+    ) -> bool:
+        if self._property_type == self.ePropertyType.DataRequest:
+            # TODO: If DR not in slice do we error or does this set of phrases just not apply?
+            value = data_slice[slice_idx[self._property]]
 
-        if self._injury_time is not None:
-            time_elapsed_s = data_slice[slice_idx[self.TIME_s]] - self._injury_time.get_value(TimeUnit.s)
-            time_elapsed_min = int(round(SEScalarTime(time_elapsed_s, TimeUnit.s).get_value(TimeUnit.min)))
+            if self._comparison_type == self.eComparisonType.AnyValue:
+                return True
+            elif self._comparison_type == self.eComparisonType.GreaterThan:
+                return value > self._target_min
+            elif self._comparison_type == self.eComparisonType.GreaterThanEqualTo:
+                return value >= self._target_min
+            elif self._comparison_type == self.eComparisonType.LessThan:
+                return value < self._target_max
+            elif self._comparison_type == self.eComparisonType.LessThanEqualTo:
+                return value <= self._target_max
+            elif self._comparison_type == self.eComparisonType.EqualTo:
+                return value == self._target_min  # TODO: Floating point errors?
+            elif self._comparison_type == self.eComparisonType.Range:
+                min_comparator = operator.ge if self._target_min_inclusive else operator.gt
+                max_comparator = operator.le if self._target_max_inclusive else operator.lt
+                return min_comparator(value, self._target_min) and max_comparator(value, self._target_max)
+            else:
+                raise ValueError(f"Invalid comparison type: {self._comparison_type}")
+        elif self._property_type == self.ePropertyType.Event:
+            # TODO: What if there are multiple events that match?
+            for event in events:
+                if self._property == event.event.name:
+                    if self._comparison_type == self.eComparisonType.AnyValue:
+                        return True
+                    elif self._comparison_type == self.eComparisonType.Active and event.active:
+                        return event.active
+                    elif self._comparison_type == self.eComparisonType.Inactive:
+                        return not event.active
+                    else:
+                        raise ValueError(f"Invalid comparison type: {self._comparison_type}")
+        else:
+            raise ValueError(f"Unknown property type: {self._property_type}")
 
-            template_vals["elapsed_time_m"] = f"{time_elapsed_min} " \
-                                              f"{'minutes' if time_elapsed_min != 1 else 'minute'}"
-            template_vals["elapsed_time_verb"] = "have" if time_elapsed_min != 1 else "has"
 
-            self._add_phrase(choices=self._elapsed_time, out_phrases=phrases)
+class SEUnstructuredTextGroup:
+    __slots__ = ("_properties", "_phrases")
 
-        # TODO: Add other phrases
+    def __init__(self):
+        self.clear()
 
-        # Remove empty phrases, substitute template values, and shuffle
-        phrases = [phrase.safe_substitute(template_vals) for phrase in phrases if phrase]
-        random.shuffle(phrases)
+    def __repr__(self):
+        return f'SEUnstructuredTextGroup({self._properties}, {self._phrases})'
 
-        return [
-            ("UnstructuredText", " ".join(phrases))
-        ]
+    def clear(self) -> None:
+        self._properties = list()
+        self._phrases = list()
+
+    def get_properties(self) -> List[SEUnstructuredTextProperty]:
+        return self._properties
+    def set_properties(self, props: List[SEUnstructuredTextProperty]) -> None:
+        self._properties = props
+    def invalidate_properties(self) -> None:
+        self._properties = list()
+
+    def get_phrases(self) -> List[List[Template]]:
+        return self._phrases
+    def set_phrases(self, phrases: List[List[Template]]) -> None:
+        self._phrases = phrases
+    def invalidate_phrases(self) -> None:
+        self._phrases = list()
+
+    def evaluate(
+        self,
+        data_slice: NamedTuple,
+        slice_idx: Dict[str, int],
+        events: List[SEEventChange],
+    ) -> bool:
+        for prop in self._properties:
+            if not prop.evaluate(data_slice=data_slice, slice_idx=slice_idx, events=events):
+                return False
+
+        return True

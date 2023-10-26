@@ -14,7 +14,7 @@ from pulse.cdm.patient import eSex
 from pulse.cdm.scalars import TimeUnit, FrequencyUnit, SEScalarFrequency, SEScalarTime
 from pulse.cdm.scenario import SEScenarioReport, SEObservationReportModule, SETimestepReportModule
 from pulse.cdm.utils.logger import break_camel_case
-from pulse.study.in_the_moment.unstructured_text import TCCCUnstructuredText
+from pulse.study.in_the_moment.tccc_unstructured_text import TCCCUnstructuredText
 
 
 _pulse_logger = logging.getLogger('pulse')
@@ -389,7 +389,10 @@ class ITMScenarioReport(SEScenarioReport):
             STARTObservationModule(),
             ClinicalAbnormalityObservationModule(),
             TCCCActionsObservationModule(),
-            TCCCUnstructuredText()
+            TCCCUnstructuredText(
+                corpus_json=Path("./tccc_corpus.json"),
+                elapsed_time_json=Path("./tccc_elapsed_time.json")
+            )
         ]
         timestep_modules = None
         death_check_module = TCCCDeathCheckModule()

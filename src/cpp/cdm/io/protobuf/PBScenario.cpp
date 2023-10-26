@@ -257,6 +257,9 @@ void PBScenario::Serialize(const CDM_BIND::ScenarioExecStatusData& src, SEScenar
   PBEngine::Serialize(src.initializationstatus(), (SEEngineInitializationStatus&)dst);
   if (!src.scenariofilename().empty())
     dst.SetScenarioFilename(src.scenariofilename());
+  dst.SetScenarioExecutionState((eScenarioExecutionState)src.scenarioexecutionstate());
+  dst.SetRuntimeError(src.runtimeerror());
+  dst.SetFatalRuntimeError(src.fatalruntimeerror());
   dst.SetFinalSimulationTime_s(src.finalsimulationtime_s());
 }
 CDM_BIND::ScenarioExecStatusData* PBScenario::Unload(const SEScenarioExecStatus& src)
@@ -270,28 +273,36 @@ void PBScenario::Serialize(const SEScenarioExecStatus& src, CDM_BIND::ScenarioEx
   PBEngine::Serialize((SEEngineInitializationStatus&)src, *dst.mutable_initializationstatus());
   if (src.HasScenarioFilename())
     dst.set_scenariofilename(src.m_ScenarioFilename);
+  dst.set_scenarioexecutionstate((CDM_BIND::eScenarioExecutionState)src.m_ScenarioExecutionState);
+  dst.set_runtimeerror(src.HasRuntimeError());
+  dst.set_fatalruntimeerror(src.HasFatalRuntimeError());
   dst.set_finalsimulationtime_s(src.m_FinalSimulationTime_s);
 }
 
-bool PBScenario::SerializeToString(const SEScenarioExecStatus& src, std::string& output, eSerializationFormat m)
+const std::string& eScenarioExecutionState_Name(eScenarioExecutionState s)
+{
+  return CDM_BIND::eScenarioExecutionState_Name((CDM_BIND::eScenarioExecutionState)s);
+}
+
+bool PBScenario::SerializeToString(const SEScenarioExecStatus& src, std::string& output, eSerializationFormat m, Logger* logger)
 {
   CDM_BIND::ScenarioExecStatusData data;
   PBScenario::Serialize(src, data);
-  return PBUtils::SerializeToString(data, output, m, src.GetLogger());
+  return PBUtils::SerializeToString(data, output, m, logger);
 }
-bool PBScenario::SerializeToString(const std::vector<SEScenarioExecStatus*>& src, std::string& output, eSerializationFormat m)
+bool PBScenario::SerializeToString(const std::vector<SEScenarioExecStatus*>& src, std::string& output, eSerializationFormat m, Logger* logger)
 {
   CDM_BIND::ScenarioExecStatusListData data;
   for (SEScenarioExecStatus* ei : src)
   {
     PBScenario::Serialize(*ei, *data.add_scenarioexecstatus());
   }
-  return PBUtils::SerializeToString(data, output, m, src[0]->GetLogger());
+  return PBUtils::SerializeToString(data, output, m, logger);
 }
-bool PBScenario::SerializeFromString(const std::string& src, SEScenarioExecStatus& dst, eSerializationFormat m)
+bool PBScenario::SerializeFromString(const std::string& src, SEScenarioExecStatus& dst, eSerializationFormat m, Logger* logger)
 {
   CDM_BIND::ScenarioExecStatusData data;
-  if (!PBUtils::SerializeFromString(src, data, m, dst.GetLogger()))
+  if (!PBUtils::SerializeFromString(src, data, m, logger))
     return false;
   PBScenario::Load(data, dst);
   return true;
@@ -303,21 +314,21 @@ bool PBScenario::SerializeFromString(const std::string& src, std::vector<SEScena
     return false;
   for (int i = 0; i < data.scenarioexecstatus_size(); i++)
   {
-    SEScenarioExecStatus* ei = new SEScenarioExecStatus(logger);
+    SEScenarioExecStatus* ei = new SEScenarioExecStatus();
     PBScenario::Load(data.scenarioexecstatus()[i], *ei);
     dst.push_back(ei);
   }
   return true;
 }
 
-bool PBScenario::SerializeToFile(const std::vector<SEScenarioExecStatus*>& src, const std::string& filename)
+bool PBScenario::SerializeToFile(const std::vector<SEScenarioExecStatus*>& src, const std::string& filename, Logger* logger)
 {
   CDM_BIND::ScenarioExecStatusListData data;
   for (auto s : src)
   {
     PBScenario::Serialize(*s,*data.add_scenarioexecstatus());
   }
-  return PBUtils::SerializeToFile(data, filename, src[0]->GetLogger());
+  return PBUtils::SerializeToFile(data, filename, logger);
 }
 bool PBScenario::SerializeFromFile(const std::string& filename, std::vector<SEScenarioExecStatus*>& dst, Logger* logger)
 {
@@ -327,7 +338,7 @@ bool PBScenario::SerializeFromFile(const std::string& filename, std::vector<SESc
     return false;
   for (int i = 0; i < data.scenarioexecstatus_size(); i++)
   {
-    SEScenarioExecStatus* status = new SEScenarioExecStatus(logger);
+    SEScenarioExecStatus* status = new SEScenarioExecStatus();
     PBScenario::Load(data.scenarioexecstatus()[i], *status);
     dst.push_back(status);
   }

@@ -1090,8 +1090,7 @@ void PBEngine::Load(const CDM_BIND::EngineInitializationStatusData& src, SEEngin
 }
 void PBEngine::Serialize(const CDM_BIND::EngineInitializationStatusData& src, SEEngineInitializationStatus& dst)
 {
-  dst.SetReady(src.isready());
-  dst.SetFailure((eEngineInitializationFailure)src.initializationfailure());
+  dst.SetEngineInitializationState((eEngineInitializationState)src.initializationstate());
   if (!src.csvfilename().empty())
     dst.SetCSVFilename(src.csvfilename());
   if (!src.logfilename().empty())
@@ -1106,8 +1105,7 @@ CDM_BIND::EngineInitializationStatusData* PBEngine::Unload(const SEEngineInitial
 }
 void PBEngine::Serialize(const SEEngineInitializationStatus& src, CDM_BIND::EngineInitializationStatusData& dst)
 {
-  dst.set_isready(src.m_IsReady);
-  dst.set_initializationfailure((CDM_BIND::eEngineInitializationFailure)src.m_Failure);
+  dst.set_initializationstate((CDM_BIND::eEngineInitializationState)src.m_EngineInitializationState);
   if (src.HasCSVFilename())
     dst.set_csvfilename(src.m_CSVFilename);
   if (src.HasLogFilename())
@@ -1115,25 +1113,25 @@ void PBEngine::Serialize(const SEEngineInitializationStatus& src, CDM_BIND::Engi
   dst.set_stabilizationtime_s(src.m_StabilizationTime_s);
 }
 
-bool PBEngine::SerializeToString(const SEEngineInitializationStatus& src, std::string& output, eSerializationFormat m)
+bool PBEngine::SerializeToString(const SEEngineInitializationStatus& src, std::string& output, eSerializationFormat m, Logger* logger)
 {
   CDM_BIND::EngineInitializationStatusData data;
   PBEngine::Serialize(src, data);
-  return PBUtils::SerializeToString(data, output, m, src.GetLogger());
+  return PBUtils::SerializeToString(data, output, m, logger);
 }
-bool PBEngine::SerializeToString(const std::vector<SEEngineInitializationStatus*>& src, std::string& output, eSerializationFormat m)
+bool PBEngine::SerializeToString(const std::vector<SEEngineInitializationStatus*>& src, std::string& output, eSerializationFormat m, Logger* logger)
 {
   CDM_BIND::EngineInitializationStatusListData data;
   for (SEEngineInitializationStatus* ei : src)
   {
     PBEngine::Serialize(*ei, *data.add_engineinitializationstatus());
   }
-  return PBUtils::SerializeToString(data, output, m, src[0]->GetLogger());
+  return PBUtils::SerializeToString(data, output, m, logger);
 }
-bool PBEngine::SerializeFromString(const std::string& src, SEEngineInitializationStatus& dst, eSerializationFormat m)
+bool PBEngine::SerializeFromString(const std::string& src, SEEngineInitializationStatus& dst, eSerializationFormat m, Logger* logger)
 {
   CDM_BIND::EngineInitializationStatusData data;
-  if (!PBUtils::SerializeFromString(src, data, m, dst.GetLogger()))
+  if (!PBUtils::SerializeFromString(src, data, m, logger))
     return false;
   PBEngine::Load(data, dst);
   return true;
@@ -1145,7 +1143,7 @@ bool PBEngine::SerializeFromString(const std::string& src, std::vector<SEEngineI
     return false;
   for (int i = 0; i < data.engineinitializationstatus_size(); i++)
   {
-    SEEngineInitializationStatus* ei = new SEEngineInitializationStatus(logger);
+    SEEngineInitializationStatus* ei = new SEEngineInitializationStatus();
     PBEngine::Load(data.engineinitializationstatus()[i], *ei);
     dst.push_back(ei);
   }

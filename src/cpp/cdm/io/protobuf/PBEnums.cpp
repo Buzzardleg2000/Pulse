@@ -7,9 +7,9 @@ PUSH_PROTO_WARNINGS
 #include "pulse/cdm/bind/Enums.pb.h"
 POP_PROTO_WARNINGS
 
-const std::string& eEngineInitializationFailure_Name(eEngineInitializationFailure to)
+const std::string& eEngineInitializationState_Name(eEngineInitializationState s)
 {
-  return CDM_BIND::eEngineInitializationFailure_Name((CDM_BIND::eEngineInitializationFailure)to);
+  return CDM_BIND::eEngineInitializationState_Name((CDM_BIND::eEngineInitializationState)s);
 }
 
 const std::string& eSide_Name(eSide m)

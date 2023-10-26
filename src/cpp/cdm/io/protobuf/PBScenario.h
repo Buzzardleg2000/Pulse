@@ -34,10 +34,10 @@ public:
   static CDM_BIND::ScenarioExecStatusData* Unload(const SEScenarioExecStatus& src);
   static void Serialize(const CDM_BIND::ScenarioExecStatusData& src, SEScenarioExecStatus& dst);
   static void Serialize(const SEScenarioExecStatus& src, CDM_BIND::ScenarioExecStatusData& dst);
-  static bool SerializeToString(const SEScenarioExecStatus& src, std::string& output, eSerializationFormat m);
-  static bool SerializeToString(const std::vector<SEScenarioExecStatus*>& src, std::string& output, eSerializationFormat m);
-  static bool SerializeToFile(const std::vector<SEScenarioExecStatus*>& src, const std::string& filename);
-  static bool SerializeFromString(const std::string& src, SEScenarioExecStatus& dst, eSerializationFormat m);
+  static bool SerializeToString(const SEScenarioExecStatus& src, std::string& output, eSerializationFormat m, Logger* logger);
+  static bool SerializeToString(const std::vector<SEScenarioExecStatus*>& src, std::string& output, eSerializationFormat m, Logger* logger);
+  static bool SerializeToFile(const std::vector<SEScenarioExecStatus*>& src, const std::string& filename, Logger* logger);
+  static bool SerializeFromString(const std::string& src, SEScenarioExecStatus& dst, eSerializationFormat m, Logger* logger);
   static bool SerializeFromString(const std::string& src, std::vector<SEScenarioExecStatus*>& dst, eSerializationFormat m, Logger* logger);
   static bool SerializeFromFile(const std::string& filename, std::vector<SEScenarioExecStatus*>& dst, Logger* logger);
   static void Copy(const SEScenarioExecStatus& src, SEScenarioExecStatus& dst);

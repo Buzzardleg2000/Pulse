@@ -243,7 +243,7 @@ bool SEScenarioExec::Process(PhysiologyEngine& pe, SEScenario& sce, SEScenarioEx
       if (!pe.SerializeFromFile(state))
       {
         if (status)
-          status->SetFailure(eEngineInitializationFailure::FailedState);
+          status->SetEngineInitializationState(eEngineInitializationState::FailedState);
         pe.GetLogger()->Error("Unable to load state file: "+ state);
         return false;
       }
@@ -271,20 +271,22 @@ bool SEScenarioExec::Process(PhysiologyEngine& pe, SEScenario& sce, SEScenarioEx
       if (!pe.InitializeEngine(sce.GetPatientConfiguration()))
       {
         if (status)
-          status->SetFailure(pe.GetInitializationError());
+          status->SetEngineInitializationState(pe.GetInitializationState());
         pe.GetLogger()->Error("Unable to initialize engine");
         return false;
       }
+      if (status)
+        status->SetStabilizationTime_s(pe.GetStabilizationTime(TimeUnit::s));
     }
     else
     {
       if (status)
-        status->SetFailure(eEngineInitializationFailure::FailedState);
+        status->SetEngineInitializationState(eEngineInitializationState::FailedState);
       pe.GetLogger()->Error("No initial engine parameters set");
       return false;
     }
     if (status)
-      status->SetReady(true);
+      status->SetEngineInitializationState(eEngineInitializationState::Initialized);
 
     return ProcessActions(pe, sce, status);
   }
@@ -316,6 +318,7 @@ bool SEScenarioExec::ProcessActions(PhysiologyEngine& pe, SEScenario& sce, SESce
 {
   std::stringstream ss;
   pe.GetLogger()->Info("Executing Scenario");
+  pe.GetLogger()->AddForward(status);
 
   double dT_s=pe.GetTimeStep(TimeUnit::s);
   double scenarioTime_s = 0;
@@ -337,6 +340,7 @@ bool SEScenarioExec::ProcessActions(PhysiologyEngine& pe, SEScenario& sce, SESce
   double spareAdvanceTime_s = 0;
   for (SEAction* a : sce.GetActions())
   {
+    if (!a) continue;
     // We override advance time actions in order to advance and
     // pull requested data at each time step, all other actions
     // will be processed by the engine
@@ -395,6 +399,8 @@ bool SEScenarioExec::ProcessActions(PhysiologyEngine& pe, SEScenario& sce, SESce
     err = true;
     pe.GetLogger()->Error("!!!! Simulation time does not equal expected end time !!!!");
   }
+  if (status)
+    status->SetFinalSimulationTime_s(simTime_s);
 
   return !err;
 }
@@ -537,7 +543,7 @@ bool SEScenarioExec::ConvertLog()
   return true;
 }
 
-SEScenarioExecStatus::SEScenarioExecStatus(Logger* logger) : SEEngineInitializationStatus(logger)
+SEScenarioExecStatus::SEScenarioExecStatus()
 {
   Clear();
 }
@@ -550,6 +556,9 @@ void SEScenarioExecStatus::Clear()
 {
   SEEngineInitializationStatus::Clear();
   m_ScenarioFilename = "";
+  m_ScenarioExecutionState = eScenarioExecutionState::Waiting;
+  m_RuntimeError = false;
+  m_FatalRuntimeError = false;
   m_FinalSimulationTime_s = 0;
 }
 
@@ -557,18 +566,18 @@ void SEScenarioExecStatus::Copy(const SEScenarioExecStatus& from)
 {
   PBScenario::Copy(from, *this);
 }
-bool SEScenarioExecStatus::SerializeToString(std::string& output, eSerializationFormat m) const
+bool SEScenarioExecStatus::SerializeToString(std::string& output, eSerializationFormat m, Logger* logger) const
 {
-  return PBScenario::SerializeToString(*this, output, m);
+  return PBScenario::SerializeToString(*this, output, m, logger);
 }
-bool SEScenarioExecStatus::SerializeFromString(const std::string& src, eSerializationFormat m)
+bool SEScenarioExecStatus::SerializeFromString(const std::string& src, eSerializationFormat m, Logger* logger)
 {
-  return PBScenario::SerializeFromString(src, *this, m);
+  return PBScenario::SerializeFromString(src, *this, m, logger);
 }
 
-bool SEScenarioExecStatus::SerializeToFile(const std::vector<SEScenarioExecStatus*>& src, const std::string& filename)
+bool SEScenarioExecStatus::SerializeToFile(const std::vector<SEScenarioExecStatus*>& src, const std::string& filename, Logger* logger)
 {
-  return PBScenario::SerializeToFile(src, filename);
+  return PBScenario::SerializeToFile(src, filename, logger);
 }
 bool SEScenarioExecStatus::SerializeFromFile(const std::string& filename, std::vector<SEScenarioExecStatus*>& dst, Logger* logger)
 {

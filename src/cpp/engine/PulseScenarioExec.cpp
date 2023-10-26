@@ -13,12 +13,14 @@
 #include "cdm/utils/FileUtils.h"
 #include "cdm/utils/ConfigParser.h"
 #include "cdm/utils/ThreadPool.h"
+#include "cdm/utils/TimingProfile.h"
 
 
 void PulseScenarioExec::Clear()
 {
   SEScenarioExec::Clear();
   m_ModelType = eModelType::HumanAdultWholeBody;
+  SAFE_DELETE_VECTOR(m_Statuses);
 }
 
 void PulseScenarioExec::Copy(const PulseScenarioExec& src)
@@ -35,41 +37,6 @@ bool PulseScenarioExec::SerializeFromString(const std::string& src, eSerializati
   return pulse::PBScenario::SerializeFromString(src, *this, m, logger);
 }
 
-bool PulseScenarioExec::ExecuteOpts(PulseScenarioExec* opts, PulseScenario* sce, SEScenarioExecStatus* status)
-{
-  if (!opts->GetScenarioFilename().empty())
-  {
-    if (sce == nullptr)
-    {
-      opts->Error("No scenario provided");
-      return false;
-    }
-    if (status == nullptr)
-    {
-      opts->Error("No scenario status provided");
-      return false;
-    }
-    opts->Info("Executing Scenario: " + opts->GetScenarioFilename());
-    bool b = opts->Execute(*sce, status);
-    if(b)
-      opts->Info("Completed Scenario: " + opts->GetScenarioFilename());
-    else
-      opts->Error("Error Executing Scenario: " + opts->GetScenarioFilename());
-    return b;
-  }
-  else if (!opts->GetScenarioLogFilename().empty())
-  {
-    opts->Info("Converting Log: " + opts->GetScenarioLogFilename());
-    bool b = opts->ConvertLog();
-    if(b)
-      opts->Info("Completed Log Conversion: " + opts->GetScenarioLogFilename());
-    else
-      opts->Error("Error Executing Log Conversion: " + opts->GetScenarioLogFilename());
-    return b;
-  }
-  opts->Error("No scenario/scenario log provided.");
-  return false;
-}
 bool PulseScenarioExec::Execute()
 {
   std::string scenarioPath, scenarioFilename;
@@ -82,7 +49,7 @@ bool PulseScenarioExec::Execute()
   }
   else if (!GetScenarioFilename().empty())
   {
-    SEScenarioExecStatus status(GetLogger());
+    SEScenarioExecStatus status;
     PulseScenario sce(GetLogger(), GetDataRootDirectory());
     SplitPathFilename(GetScenarioFilename(), scenarioPath, scenarioFilename);
     GetDataRequestFilesSearch().insert(scenarioPath);
@@ -92,10 +59,13 @@ bool PulseScenarioExec::Execute()
   }
   else if (!GetScenarioDirectory().empty() || !GetScenarioExecListFilename().empty())
   {
-    std::vector<SEScenarioExecStatus*> statuses;
+    TimingProfile profiler;
+    profiler.Start("Total");
+
+    m_Statuses.clear();
     if (!GetScenarioExecListFilename().empty())
     {
-      if (!SEScenarioExecStatus::SerializeFromFile(GetScenarioExecListFilename(), statuses, GetLogger()))
+      if (!SEScenarioExecStatus::SerializeFromFile(GetScenarioExecListFilename(), m_Statuses, GetLogger()))
       {
         Fatal("Unable to serialize ScenarioExecListFilename " + GetScenarioExecListFilename());
         return false;
@@ -107,10 +77,11 @@ bool PulseScenarioExec::Execute()
       ListFiles(GetScenarioDirectory(), scenarios, true, ".json");
       for (auto filename : scenarios)
       {
-        SEScenarioExecStatus* status = new SEScenarioExecStatus(GetLogger());
+        SEScenarioExecStatus* status = new SEScenarioExecStatus();
         status->SetScenarioFilename(filename);
-        statuses.push_back(status);
+        m_Statuses.push_back(status);
       }
+      m_CompletedStatusesFilename = "./ScenarioDirectoryStatuses.json";
     }
     size_t numThreadsToUse = ComputeNumThreads();
     if (numThreadsToUse <= 0)
@@ -118,30 +89,15 @@ bool PulseScenarioExec::Execute()
       Fatal("Unable to compute the number of threads to use");
       return false;
     }
-    // Let's not kick off more threads than we need
-    if (numThreadsToUse > statuses.size())
-      numThreadsToUse = statuses.size();
 
-    ThreadPool pool(numThreadsToUse);
-    for (auto status : statuses)
-    {
-      PulseScenarioExec* opts = new PulseScenarioExec(GetLogger());
-      opts->Copy(*this);
-      opts->SetScenarioFilename(status->GetScenarioFilename());
-      SplitPathFilename(GetScenarioFilename(), scenarioPath, scenarioFilename);
-      opts->GetDataRequestFilesSearch().insert(scenarioPath);
+    for (size_t p = 0; p < numThreadsToUse; p++)
+      m_Threads.push_back(std::thread(&PulseScenarioExec::ControllerLoop, this));
+    for (size_t p = 0; p < numThreadsToUse; p++)
+      m_Threads[p].join();
 
-      // Always have sceanrios create their own logger when threaded
-      PulseScenario* sce = new PulseScenario(GetDataRootDirectory());
-      sce->SerializeFromFile(GetScenarioFilename());
-      pool.enqueue(ExecuteOpts, opts, sce, status);
-    }
-
-    /* ThreadPool waits for threads to complete in its
-    *  destructor which happens implicitly as we leave
-    *  function scope. If we need return values from
-    *  ExecuteScenario calls, enqueue returns a std::future
-    */
+    Info("It took " + pulse::cdm::to_string(profiler.GetElapsedTime_s("Total")) + "s to run these scenarios");
+    profiler.Clear();
+    return true;
   }
   else if (!GetScenarioLogFilename().empty())
   {
@@ -167,10 +123,11 @@ bool PulseScenarioExec::Execute()
     std::vector<PulseScenarioExec*> opts;
     for (auto filename : logs)
     {
-      opts.emplace_back(new PulseScenarioExec(GetLogger()));
-      opts.back()->Copy(*this);
-      opts.back()->SetScenarioLogFilename(filename);
-      futures.emplace_back(pool.enqueue(ExecuteOpts, opts.back(), nullptr, nullptr));
+      PulseScenarioExec* pse = new PulseScenarioExec(GetLogger());
+      opts.emplace_back(pse);
+      pse->Copy(*this);
+      pse->SetScenarioLogFilename(filename);
+      futures.emplace_back(pool.enqueue([&pse]() -> bool { return pse->ConvertLog(); }));
     }
 
     bool success = true;
@@ -247,4 +204,49 @@ size_t PulseScenarioExec::ComputeNumThreads()
   }
 
   return numThreadsToUse;
+}
+
+void PulseScenarioExec::ControllerLoop()
+{
+  std::pair <PulseScenarioExec*, SEScenarioExecStatus*> ss;
+  while (true)
+  {
+    SEScenarioExecStatus* status = GetNextScenarioStatus();
+    if (!status)
+      break;
+    PulseScenario sce(GetDataRootDirectory());
+    if (sce.SerializeFromFile(status->GetScenarioFilename()))
+      Execute(sce, status);
+    else
+    {
+      status->SetFatalRuntimeError(true);
+      Error("Unable to serialize scenario file: " + ss.first->GetScenarioFilename());
+    }
+    FinalizeExecutionStatus(*status);
+  }
+}
+SEScenarioExecStatus* PulseScenarioExec::GetNextScenarioStatus()
+{
+  m_Mutex.lock();
+  SEScenarioExecStatus* found = nullptr;
+  for (SEScenarioExecStatus* status : m_Statuses)
+  {
+    if (status->GetScenarioExecutionState() == eScenarioExecutionState::Waiting)
+    {
+      found = status;
+      found->SetScenarioExecutionState(eScenarioExecutionState::Executing);
+      break;
+    }
+  }
+  m_Mutex.unlock();
+  return found;
+}
+void PulseScenarioExec::FinalizeExecutionStatus(SEScenarioExecStatus& status)
+{
+  m_Mutex.lock();
+  status.SetScenarioExecutionState(eScenarioExecutionState::Complete);
+  m_Completed.push_back(&status);
+  Info("Completed "+status.GetScenarioFilename());
+  SEScenarioExecStatus::SerializeToFile(m_Completed, m_CompletedStatusesFilename, GetLogger());
+  m_Mutex.unlock();
 }

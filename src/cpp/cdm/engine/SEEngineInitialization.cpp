@@ -157,7 +157,7 @@ void SEEngineInitialization::KeepEventChanges(bool b)
   m_KeepEventChanges = b;
 }
 
-SEEngineInitializationStatus::SEEngineInitializationStatus(Logger* logger) : Loggable(logger)
+SEEngineInitializationStatus::SEEngineInitializationStatus()
 {
   Clear();
 }
@@ -168,8 +168,7 @@ SEEngineInitializationStatus::~SEEngineInitializationStatus()
 
 void SEEngineInitializationStatus::Clear()
 {
-  m_IsReady = false;
-  m_Failure = eEngineInitializationFailure::NoFailures;
+  m_EngineInitializationState = eEngineInitializationState::Uninitialized;
   m_CSVFilename = "";
   m_LogFilename = "";
   m_StabilizationTime_s = 0;
@@ -179,11 +178,11 @@ void SEEngineInitializationStatus::Copy(const SEEngineInitializationStatus& from
 {
   PBEngine::Copy(from, *this);
 }
-bool SEEngineInitializationStatus::SerializeToString(std::string& output, eSerializationFormat m) const
+bool SEEngineInitializationStatus::SerializeToString(std::string& output, eSerializationFormat m, Logger* logger) const
 {
-  return PBEngine::SerializeToString(*this, output, m);
+  return PBEngine::SerializeToString(*this, output, m, logger);
 }
-bool SEEngineInitializationStatus::SerializeFromString(const std::string& src, eSerializationFormat m)
+bool SEEngineInitializationStatus::SerializeFromString(const std::string& src, eSerializationFormat m, Logger* logger)
 {
-  return PBEngine::SerializeFromString(src, *this, m);
+  return PBEngine::SerializeFromString(src, *this, m, logger);
 }

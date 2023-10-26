@@ -29,9 +29,19 @@ public:
 
 protected:
   size_t ComputeNumThreads();
-  static bool ExecuteOpts(PulseScenarioExec*, PulseScenario*, SEScenarioExecStatus*);
   bool Execute(PulseScenario& sce, SEScenarioExecStatus* status=nullptr);
   bool ConvertLog();
+
+  // For threaded scenario excution
+  void ControllerLoop();
+  SEScenarioExecStatus* GetNextScenarioStatus();
+  void FinalizeExecutionStatus(SEScenarioExecStatus& status);
+
+  std::mutex                         m_Mutex;
+  std::vector<std::thread>           m_Threads;
+  std::vector<SEScenarioExecStatus*> m_Statuses;
+  std::vector<SEScenarioExecStatus*> m_Completed;
+  std::string m_CompletedStatusesFilename;
 
   eModelType m_ModelType = eModelType::HumanAdultWholeBody;
 };

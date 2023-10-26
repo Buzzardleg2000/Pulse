@@ -33,7 +33,7 @@ namespace pulse
 
     bool InitializeEngine(const std::string& patient_configuration, eSerializationFormat m) override;
     bool InitializeEngine(const SEPatientConfiguration& patient_configuration) override;
-    eEngineInitializationFailure GetInitializationError() const override;
+    eEngineInitializationState GetInitializationState() const override;
 
     void Clear() override;
 
@@ -47,7 +47,8 @@ namespace pulse
 
     double GetTimeStep(const TimeUnit& unit) const override;
     double GetSimulationTime(const TimeUnit& unit) const override;
-    void  SetSimulationTime(const SEScalarTime& time) override;
+    void   SetSimulationTime(const SEScalarTime& time) override;
+    double GetStabilizationTime(const TimeUnit& unit) const override;
 
     bool  AdvanceModelTime() override;
     bool  AdvanceModelTime(double time, const TimeUnit& unit) override;

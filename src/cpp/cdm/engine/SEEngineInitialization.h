@@ -66,24 +66,21 @@ protected:
   bool                            m_KeepEventChanges;
 };
 
-class CDM_DECL SEEngineInitializationStatus : public Loggable
+class CDM_DECL SEEngineInitializationStatus : public LoggerForward
 {
   friend class PBEngine;//friend the serialization class
 public:
-  SEEngineInitializationStatus(Logger* logger);
+  SEEngineInitializationStatus();
   virtual ~SEEngineInitializationStatus();
 
   virtual void Clear();
   void Copy(const SEEngineInitializationStatus& src);
 
-  virtual bool SerializeToString(std::string& output, eSerializationFormat m) const;
-  virtual bool SerializeFromString(const std::string& src, eSerializationFormat m);
+  virtual bool SerializeToString(std::string& output, eSerializationFormat m, Logger*) const;
+  virtual bool SerializeFromString(const std::string& src, eSerializationFormat m, Logger*);
 
-  bool IsReady() const { return m_IsReady; }
-  void SetReady(bool b) { m_IsReady = b; }
-
-  eEngineInitializationFailure GetFailure() const { return m_Failure; }
-  void SetFailure(eEngineInitializationFailure s) { m_Failure = s; }
+  eEngineInitializationState GetEngineInitializationState() const { return m_EngineInitializationState; }
+  void SetEngineInitializationState(eEngineInitializationState s) { m_EngineInitializationState = s; }
 
   bool HasCSVFilename() const { return !m_CSVFilename.empty(); }
   std::string GetCSVFilename() const { return m_CSVFilename; }
@@ -97,8 +94,7 @@ public:
   void SetStabilizationTime_s(double t) { m_StabilizationTime_s = t; }
 
 protected:
-  bool                         m_IsReady;
-  eEngineInitializationFailure m_Failure;
+  eEngineInitializationState   m_EngineInitializationState;
   std::string                  m_CSVFilename;
   std::string                  m_LogFilename;
   double                       m_StabilizationTime_s;

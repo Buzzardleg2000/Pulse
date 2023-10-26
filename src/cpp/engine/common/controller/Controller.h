@@ -155,6 +155,7 @@ namespace pulse
     virtual const SEScalarTime&           GetTimeStep() const;
     virtual const SEScalarTime&           GetEngineTime() const;
     virtual const SEScalarTime&           GetSimulationTime() const;
+    virtual const SEScalarTime&           GetStabilizationTime() const;
 
     virtual bool                          IsAirwayModeSupported(eAirwayMode /*mode*/) { return true; }
     virtual eAirwayMode                   GetAirwayMode() const { return m_AirwayMode; }
@@ -173,10 +174,11 @@ namespace pulse
     EngineState                           m_State;
     SEEngineTracker*                      m_EngineTrack;
     SEDataRequested*                      m_DataRequested;
-    eEngineInitializationFailure          m_EngineInitializationFailure;
+    eEngineInitializationState            m_EngineInitializationState;
 
     SEScalarTime                          m_CurrentTime;
     SEScalarTime                          m_SimulationTime;
+    SEScalarTime                          m_StabilizationTime;
     double                                m_SpareAdvanceTime_s;
     eAirwayMode                           m_AirwayMode;
     eSwitch                               m_Intubation;
@@ -253,7 +255,7 @@ namespace pulse
     virtual bool InitializeEngine(const std::string& patient_configuration, eSerializationFormat m);
     virtual bool InitializeEngine(const SEPatientConfiguration& patient_configuration);
     virtual bool IsReady() const;
-    virtual eEngineInitializationFailure GetInitializationError() const;
+    virtual eEngineInitializationState GetInitializationState() const;
 
     virtual void Clear();
 

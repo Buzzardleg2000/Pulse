@@ -73,13 +73,22 @@ message ScenarioExecData
 
 }
 
+enum eScenarioExecutionState
+{
+  Waiting  = 0;
+  Running  = 1;
+  Complete = 2;
+}
 message ScenarioExecStatusData
 {
+  
+  
   EngineInitializationStatusData   InitializationStatus              = 1;
   string                           ScenarioFilename                  = 2;
-  bool                             RuntimeError                      = 3;/**<< @brief Was there an Error running the engine. */
-  bool                             FatalRuntimeError                 = 4;/**<< @brief Was there a FatalError running the engine. */
-  double                           FinalSimulationTime_s             = 5;
+  eScenarioExecutionState          ScenarioExecutionState            = 3;/**<< Rather than require the user to test a variety of properties to check if a scenario was executed. */
+  bool                             RuntimeError                      = 4;/**<< @brief Was there an Error running the engine. */
+  bool                             FatalRuntimeError                 = 5;/**<< @brief Was there a FatalError running the engine. */
+  double                           FinalSimulationTime_s             = 6;
 }
 
 message ScenarioExecStatusListData

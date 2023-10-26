@@ -213,24 +213,33 @@ protected:
   std::stringstream          m_SerializationActions;
 };
 
+enum class eScenarioExecutionState { Waiting = 0, Executing, Complete };
+extern const std::string& eScenarioExecutionState_Name(eScenarioExecutionState s);
+
 class CDM_DECL SEScenarioExecStatus : public SEEngineInitializationStatus
 {
   friend class PBScenario;//friend the serialization class
 public:
-  SEScenarioExecStatus(Logger* logger);
+  SEScenarioExecStatus();
   virtual ~SEScenarioExecStatus();
+
+  void ForwardError(std::string const& /*msg*/) override { m_RuntimeError = true; }
+  void ForwardFatal(std::string const& /*msg*/) override { m_FatalRuntimeError = true; }
 
   void Clear() override;
   void Copy(const SEScenarioExecStatus& src);
 
-  bool SerializeToString(std::string& output, eSerializationFormat m) const override;
-  bool SerializeFromString(const std::string& src, eSerializationFormat m) override;
-  static bool SerializeToFile(const std::vector<SEScenarioExecStatus*>& src, const std::string& filename);
-  static bool SerializeFromFile(const std::string& filename, std::vector<SEScenarioExecStatus*>& dst, Logger* logger=nullptr);
+  bool SerializeToString(std::string& output, eSerializationFormat m, Logger* logger) const override;
+  bool SerializeFromString(const std::string& src, eSerializationFormat m, Logger* logger) override;
+  static bool SerializeToFile(const std::vector<SEScenarioExecStatus*>& src, const std::string& filename, Logger* logger);
+  static bool SerializeFromFile(const std::string& filename, std::vector<SEScenarioExecStatus*>& dst, Logger* logger);
 
   bool HasScenarioFilename() const { return !m_ScenarioFilename.empty(); }
   std::string GetScenarioFilename() const { return m_ScenarioFilename; }
   void SetScenarioFilename(const std::string& fn) { m_ScenarioFilename = fn; }
+
+  eScenarioExecutionState GetScenarioExecutionState() const { return m_ScenarioExecutionState; }
+  void SetScenarioExecutionState(eScenarioExecutionState s) { m_ScenarioExecutionState = s; }
 
   bool HasRuntimeError() const { return m_RuntimeError; }
   void SetRuntimeError(bool e) { m_RuntimeError = e; }
@@ -243,6 +252,7 @@ public:
 
 protected:
   std::string                m_ScenarioFilename;
+  eScenarioExecutionState    m_ScenarioExecutionState;
   bool                       m_RuntimeError;
   bool                       m_FatalRuntimeError;
   double                     m_FinalSimulationTime_s;

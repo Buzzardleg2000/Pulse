@@ -128,9 +128,9 @@ public:
   static CDM_BIND::EngineInitializationStatusData* Unload(const SEEngineInitializationStatus& src);
   static void Serialize(const CDM_BIND::EngineInitializationStatusData& src, SEEngineInitializationStatus& dst);
   static void Serialize(const SEEngineInitializationStatus& src, CDM_BIND::EngineInitializationStatusData& dst);
-  static bool SerializeToString(const SEEngineInitializationStatus& src, std::string& output, eSerializationFormat m);
-  static bool SerializeToString(const std::vector<SEEngineInitializationStatus*>& src, std::string& output, eSerializationFormat m);
-  static bool SerializeFromString(const std::string& src, SEEngineInitializationStatus& dst, eSerializationFormat m);
+  static bool SerializeToString(const SEEngineInitializationStatus& src, std::string& output, eSerializationFormat m, Logger* logger);
+  static bool SerializeToString(const std::vector<SEEngineInitializationStatus*>& src, std::string& output, eSerializationFormat m, Logger* logger);
+  static bool SerializeFromString(const std::string& src, SEEngineInitializationStatus& dst, eSerializationFormat m, Logger* logger);
   static bool SerializeFromString(const std::string& src, std::vector<SEEngineInitializationStatus*>& dst, eSerializationFormat m, Logger* logger);
   static void Copy(const SEEngineInitializationStatus& src, SEEngineInitializationStatus& dst);
 

@@ -41,14 +41,15 @@ class SEEventManager;
 class SEEngineTracker;
 class SEEngineConfiguration;
 
-enum class eEngineInitializationFailure
+enum class eEngineInitializationState
 {
-  NoFailures = 0,
+  Uninitialized = 0,
   FailedState = 1,
   FailedPatientSetup = 2,
-  FailedStabilization = 3
+  FailedStabilization = 3,
+  Initialized = 4
 };
-extern const std::string& eEngineInitializationFailure_Name(eEngineInitializationFailure e);
+extern const std::string& eEngineInitializationState_Name(eEngineInitializationState s);
 
 /**
  * @brief
@@ -135,10 +136,10 @@ public:
   //--------------------------------------------------------------------------------------------------
   /// \brief
   ///
-  /// If the engine did not initialize, get a bit more detail as to why
+  /// Get a bit more detail as to how initialization went
   ///
   //--------------------------------------------------------------------------------------------------
-  virtual eEngineInitializationFailure GetInitializationError() const = 0;
+  virtual eEngineInitializationState GetInitializationState() const = 0;
 
   //--------------------------------------------------------------------------------------------------
   /// \brief
@@ -192,6 +193,12 @@ public:
   /// returns the current time of the simulation.
   //--------------------------------------------------------------------------------------------------
   virtual double GetSimulationTime(const TimeUnit& unit) const = 0;
+
+  //--------------------------------------------------------------------------------------------------
+  /// \brief
+  /// returns the stabilization time of the simulation (if stabilized)
+  //--------------------------------------------------------------------------------------------------
+  virtual double GetStabilizationTime(const TimeUnit& unit) const = 0;
 
   //--------------------------------------------------------------------------------------------------
   /// \brief

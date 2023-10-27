@@ -17,7 +17,7 @@ from pulse.cdm.bind.Events_pb2 import ActiveEventListData, EventChangeListData
 from pulse.cdm.patient import SEPatientConfiguration
 from pulse.cdm.equipment_actions import SEEquipmentAction
 from pulse.cdm.engine import SEEventChange, eEvent, eDataRequest_category, \
-                             eDecimalFormat_type, eEngineInitializationFailure
+                             eDecimalFormat_type, eEngineInitializationState
 from pulse.cdm.scalars import get_unit
 
 from pulse.cdm.io.action import *
@@ -551,13 +551,12 @@ def serialize_engine_initialization_status_to_bind(
     src: SEEngineInitializationStatus,
     dst: EngineInitializationStatusData
 ) -> None:
-    dst.IsReady = src.is_ready()
-    dst.InitializationFailure = src.get_failure().value
+    dst.InitializationState = src.get_initialization_state().value
     if src.has_csv_filename():
         dst.CSVFilename = src.get_csv_filename()
     if src.has_log_filename():
         dst.LogFilename = src.get_log_filename()
-    dst.StabilizationTime_s = src.get_stabilization_time_s
+    dst.StabilizationTime_s = src.get_stabilization_time_s()
 
 def serialize_engine_initialization_status_to_string(
     src: SEEngineInitializationStatus,
@@ -579,8 +578,7 @@ def serialize_engine_initialization_status_from_bind(
     src: EngineInitializationStatusData,
     dst: SEEngineInitializationStatus
 ) -> None:
-    dst.set_ready(src.IsReady)
-    dst.set_failure(eEngineInitializationFailure(src.InitializationFailure))
+    dst.set_initialization_state(eEngineInitializationState(src.InitializationState))
     dst.set_csv_filename(src.CSVFilename)
     dst.set_log_filename(src.LogFilename)
     dst.set_stabilization_time_s(src.StabilizationTime_s)

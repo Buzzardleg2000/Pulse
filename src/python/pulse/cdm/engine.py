@@ -9,11 +9,12 @@ from typing import List, Optional, Union
 from pulse.cdm.scalars import SEScalarTime, SEScalarUnit, TimeUnit
 
 
-class eEngineInitializationFailure(Enum):
-    NoFailures = 0
+class eEngineInitializationState(Enum):
+    Uninitialized = 0
     FailedState = 1
-    FailedSetup = 2
+    FailedPatientSetup = 2
     FailedStabilization = 3
+    Initialized = 4
 
 
 class eSerializationFormat(Enum):
@@ -761,35 +762,29 @@ class SEEngineInitialization:
 
 
 class SEEngineInitializationStatus:
-    __slots__ = ("_is_ready", "_failure", "_csv_filename", "_log_filename", "_stabilization_time_s")
+    __slots__ = ("_initialization_state", "_csv_filename",
+                 "_log_filename", "_stabilization_time_s")
 
     def __init__(self):
         self.clear()
 
     def clear(self) -> None:
-        self._is_ready = False
-        self._failure = eEngineInitializationFailure.NoFailures
+        self._initialization_state = eEngineInitializationState.Uninitialized
         self._csv_filename = ""
         self._log_filename = ""
         self._stabilization_time_s = 0.
 
     def copy(self, other: "SEEngineInitializationStatus") -> None:
         self.clear()
-        self._is_ready = other._is_ready
-        self._failure = other._failure
+        self._initialization_state = other._initialization_state
         self._csv_filename = other._csv_filename
         self._log_filename = other._log_filename
         self._stabilization_time_s = other._stabilization_time_s
 
-    def is_ready(self) -> bool:
-        return self._is_ready
-    def set_ready(self, r: bool) -> None:
-        self._is_ready = r
-
-    def get_failure(self) -> eEngineInitializationFailure:
-        return self._failure
-    def set_failure(self, s: eEngineInitializationFailure) -> None:
-        self._failure = s
+    def get_initialization_state(self) -> eEngineInitializationState:
+        return self._initialization_state
+    def set_initialization_state(self, s: eEngineInitializationState) -> None:
+        self._initialization_state = s
 
     def has_csv_filename(self) -> bool:
         return bool(self._csv_filename)

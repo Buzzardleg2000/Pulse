@@ -1,17 +1,21 @@
 # Distributed under the Apache License, Version 2.0.
 # See accompanying NOTICE file for details.
 
-from pulse.cdm.engine import eSerializationFormat
 from google.protobuf import json_format
+from typing import List
 
+from pulse.cdm.engine import eSerializationFormat
 from pulse.cdm.scenario import SEScenario, SEScenarioExec, SEScenarioExecStatus
 from pulse.cdm.bind.Scenario_pb2 import ScenarioData, ScenarioExecData, ScenarioExecStatusData, \
                                         ScenarioExecStatusListData
+from pulse.cdm.bind.Engine_pb2 import ActionListData
 
 from pulse.cdm.io.engine import (
     serialize_actions_to_bind,
     serialize_data_request_manager_to_bind,
-    serialize_patient_configuration_to_bind
+    serialize_patient_configuration_to_bind,
+    serialize_engine_initialization_status_from_bind,
+    serialize_engine_initialization_status_to_bind
 )
 
 
@@ -118,7 +122,7 @@ def serialize_scenario_exec_from_bind(src: ScenarioExecData, dst: SEScenarioExec
 
 
 def serialize_scenario_exec_status_to_bind(src: SEScenarioExecStatus, dst: ScenarioExecStatusData) -> None:
-    serialize_engine_initialization_status_from_bind(src, dst.InitializationStatus)
+    serialize_engine_initialization_status_to_bind(src, dst.InitializationStatus)
     if src.has_scenario_filename():
         dst.ScenarioFilename = src.get_scenario_filename()
     dst.RuntimeError = src.has_runtime_error()
@@ -140,7 +144,7 @@ def serialize_scenario_exec_status_from_bind(src: ScenarioExecStatusData, dst: S
     dst.set_scenario_filename(src.ScenarioFilename)
     dst.set_runtime_error(src.RuntimeError)
     dst.set_fatal_runtime_error(src.FatalRuntimeError)
-    src.set_final_simulation_time_s(src.FinalSimulationTime_s)
+    dst.set_final_simulation_time_s(src.FinalSimulationTime_s)
 
 def serialize_scenario_exec_status_from_string(
     string: str,
@@ -173,7 +177,7 @@ def serialize_scenario_exec_status_list_to_string(
     return json_format.MessageToJson(dst, True, True)
 
 def serialize_scenario_exec_status_list_to_file(src: List[SEScenarioExecStatus], filename: str):
-    string = serialize_scenario_exec_list_to_string(src, eSerializationFormat.JSON)
+    string = serialize_scenario_exec_status_list_to_string(src, eSerializationFormat.JSON)
     with open(filename, "w") as file:
         file.write(string)
 
@@ -183,14 +187,14 @@ def serialize_scenario_exec_status_list_from_bind(
 ) -> None:
     for statusData in src.ScenarioExecStatus:
         dst.append(SEScenarioExecStatus())
-        serialize_engine_initialization_status_from_bind(statusData, dst[-1])
+        serialize_scenario_exec_status_from_bind(statusData, dst[-1])
 
 def serialize_scenario_exec_status_list_from_string(
     string: str,
     dst: List[SEScenarioExecStatus],
     fmt: eSerializationFormat
 ) -> None:
-    src = SEScenarioExecStatusListData()
+    src = ScenarioExecStatusListData()
     json_format.Parse(string, src)
     serialize_scenario_exec_status_list_from_bind(src, dst)
 

@@ -7,13 +7,14 @@ import json
 import logging
 import numpy as np
 import pandas as pd
+from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, Hashable, Iterable, List, NamedTuple, Optional, Set, Tuple
 
 import PyPulse
-from pulse.cdm.engine import eEngineInitializationFailure, eEvent, eSerializationFormat, eSwitch, SEAction, \
+from pulse.cdm.engine import eEvent, eSerializationFormat, eSwitch, SEAction, \
                              SEDataRequestManager, SEEngineInitializationStatus, SEEventChange
-from pulse.cdm.patient import eSex, SEPatient, SEPatientConfiguration
+from pulse.cdm.patient import SEPatient, SEPatientConfiguration
 from pulse.cdm.scalars import SEScalarTime, TimeUnit, get_unit
 from pulse.cdm.io.patient import serialize_patient_from_string
 from pulse.cdm.utils.csv_utils import read_csv_into_df
@@ -154,7 +155,7 @@ class SEScenarioExec:
     def get_organize_output_directory(self) -> eSwitch:
         return self._organize_output_directory
     def set_organize_output_directory(self, s: eSwitch) -> None:
-        self._organize_output_directory = same
+        self._organize_output_directory = s
 
     def get_auto_serialize_after_actions(self) -> eSwitch:
         return self._auto_serialize_after_actions
@@ -242,8 +243,15 @@ class SEScenarioExec:
         self._thread_count = c
 
 
+class eScenarioExecutionState(Enum):
+    Waiting = 0
+    Running = 1
+    Complete = 2
+
 class SEScenarioExecStatus(SEEngineInitializationStatus):
-    __slots__ = ("_scenario_filename", "_runtime_error", "_fatal_runtime_error", "_final_simulation_time_s")
+    __slots__ = ("_scenario_filename", "_scenario_execution_state",
+                 "_runtime_error", "_fatal_runtime_error",
+                 "_final_simulation_time_s")
 
     def __init__(self):
         self.clear()
@@ -251,13 +259,15 @@ class SEScenarioExecStatus(SEEngineInitializationStatus):
     def clear(self) -> None:
         super().clear()
         self._scenario_filename = ""
-        self._final_simulation_time_s = 0.
+        self._scenario_execution_state = eScenarioExecutionState.Waiting
         self._runtime_error = False
         self._fatal_runtime_error = False
+        self._final_simulation_time_s = 0.
 
-    def copy(self, other: "SEScnarioExecStatus") -> None:
+    def copy(self, other: "SEScenarioExecStatus") -> None:
         super().copy()
         self._scenario_filename = other._scenario_filename
+        self._scenario_execution_state = other._scenario_execution_state
         self._final_simulation_time_s = other._final_simulation_time_s
         self._runtime_error = other._runtime_error
         self._fatal_runtime_error = other._fatal_runtime_error
@@ -268,6 +278,11 @@ class SEScenarioExecStatus(SEEngineInitializationStatus):
         return self._scenario_filename
     def set_scenario_filename(self, fn: str) -> None:
         self._scenario_filename = fn
+
+    def get_scenario_execution_state(self) -> eScenarioExecutionState:
+        return self._scenario_execution_state
+    def set_scenario_execution_state(self, s: eScenarioExecutionState) -> None:
+        self._scenario_execution_state = s
 
     def has_runtime_error(self) -> bool:
         return self._runtime_error

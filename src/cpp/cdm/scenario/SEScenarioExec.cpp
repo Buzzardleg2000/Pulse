@@ -554,8 +554,13 @@ SEScenarioExecStatus::~SEScenarioExecStatus()
 
 void SEScenarioExecStatus::Clear()
 {
-  SEEngineInitializationStatus::Clear();
+  ClearStatus();
   m_ScenarioFilename = "";
+}
+
+void SEScenarioExecStatus::ClearStatus()
+{
+  SEEngineInitializationStatus::Clear();
   m_ScenarioExecutionState = eScenarioExecutionState::Waiting;
   m_RuntimeError = false;
   m_FatalRuntimeError = false;
@@ -575,11 +580,11 @@ bool SEScenarioExecStatus::SerializeFromString(const std::string& src, eSerializ
   return PBScenario::SerializeFromString(src, *this, m, logger);
 }
 
-bool SEScenarioExecStatus::SerializeToFile(const std::vector<SEScenarioExecStatus*>& src, const std::string& filename, Logger* logger)
+bool SEScenarioExecStatus::SerializeToFile(const std::vector<SEScenarioExecStatus>& src, const std::string& filename, Logger* logger)
 {
   return PBScenario::SerializeToFile(src, filename, logger);
 }
-bool SEScenarioExecStatus::SerializeFromFile(const std::string& filename, std::vector<SEScenarioExecStatus*>& dst, Logger* logger)
+bool SEScenarioExecStatus::SerializeFromFile(const std::string& filename, std::vector<SEScenarioExecStatus>& dst, Logger* logger)
 {
   return PBScenario::SerializeFromFile(filename, dst, logger);
 }

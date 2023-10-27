@@ -227,12 +227,13 @@ public:
   void ForwardFatal(std::string const& /*msg*/) override { m_FatalRuntimeError = true; }
 
   void Clear() override;
+  void ClearStatus(); // Clear everything but the scenario filename
   void Copy(const SEScenarioExecStatus& src);
 
   bool SerializeToString(std::string& output, eSerializationFormat m, Logger* logger) const override;
   bool SerializeFromString(const std::string& src, eSerializationFormat m, Logger* logger) override;
-  static bool SerializeToFile(const std::vector<SEScenarioExecStatus*>& src, const std::string& filename, Logger* logger);
-  static bool SerializeFromFile(const std::string& filename, std::vector<SEScenarioExecStatus*>& dst, Logger* logger);
+  static bool SerializeToFile(const std::vector<SEScenarioExecStatus>& src, const std::string& filename, Logger* logger);
+  static bool SerializeFromFile(const std::string& filename, std::vector<SEScenarioExecStatus>& dst, Logger* logger);
 
   bool HasScenarioFilename() const { return !m_ScenarioFilename.empty(); }
   std::string GetScenarioFilename() const { return m_ScenarioFilename; }

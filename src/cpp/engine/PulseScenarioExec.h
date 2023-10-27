@@ -35,13 +35,11 @@ protected:
   // For threaded scenario excution
   void ControllerLoop();
   SEScenarioExecStatus* GetNextScenarioStatus();
-  void FinalizeExecutionStatus(SEScenarioExecStatus& status);
+  void FinalizeExecutionStatus(SEScenarioExecStatus& src, SEScenarioExecStatus& dst);
 
   std::mutex                         m_Mutex;
   std::vector<std::thread>           m_Threads;
-  std::vector<SEScenarioExecStatus*> m_Statuses;
-  std::vector<SEScenarioExecStatus*> m_Completed;
-  std::string m_CompletedStatusesFilename;
+  std::vector<SEScenarioExecStatus>  m_Statuses;
 
   eModelType m_ModelType = eModelType::HumanAdultWholeBody;
 };

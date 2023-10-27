@@ -20,7 +20,8 @@ void PulseScenarioExec::Clear()
 {
   SEScenarioExec::Clear();
   m_ModelType = eModelType::HumanAdultWholeBody;
-  SAFE_DELETE_VECTOR(m_Statuses);
+  m_Statuses.clear();
+  m_Threads.clear();
 }
 
 void PulseScenarioExec::Copy(const PulseScenarioExec& src)
@@ -73,15 +74,16 @@ bool PulseScenarioExec::Execute()
     }
     else if (!GetScenarioDirectory().empty())
     {
+      SEScenarioExecStatus status;
       std::vector<std::string> scenarios;
       ListFiles(GetScenarioDirectory(), scenarios, true, ".json");
       for (auto filename : scenarios)
       {
-        SEScenarioExecStatus* status = new SEScenarioExecStatus();
-        status->SetScenarioFilename(filename);
+        status.SetScenarioFilename(filename);
         m_Statuses.push_back(status);
       }
-      m_CompletedStatusesFilename = "./ScenarioDirectoryStatuses.json";
+      SetScenarioExecListFilename("./test_results/scenarios/ScenarioDirectoryStatuses.json");
+      SEScenarioExecStatus::SerializeToFile(m_Statuses, m_ScenarioExecListFilename, GetLogger());
     }
     size_t numThreadsToUse = ComputeNumThreads();
     if (numThreadsToUse <= 0)
@@ -208,32 +210,35 @@ size_t PulseScenarioExec::ComputeNumThreads()
 
 void PulseScenarioExec::ControllerLoop()
 {
-  std::pair <PulseScenarioExec*, SEScenarioExecStatus*> ss;
+  // Create a tmp status to be fill out in parrallel with other threads
+  // Once complete, we will copy the data back into the status array before saving it out
+  SEScenarioExecStatus working;
   while (true)
   {
     SEScenarioExecStatus* status = GetNextScenarioStatus();
     if (!status)
       break;
+    working.Copy(*status);
     PulseScenario sce(GetDataRootDirectory());
     if (sce.SerializeFromFile(status->GetScenarioFilename()))
-      Execute(sce, status);
+      Execute(sce, &working);
     else
     {
       status->SetFatalRuntimeError(true);
-      Error("Unable to serialize scenario file: " + ss.first->GetScenarioFilename());
+      Error("Unable to serialize scenario file: " + working.GetScenarioFilename());
     }
-    FinalizeExecutionStatus(*status);
+    FinalizeExecutionStatus(working, *status);
   }
 }
 SEScenarioExecStatus* PulseScenarioExec::GetNextScenarioStatus()
 {
   m_Mutex.lock();
   SEScenarioExecStatus* found = nullptr;
-  for (SEScenarioExecStatus* status : m_Statuses)
+  for (SEScenarioExecStatus& status : m_Statuses)
   {
-    if (status->GetScenarioExecutionState() == eScenarioExecutionState::Waiting)
+    if (status.GetScenarioExecutionState() == eScenarioExecutionState::Waiting)
     {
-      found = status;
+      found = &status;
       found->SetScenarioExecutionState(eScenarioExecutionState::Executing);
       break;
     }
@@ -241,12 +246,12 @@ SEScenarioExecStatus* PulseScenarioExec::GetNextScenarioStatus()
   m_Mutex.unlock();
   return found;
 }
-void PulseScenarioExec::FinalizeExecutionStatus(SEScenarioExecStatus& status)
+void PulseScenarioExec::FinalizeExecutionStatus(SEScenarioExecStatus& src, SEScenarioExecStatus& dst)
 {
   m_Mutex.lock();
-  status.SetScenarioExecutionState(eScenarioExecutionState::Complete);
-  m_Completed.push_back(&status);
-  Info("Completed "+status.GetScenarioFilename());
-  SEScenarioExecStatus::SerializeToFile(m_Completed, m_CompletedStatusesFilename, GetLogger());
+  src.SetScenarioExecutionState(eScenarioExecutionState::Complete);
+  dst.Copy(src);
+  Info("Completed "+src.GetScenarioFilename());
+  SEScenarioExecStatus::SerializeToFile(m_Statuses, m_ScenarioExecListFilename, GetLogger());
   m_Mutex.unlock();
 }

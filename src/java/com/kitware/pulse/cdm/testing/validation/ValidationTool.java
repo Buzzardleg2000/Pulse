@@ -29,11 +29,11 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
-import com.kitware.pulse.cdm.bind.Engine.ValidationTargetData;
 import com.kitware.pulse.cdm.bind.Patient.PatientData.eSex;
 import com.kitware.pulse.cdm.bind.Properties.ScalarData;
-import com.kitware.pulse.cdm.bind.Engine.TimeSeriesValidationTargetData;
-import com.kitware.pulse.cdm.bind.Engine.TimeSeriesValidationTargetListData;
+import com.kitware.pulse.cdm.bind.Validation.ValidationTargetData;
+import com.kitware.pulse.cdm.bind.Validation.TimeSeriesValidationTargetData;
+import com.kitware.pulse.cdm.bind.Validation.TimeSeriesValidationTargetListData;
 import com.kitware.pulse.cdm.patient.SEPatient;
 import com.kitware.pulse.cdm.patient.assessments.SEPatientAssessment;
 import com.kitware.pulse.cdm.properties.SEScalar;

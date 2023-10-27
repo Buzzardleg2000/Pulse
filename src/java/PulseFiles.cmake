@@ -75,9 +75,6 @@ set(PULSE_JAVA_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/com/kitware/pulse/cdm/engine/SEEventManager.java
   ${CMAKE_CURRENT_SOURCE_DIR}/com/kitware/pulse/cdm/engine/SEPatientConfiguration.java
   ${CMAKE_CURRENT_SOURCE_DIR}/com/kitware/pulse/cdm/engine/SETimedStabilization.java
-  ${CMAKE_CURRENT_SOURCE_DIR}/com/kitware/pulse/cdm/engine/SEValidationTarget.java
-  ${CMAKE_CURRENT_SOURCE_DIR}/com/kitware/pulse/cdm/engine/SESegmentValidationTarget.java
-  ${CMAKE_CURRENT_SOURCE_DIR}/com/kitware/pulse/cdm/engine/SETimeSeriesValidationTarget.java
   ${CMAKE_CURRENT_SOURCE_DIR}/com/kitware/pulse/cdm/exceptions/InvalidUnitException.java
   ${CMAKE_CURRENT_SOURCE_DIR}/com/kitware/pulse/cdm/patient/SEPatient.java
   ${CMAKE_CURRENT_SOURCE_DIR}/com/kitware/pulse/cdm/patient/actions/SEAcuteRespiratoryDistressSyndromeExacerbation.java
@@ -298,6 +295,9 @@ set(PULSE_JAVA_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/com/kitware/pulse/cdm/testing/validation/SystemValidation.java
   ${CMAKE_CURRENT_SOURCE_DIR}/com/kitware/pulse/cdm/testing/validation/ValidationMatrix.java
   ${CMAKE_CURRENT_SOURCE_DIR}/com/kitware/pulse/cdm/testing/validation/ValidationTool.java
+  ${CMAKE_CURRENT_SOURCE_DIR}/com/kitware/pulse/cdm/validation/SESegmentValidationTarget.java
+  ${CMAKE_CURRENT_SOURCE_DIR}/com/kitware/pulse/cdm/validation/SETimeSeriesValidationTarget.java
+  ${CMAKE_CURRENT_SOURCE_DIR}/com/kitware/pulse/cdm/validation/SEValidationTarget.java
   ${CMAKE_CURRENT_SOURCE_DIR}/com/kitware/pulse/dataset/DataSetReader.java
   ${CMAKE_CURRENT_SOURCE_DIR}/com/kitware/pulse/engine/PulseConfiguration.java
   ${CMAKE_CURRENT_SOURCE_DIR}/com/kitware/pulse/engine/PulseEngine.java

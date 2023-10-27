@@ -9,7 +9,7 @@
 
 class SEValidationTarget : public Loggable
 {
-  friend class PBEngine;//friend the serialization class
+  friend class PBValidation;//friend the serialization class
 protected:
   SEValidationTarget() { Clear(); }
 public:
@@ -43,7 +43,7 @@ protected:
 
 class SESegmentValidationTarget : public SEValidationTarget
 {
-  friend class PBEngine;//friend the serialization class
+  friend class PBValidation;//friend the serialization class
 public:
   enum class eComparisonType { None=0, EqualToValue, EqualToSegment, GreaterThanValue, GreaterThanSegment,
                                LessThanValue, LessThanSegment, TrendsToValue, TrendsToSegment, Range };
@@ -77,7 +77,7 @@ protected:
 
 class SETimeSeriesValidationTarget : public SEValidationTarget
 {
-  friend class PBEngine;//friend the serialization class
+  friend class PBValidation;//friend the serialization class
 public:
   enum class eComparisonType { None=0, EqualToValue, Range };
   enum class eTargetType { Mean=0, Minimum, Maximum,

@@ -1,14 +1,14 @@
 /* Distributed under the Apache License, Version 2.0.
    See accompanying NOTICE file for details.*/
-package com.kitware.pulse.cdm.engine;
+package com.kitware.pulse.cdm.validation;
 import java.util.ArrayList;
 import java.util.List;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
-import com.kitware.pulse.cdm.bind.Engine.TimeSeriesValidationTargetData;
-import com.kitware.pulse.cdm.bind.Engine.TimeSeriesValidationTargetData.eType;
-import com.kitware.pulse.cdm.bind.Engine.TimeSeriesValidationTargetListData;
+import com.kitware.pulse.cdm.bind.Validation.TimeSeriesValidationTargetData;
+import com.kitware.pulse.cdm.bind.Validation.TimeSeriesValidationTargetData.eType;
+import com.kitware.pulse.cdm.bind.Validation.TimeSeriesValidationTargetListData;
 import com.kitware.pulse.utilities.FileUtils;
 
 public class SETimeSeriesValidationTarget extends SEValidationTarget

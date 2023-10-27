@@ -110,6 +110,7 @@ set(CDM_H_FILES
   cdm/io/protobuf/PBSubstanceQuantity.h
   cdm/io/protobuf/PBTestReport.h
   cdm/io/protobuf/PBUtils.h
+  cdm/io/protobuf/PBValidation.h
   cdm/patient/SEMeal.h
   cdm/patient/SENutrition.h
   cdm/patient/SEPatient.h
@@ -485,6 +486,7 @@ set(CDM_CPP_FILES
   cdm/io/protobuf/PBSubstanceQuantity.cpp
   cdm/io/protobuf/PBTestReport.cpp
   cdm/io/protobuf/PBUtils.cpp
+  cdm/io/protobuf/PBValidation.cpp
   cdm/patient/SEMeal.cpp
   cdm/patient/SENutrition.cpp
   cdm/patient/SEPatient.cpp

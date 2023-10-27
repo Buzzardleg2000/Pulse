@@ -10,7 +10,6 @@ import "pulse/cdm/bind/Actions.proto";
 import "pulse/cdm/bind/Patient.proto";
 import "pulse/cdm/bind/PatientActions.proto";
 import "pulse/cdm/bind/PatientConditions.proto";
-import "pulse/cdm/bind/Plots.proto";
 import "pulse/cdm/bind/EnvironmentActions.proto";
 import "pulse/cdm/bind/EnvironmentConditions.proto";
 import "pulse/cdm/bind/EquipmentActions.proto";
@@ -95,96 +94,6 @@ message DataRequestedData
 message DataRequestedListData
 {
   repeated DataRequestedData                            DataRequested                   = 1;
-}
-
-// This encapsulates a row from our System/Patient validation spreedsheet
-// It also encapsulates a segment property cell from a scenario validation spreedsheet
-
-message RangeData
-{
-  double                                                Minimum                         = 1;
-  double                                                Maximum                         = 2;
-}
-message ValidationTargetData
-{
-  string                                                Header                          = 1;
-  string                                                Reference                       = 2;
-  string                                                Notes                           = 3;
-  string                                                TableFormatting                 = 4;/**<< @brief Specification string for floating point formatting of computed values in tables */
-  
-}
-
-message SegmentValidationTargetData
-{
-
-  ValidationTargetData                                  ValidationTarget                = 1;
-  oneof Expected
-  {
-    double                                              EqualToValue                    = 2;
-    int32                                               EqualToSegment                  = 3;
-    double                                              GreaterThanValue                = 4;
-    int32                                               GreaterThanSegment              = 5;
-    double                                              LessThanValue                   = 6;
-    int32                                               LessThanSegment                 = 7;
-    double                                              TrendsToValue                   = 8;
-    int32                                               TrendsToSegment                 = 9;
-    RangeData                                           Range                           = 10;
-  }
-  optional double                                       ComputedValue                   = 11;
-  optional double                                       Error                           = 12;
-}
-message SegmentValidationSegmentData
-{
-
-  int32                                                 Segment                         = 1;
-  string                                                Notes                           = 2;
-  repeated SegmentValidationTargetData                  SegmentValidationTarget         = 3;
-}
-message SegmentValidationSegmentListData
-{
-  repeated SegmentValidationSegmentData                 SegmentValidationSegment        = 1;
-}
-message SegmentValidationPipelineConfigurationData
-{
-  PlotterListData                                       Plots                           = 1;
-}
-
-message TimeSeriesValidationTargetData
-{
-  enum eType
-  {
-    Mean     = 0;
-    Minimum  = 1;
-    Maximum  = 2;
-    MeanPerIdealWeight_kg = 3;
-    MinPerIdealWeight_kg = 4;
-    MaxPerIdealWeight_kg = 5;
-  }
-  ValidationTargetData                                  ValidationTarget                = 1;
-  bool                                                  PatientSpecific                 = 2;/**<< @brief Should the target value change due to patient properties, if false, the expected value is only valid for standard patients. */
-  eType                                                 Type                            = 3;
-  oneof Expected
-  {
-    double                                              EqualToValue                    = 4;
-    RangeData                                           Range                           = 5;
-  }
-
-  optional double                                       ComputedValue                   = 6;
-  optional double                                       Error                           = 7;
-}
-message TimeSeriesValidationTargetListData
-{
-  repeated TimeSeriesValidationTargetData               TimeSeriesValidationTarget      = 1;
-}
-
-message PatientTimeSeriesValidationData
-{
-  PatientData                                           Patient                         = 1;
-  map<string,TimeSeriesValidationTargetListData>        TimeSeriesValidationTargetMap   = 2;/**< @brief key is intended to be a table name, and the list is the table content. */
-}
-message PatientTimeSeriesValidationListData
-{
-  repeated PatientTimeSeriesValidationData              PatientTimeSeriesValidation     = 1;
 }
 
 message AnyConditionData

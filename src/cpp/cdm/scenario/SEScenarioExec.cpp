@@ -132,7 +132,8 @@ bool SEScenarioExec::Process(PhysiologyEngine& pe, SEScenario& sce, SEScenarioEx
     }
     else
     {
-      if (resultsFilename.rfind("./") == 0 || resultsFilename.rfind(".\\") == 0)
+      if (!m_OutputRootDirectory.empty() &&
+         (resultsFilename.rfind("./") == 0 || resultsFilename.rfind(".\\") == 0))
         resultsFilename = m_OutputRootDirectory + "/" + resultsFilename.substr(2);
       SplitPathFilenameExt(resultsFilename, m_OutputRootDirectory, m_BaseFilename, ext);
     }

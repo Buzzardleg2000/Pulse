@@ -62,6 +62,7 @@ bool PulseScenarioExec::Execute()
   {
     TimingProfile profiler;
     profiler.Start("Total");
+    m_LogToConsole = eSwitch::Off;
 
     m_Statuses.clear();
     if (!GetScenarioExecListFilename().empty())
@@ -92,10 +93,16 @@ bool PulseScenarioExec::Execute()
       return false;
     }
 
+    std::string copy;
+    SerializeToString(copy, eSerializationFormat::JSON, GetLogger());
     for (size_t p = 0; p < numThreadsToUse; p++)
-      m_Threads.push_back(std::thread(&PulseScenarioExec::ControllerLoop, this));
+    {
+      m_Threads.push_back(std::thread(&PulseScenarioExec::ControllerLoop,
+        copy, &m_Mutex, &m_Statuses, m_ScenarioExecListFilename, GetLogger()));
+    }
     for (size_t p = 0; p < numThreadsToUse; p++)
       m_Threads[p].join();
+
 
     Info("It took " + pulse::cdm::to_string(profiler.GetElapsedTime_s("Total")) + "s to run these scenarios");
     profiler.Clear();
@@ -208,50 +215,53 @@ size_t PulseScenarioExec::ComputeNumThreads()
   return numThreadsToUse;
 }
 
-void PulseScenarioExec::ControllerLoop()
+void PulseScenarioExec::ControllerLoop(const std::string copy,
+                                       std::mutex* mutex,
+                                       std::vector<SEScenarioExecStatus>* statuses,
+                                       const std::string scenarioExecListFilename,
+                                       Logger* logger)
 {
+  PulseScenarioExec exec(logger);
+  exec.SerializeFromString(copy, eSerializationFormat::JSON, logger);
   // Create a tmp status to be fill out in parrallel with other threads
   // Once complete, we will copy the data back into the status array before saving it out
-  SEScenarioExecStatus working;
+  SEScenarioExecStatus  working;
+  SEScenarioExecStatus* found;
   while (true)
   {
-    SEScenarioExecStatus* status = GetNextScenarioStatus();
-    if (!status)
-      break;
-    working.Copy(*status);
-    PulseScenario sce(GetDataRootDirectory());
-    if (sce.SerializeFromFile(status->GetScenarioFilename()))
-      Execute(sce, &working);
+    found = nullptr;
+    // Lock and look in the shared status vector for an available scenario
+    mutex->lock();
+    for (SEScenarioExecStatus& status : *statuses)
+    {
+      if (status.GetScenarioExecutionState() == eScenarioExecutionState::Waiting)
+      {
+        found = &status;
+        found->SetScenarioExecutionState(eScenarioExecutionState::Executing);
+        break;
+      }
+    }
+    mutex->unlock();
+    if (!found)
+      return;
+    working.Copy(*found);
+
+    // Execute this scenario
+    PulseScenario sce(exec.GetDataRootDirectory());
+    if (sce.SerializeFromFile(working.GetScenarioFilename()))
+      exec.Execute(sce, &working);
     else
     {
-      status->SetFatalRuntimeError(true);
-      Error("Unable to serialize scenario file: " + working.GetScenarioFilename());
+      working.SetFatalRuntimeError(true);
+      exec.Error("Unable to serialize scenario file: " + working.GetScenarioFilename());
     }
-    FinalizeExecutionStatus(working, *status);
+
+    // Lock to update our shared status
+    mutex->lock();
+    working.SetScenarioExecutionState(eScenarioExecutionState::Complete);
+    found->Copy(working);
+    exec.Info("Completed " + working.GetScenarioFilename());
+    SEScenarioExecStatus::SerializeToFile(*statuses, scenarioExecListFilename, exec.GetLogger());
+    mutex->unlock();
   }
-}
-SEScenarioExecStatus* PulseScenarioExec::GetNextScenarioStatus()
-{
-  m_Mutex.lock();
-  SEScenarioExecStatus* found = nullptr;
-  for (SEScenarioExecStatus& status : m_Statuses)
-  {
-    if (status.GetScenarioExecutionState() == eScenarioExecutionState::Waiting)
-    {
-      found = &status;
-      found->SetScenarioExecutionState(eScenarioExecutionState::Executing);
-      break;
-    }
-  }
-  m_Mutex.unlock();
-  return found;
-}
-void PulseScenarioExec::FinalizeExecutionStatus(SEScenarioExecStatus& src, SEScenarioExecStatus& dst)
-{
-  m_Mutex.lock();
-  src.SetScenarioExecutionState(eScenarioExecutionState::Complete);
-  dst.Copy(src);
-  Info("Completed "+src.GetScenarioFilename());
-  SEScenarioExecStatus::SerializeToFile(m_Statuses, m_ScenarioExecListFilename, GetLogger());
-  m_Mutex.unlock();
 }

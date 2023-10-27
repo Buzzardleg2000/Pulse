@@ -4,12 +4,19 @@
 #pragma once
 
 #include "PulseScenario.h"
-
-#include "PatientIteration.h"
+#include "ParameterIteration.h"
+#include "cdm/engine/SESerializeState.h"
+#include "cdm/scenario/SEScenarioExec.h"
 
 namespace pulse::study::patient_variability
 {
-  class ScenarioIteration : public PulseScenario
+  enum class eGenStyle
+  {
+    Combo = 0,
+    Slice
+  };
+
+  class ScenarioIteration : protected PulseScenario
   {
   public:
     ScenarioIteration(Logger& logger);
@@ -17,46 +24,42 @@ namespace pulse::study::patient_variability
 
     void Clear() override;
 
+    std::string GetName() const override;
+    void SetName(const std::string& name) override;
+    bool HasName() const override;
+
+    virtual eGenStyle GetGenStyle() const { return m_GenStyle; }
+    virtual void SetGenStyle(eGenStyle s) { m_GenStyle = s; }
+
     virtual void SetIterationName(const std::string& n) { m_IterationName = n; }
     virtual std::string GetIterationName() const { return m_IterationName; }
 
-    void SetScenarioDirectory(const std::string& d);
-    std::string GetScenarioDirectory() const { return m_ScenarioDirectory; }
+    virtual void SetResultsDirectory(const std::string& d);
+    virtual std::string GetResultsDirectory() const { return m_ResultsDirectory; }
 
-    void SetStateDirectory(const std::string& d);
-    std::string GetStateDirectory() const { return m_StateDirectory; }
+    virtual void SetScenarioExecListFilename(const std::string& d);
+    virtual std::string GetScenarioExecListFilename() const { return m_ScenarioExecListFilename; }
 
-    eGenStyle GetGenStyle() const { return m_GenStyle; }
-    void SetGenStyle(eGenStyle s) { m_GenStyle = s; }
-
-    bool CreateStates() const { return m_CreateStates; }
-    void CreateStates(bool b) { m_CreateStates = b; }
-
-    double GetBaselineDuration_s() const { return m_BaselineDuration_s; }
-    void SetBaselineDuration_s(double d) { m_BaselineDuration_s = d; }
-
-    double GetMaxSimTime_min() const { return m_MaxSimTime_min; }
-    void SetMaxSimTime_min(double d) { m_MaxSimTime_min = d; }
-
-    virtual bool GenerateScenarios(const PatientIteration& patients);
+    virtual void SetStateDirectory(const std::string& d);
+    virtual std::string GetStateDirectory() const { return m_StateDirectory; }
 
   protected:
     virtual void FixUp() {};
-    virtual void GenerateSlicedActionSets(std::pair<std::string,std::string>) = 0;
-    virtual void GenerateCombinationActionSets(std::pair<std::string, std::string>) = 0;
+    virtual bool WriteScenario();
+    virtual bool WriteScenarioList();
 
     // Statefull
     eGenStyle                                     m_GenStyle;
-    bool                                          m_CreateStates;
-    double                                        m_BaselineDuration_s;
-    double                                        m_MaxSimTime_min;
     std::string                                   m_IterationName;
-    std::string                                   m_ScenarioDirectory;
+    std::string                                   m_ResultsDirectory;
+    std::string                                   m_ScenarioExecListFilename;
     std::string                                   m_StateDirectory;
 
     // Stateless
+    std::string                                   m_ScenarioDirectory;
     size_t                                        m_Duplicates;
-    size_t                                        m_NumScenarios;
-    std::map<std::string, std::string>            m_ScenarioStates;
+    SESerializeState                              m_Serialize;
+    SEScenarioExecStatus                          m_ScenarioStatus;
+    std::vector<SEScenarioExecStatus>             m_ScenarioList;
   };
 }

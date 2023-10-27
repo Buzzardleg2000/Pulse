@@ -11,9 +11,12 @@
 
 namespace pulse::study::patient_variability
 {
-  ValidationIteration::ValidationIteration(Logger& logger) : ScenarioIteration(logger)
+  ValidationIteration::ValidationIteration(Logger& logger) : ActionIteration(logger)
   {
     m_IterationName = "Validation";
+    SetStateDirectory("");
+    SetScenarioExecListFilename("");
+
     // This is where the python data generator puts these validation data request files
     // The ./ is implied
     m_DataRequestFiles.push_back("validation/requests/BloodChemistry.json");
@@ -60,11 +63,10 @@ namespace pulse::study::patient_variability
 
   void ValidationIteration::GenerateScenarios(std::pair<std::string, std::string> patientFolderAndStateFilename)
   {
-    m_NumScenarios++;
     SetName(patientFolderAndStateFilename.first);
     SetDescription("Generate data for validation");
     SetEngineStateFile(patientFolderAndStateFilename.second);
-    GetDataRequestManager().SetResultsFilename("./"+patientFolderAndStateFilename.first + ".csv");
-    SerializeToFile(m_ScenarioDirectory+"/"+m_Name+".json");
+    GetDataRequestManager().SetResultsFilename(m_ResultsDirectory+m_Name+".csv");
+    WriteScenario();
   }
 }

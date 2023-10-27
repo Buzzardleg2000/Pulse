@@ -1,11 +1,13 @@
 add_library_ex(PatientVariabilityEngine
   H_FILES
+    ActionIteration.h
     ParameterIteration.h
     PatientIteration.h
     ScenarioIteration.h
     TCCCIteration.h
     ValidationIteration.h
   CPP_FILES
+    ActionIteration.cpp
     ParameterIteration.cpp
     PatientIteration.cpp
     ScenarioIteration.cpp

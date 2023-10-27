@@ -17,10 +17,10 @@ using namespace pulse::study::patient_variability;
 int main(int argc, char* argv[])
 {
   bool clear                   = false;// TODO
-  bool generateOnly            = false;
+  bool generateOnly            = true;
 
   std::vector<PatientIteration*> iPatients;
-  std::vector<ScenarioIteration*> iScenarios;
+  std::vector<ActionIteration*>  iActions;
 
 
   // Process arguments
@@ -80,7 +80,7 @@ int main(int argc, char* argv[])
     {
       ValidationIteration* vi = new ValidationIteration(logger);
       vi->SetMaxSimTime_min(2);
-      iScenarios.push_back(vi);
+      iActions.push_back(vi);
     }
     else if (mode == "hemorrhage")
     {
@@ -89,7 +89,7 @@ int main(int argc, char* argv[])
       tccc->SetMaxSimTime_min(60);
       tccc->PerformInterventions(false);
       tccc->GetHemorrhageSeverity().SetMinMaxStep(0, 0.9, 0.1);
-      iScenarios.push_back(tccc);
+      iActions.push_back(tccc);
     }
     else if (mode == "itm")
     {
@@ -106,82 +106,70 @@ int main(int argc, char* argv[])
       tccc->GetSalineAvailable().SetValues({ 1 });
       tccc->GetNeedleAvailable().SetValues({ 1 });
       tccc->GetChestWrapAvailable().SetValues({ 1 });
-      iScenarios.push_back(tccc);
+      iActions.push_back(tccc);
     }
   }
   else
   {
     PatientIteration* male = new PatientIteration(logger);
     male->SetIterationName("default_male");
-    male->SetScenarioDirectory(rootDir + "/scenarios/patients/" + male->GetName());
-    male->SetStateDirectory(rootDir + "/states/patients/" + male->GetName());
+    male->SetScenarioExecListFilename(rootDir + "/scenarios/" + male->GetIterationName()+".json");
+    male->SetStateDirectory(rootDir + "/states/" + male->GetIterationName());
+    male->SetResultsDirectory(rootDir + "/results/" + male->GetIterationName());
     iPatients.push_back(male);
     if (true)
     {
       ValidationIteration* vi = new ValidationIteration(logger);
       vi->SetIterationName("validation");
-      vi->SetScenarioDirectory(rootDir + "/scenarios/" + vi->GetIterationName());
+      vi->SetScenarioExecListFilename(rootDir + "/scenarios/" + vi->GetIterationName()+".json");
       vi->SetStateDirectory(rootDir + "/states/" + vi->GetIterationName());
-      iScenarios.push_back(vi);
+      vi->SetResultsDirectory(rootDir + "/results/" + vi->GetIterationName());
+      iActions.push_back(vi);
     }
     if (true)
     {
       TCCCIteration* tccc = new TCCCIteration(logger);
       tccc->SetIterationName("tccc");
-      tccc->SetScenarioDirectory(rootDir + "/scenarios/" + tccc->GetIterationName());
+      tccc->SetScenarioExecListFilename(rootDir + "/scenarios/" + tccc->GetIterationName()+".json");
       tccc->SetStateDirectory(rootDir + "/states/" + tccc->GetIterationName());
+      tccc->SetResultsDirectory(rootDir + "/results/" + tccc->GetIterationName());
       tccc->CreateStates(true);
       tccc->SetBaselineDuration_s(15);
       tccc->SetMaxSimTime_min(60);
       tccc->PerformInterventions(false);
       tccc->GetHemorrhageSeverity().SetValues({ 0.2, 0.5 });
       tccc->GetInsultDuration_s().SetValues({ 5 });
-      iScenarios.push_back(tccc);
+      iActions.push_back(tccc);
     }
   }
 
-  PulseScenarioExec* opts;
-  std::vector<PulseScenarioExec*> execs;
+  PulseScenarioExec opts(&logger);
+  opts.SetModelType(eModelType::HumanAdultWholeBody);
+  opts.LogToConsole(eSwitch::Off);
+
   for (PatientIteration* pi : iPatients)
   {
     pi->GenerateScenarios();
 
-    // Create an exec for this directory
-    opts = new PulseScenarioExec(&logger);
-    opts->SetModelType(eModelType::HumanAdultWholeBody);
-    opts->LogToConsole(eSwitch::Off);
-    opts->SetScenarioDirectory(pi->GetScenarioDirectory());
-    opts->SetOutputRootDirectory(rootDir + "/results/patients/" + pi->GetIterationName() + "/");
-    execs.push_back(opts);
-
-    for (ScenarioIteration* ssi : iScenarios)
+    if (!generateOnly)
     {
-      ssi->GenerateScenarios(*pi);
+      opts.SetScenarioExecListFilename(pi->GetScenarioExecListFilename());
+      opts.SetOutputRootDirectory(rootDir + "/results/patients/" + pi->GetIterationName() + "/");
+    }
 
-      // Create an exec for this directory
-      opts = new PulseScenarioExec(&logger);
-      opts->SetModelType(eModelType::HumanAdultWholeBody);
-      opts->LogToConsole(eSwitch::Off);
-      opts->SetScenarioDirectory(ssi->GetScenarioDirectory());
-      opts->SetOutputRootDirectory(rootDir + "/results/" + ssi->GetIterationName() + "/");
-      execs.push_back(opts);
+    for (ActionIteration* ai : iActions)
+    {
+      ai->GenerateScenarios(*pi);
+
+      if (!generateOnly)
+      {
+        opts.SetScenarioExecListFilename(ai->GetScenarioExecListFilename());
+        opts.SetOutputRootDirectory(rootDir + "/results/" + ai->GetIterationName() + "/");
+      }
     }
   }
 
-  if (generateOnly)
-    return 0;
-
-  for (PulseScenarioExec* opts : execs)
-  {
-    if (!opts->Execute())
-    {
-      logger.Error("Unable to run scenarios");
-      return 1;
-    }
-  }
-
-  SAFE_DELETE_VECTOR(execs);
   SAFE_DELETE_VECTOR(iPatients);
-  SAFE_DELETE_VECTOR(iScenarios);
+  SAFE_DELETE_VECTOR(iActions);
   return 0;
 }

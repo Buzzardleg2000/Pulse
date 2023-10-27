@@ -33,12 +33,14 @@ protected:
   bool ConvertLog();
 
   // For threaded scenario excution
-  void ControllerLoop();
-  SEScenarioExecStatus* GetNextScenarioStatus();
-  void FinalizeExecutionStatus(SEScenarioExecStatus& src, SEScenarioExecStatus& dst);
+  static void ControllerLoop(const std::string copy,
+                             std::mutex* m,
+                             std::vector<SEScenarioExecStatus>* s,
+                             const std::string fn,
+                             Logger* logger);
 
-  std::mutex                         m_Mutex;
   std::vector<std::thread>           m_Threads;
+  std::mutex                         m_Mutex;
   std::vector<SEScenarioExecStatus>  m_Statuses;
 
   eModelType m_ModelType = eModelType::HumanAdultWholeBody;

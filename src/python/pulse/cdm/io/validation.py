@@ -1,10 +1,12 @@
 # Distributed under the Apache License, Version 2.0.
 # See accompanying NOTICE file for details.
 
-from pulse.cdm.engine import SEValidationTarget, \
+from pulse.cdm.validation import SEValidationTarget, \
+                             SESegmentValidationPipelineConfig, \
                              SESegmentValidationTarget, SESegmentValidationSegment, \
                              SETimeSeriesValidationTarget, SEPatientTimeSeriesValidation
-from pulse.cdm.bind.Engine_pb2 import ValidationTargetData, \
+from pulse.cdm.io.patient import serialize_patient_from_bind, serialize_patient_to_bind
+from pulse.cdm.bind.Validation_pb2 import ValidationTargetData, \
                                       SegmentValidationTargetData, SegmentValidationSegmentData,\
                                       SegmentValidationSegmentListData, SegmentValidationPipelineConfigurationData, \
                                       TimeSeriesValidationTargetData, TimeSeriesValidationTargetListData, \

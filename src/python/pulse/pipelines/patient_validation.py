@@ -7,12 +7,12 @@ import argparse
 from pathlib import Path
 from typing import List, Optional, Union
 
-from pulse.cdm.engine import SEPatientTimeSeriesValidation
+from pulse.cdm.validation import SEPatientTimeSeriesValidation
 from pulse.pipelines.dataset.timeseries_dataset_reader import gen_patient_targets
 from pulse.pipelines.validation.timeseries_validation import (
     validate, generate_validation_tables,
     gen_expected_str, gen_engine_val_str)
-from pulse.cdm.io.engine import (
+from pulse.cdm.io.validation import (
     serialize_patient_time_series_validation_to_file,
     serialize_patient_time_series_validation_list_to_file)
 

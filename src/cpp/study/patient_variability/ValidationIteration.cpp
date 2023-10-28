@@ -19,6 +19,7 @@ namespace pulse::study::patient_variability
 
     // This is where the python data generator puts these validation data request files
     // The ./ is implied
+    m_DataRequestFiles.push_back("validation/requests/Patient.json");
     m_DataRequestFiles.push_back("validation/requests/BloodChemistry.json");
     m_DataRequestFiles.push_back("validation/requests/Cardiovascular.json");
     m_DataRequestFiles.push_back("validation/requests/CardiovascularCompartments.json");
@@ -32,9 +33,7 @@ namespace pulse::study::patient_variability
     m_DataRequestFiles.push_back("validation/requests/RespiratoryCompartments.json");
     m_DataRequestFiles.push_back("validation/requests/Tissue.json");
     m_DataRequestFiles.push_back("validation/requests/TissueCompartments.json");
-    m_DataRequestFiles.push_back("validation/requests/TissueSubstances.json");
-    m_DataRequestMgr->CreatePatientDataRequest("Weight", MassUnit::g);
-    m_DataRequestMgr->CreatePatientDataRequest("IdealBodyWeight", MassUnit::g);
+    //m_DataRequestFiles.push_back("validation/requests/TissueSubstances.json");
 
 
     m_Adv.GetTime().SetValue(2, TimeUnit::min);

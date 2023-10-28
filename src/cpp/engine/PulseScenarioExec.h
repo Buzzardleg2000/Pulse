@@ -6,6 +6,7 @@
 #include "engine/CommonDefs.h"
 #include "engine/PulseScenario.h"
 #include "cdm/scenario/SEScenarioExec.h"
+#include <thread>
 
 /**
 * @brief Create a Pulse engine and execute the scenario opts

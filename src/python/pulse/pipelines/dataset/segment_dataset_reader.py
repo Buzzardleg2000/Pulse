@@ -10,10 +10,10 @@ from openpyxl import load_workbook
 from openpyxl.worksheet.worksheet import Worksheet
 from typing import Dict, List, Tuple
 
-from pulse.cdm.engine import SESegmentValidationTarget, SESegmentValidationSegment
+from pulse.cdm.validation import SESegmentValidationTarget, SESegmentValidationSegment
 from pulse.cdm.scenario import SEScenario
 from pulse.cdm.utils.file_utils import get_validation_dir
-from pulse.cdm.io.engine import serialize_segment_validation_segment_list_to_file
+from pulse.cdm.io.validation import serialize_segment_validation_segment_list_to_file
 from pulse.pipelines.dataset.utils import generate_data_request
 
 _pulse_logger = logging.getLogger('pulse')

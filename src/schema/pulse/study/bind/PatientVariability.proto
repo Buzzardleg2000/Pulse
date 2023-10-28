@@ -5,7 +5,6 @@ option csharp_namespace = "pulse.study.bind.patient_variability";
 option optimize_for = SPEED;
 
 import "pulse/cdm/bind/Patient.proto";
-import "pulse/engine/bind/Scenario.proto";
 
 enum eGenStyle
 {

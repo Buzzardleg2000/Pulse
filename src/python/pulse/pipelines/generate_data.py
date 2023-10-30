@@ -16,8 +16,8 @@ if __name__ == "__main__":
     generate_data_requests(xls_file, Path("./validation/requests"))
 
     patient_drs = [
-        generate_data_request("Patient", "Weight", "g", 1),
-        generate_data_request("Patient", "IdealBodyWeight", "g", 1),
+        generate_data_request("Patient", "Weight", "kg", 1),
+        generate_data_request("Patient", "IdealBodyWeight", "kg", 1),
         generate_data_request("Patient", "BasalMetabolicRate", "kcal/day", 1),
         generate_data_request("Patient", "BloodVolumeBaseline", "mL", 1),
         generate_data_request("Patient", "DiastolicArterialPressureBaseline", "mmHg", 1),

@@ -1,0 +1,51 @@
+{
+  "Name": "MildSepsis",
+  "Description": "Run mild sepsis for 1 hour",
+  "PatientConfiguration": { "PatientFile": "StandardMale.json" },
+  "DataRequestFile": [
+    "StandardDataRequests.json"
+  ],
+  "AnyAction": [{
+    "AdvanceTime": {
+      "Time": {
+        "ScalarTime": {
+          "Value": 30.0,
+          "Unit": "s"
+        }
+      }
+    }
+  },{
+    "PatientAction": {
+      "SepsisExacerbation": {
+        "PatientAction": {
+          "Action": {
+            "Comment": ""
+          }
+        },
+        "InfectionSeverity": {
+          "Scalar0To1": {
+            "Value": 0.5,
+            "Unit": "",
+            "ReadOnly": false
+          }
+        },
+        "ProgressionSeverity": {
+          "Scalar0To1": {
+            "Value": 0.5,
+            "Unit": "",
+            "ReadOnly": false
+          }
+        }
+      }
+    }
+  },{
+    "AdvanceTime": {
+      "Time": {
+        "ScalarTime": {
+          "Value": 60.0,
+          "Unit": "min"
+        }
+      }
+    }
+  }]
+}

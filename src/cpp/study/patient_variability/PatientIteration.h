@@ -3,11 +3,10 @@
 
 #pragma once
 
-#include "cdm/engine/SESerializeState.h"
 #include "cdm/patient/SEPatient.h"
 #include "PulseScenario.h"
 
-#include "ParameterIteration.h"
+#include "ScenarioIteration.h"
 
 namespace pulse::study::patient_variability
 {
@@ -45,26 +44,13 @@ namespace pulse::study::patient_variability
   #define maxRR_bpm 20
   #define stdRR_bpm 12
 
-  class PatientIteration : public PulseScenario
+  class PatientIteration : public ScenarioIteration
   {
   public:
     PatientIteration(Logger& logger);
     virtual ~PatientIteration();
 
     void Clear() override;
-
-    virtual void SetIterationName(const std::string& n) { m_IterationName = n; }
-    virtual std::string GetIterationName() const { return m_IterationName; }
-
-    void SetScenarioDirectory(const std::string& d);
-    std::string GetScenarioDirectory() const { return m_ScenarioDirectory; }
-
-    void SetStateDirectory(const std::string& d);
-    std::string GetStateDirectory() const { return m_StateDirectory; }
-
-
-    eGenStyle GetGenStyle() const { return m_GenStyle; }
-    void SetGenStyle(eGenStyle s) { m_GenStyle = s; }
 
     ePatient_Sex GetSex() const { return m_Sex; }
     void SetSex(ePatient_Sex s) { m_Sex = s; }
@@ -97,14 +83,13 @@ namespace pulse::study::patient_variability
     const std::map<std::string, std::string>& GetPatientStates() const { return m_PatientStates; }
 
   protected:
-    void FixUp();
+    void FixUp() override;
     void GenerateScenario();
     void GenerateSlicedPatientList();
     void GenerateCombinationPatientList();
 
     static std::string ToString(SEPatient& patient);
 
-    eGenStyle                              m_GenStyle;
     ePatient_Sex                           m_Sex;
     ParameterIteration                     m_Age_yr;
     ParameterIteration                     m_Height_cm;
@@ -114,14 +99,8 @@ namespace pulse::study::patient_variability
     ParameterIteration                     m_MAP_mmHg;
     ParameterIteration                     m_PP_mmHg;
     ParameterIteration                     m_RR_bpm;
-    std::string                            m_IterationName;
-    std::string                            m_ScenarioDirectory;
-    std::string                            m_StateDirectory;
 
-    unsigned int                           m_NumPatientsFailedToSetup = 0;
-    unsigned int                           m_DuplicatePatients = 0;
     SEPatient*                             m_Patient;
-    SESerializeState                       m_PatientState;
     std::map<std::string, std::string>     m_PatientStates;
   };
 }

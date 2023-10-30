@@ -9,32 +9,45 @@ from typing import List, Optional, Union
 from pulse.cdm.scalars import SEScalarTime, SEScalarUnit, TimeUnit
 
 
+class eEngineInitializationState(Enum):
+    Uninitialized = 0
+    FailedState = 1
+    FailedPatientSetup = 2
+    FailedStabilization = 3
+    Initialized = 4
+
+
 class eSerializationFormat(Enum):
     JSON = 0
     BINARY = 1
     VERBOSE_JSON = 2
     TEXT = 3
 
+
 class eSide(Enum):
     NullSide = 0
     Left = 1
     Right = 2
+
 
 class eGate(Enum):
     NullGate = 0
     Open = 1
     Closed = 2
 
+
 class eSwitch(Enum):
     NullSwitch = 0
     Off = 1
     On = 2
+
 
 class eCharge(Enum):
     NullCharge = 0
     Negative = 1
     Neutral = 2
     Positive = 3
+
 
 class eEvent(Enum):
     Antidiuresis = 0
@@ -91,6 +104,7 @@ class eEvent(Enum):
     MechanicalVentilatorReliefValveActive = 1003
     SupplementalOxygenBottleExhausted = 1004
     NonRebreatherMaskOxygenBagEmpty = 1005
+
 
 class SEEventChange:
     __slots__ = ["event", "active", "sim_time"]
@@ -730,7 +744,7 @@ class SEDataRequestManager:
             print("{}={}".format(self._data_requests[i], data_values[i+1]))
 
 
-class SEEngineInitialization():
+class SEEngineInitialization:
     __slots__ = ["id", "patient_configuration", "state_filename",
                  "state", "data_request_mgr", "keep_event_changes",
                  "log_to_console", "log_filename", "keep_log_messages" ]
@@ -745,6 +759,51 @@ class SEEngineInitialization():
         self.log_to_console = False
         self.keep_event_changes = False
         self.keep_log_messages = False
+
+
+class SEEngineInitializationStatus:
+    __slots__ = ("_initialization_state", "_csv_filename",
+                 "_log_filename", "_stabilization_time_s")
+
+    def __init__(self):
+        self.clear()
+
+    def clear(self) -> None:
+        self._initialization_state = eEngineInitializationState.Uninitialized
+        self._csv_filename = ""
+        self._log_filename = ""
+        self._stabilization_time_s = 0.
+
+    def copy(self, other: "SEEngineInitializationStatus") -> None:
+        self.clear()
+        self._initialization_state = other._initialization_state
+        self._csv_filename = other._csv_filename
+        self._log_filename = other._log_filename
+        self._stabilization_time_s = other._stabilization_time_s
+
+    def get_initialization_state(self) -> eEngineInitializationState:
+        return self._initialization_state
+    def set_initialization_state(self, s: eEngineInitializationState) -> None:
+        self._initialization_state = s
+
+    def has_csv_filename(self) -> bool:
+        return bool(self._csv_filename)
+    def get_csv_filename(self) -> str:
+        return self._csv_filename
+    def set_csv_filename(self, fn: str) -> None:
+        self._csv_filename = fn
+
+    def has_log_filename(self) -> bool:
+        return bool(self._log_filename)
+    def get_log_filename(self) -> str:
+        return self._log_filename
+    def set_log_filename(self, fn: str) -> None:
+        self._log_filename = fn
+
+    def get_stabilization_time_s(self) -> float:
+        return self._stabilization_time_s
+    def set_stabilization_time_s(self, t: float) -> None:
+        self._stabilization_time_s = t
 
 
 class SESerializeRequested(SEAction):

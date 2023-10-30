@@ -14,9 +14,12 @@
 
 namespace pulse::study::patient_variability
 {
-  TCCCIteration::TCCCIteration(Logger& logger) : ScenarioIteration(logger)
+  TCCCIteration::TCCCIteration(Logger& logger) : ActionIteration(logger)
   {
     m_IterationName = "TCCC";
+    SetStateDirectory("");
+    SetScenarioExecListFilename("");
+
     m_PerformInterventions = false;
 
     m_Hemorrhage.SetType(eHemorrhage_Type::External);
@@ -124,7 +127,7 @@ namespace pulse::study::patient_variability
       m_Duplicates++;
       return;
     }
-    GetDataRequestManager().SetResultsFilename("./"+m_Name+".csv");
+    GetDataRequestManager().SetResultsFilename(m_ResultsDirectory+m_Name + ".csv");
 
     double TotalAdvanceTime_s = 0;
     double FinalAdvanceTime_min = 0;
@@ -179,8 +182,7 @@ namespace pulse::study::patient_variability
       m_Actions.push_back(&m_Adv2End);
     }
 
-    // Write the scenario
-    m_NumScenarios++;
-    SerializeToFile(m_ScenarioDirectory+"/"+m_Name+".json");
+    // Track and Write the scenario
+    WriteScenario();
   }
 }

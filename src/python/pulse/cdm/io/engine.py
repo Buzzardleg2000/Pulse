@@ -2,7 +2,7 @@
 # See accompanying NOTICE file for details.
 
 from pulse.cdm.engine import SEDataRequestManager, SEDataRequest, SEDataRequested, SEDecimalFormat, \
-                             SEConditionManager, SEEngineInitialization
+                             SEConditionManager, SEEngineInitialization, SEEngineInitializationStatus
 from pulse.cdm.bind.Engine_pb2 import AnyActionData, \
                                       ActionListData, ActionMapData, \
                                       AnyConditionData, ConditionListData, \
@@ -10,13 +10,14 @@ from pulse.cdm.bind.Engine_pb2 import AnyActionData, \
                                       DataRequestData, DataRequestListData, DataRequestManagerData, \
                                       DataRequestedData, DataRequestedListData, DecimalFormatData, \
                                       EngineInitializationData, EngineInitializationListData, \
+                                      EngineInitializationStatusData, EngineInitializationStatusListData, \
                                       LogMessagesData
 from pulse.cdm.bind.Events_pb2 import ActiveEventListData, EventChangeListData
 
 from pulse.cdm.patient import SEPatientConfiguration
 from pulse.cdm.equipment_actions import SEEquipmentAction
 from pulse.cdm.engine import SEEventChange, eEvent, eDataRequest_category, \
-                             eDecimalFormat_type
+                             eDecimalFormat_type, eEngineInitializationState
 from pulse.cdm.scalars import get_unit
 
 from pulse.cdm.io.action import *
@@ -545,6 +546,99 @@ def serialize_engine_initializations_to_string(src: [SEEngineInitialization], fm
         serialize_engine_initialization_to_bind(ec, bind)
         dst.EngineInitialization.append(bind)
     return json_format.MessageToJson(dst, True, True)
+
+def serialize_engine_initialization_status_to_bind(
+    src: SEEngineInitializationStatus,
+    dst: EngineInitializationStatusData
+) -> None:
+    dst.InitializationState = src.get_initialization_state().value
+    if src.has_csv_filename():
+        dst.CSVFilename = src.get_csv_filename()
+    if src.has_log_filename():
+        dst.LogFilename = src.get_log_filename()
+    dst.StabilizationTime_s = src.get_stabilization_time_s()
+
+def serialize_engine_initialization_status_to_string(
+    src: SEEngineInitializationStatus,
+    fmt: eSerializationFormat
+) -> str:
+    dst = EngineInitializationStatusData()
+    serialize_engine_initialization_status_to_bind(src, dst)
+    return json_format.MessageToJson(dst, True, True)
+
+def serialize_engine_initialization_status_to_file(
+    src: SEEngineInitializationStatus,
+    filename: str
+) -> None:
+    string = serialize_engine_initialization_status_to_string(src, eSerializationFormat.JSON)
+    with open(filename, "w") as f:
+        f.write(string)
+
+def serialize_engine_initialization_status_from_bind(
+    src: EngineInitializationStatusData,
+    dst: SEEngineInitializationStatus
+) -> None:
+    dst.set_initialization_state(eEngineInitializationState(src.InitializationState))
+    dst.set_csv_filename(src.CSVFilename)
+    dst.set_log_filename(src.LogFilename)
+    dst.set_stabilization_time_s(src.StabilizationTime_s)
+
+def serialize_engine_initialization_status_from_string(
+    string: str,
+    dst: SEEngineInitializationStatus,
+    fmt: eSerializationFormat
+) -> None:
+    src = EngineInitializationStatusData()
+    json_format.Parse(string, src)
+    serialize_engine_initialization_status_from_bind(src, dst)
+
+def serialize_engine_initialization_status_from_file(filename: str, dst: SEEngineInitializationStatus):
+    with open(filename) as f:
+        string = f.read()
+    serialize_engine_initialization_status_from_string(string, dst, eSerializationFormat.JSON)
+
+def serialize_engine_initialization_status_list_to_bind(
+    src: List[SEEngineInitializationStatus],
+    dst: EngineInitializationStatusListData
+) -> None:
+    for status in src:
+        serialize_engine_initialization_status_to_bind(status, dst.EngineInitializationStatus.add())
+
+def serialize_engine_initialization_status_list_to_string(
+    src: List[SEEngineInitializationStatus],
+    fmt: eSerializationFormat
+) -> str:
+    dst = EngineInitializationStatusListData()
+    serialize_engine_initialization_status_list_to_bind(src, dst)
+    return json_format.MessageToJson(dst, True, True)
+
+def serialize_engine_initialization_status_list_to_file(src: List[SEEngineInitializationStatus], filename: str):
+    string = serialize_engine_initialization_status_list_to_string(src, eSerializationFormat.JSON)
+    with open(filename, "w") as file:
+        file.write(string)
+
+def serialize_engine_initialization_status_list_from_bind(
+    src: EngineInitializationStatusListData,
+    dst: List[SEEngineInitializationStatus]
+) -> None:
+    for statusData in src.EngineInitializationStatus:
+        dst.append(SEEngineInitializationStatus())
+        serialize_engine_initialization_status_from_bind(statusData, dst[-1])
+
+def serialize_engine_initialization_status_list_from_string(
+    string: str,
+    dst: List[SEEngineInitializationStatus],
+    fmt: eSerializationFormat
+) -> None:
+    src = EngineInitializationStatusListData()
+    json_format.Parse(string, src)
+    serialize_engine_initialization_status_list_from_bind(src, dst)
+
+def serialize_engine_initialization_status_list_from_file(filename: str, dst: List[SEEngineInitializationStatus]):
+    with open(filename) as f:
+        string = f.read()
+    serialize_engine_initialization_status_list_from_string(string, dst, eSerializationFormat.JSON)
+
 
 def serialize_data_requested_result_from_bind(src: DataRequestedData, dst: SEDataRequested):
     dst.set_id(src.ID)

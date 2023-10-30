@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "ScenarioIteration.h"
+#include "ActionIteration.h"
 
 #include "cdm/engine/SEAdvanceTime.h"
 #include "cdm/engine/SESerializeState.h"
@@ -16,7 +16,7 @@
 
 namespace pulse::study::patient_variability
 {
-  class TCCCIteration : public ScenarioIteration
+  class TCCCIteration : public ActionIteration
   {
   public:
     TCCCIteration(Logger& logger);
@@ -73,7 +73,6 @@ namespace pulse::study::patient_variability
     SEHemorrhage          m_Hemorrhage;
     SETensionPneumothorax m_TensionPneumothorax;
     SEAdvanceTime         m_Adv2Intervention;
-    SESerializeState      m_Serialize;
     SEAdvanceTime         m_Adv2End;
   };
 }

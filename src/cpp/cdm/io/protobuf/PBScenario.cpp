@@ -245,3 +245,112 @@ bool PBScenario::SerializeFromString(const std::string& src, SEScenarioExec& dst
   PBScenario::Load(data, dst);
   return true;
 }
+
+
+void PBScenario::Load(const CDM_BIND::ScenarioExecStatusData& src, SEScenarioExecStatus& dst)
+{
+  dst.Clear();
+  PBScenario::Serialize(src, dst);
+}
+void PBScenario::Serialize(const CDM_BIND::ScenarioExecStatusData& src, SEScenarioExecStatus& dst)
+{
+  PBEngine::Serialize(src.initializationstatus(), (SEEngineInitializationStatus&)dst);
+  if (!src.scenariofilename().empty())
+    dst.SetScenarioFilename(src.scenariofilename());
+  dst.SetScenarioExecutionState((eScenarioExecutionState)src.scenarioexecutionstate());
+  dst.SetRuntimeError(src.runtimeerror());
+  dst.SetFatalRuntimeError(src.fatalruntimeerror());
+  dst.SetFinalSimulationTime_s(src.finalsimulationtime_s());
+}
+CDM_BIND::ScenarioExecStatusData* PBScenario::Unload(const SEScenarioExecStatus& src)
+{
+  CDM_BIND::ScenarioExecStatusData* dst = new CDM_BIND::ScenarioExecStatusData();
+  PBScenario::Serialize(src, *dst);
+  return dst;
+}
+void PBScenario::Serialize(const SEScenarioExecStatus& src, CDM_BIND::ScenarioExecStatusData& dst)
+{
+  PBEngine::Serialize((SEEngineInitializationStatus&)src, *dst.mutable_initializationstatus());
+  if (src.HasScenarioFilename())
+    dst.set_scenariofilename(src.m_ScenarioFilename);
+  dst.set_scenarioexecutionstate((CDM_BIND::eScenarioExecutionState)src.m_ScenarioExecutionState);
+  dst.set_runtimeerror(src.HasRuntimeError());
+  dst.set_fatalruntimeerror(src.HasFatalRuntimeError());
+  dst.set_finalsimulationtime_s(src.m_FinalSimulationTime_s);
+}
+
+const std::string& eScenarioExecutionState_Name(eScenarioExecutionState s)
+{
+  return CDM_BIND::eScenarioExecutionState_Name((CDM_BIND::eScenarioExecutionState)s);
+}
+
+bool PBScenario::SerializeToString(const SEScenarioExecStatus& src, std::string& output, eSerializationFormat m, Logger* logger)
+{
+  CDM_BIND::ScenarioExecStatusData data;
+  PBScenario::Serialize(src, data);
+  return PBUtils::SerializeToString(data, output, m, logger);
+}
+bool PBScenario::SerializeToString(const std::vector<SEScenarioExecStatus>& src, std::string& output, eSerializationFormat m, Logger* logger)
+{
+  CDM_BIND::ScenarioExecStatusListData data;
+  for (auto& status : src)
+  {
+    PBScenario::Serialize(status, *data.add_scenarioexecstatus());
+  }
+  return PBUtils::SerializeToString(data, output, m, logger);
+}
+bool PBScenario::SerializeFromString(const std::string& src, SEScenarioExecStatus& dst, eSerializationFormat m, Logger* logger)
+{
+  CDM_BIND::ScenarioExecStatusData data;
+  if (!PBUtils::SerializeFromString(src, data, m, logger))
+    return false;
+  PBScenario::Load(data, dst);
+  return true;
+}
+bool PBScenario::SerializeFromString(const std::string& src, std::vector<SEScenarioExecStatus>& dst, eSerializationFormat m, Logger* logger)
+{
+  CDM_BIND::ScenarioExecStatusListData data;
+  if (!PBUtils::SerializeFromString(src, data, m, logger))
+    return false;
+
+  SEScenarioExecStatus status;
+  for (int i = 0; i < data.scenarioexecstatus_size(); i++)
+  {
+    PBScenario::Load(data.scenarioexecstatus()[i], status);
+    dst.push_back(status);
+  }
+  return true;
+}
+
+bool PBScenario::SerializeToFile(const std::vector<SEScenarioExecStatus>& src, const std::string& filename, Logger* logger)
+{
+  CDM_BIND::ScenarioExecStatusListData data;
+  for (auto& s : src)
+  {
+    PBScenario::Serialize(s,*data.add_scenarioexecstatus());
+  }
+  return PBUtils::SerializeToFile(data, filename, logger);
+}
+bool PBScenario::SerializeFromFile(const std::string& filename, std::vector<SEScenarioExecStatus>& dst, Logger* logger)
+{
+  dst.clear();
+  CDM_BIND::ScenarioExecStatusListData data;
+  if (!PBUtils::SerializeFromFile(filename, data, logger))
+    return false;
+
+  SEScenarioExecStatus status;
+  for (int i = 0; i < data.scenarioexecstatus_size(); i++)
+  {
+    PBScenario::Load(data.scenarioexecstatus()[i], status);
+    dst.push_back(status);
+  }
+  return true;
+}
+
+void PBScenario::Copy(const SEScenarioExecStatus& src, SEScenarioExecStatus& dst)
+{
+  dst.Clear();
+  CDM_BIND::ScenarioExecStatusData data;
+  PBScenario::Serialize(src, data);
+  PBScenario::Serialize(data, dst);
+}

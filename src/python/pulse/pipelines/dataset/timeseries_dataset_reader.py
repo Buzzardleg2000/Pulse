@@ -16,7 +16,8 @@ from openpyxl.worksheet.worksheet import Worksheet
 from openpyxl.utils.cell import get_column_letter
 from typing import Dict, List, Optional, Union
 
-from pulse.cdm.engine import SEDataRequest, SETimeSeriesValidationTarget, SEPatientTimeSeriesValidation
+from pulse.cdm.engine import SEDataRequest
+from pulse.cdm.validation import SETimeSeriesValidationTarget, SEPatientTimeSeriesValidation
 from pulse.cdm.patient import SEPatient, eSex
 from pulse.cdm.scalars import get_unit, LengthUnit, MassUnit
 from pulse.cdm.scenario import SEScenarioLog
@@ -354,6 +355,9 @@ def generate_sheet_requests(sheet: Worksheet, dr_dict: Dict[str, List[SEDataRequ
         )
 
         if not drb.header:
+            continue
+
+        if "*" in drb.header:
             continue
 
         # Skip header rows

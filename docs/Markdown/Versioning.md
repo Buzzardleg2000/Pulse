@@ -23,7 +23,11 @@ Our version number sematic is Major.Minor.Patch-ReleaseStage, where :
     - Created a xlsx template for automating the our validation of our models (is currently being done by hand)
     - The validation pipeline can also create a single doxygen report with a plot file and md files associated with an xlsx
     - Added the ability to create vitals monitor and ventilator monitor plots from CSV files
-  Created an Advance To Stable Action, this will run the engine until stable criteria is met
+  - Created an Advance To Stable Action, this will run the engine until stable criteria is met
+  - Threaded execution of a group of scenarios now can be provided a single json file containing all scenario to run
+    - Information for every executed scenario is then updated in the provided file:
+      - The locations of the: scenario file and its generated log file, and csv file
+      - Various error states if encountered: Unable to initialize and why, if there were any other errors encountered
 
 - Physiology Model Improvements
   - Dyspnea

@@ -8,11 +8,13 @@ from pathlib import Path
 from typing import Dict, List, Optional
 
 import PyPulse
-from pulse.cdm.engine import SESegmentValidationTarget, SEDataRequested
+
+from pulse.cdm.engine import SEDataRequested
+from pulse.cdm.validation import SESegmentValidationTarget
 from pulse.cdm.utils.markdown import table
 from pulse.cdm.utils.math_utils import generate_percentage_span, percent_change, percent_difference
-from pulse.cdm.io.engine import serialize_segment_validation_segment_list_from_file, \
-                                serialize_data_requested_result_from_file
+from pulse.cdm.io.engine import serialize_data_requested_result_from_file
+from pulse.cdm.io.validation import serialize_segment_validation_segment_list_from_file
 _pulse_logger = logging.getLogger('pulse')
 
 

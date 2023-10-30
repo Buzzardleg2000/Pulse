@@ -3,6 +3,7 @@
 
 #include "cdm/CommonDefs.h"
 #include "ScenarioIteration.h"
+#include "cdm/utils/FileUtils.h"
 
 namespace pulse::study::patient_variability
 {
@@ -10,7 +11,10 @@ namespace pulse::study::patient_variability
   {
     m_GenStyle = eGenStyle::Combo;
     m_Duplicates = 0;
-    m_NumScenarios = 0;
+    m_IterationName = "";
+    m_ScenarioDirectory = "";
+    m_ScenarioExecListFilename = "";
+    m_StateDirectory = "";
   }
   ScenarioIteration::~ScenarioIteration()
   {
@@ -22,12 +26,39 @@ namespace pulse::study::patient_variability
     PulseScenario::Clear();
   }
 
-  void ScenarioIteration::SetScenarioDirectory(const std::string& d)
+  std::string ScenarioIteration::GetName() const
+  {
+    return PulseScenario::GetName();
+  }
+  void ScenarioIteration::SetName(const std::string& name)
+  {
+    PulseScenario::SetName(name);
+  }
+  bool ScenarioIteration::HasName() const
+  {
+    return PulseScenario::HasName();
+  }
+
+  void ScenarioIteration::SetResultsDirectory(const std::string& d)
   {
     if (d.empty())
-      m_ScenarioDirectory = "./test_results/patient_variability/"+GetIterationName()+"/scenarios/";
+      m_ResultsDirectory = "./test_results/patient_variability/results/" + GetIterationName();
     else
-      m_ScenarioDirectory = d;
+      m_ResultsDirectory = d;
+    if (m_ResultsDirectory.back() != '/')
+      m_ResultsDirectory = m_ResultsDirectory + "/";
+  }
+
+  void ScenarioIteration::SetScenarioExecListFilename(const std::string& d)
+  {
+    if (d.empty())
+      m_ScenarioExecListFilename = "./test_results/patient_variability/scenarios/"+GetIterationName()+"_list.json";
+    else
+      m_ScenarioExecListFilename = d;
+
+    std::string path, filename, ext;
+    SplitPathFilenameExt(m_ScenarioExecListFilename, path, filename, ext);
+    m_ScenarioDirectory = path + filename;
     if (m_ScenarioDirectory.back() != '/')
       m_ScenarioDirectory = m_ScenarioDirectory + "/";
   }
@@ -35,38 +66,23 @@ namespace pulse::study::patient_variability
   void ScenarioIteration::SetStateDirectory(const std::string& d)
   {
     if (d.empty())
-      m_StateDirectory = "./test_results/patient_variability/"+GetIterationName()+"/states/";
+      m_StateDirectory = "./test_results/patient_variability/states/"+GetIterationName();
     else
       m_StateDirectory = d;
     if (m_StateDirectory.back() != '/')
       m_StateDirectory = m_StateDirectory + "/";
   }
 
-  bool ScenarioIteration::GenerateScenarios(const PatientIteration& patients)
+  bool ScenarioIteration::WriteScenario()
   {
-    FixUp();
-    m_NumScenarios = 0;
-    m_ScenarioStates.clear();
+    m_ScenarioStatus.Clear();
+    m_ScenarioStatus.SetScenarioFilename(m_ScenarioDirectory+m_Name+".json");
+    m_ScenarioList.push_back(m_ScenarioStatus);
+    return SerializeToFile(m_ScenarioStatus.GetScenarioFilename());
+  }
 
-    Info("Generating " + GetIterationName() + " scenarios to: " + m_ScenarioDirectory);
-    Info("Generating " + GetIterationName() + " states to: " + m_StateDirectory);
-
-    for (auto& itr : patients.GetPatientStates())
-    {
-      switch (m_GenStyle)
-      {
-      case eGenStyle::Combo:
-        GenerateCombinationActionSets(itr);
-        break;
-      case eGenStyle::Slice:
-        GenerateSlicedActionSets(itr);
-        break;
-      }
-    }
-
-    Info("Removed " + std::to_string(m_Duplicates) + " duplicate scenarios");
-    Info("Defined " + std::to_string(m_NumScenarios) + " scenarios");
-
-    return true;
+  bool ScenarioIteration::WriteScenarioList()
+  {
+    return SEScenarioExecStatus::SerializeToFile(m_ScenarioList, m_ScenarioExecListFilename, GetLogger());
   }
 }

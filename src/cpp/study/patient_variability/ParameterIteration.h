@@ -5,12 +5,6 @@
 
 namespace pulse::study::patient_variability
 {
-  enum class eGenStyle
-  {
-    Combo = 0,
-    Slice
-  };
-
   class ParameterIteration
   {
   public:

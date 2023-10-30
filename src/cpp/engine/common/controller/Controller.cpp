@@ -51,6 +51,7 @@ namespace pulse
 {
   Data::Data(Logger* logger) : Loggable(logger)
   {
+    m_EngineInitializationState = eEngineInitializationState::Uninitialized;
     m_State = EngineState::NotReady;
     m_AirwayMode = eAirwayMode::Free;
     m_Intubation = eSwitch::Off;
@@ -60,6 +61,7 @@ namespace pulse
 
     m_CurrentTime.SetValue(0, TimeUnit::s);
     m_SimulationTime.SetValue(0, TimeUnit::s);
+    m_StabilizationTime.SetValue(0, TimeUnit::s);
     m_SpareAdvanceTime_s = 0;
 
     m_Logger->SetLogTime(&m_SimulationTime);
@@ -174,6 +176,7 @@ namespace pulse
 
   const SEScalarTime& Data::GetEngineTime() const { return m_CurrentTime; }
   const SEScalarTime& Data::GetSimulationTime() const { return m_SimulationTime; }
+  const SEScalarTime& Data::GetStabilizationTime() const { return m_StabilizationTime; }
   const SEScalarTime& Data::GetTimeStep() const { return m_Config->GetTimeStep(); }
   double Data::GetTimeStep_s() const { return GetTimeStep().GetValue(TimeUnit::s); }
 
@@ -286,7 +289,12 @@ namespace pulse
   {
     Info("[SerializingFromFile] " + filename);
     LogBuildInfo();
-    return PBState::SerializeFromFile(filename, *this, m_ConfigOverride);
+    if (!PBState::SerializeFromFile(filename, *this, m_ConfigOverride))
+    {
+      m_EngineInitializationState = eEngineInitializationState::FailedState;
+      return false;
+    }
+    return true;
   }
   bool Controller::SerializeToFile(const std::string& filename) const
   {
@@ -298,7 +306,12 @@ namespace pulse
   {
     Info("[SerializingFromString]");
     LogBuildInfo();
-    return PBState::SerializeFromString(src, *this, m);
+    if (!PBState::SerializeFromString(src, *this, m))
+    {
+      m_EngineInitializationState = eEngineInitializationState::FailedState;
+      return false;
+    }
+    return true;
   }
   bool Controller::SerializeToString(std::string& output, eSerializationFormat m) const
   {
@@ -326,6 +339,7 @@ namespace pulse
     m_Intubation = eSwitch::Off;
     m_CurrentTime.SetValue(0, TimeUnit::s);
     m_SimulationTime.SetValue(0, TimeUnit::s);
+    m_StabilizationTime.SetValue(0, TimeUnit::s);
     m_Logger->SetLogTime(&m_SimulationTime);
 
     Info("Looking for files in " + patient_configuration.GetDataRoot());
@@ -338,7 +352,10 @@ namespace pulse
     if (patient_configuration.HasPatient())
     {
       if (!Initialize(*patient_configuration.GetPatient()))
+      {
+        m_EngineInitializationState = eEngineInitializationState::FailedPatientSetup;
         return false;
+      }
     }
     else if (patient_configuration.HasPatientFile())
     {
@@ -356,12 +373,21 @@ namespace pulse
         }
       }
       if (!patient.SerializeFromFile(pFile))// TODO Support all serialization formats
+      {
+        m_EngineInitializationState = eEngineInitializationState::FailedPatientSetup;
         return false;
+      }
       if (!Initialize(patient))
+      {
+        m_EngineInitializationState = eEngineInitializationState::FailedPatientSetup;
         return false;
+      }
     }
     else
+    {
+      m_EngineInitializationState = eEngineInitializationState::FailedPatientSetup;
       return false;
+    }
 
     InitializeModels();
     AdvanceCallback(-1);
@@ -375,6 +401,7 @@ namespace pulse
     if (!Stabilize(patient_configuration))
     {
       Error("Pulse needs stabilization criteria, none provided in configuration file");
+      m_EngineInitializationState = eEngineInitializationState::FailedStabilization;
       return false;
     }
 
@@ -382,6 +409,7 @@ namespace pulse
     // Use Quantity/Potential/Flux Sources
     m_Circuits->SetReadOnly(true);
 
+    m_StabilizationTime.Set(m_SimulationTime);
     if (!m_Config->GetStabilization()->IsTrackingStabilization())
     {
       m_SimulationTime.SetValue(0, TimeUnit::s);
@@ -539,6 +567,11 @@ namespace pulse
     return true;
   }
 
+  eEngineInitializationState Controller::GetInitializationState() const
+  {
+    return m_EngineInitializationState;
+  }
+
   void Controller::Clear()
   {
     m_State = EngineState::NotReady;
@@ -546,6 +579,7 @@ namespace pulse
     m_Conditions->Clear();
     m_EventManager->Clear();
 
+    m_EngineInitializationState = eEngineInitializationState::Uninitialized;
     m_AirwayMode = eAirwayMode::Free;
     m_Intubation = eSwitch::Off;
     if (m_EngineTrack)

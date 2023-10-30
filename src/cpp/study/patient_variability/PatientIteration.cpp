@@ -4,6 +4,7 @@
 #include "cdm/CommonDefs.h"
 #include "PatientIteration.h"
 #include "cdm/engine/SEPatientConfiguration.h"
+#include "cdm/engine/SEDataRequestManager.h"
 #include "cdm/properties/SEScalar0To1.h"
 #include "cdm/properties/SEScalarFrequency.h"
 #include "cdm/properties/SEScalarLength.h"
@@ -20,16 +21,15 @@
 
 namespace pulse::study::patient_variability
 {
-  PatientIteration::PatientIteration(Logger& logger) : PulseScenario(&logger)
+  PatientIteration::PatientIteration(Logger& logger) : ScenarioIteration(logger)
   {
-    SetGenStyle(eGenStyle::Combo);
     SetSex(ePatient_Sex::Male);
     m_IterationName = "default_male";
-
-    SetScenarioDirectory("");
     SetStateDirectory("");
+    SetScenarioExecListFilename("");
 
-    m_Actions.push_back(&m_PatientState);
+
+    m_Actions.push_back(&m_Serialize);
     m_Patient = &GetPatientConfiguration().GetPatient();
   }
 
@@ -42,26 +42,6 @@ namespace pulse::study::patient_variability
   {
     m_Actions.clear();
     PulseScenario::Clear();
-  }
-
-  void PatientIteration::SetScenarioDirectory(const std::string& d)
-  {
-    if (d.empty())
-      m_ScenarioDirectory = "./test_results/patient_variability/patient/scenarios/";
-    else
-      m_ScenarioDirectory = d;
-    if (m_ScenarioDirectory.back() != '/')
-      m_ScenarioDirectory = m_ScenarioDirectory + "/";
-  }
-
-  void PatientIteration::SetStateDirectory(const std::string& d)
-  {
-    if (d.empty())
-      m_StateDirectory = "./test_results/patient_variability/patient/states/";
-    else
-      m_StateDirectory = d;
-    if (m_StateDirectory.back() != '/')
-      m_StateDirectory = m_StateDirectory + "/";
   }
 
   void PatientIteration::FixUp()
@@ -100,8 +80,7 @@ namespace pulse::study::patient_variability
   void PatientIteration::GenerateScenarios()
   {
     FixUp();
-    m_DuplicatePatients = 0;
-    m_NumPatientsFailedToSetup = 0;
+    m_Duplicates = 0;
     m_PatientStates.clear();
 
     Info("Generating patient scenarios to: " + m_ScenarioDirectory);
@@ -117,8 +96,9 @@ namespace pulse::study::patient_variability
       break;
     }
 
-    Info("Removed " + std::to_string(m_DuplicatePatients) + " duplicate patients");
+    Info("Removed " + std::to_string(m_Duplicates) + " duplicate patients");
     Info("Defined " + std::to_string(m_PatientStates.size()) + " patients");
+    WriteScenarioList();
   }
 
   void PatientIteration::GenerateSlicedPatientList()
@@ -249,14 +229,15 @@ namespace pulse::study::patient_variability
     if (m_PatientStates.find(name) != m_PatientStates.end())
     {
       Info("Ignoring duplicate patient: " + name);
-      m_DuplicatePatients++;
+      m_Duplicates++;
       return;
     }
     m_Name = name;
     m_Patient->SetName(name);
-    m_PatientState.SetFilename(m_StateDirectory+name+".pbb");
-    SerializeToFile(m_ScenarioDirectory+name+".json");
-    m_PatientStates[name] = m_PatientState.GetFilename();
+    GetDataRequestManager().SetResultsFilename(m_ResultsDirectory+m_Name+".csv");
+    m_Serialize.SetFilename(m_StateDirectory+name+".pbb");
+    m_PatientStates[name] = m_Serialize.GetFilename();
+    WriteScenario();
   }
 
   std::string PatientIteration::ToString(SEPatient& p)

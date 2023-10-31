@@ -4,7 +4,7 @@
 #include "EngineHowTo.h"
 #include "PulseEngine.h"
 
-   // Include the various types you will be using in your code
+// Include the various types you will be using in your code
 #include "cdm/engine/SEDataRequestManager.h"
 #include "cdm/engine/SEEngineTracker.h"
 #include "cdm/patient/actions/SERespiratoryMechanicsModification.h"
@@ -65,6 +65,7 @@ void HowToRespiratoryMechanicsModification()
   SERespiratoryMechanicsModifiers& mechanics = config.GetModifiers();
 
   mechanics.GetRespirationRateMultiplier().SetValue(1.2);
+  mechanics.GetLungVolumeIncrement(eLungCompartment::LeftLung).SetValue(100.0, VolumeUnit::mL);
   pe->ProcessAction(config);
 
   for (size_t i = 0; i < 12; i++)

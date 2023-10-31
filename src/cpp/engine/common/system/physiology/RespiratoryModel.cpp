@@ -79,6 +79,7 @@
 #include "cdm/properties/SEScalarPressurePerVolume.h"
 #include "cdm/properties/SEScalarPressureTimePerVolume.h"
 #include "cdm/properties/SEScalarTime.h"
+#include "cdm/properties/SEScalarUnsigned.h"
 #include "cdm/properties/SEScalarVolume.h"
 #include "cdm/properties/SEScalarVolumePerTime.h"
 #include "cdm/properties/SEScalarVolumePerPressure.h"
@@ -2948,12 +2949,12 @@ namespace pulse
     double leftAlveoliDecrease_L = 0.0;
     double rightAlveoliDecrease_L = 0.0;
 
-    double deadSpaceIncrement_L = 0.0;
-    double alveoliIncrement_L = 0.0;
-
     unsigned int iter = 0;
     for (auto& itr : m_LungComponents)
     {
+      double deadSpaceIncrement_L = 0.0;
+      double alveoliIncrement_L = 0.0;
+
       eLungCompartment cmpt = itr.first;
       LungComponent& cpt = itr.second;
 
@@ -3035,6 +3036,15 @@ namespace pulse
       alveoliIncrement_L *= pateintMultiplier;
 
       //---------------------------------------------------------------------------------------------------------------------------------------------
+      //Modifiers
+      if (m_MechanicsModifiers->HasLungVolumeIncrement(cmpt))
+      {
+        double increment_L = m_MechanicsModifiers->GetLungVolumeIncrement(cmpt).GetValue(VolumeUnit::L);
+        deadSpaceIncrement_L += increment_L;
+        deadSpace_L += increment_L;
+      }
+
+      //---------------------------------------------------------------------------------------------------------------------------------------------
       //Update alveoli volume that participates in gas exchange
 
       //Only do this once on the timestep that it changes
@@ -3066,11 +3076,11 @@ namespace pulse
 
       if (cpt.Side == eSide::Left)
       {
-        leftAlveoliDecrease_L += -alveoliIncrement_L;
+        leftAlveoliDecrease_L -= alveoliIncrement_L;
       }
       else// if (cpt.Side == eSide::Right) // Assuming right if not left, this is all set internally in ::Setup()
       {
-        rightAlveoliDecrease_L += -alveoliIncrement_L;
+        rightAlveoliDecrease_L -= alveoliIncrement_L;
       }
 
       deadSpaceNode->GetNextVolume().SetValue(deadSpace_L, VolumeUnit::L);
@@ -3155,8 +3165,8 @@ namespace pulse
         if (m_Mechanics->HasRightInspiratoryResistance())
         {
           double rightResistance_cmH2O_s_Per_L = m_Mechanics->GetRightInspiratoryResistance(PressureTimePerVolumeUnit::cmH2O_s_Per_L);
-          rightAlveoliResistance_cmH2O_s_Per_L = rightResistance_cmH2O_s_Per_L * alveoliDuctResistanceFraction;
           rightBronchiResistance_cmH2O_s_Per_L = rightResistance_cmH2O_s_Per_L * bronchiResistanceFraction;
+          rightAlveoliResistance_cmH2O_s_Per_L = rightResistance_cmH2O_s_Per_L * alveoliDuctResistanceFraction;
         }
       }
       else //exhaling
@@ -3172,8 +3182,8 @@ namespace pulse
         if (m_Mechanics->HasRightExpiratoryResistance())
         {
           double rightResistance_cmH2O_s_Per_L = m_Mechanics->GetRightExpiratoryResistance(PressureTimePerVolumeUnit::cmH2O_s_Per_L);
-          rightAlveoliResistance_cmH2O_s_Per_L = rightResistance_cmH2O_s_Per_L * alveoliDuctResistanceFraction;
           rightBronchiResistance_cmH2O_s_Per_L = rightResistance_cmH2O_s_Per_L * bronchiResistanceFraction;
+          rightAlveoliResistance_cmH2O_s_Per_L = rightResistance_cmH2O_s_Per_L * alveoliDuctResistanceFraction;
         }
       }
     }
@@ -3428,6 +3438,39 @@ namespace pulse
     rightBronchiResistance_cmH2O_s_Per_L *= obstructiveResistanceScalingFactor;
 
     //------------------------------------------------------------------------------------------------------
+    //Modifiers
+    if (inhaling)
+    {
+      if (m_MechanicsModifiers->HasUpperInspiratoryResistanceMultiplier())
+      {
+        tracheaResistance_cmH2O_s_Per_L *= m_MechanicsModifiers->GetUpperInspiratoryResistanceMultiplier().GetValue();
+      }
+      if (m_MechanicsModifiers->HasLeftInspiratoryResistanceMultiplier())
+      {
+        leftBronchiResistance_cmH2O_s_Per_L *= m_MechanicsModifiers->GetLeftInspiratoryResistanceMultiplier().GetValue();
+      }
+      if (m_MechanicsModifiers->HasRightInspiratoryResistanceMultiplier())
+      {
+        rightBronchiResistance_cmH2O_s_Per_L *= m_MechanicsModifiers->GetRightInspiratoryResistanceMultiplier().GetValue();
+      }
+    }
+    else //exhaling
+    {
+      if (m_MechanicsModifiers->HasUpperExpiratoryResistanceMultiplier())
+      {
+        tracheaResistance_cmH2O_s_Per_L *= m_MechanicsModifiers->GetUpperExpiratoryResistanceMultiplier().GetValue();
+      }
+      if (m_MechanicsModifiers->HasLeftExpiratoryResistanceMultiplier())
+      {
+        leftBronchiResistance_cmH2O_s_Per_L *= m_MechanicsModifiers->GetLeftExpiratoryResistanceMultiplier().GetValue();
+      }
+      if (m_MechanicsModifiers->HasRightExpiratoryResistanceMultiplier())
+      {
+        rightBronchiResistance_cmH2O_s_Per_L *= m_MechanicsModifiers->GetRightExpiratoryResistanceMultiplier().GetValue();
+      }
+    }
+
+    //------------------------------------------------------------------------------------------------------
     // Make sure things don't go crazy
     BLIM(tracheaResistance_cmH2O_s_Per_L, m_RespClosedResistance_cmH2O_s_Per_L, m_RespOpenResistance_cmH2O_s_Per_L);
     BLIM(leftBronchiResistance_cmH2O_s_Per_L, m_RespClosedResistance_cmH2O_s_Per_L, m_RespOpenResistance_cmH2O_s_Per_L);
@@ -3593,6 +3636,17 @@ namespace pulse
       SEFluidCircuitPath* alveoliCompliancePath = cpt.CompliancePath;
       double alveoliCompliance_L_Per_cmH2O = alveoliCompliancePath->GetNextCompliance(VolumePerPressureUnit::L_Per_cmH2O);
       alveoliCompliance_L_Per_cmH2O *= positivePressureComplianceScalingFactor * obstructiveComplianceScalingFactor * restrictiveComplianceScalingFactor;
+
+      //Modifiers
+      if (cpt.Side == eSide::Left && m_MechanicsModifiers->HasLeftComplianceMultiplier())
+      {
+        alveoliCompliance_L_Per_cmH2O *= m_MechanicsModifiers->GetLeftComplianceMultiplier().GetValue();
+      }
+      if (cpt.Side == eSide::Right && m_MechanicsModifiers->HasRightComplianceMultiplier())
+      {
+        alveoliCompliance_L_Per_cmH2O *= m_MechanicsModifiers->GetRightComplianceMultiplier().GetValue();
+      }
+
       alveoliCompliancePath->GetNextCompliance().SetValue(alveoliCompliance_L_Per_cmH2O, VolumePerPressureUnit::L_Per_cmH2O);
     }
   }
@@ -4353,6 +4407,13 @@ namespace pulse
     //Reduce the tidal volume by the percentage given
     m_DriverPressure_cmH2O = m_DriverPressure_cmH2O * (1 - dyspneaSeverity);
 
+    //------------------------------------------------------------------------------------------------------
+    //Modifiers
+    if (m_MechanicsModifiers->HasTidalVolumeMultiplier())
+    {
+      m_DriverPressure_cmH2O *= m_MechanicsModifiers->GetTidalVolumeMultiplier().GetValue();
+    }
+
 #ifdef DEBUG
     m_data.GetDataTrack().Probe("dyspneaSeverity", dyspneaSeverity);
 #endif
@@ -4374,6 +4435,13 @@ namespace pulse
     {
       double dyspneaSeverity = m_PatientActions->GetDyspnea().GetRespirationRateSeverity().GetValue();
       m_VentilationFrequency_Per_min = m_VentilationFrequency_Per_min * (1 - dyspneaSeverity);
+    }
+
+    //------------------------------------------------------------------------------------------------------
+    //Modifiers
+    if (m_MechanicsModifiers->HasRespirationRateMultiplier())
+    {
+      m_VentilationFrequency_Per_min *= m_MechanicsModifiers->GetRespirationRateMultiplier().GetValue();
     }
   }
 

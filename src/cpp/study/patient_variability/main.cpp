@@ -17,7 +17,7 @@ using namespace pulse::study::patient_variability;
 int main(int argc, char* argv[])
 {
   bool clear                   = false;// TODO
-  bool generateOnly            = true;
+  bool generateOnly            = false;
 
   std::vector<PatientIteration*> iPatients;
   std::vector<ActionIteration*>  iActions;
@@ -143,18 +143,21 @@ int main(int argc, char* argv[])
     }
   }
 
-  PulseScenarioExec opts(&logger);
-  opts.SetModelType(eModelType::HumanAdultWholeBody);
-  opts.LogToConsole(eSwitch::Off);
-
   for (PatientIteration* pi : iPatients)
   {
     pi->GenerateScenarios();
 
+    // Note, not setting the output directory on the opts
+    // Our scenarios aleady have a relative (to the working dir) results csv location set,
+    // If you provide an output dir, that relative location will be concatenated to the csv relative location
+
     if (!generateOnly)
     {
+      PulseScenarioExec opts(&logger);
+      opts.SetModelType(eModelType::HumanAdultWholeBody);
+      opts.LogToConsole(eSwitch::Off);
       opts.SetScenarioExecListFilename(pi->GetScenarioExecListFilename());
-      opts.SetOutputRootDirectory(rootDir + "/results/patients/" + pi->GetIterationName() + "/");
+      opts.Execute();
     }
 
     for (ActionIteration* ai : iActions)
@@ -163,8 +166,11 @@ int main(int argc, char* argv[])
 
       if (!generateOnly)
       {
+        PulseScenarioExec opts(&logger);
+        opts.SetModelType(eModelType::HumanAdultWholeBody);
+        opts.LogToConsole(eSwitch::Off);
         opts.SetScenarioExecListFilename(ai->GetScenarioExecListFilename());
-        opts.SetOutputRootDirectory(rootDir + "/results/" + ai->GetIterationName() + "/");
+        opts.Execute();
       }
     }
   }

@@ -85,6 +85,11 @@ bool PulseScenarioExec::Execute()
       }
       SetScenarioExecListFilename("./test_results/scenarios/ScenarioDirectoryStatuses.json");
       SEScenarioExecStatus::SerializeToFile(m_Statuses, m_ScenarioExecListFilename, GetLogger());
+      if (m_Statuses.empty())
+      {
+        Info("No scenarios listed in provided scenario exec list file");
+        return true;
+      }
     }
     size_t numThreadsToUse = ComputeNumThreads();
     if (numThreadsToUse <= 0)
@@ -92,6 +97,8 @@ bool PulseScenarioExec::Execute()
       Fatal("Unable to compute the number of threads to use");
       return false;
     }
+    if (numThreadsToUse > m_Statuses.size())
+      numThreadsToUse = m_Statuses.size();
 
     std::string copy;
     SerializeToString(copy, eSerializationFormat::JSON, GetLogger());

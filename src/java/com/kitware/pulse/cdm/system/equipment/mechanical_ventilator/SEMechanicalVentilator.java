@@ -17,17 +17,19 @@ public class SEMechanicalVentilator implements SEEquipment
   protected SEScalar0To1                      endTidalOxygenFraction;
   protected SEScalarPressure                  endTidalOxygenPressure;
   protected SEScalarVolumePerTime             expiratoryFlow;
+  protected SEScalarPressureTimePerVolume     expiratoryResistance;
   protected SEScalarVolume                    expiratoryTidalVolume;
   protected SEScalar                          inspiratoryExpiratoryRatio;
   protected SEScalarVolumePerTime             inspiratoryFlow;
+  protected SEScalarPressureTimePerVolume     inspiratoryResistance;
   protected SEScalarVolume                    inspiratoryTidalVolume;
   protected SEScalarPressure                  intrinsicPositiveEndExpiredPressure;
   protected SEScalar0To1                      leakFraction;
   protected SEScalarPressure                  meanAirwayPressure;
+  protected SEScalarVolumePerTime             peakExpiratoryFlow;
   protected SEScalarPressure                  peakInspiratoryPressure;
   protected SEScalarPressure                  plateauPressure;
   protected SEScalarPressure                  positiveEndExpiratoryPressure;
-  protected SEScalarPressureTimePerVolume     pulmonaryResistance;
   protected SEScalarFrequency                 respirationRate;
   protected SEScalarVolumePerPressure         staticPulmonaryCompliance;
   protected SEScalarVolume                    tidalVolume;
@@ -46,17 +48,19 @@ public class SEMechanicalVentilator implements SEEquipment
     endTidalOxygenFraction = null;
     endTidalOxygenPressure = null;
     expiratoryFlow = null;
+    expiratoryResistance = null;
     expiratoryTidalVolume = null;
     inspiratoryExpiratoryRatio = null;
     inspiratoryFlow = null;
+    inspiratoryResistance = null;
     inspiratoryTidalVolume = null;
     intrinsicPositiveEndExpiredPressure = null;
     leakFraction = null;
     meanAirwayPressure = null;
+    peakExpiratoryFlow = null;
     peakInspiratoryPressure = null;
     plateauPressure = null;
     positiveEndExpiratoryPressure = null;
-    pulmonaryResistance = null;
     respirationRate = null;
     staticPulmonaryCompliance = null;
     tidalVolume = null;
@@ -84,12 +88,16 @@ public class SEMechanicalVentilator implements SEEquipment
       endTidalOxygenPressure.invalidate();
     if (expiratoryFlow != null)
       expiratoryFlow.invalidate();
+    if (expiratoryResistance != null)
+      expiratoryResistance.invalidate();
     if (expiratoryTidalVolume != null)
       expiratoryTidalVolume.invalidate();
     if (inspiratoryExpiratoryRatio != null)
       inspiratoryExpiratoryRatio.invalidate();
     if (inspiratoryFlow != null)
       inspiratoryFlow.invalidate();
+    if (inspiratoryResistance != null)
+      inspiratoryResistance.invalidate();
     if (inspiratoryTidalVolume != null)
       inspiratoryTidalVolume.invalidate();
     if (intrinsicPositiveEndExpiredPressure != null)
@@ -98,14 +106,14 @@ public class SEMechanicalVentilator implements SEEquipment
       leakFraction.invalidate();
     if (meanAirwayPressure != null)
       meanAirwayPressure.invalidate();
+    if (peakExpiratoryFlow != null)
+      peakExpiratoryFlow.invalidate();
     if (peakInspiratoryPressure != null)
       peakInspiratoryPressure.invalidate();
     if (plateauPressure != null)
       plateauPressure.invalidate();
     if (positiveEndExpiratoryPressure != null)
       positiveEndExpiratoryPressure.invalidate();
-    if (pulmonaryResistance != null)
-      pulmonaryResistance.invalidate();
     if (respirationRate != null)
       respirationRate.invalidate();
     if (staticPulmonaryCompliance != null)
@@ -210,6 +218,17 @@ public class SEMechanicalVentilator implements SEEquipment
       expiratoryFlow = new SEScalarVolumePerTime();
     return expiratoryFlow;
   }
+  
+  public boolean hasExpiratoryResistance()
+  {
+    return expiratoryResistance == null ? false : expiratoryResistance.isValid();
+  }
+  public SEScalarPressureTimePerVolume getExpiratoryResistance()
+  {
+    if (expiratoryResistance == null)
+      expiratoryResistance = new SEScalarPressureTimePerVolume();
+    return expiratoryResistance;
+  }
 
   public boolean hasExpiratoryTidalVolume()
   {
@@ -242,6 +261,17 @@ public class SEMechanicalVentilator implements SEEquipment
     if (inspiratoryFlow == null)
       inspiratoryFlow = new SEScalarVolumePerTime();
     return inspiratoryFlow;
+  }
+  
+  public boolean hasInspiratoryResistance()
+  {
+    return inspiratoryResistance == null ? false : inspiratoryResistance.isValid();
+  }
+  public SEScalarPressureTimePerVolume getInspiratoryResistance()
+  {
+    if (inspiratoryResistance == null)
+      inspiratoryResistance = new SEScalarPressureTimePerVolume();
+    return inspiratoryResistance;
   }
 
   public boolean hasInspiratoryTidalVolume()
@@ -288,6 +318,17 @@ public class SEMechanicalVentilator implements SEEquipment
     return meanAirwayPressure;
   }
   
+  public boolean hasPeakExpiratoryFlow()
+  {
+    return peakExpiratoryFlow == null ? false : peakExpiratoryFlow.isValid();
+  }
+  public SEScalarVolumePerTime getPeakExpiratoryFlow()
+  {
+    if (peakExpiratoryFlow == null)
+      peakExpiratoryFlow = new SEScalarVolumePerTime();
+    return peakExpiratoryFlow;
+  }
+  
   public boolean hasPeakInspiratoryPressure()
   {
     return peakInspiratoryPressure == null ? false : peakInspiratoryPressure.isValid();
@@ -321,17 +362,6 @@ public class SEMechanicalVentilator implements SEEquipment
     return positiveEndExpiratoryPressure;
   }
   
-  public boolean hasPulmonaryResistance()
-  {
-    return pulmonaryResistance == null ? false : pulmonaryResistance.isValid();
-  }
-  public SEScalarPressureTimePerVolume getPulmonaryResistance()
-  {
-    if (pulmonaryResistance == null)
-      pulmonaryResistance = new SEScalarPressureTimePerVolume();
-    return pulmonaryResistance;
-  }
-
   public boolean hasRespirationRate()
   {
     return respirationRate == null ? false : respirationRate.isValid();

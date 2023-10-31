@@ -38,12 +38,16 @@ void PBMechanicalVentilator::Serialize(const CDM_BIND::MechanicalVentilatorData&
     PBProperty::Load(src.endtidaloxygenpressure(), dst.GetEndTidalOxygenPressure());
   if (src.has_expiratoryflow())
     PBProperty::Load(src.expiratoryflow(), dst.GetExpiratoryFlow());
+  if (src.has_expiratoryresistance())
+    PBProperty::Load(src.expiratoryresistance(), dst.GetExpiratoryResistance());
   if (src.has_expiratorytidalvolume())
     PBProperty::Load(src.expiratorytidalvolume(), dst.GetExpiratoryTidalVolume());
   if (src.has_inspiratoryexpiratoryratio())
     PBProperty::Load(src.inspiratoryexpiratoryratio(), dst.GetInspiratoryExpiratoryRatio());
   if (src.has_inspiratoryflow())
     PBProperty::Load(src.inspiratoryflow(), dst.GetInspiratoryFlow());
+  if (src.has_inspiratoryresistance())
+    PBProperty::Load(src.inspiratoryresistance(), dst.GetInspiratoryResistance());
   if (src.has_inspiratorytidalvolume())
     PBProperty::Load(src.inspiratorytidalvolume(), dst.GetInspiratoryTidalVolume());
   if (src.has_intrinsicpositiveendexpiredpressure())
@@ -52,14 +56,15 @@ void PBMechanicalVentilator::Serialize(const CDM_BIND::MechanicalVentilatorData&
     PBProperty::Load(src.leakfraction(), dst.GetLeakFraction());
   if (src.has_meanairwaypressure())
     PBProperty::Load(src.meanairwaypressure(), dst.GetMeanAirwayPressure());
+  if (src.has_peakexpiratoryflow())
+    PBProperty::Load(src.peakexpiratoryflow(), dst.GetPeakExpiratoryFlow());
   if (src.has_peakinspiratorypressure())
     PBProperty::Load(src.peakinspiratorypressure(), dst.GetPeakInspiratoryPressure());
   if (src.has_plateaupressure())
     PBProperty::Load(src.plateaupressure(), dst.GetPlateauPressure());
   if (src.has_positiveendexpiratorypressure())
     PBProperty::Load(src.positiveendexpiratorypressure(), dst.GetPositiveEndExpiratoryPressure());
-  if (src.has_pulmonaryresistance())
-    PBProperty::Load(src.pulmonaryresistance(), dst.GetPulmonaryResistance());
+
   if (src.has_respirationrate())
     PBProperty::Load(src.respirationrate(), dst.GetRespirationRate());
   if (src.has_staticpulmonarycompliance())
@@ -97,12 +102,16 @@ void PBMechanicalVentilator::Serialize(const SEMechanicalVentilator& src, CDM_BI
     dst.set_allocated_endtidaloxygenpressure(PBProperty::Unload(*src.m_EndTidalOxygenPressure));
   if (src.HasExpiratoryFlow())
     dst.set_allocated_expiratoryflow(PBProperty::Unload(*src.m_ExpiratoryFlow));
+  if (src.HasExpiratoryResistance())
+    dst.set_allocated_expiratoryresistance(PBProperty::Unload(*src.m_ExpiratoryResistance));
   if (src.HasExpiratoryTidalVolume())
     dst.set_allocated_expiratorytidalvolume(PBProperty::Unload(*src.m_ExpiratoryTidalVolume));
   if (src.HasInspiratoryExpiratoryRatio())
     dst.set_allocated_inspiratoryexpiratoryratio(PBProperty::Unload(*src.m_InspiratoryExpiratoryRatio));
   if (src.HasInspiratoryFlow())
     dst.set_allocated_inspiratoryflow(PBProperty::Unload(*src.m_InspiratoryFlow));
+  if (src.HasInspiratoryResistance())
+    dst.set_allocated_inspiratoryresistance(PBProperty::Unload(*src.m_InspiratoryResistance));
   if (src.HasInspiratoryTidalVolume())
     dst.set_allocated_inspiratorytidalvolume(PBProperty::Unload(*src.m_InspiratoryTidalVolume));
   if (src.HasIntrinsicPositiveEndExpiredPressure())
@@ -111,14 +120,14 @@ void PBMechanicalVentilator::Serialize(const SEMechanicalVentilator& src, CDM_BI
     dst.set_allocated_leakfraction(PBProperty::Unload(*src.m_LeakFraction));
   if (src.HasMeanAirwayPressure())
     dst.set_allocated_meanairwaypressure(PBProperty::Unload(*src.m_MeanAirwayPressure));
+  if (src.HasPeakExpiratoryFlow())
+    dst.set_allocated_peakexpiratoryflow(PBProperty::Unload(*src.m_PeakExpiratoryFlow));
   if (src.HasPeakInspiratoryPressure())
     dst.set_allocated_peakinspiratorypressure(PBProperty::Unload(*src.m_PeakInspiratoryPressure));
   if (src.HasPlateauPressure())
     dst.set_allocated_plateaupressure(PBProperty::Unload(*src.m_PlateauPressure));
   if (src.HasPositiveEndExpiratoryPressure())
     dst.set_allocated_positiveendexpiratorypressure(PBProperty::Unload(*src.m_PositiveEndExpiratoryPressure));
-  if (src.HasPulmonaryResistance())
-    dst.set_allocated_pulmonaryresistance(PBProperty::Unload(*src.m_PulmonaryResistance));
   if (src.HasRespirationRate())
     dst.set_allocated_respirationrate(PBProperty::Unload(*src.m_RespirationRate));
   if (src.HasStaticPulmonaryCompliance())

@@ -7,6 +7,7 @@ import json
 import logging
 from enum import Enum
 from pathlib import Path
+from multiprocessing import Pool
 from typing import Any, Dict, Hashable, Iterable, List, NamedTuple, Optional, Tuple
 
 from pulse.cdm.engine import eEvent, SEEventChange
@@ -429,6 +430,23 @@ class ITMScenarioReport(SEScenarioReport):
         return init
 
 
+def generate_observations(injury_scenario: SEScenarioExecStatus) -> None:
+    _pulse_logger.info(f"Generating observations for {injury_scenario.get_scenario_filename()}")
+
+    # Replace "scenarios" in filepath with "observations"
+    parts = list(Path(injury_scenario.get_scenario_filename()).parts)
+    parts[parts.index("scenarios")] = "observations"
+    out_file = Path(*parts)
+
+    # Call our post processor to generate observation files for each scenario
+    report = ITMScenarioReport(
+        log_file=Path(injury_scenario.get_log_filename()),
+        csv_file=Path(injury_scenario.get_csv_filename()),
+        observation_frequency_min=observation_frequency_min
+    )
+    report.write(out_file)
+
+
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
 
@@ -454,18 +472,19 @@ if __name__ == "__main__":
     # TODO: Ask for observation frequency
     observation_frequency_min = 3
 
-    # Iterate over these injury scenario to
-    for injury_scenario in injury_scenarios:
-        _pulse_logger.info(f"Generating observations for {injury_scenario.get_scenario_filename()}")
-        # Replace "scenarios" in filepath with "observations"
-        parts = list(Path(injury_scenario.get_scenario_filename()).parts)
-        parts[parts.index("scenarios")] = "observations"
-        out_file = Path(*parts)
+    # TODO: Ask number of processes
+    num_processes = 5
 
-        # Call our post processor to generate observation files for each scenario
-        report = ITMScenarioReport(
-            log_file=Path(injury_scenario.get_log_filename()),
-            csv_file=Path(injury_scenario.get_csv_filename()),
-            observation_frequency_min=observation_frequency_min
-        )
-        report.write(out_file)
+    # TODO: Chunksize? Setting chunksize can reduce overhead for very long iterables
+    chunksize = 1
+
+    # Generate observations for each injury scenario (in parallel)
+    with Pool(num_processes) as p:
+        # Issue tasks to the process pool
+        # imap_unordered is a lazy version of map (reduces memory) and doesn't care about
+        # return order so slower processes don't block the completion of faster processes
+        p.imap_unordered(generate_observations, injury_scenarios, chunksize=chunksize)
+        # Shutdown the process pool (don't allow more tasks to be issued)
+        p.close()
+        # Wait for all issued tasks to complete
+        p.join()

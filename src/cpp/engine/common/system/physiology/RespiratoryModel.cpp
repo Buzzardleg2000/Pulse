@@ -1476,16 +1476,14 @@ namespace pulse
   void RespiratoryModel::ApplyDriver()
   {
     //Run the driver based on the waveform -------------------------------------------------------------------------------
-    double TotalBreathingCycleTime_s = m_VentilationPeriod_s;
-
     double InspiratoryRiseTimeStart_s = 0.0;
-    double InspiratoryHoldTimeStart_s = InspiratoryRiseTimeStart_s + m_InspiratoryRiseFraction * TotalBreathingCycleTime_s;
-    double InspiratoryReleaseTimeStart_s = InspiratoryHoldTimeStart_s + m_InspiratoryHoldFraction * TotalBreathingCycleTime_s;
-    double InspiratoryToExpiratoryPauseTimeStart_s = InspiratoryReleaseTimeStart_s + m_InspiratoryReleaseFraction * TotalBreathingCycleTime_s;
-    double ExpiratoryRiseTimeStart_s = InspiratoryToExpiratoryPauseTimeStart_s + m_InspiratoryToExpiratoryPauseFraction * TotalBreathingCycleTime_s;
-    double ExpiratoryHoldTimeStart_s = ExpiratoryRiseTimeStart_s + m_ExpiratoryRiseFraction * TotalBreathingCycleTime_s;
-    double ExpiratoryReleaseTimeStart_s = ExpiratoryHoldTimeStart_s + m_ExpiratoryHoldFraction * TotalBreathingCycleTime_s;
-    double ResidueFractionTimeStart_s = ExpiratoryReleaseTimeStart_s + m_ExpiratoryReleaseFraction * TotalBreathingCycleTime_s;
+    double InspiratoryHoldTimeStart_s = InspiratoryRiseTimeStart_s + m_InspiratoryRiseFraction * m_VentilationPeriod_s;
+    double InspiratoryReleaseTimeStart_s = InspiratoryHoldTimeStart_s + m_InspiratoryHoldFraction * m_VentilationPeriod_s;
+    double InspiratoryToExpiratoryPauseTimeStart_s = InspiratoryReleaseTimeStart_s + m_InspiratoryReleaseFraction * m_VentilationPeriod_s;
+    double ExpiratoryRiseTimeStart_s = InspiratoryToExpiratoryPauseTimeStart_s + m_InspiratoryToExpiratoryPauseFraction * m_VentilationPeriod_s;
+    double ExpiratoryHoldTimeStart_s = ExpiratoryRiseTimeStart_s + m_ExpiratoryRiseFraction * m_VentilationPeriod_s;
+    double ExpiratoryReleaseTimeStart_s = ExpiratoryHoldTimeStart_s + m_ExpiratoryHoldFraction * m_VentilationPeriod_s;
+    double ResidueFractionTimeStart_s = ExpiratoryReleaseTimeStart_s + m_ExpiratoryReleaseFraction * m_VentilationPeriod_s;
 
     if (SEScalar::IsZero(m_BreathingCycleTime_s, ZERO_APPROX) &&
       m_InspiratoryRiseFraction != 0.0) //Only call this once per cycle - needed here for conscious respiration
@@ -1551,7 +1549,7 @@ namespace pulse
 
     //We need to do this here to allow for the inhaler to get called before the next go-around
     m_BreathingCycleTime_s += m_data.GetTimeStep_s();
-    if (m_BreathingCycleTime_s > TotalBreathingCycleTime_s - m_data.GetTimeStep_s()) //End of the cycle or currently not breathing
+    if (m_BreathingCycleTime_s > m_VentilationPeriod_s - m_data.GetTimeStep_s()) //End of the cycle or currently not breathing
     {
       if (m_ActiveConsciousRespirationCommand)
       {
@@ -1575,6 +1573,12 @@ namespace pulse
   //--------------------------------------------------------------------------------------------------
   void RespiratoryModel::SetBreathCycleFractions()
   {
+    if (m_ActiveConsciousRespirationCommand)
+    {
+      m_VentilationPeriod_s = 60.0 / m_VentilationFrequency_Per_min;
+      return;
+    }
+
     m_IERatioScaleFactor *= 0.94; //Tuning factor determined from healthy validation
 
     //Healthy = ~1:2 IE Ratio = 0.33 inpiration and 0.67 expiration
@@ -1593,7 +1597,7 @@ namespace pulse
     m_ExpiratoryReleaseFraction = 0.0;
     m_ResidueFraction = 0.0;
 
-    if (m_VentilationFrequency_Per_min > 1.0 || m_ActiveConsciousRespirationCommand)
+    if (m_VentilationFrequency_Per_min > 1.0)
     {
       m_VentilationPeriod_s = 60.0 / m_VentilationFrequency_Per_min;
     }
@@ -2117,6 +2121,7 @@ namespace pulse
         m_InspiratoryReleaseFraction = releasePeriod_s / totalPeriod;
       }    
 
+      SetBreathCycleFractions();
       return;
     }
 
@@ -2166,6 +2171,7 @@ namespace pulse
         m_ExpiratoryReleaseFraction = releasePeriod_s / totalPeriod;
       }
 
+      SetBreathCycleFractions();
       return;
     }
 
@@ -2181,6 +2187,7 @@ namespace pulse
       m_VentilationFrequency_Per_min = (SEScalar::IsZero(period_s, ZERO_APPROX)) ? 0.0 : 60.0 / period_s;
       m_InspiratoryToExpiratoryPauseFraction = 1.0;
 
+      SetBreathCycleFractions();
       return;
     } 
   }

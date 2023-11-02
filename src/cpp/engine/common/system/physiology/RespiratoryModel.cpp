@@ -1573,9 +1573,17 @@ namespace pulse
   //--------------------------------------------------------------------------------------------------
   void RespiratoryModel::SetBreathCycleFractions()
   {
-    if (m_ActiveConsciousRespirationCommand)
+    if (m_VentilationFrequency_Per_min < 1.0)
+    {
+      m_VentilationPeriod_s = 0.0;
+    }
+    else
     {
       m_VentilationPeriod_s = 60.0 / m_VentilationFrequency_Per_min;
+    }
+
+    if (m_ActiveConsciousRespirationCommand)
+    {
       return;
     }
 
@@ -1596,11 +1604,6 @@ namespace pulse
     m_ExpiratoryHoldFraction = 0.0;
     m_ExpiratoryReleaseFraction = 0.0;
     m_ResidueFraction = 0.0;
-
-    if (m_VentilationFrequency_Per_min > 1.0)
-    {
-      m_VentilationPeriod_s = 60.0 / m_VentilationFrequency_Per_min;
-    }
 
     if (HasActiveMechanics())
     {

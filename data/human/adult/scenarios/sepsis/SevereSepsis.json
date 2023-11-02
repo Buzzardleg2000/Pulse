@@ -31,7 +31,7 @@
         },
         "ProgressionSeverity": {
           "Scalar0To1": {
-            "Value": 0.7,
+            "Value": 0.9,
             "Unit": "",
             "ReadOnly": false
           }
@@ -42,8 +42,8 @@
     "AdvanceTime": {
       "Time": {
         "ScalarTime": {
-          "Value": 60.0,
-          "Unit": "min"
+          "Value": 1.0,
+          "Unit": "hr"
         }
       }
     }

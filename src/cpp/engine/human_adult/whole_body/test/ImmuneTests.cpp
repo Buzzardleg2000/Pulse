@@ -30,25 +30,35 @@ namespace pulse { namespace human_adult_whole_body
 {
   void EngineTest::MildSepsisTest(const std::string &sTestDirectory)
   {
-    SepsisTest(0.5, 0.3, sTestDirectory, "MildSepsis");
+    SepsisTest(0.5, 0.3, 10, sTestDirectory, "MildSepsis");
   }
 
   void EngineTest::ModerateSepsisTest(const std::string &sTestDirectory)
   {
-    SepsisTest(0.5, 0.5, sTestDirectory, "ModerateSepsis");
+    SepsisTest(0.5, 0.6, 10, sTestDirectory, "ModerateSepsis");
   }
 
   void EngineTest::SevereSepsisTest(const std::string &sTestDirectory)
   {
-    SepsisTest(0.5, 0.7, sTestDirectory, "SevereSepsis");
+    SepsisTest(0.5, 0.9, 10, sTestDirectory, "SevereSepsis");
   }
 
   void EngineTest::AsepticTest(const std::string &sTestDirectory)
   {
-    SepsisTest(1, 0.3, sTestDirectory, "Aseptic");
+    SepsisTest(1, 0.3, 10, sTestDirectory, "Aseptic");
   }
 
-  void EngineTest::SepsisTest(double infectionSeverity, double progressionSeverity, const std::string& sTestDirectory, const std::string& sTestName)
+  void EngineTest::MaximumAdvancedSepsisTest(const std::string& sTestDirectory)
+  {
+    SepsisTest(1.0, 1.0, 24, sTestDirectory, "MaximumAdvancedSepsis");
+  }
+
+  void EngineTest::MaximumInitialSepsisTest(const std::string& sTestDirectory)
+  {
+    SepsisTest(0.1, 1.0, 24, sTestDirectory, "MaximumInitialSepsis");
+  }
+
+  void EngineTest::SepsisTest(double infectionSeverity, double progressionSeverity, double duration_hr, const std::string& sTestDirectory, const std::string& sTestName)
   {
     std::string tName = sTestName;
 
@@ -57,14 +67,14 @@ namespace pulse { namespace human_adult_whole_body
 
     Engine pe;
     Controller& pc = (Controller&)pe.GetController();
-    pc.GetLogger()->SetLogFile(sTestDirectory + "/" + tName + ".log");
+    pc.GetLogger()->SetLogFile(sTestDirectory + "/" + tName + "Test.log");
     pc.GetLogger()->Info("Running " + tName);
 
     ImmuneModel& im = (ImmuneModel&)pc.GetImmune();
     im.Initialize();
 
     double time_s = 0.0;
-    double testTime_s = 60 * 60 * 10;
+    double testTime_s = 60 * 60 * duration_hr;
     double timeStep_s = 1.0 / 50;
 
     im.m_PathogenCount = infectionSeverity;
@@ -83,7 +93,7 @@ namespace pulse { namespace human_adult_whole_body
       
       if (i == 0)
       {
-        outTrk.CreateFile(std::string(sTestDirectory + "/" + tName + ".csv").c_str(), file);
+        outTrk.CreateFile(std::string(sTestDirectory + "/" + tName + "Test.csv").c_str(), file);
       }
       time_s += timeStep_s;
     }

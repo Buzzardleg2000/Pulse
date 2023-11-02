@@ -42,8 +42,8 @@
     "AdvanceTime": {
       "Time": {
         "ScalarTime": {
-          "Value": 60.0,
-          "Unit": "min"
+          "Value": 1.0,
+          "Unit": "hr"
         }
       }
     }

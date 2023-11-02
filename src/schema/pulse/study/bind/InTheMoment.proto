@@ -4,7 +4,7 @@ option java_package = "com.kitware.pulse.study.bind.in_the_moment";
 option csharp_namespace = "pulse.study.bind.in_the_moment";
 option optimize_for = SPEED;
 
-import "pulse/cdm/bind/Engine.proto";
+import "pulse/cdm/bind/Properties.proto";
 
 // These messages encapsulate a database of unstructured text
 // corresponding to the respective property/ies and values

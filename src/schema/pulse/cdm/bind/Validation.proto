@@ -6,22 +6,18 @@ option optimize_for = SPEED;
 
 import "pulse/cdm/bind/Plots.proto";
 import "pulse/cdm/bind/Patient.proto";
+import "pulse/cdm/bind/Properties.proto";
 
 // This encapsulates a row from our System/Patient validation spreedsheet
 // It also encapsulates a segment property cell from a scenario validation spreedsheet
 
-message RangeData
-{
-  double                                                Minimum                         = 1;
-  double                                                Maximum                         = 2;
-}
 message ValidationTargetData
 {
   string                                                Header                          = 1;
   string                                                Reference                       = 2;
   string                                                Notes                           = 3;
   string                                                TableFormatting                 = 4;/**<< @brief Specification string for floating point formatting of computed values in tables */
-  
+
 }
 
 message SegmentValidationTargetData

@@ -120,12 +120,17 @@ namespace pulse { namespace human_adult_whole_body
 
     testMap.insert(std::make_pair("BrainInjuryTest", &EngineTest::BrainInjuryTest));
 
-    testMap.insert(std::make_pair("MildSepsisTest", &EngineTest::MildSepsisTest));
-    testMap.insert(std::make_pair("ModerateSepsisTest", &EngineTest::ModerateSepsisTest));
-    testMap.insert(std::make_pair("SevereSepsisTest", &EngineTest::SevereSepsisTest));
+    testMap.insert(std::make_pair("MildInfectionMildProgressionSepsisTest", &EngineTest::MildInfectionMildProgressionSepsisTest));
+    testMap.insert(std::make_pair("MildInfectionModerateProgressionSepsisTest", &EngineTest::MildInfectionModerateProgressionSepsisTest));
+    testMap.insert(std::make_pair("MildInfectionSevereProgressionSepsisTest", &EngineTest::MildInfectionSevereProgressionSepsisTest));
+    testMap.insert(std::make_pair("ModerateInfectionMildProgressionSepsisTest", &EngineTest::ModerateInfectionMildProgressionSepsisTest));
+    testMap.insert(std::make_pair("ModerateInfectionModerateProgressionSepsisTest", &EngineTest::ModerateInfectionModerateProgressionSepsisTest));
+    testMap.insert(std::make_pair("ModerateInfectionSevereProgressionSepsisTest", &EngineTest::ModerateInfectionSevereProgressionSepsisTest));
+    testMap.insert(std::make_pair("SevereInfectionMildProgressionSepsisTest", &EngineTest::SevereInfectionMildProgressionSepsisTest));
+    testMap.insert(std::make_pair("SevereInfectionModerateProgressionSepsisTest", &EngineTest::SevereInfectionModerateProgressionSepsisTest));
+    testMap.insert(std::make_pair("SevereInfectionSevereProgressionSepsisTest", &EngineTest::SevereInfectionSevereProgressionSepsisTest));
     testMap.insert(std::make_pair("AsepticTest", &EngineTest::AsepticTest));
-    testMap.insert(std::make_pair("MaximumAdvancedSepsisTest", &EngineTest::MaximumAdvancedSepsisTest));
-    testMap.insert(std::make_pair("MaximumInitialSepsisTest", &EngineTest::MaximumInitialSepsisTest));
+    testMap.insert(std::make_pair("MaximumSepsisTest", &EngineTest::MaximumSepsisTest));
 
     testMap.insert(std::make_pair("ConditionCombinations", &EngineTest::ConditionCombinations));
     testMap.insert(std::make_pair("SolverSpeedTest", &EngineTest::SolverSpeedTest));

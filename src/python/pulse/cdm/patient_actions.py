@@ -706,31 +706,43 @@ class SEConsumeNutrients(SEPatientAction):
         return self._nutrition
 
 class SEDyspnea(SEPatientAction):
-    __slots__ = ["_severity"]
+    __slots__ = ["_respiration_rate_severity", "_tidal_volume_severity"]
 
     def __init__(self):
         super().__init__()
-        self._severity = None
+        self._respiration_rate_severity = None
+        self._tidal_volume_severity = None
 
     def clear(self):
         super().clear()
-        if self._severity is not None:
-            self._severity.invalidate()
+        if self._respiration_rate_severity is not None:
+            self._respiration_rate_severity.invalidate()
+        if self._tidal_volume_severity is not None:
+            self._tidal_volume_severity.invalidate()
 
     def is_valid(self):
-        return self.has_severity()
+        return self.has_respiration_rate_severity()  or self.has_tidal_volume_severity()
 
-    def has_severity(self):
-        return self._severity is not None
+    def has_respiration_rate_severity(self):
+        return self._respiration_rate_severity is not None
 
-    def get_severity(self):
-        if self._severity is None:
-            self._severity = SEScalar0To1()
-        return self._severity
+    def get_respiration_rate_severity(self):
+        if self._respiration_rate_severity is None:
+            self._respiration_rate_severity = SEScalar0To1()
+        return self._respiration_rate_severity
+
+    def has_tidal_volume_severity(self):
+        return self._tidal_volume_severity is not None
+
+    def get_tidal_volume_severity(self):
+        if self._tidal_volume_severity is None:
+            self._tidal_volume_severity = SEScalar0To1()
+        return self._tidal_volume_severity
 
     def __repr__(self):
         return ("Dyspnea\n"
-                "  Severity: {}").format(self._severity)
+                "  Respiration Rate Severity: {}\n"
+                "  Tidal Volume Severity: {}").format(self._respiration_rate_severity, self._tidal_volume_severity)
 
 class SEExercise(SEPatientAction):
     __slots__ = ["_intensity"]
@@ -948,6 +960,7 @@ class SEIntubation(SEPatientAction):
 
     def get_type(self):
         return self._type
+
 
     def set_type(self, type: eIntubationType):
         self._type = type

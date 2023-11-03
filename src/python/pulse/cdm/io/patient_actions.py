@@ -256,8 +256,10 @@ def serialize_consume_nutrients_from_bind(src: ConsumeNutrientsData, dst: Consum
 
 def serialize_dsypnea_to_bind(src: SEDyspnea, dst: DyspneaData):
     serialize_patient_action_to_bind(src, dst.PatientAction)
-    if src.has_severity():
-        serialize_scalar_0to1_to_bind(src.get_severity(), dst.Severity)
+    if src.has_respiration_rate_severity():
+        serialize_scalar_0to1_to_bind(src.get_respiration_rate_severity(), dst.RespirationRateSeverity)
+    if src.has_tidal_volume_severity():
+        serialize_scalar_0to1_to_bind(src.get_tidal_volume_severity(), dst.TidalVolumeSeverity)
 
 def serialize_dsypnea_from_bind(src:DyspneaData, dst: SEDyspnea):
     serialize_patient_action_from_bind(dst.PatientAction, src)

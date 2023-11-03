@@ -89,8 +89,8 @@ message PlotSourceData
   string                              CSVData                   = 1;  /**<< @brief The path and filename of the data file. */
 
   optional string                     Label                     = 2;  /**<< @brief If provided, label to be used in legend. */
-  optional string                     LineFormat                = 3;  /**<< @brief Plot this source with this format. */
-  optional double                     LineWidth                 = 4;   /**<< @brief Plot this source with this linewidth. */
+  optional string                     LineFormat                = 3;  /**<< @brief Plot this source with this format (https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html). */
+  optional double                     LineWidth                 = 4;  /**<< @brief Plot this source with this linewidth. */
   optional int32                      StartRow                  = 5;  /**<< @brief Specify the starting row number of the CSV data to include in plot. */
   optional int32                      EndRow                    = 6;  /**<< @brief Specify the ending row number of the CSV data to include in plot. */
   optional int32                      RowSkip                   = 7;  /**<< @brief If specified, only every "RowSkip-th" (nth) row of the CSV data will be read. */

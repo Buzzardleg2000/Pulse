@@ -15,7 +15,7 @@ int main(int argc, char* argv[])
   Logger cdmLogger(cdmDir + "/CDMUnitTests.log");
   CommonDataModelTest cdmTest(&cdmLogger);
 
-  std::string hawbDir = "./test_results/unit_tests/human_adult/whole_body";
+  std::string hawbDir = "./test_results/unit_tests/pulse";
   Logger hawbLogger(hawbDir + "/PulseUnitTests.log");
   pulse::human_adult_whole_body::EngineTest hawbTest(&hawbLogger);
 
@@ -90,12 +90,17 @@ int main(int argc, char* argv[])
       //hawbTest.BrainInjuryTest(hawbDir);
 
       //Sepsis Tests
-      //hawbTest.MildSepsisTest(hawbDir);
-      //hawbTest.ModerateSepsisTest(hawbDir);
-      //hawbTest.SevereSepsisTest(hawbDir);
-      //hawbTest.AsepticTest(hawbDir);
-      hawbTest.FullMaximumSepsisTest(hawbDir);
-      hawbTest.InitialMaximumSepsisTest(hawbDir);
+      hawbTest.MildInfectionMildProgressionSepsisTest(hawbDir);
+      hawbTest.MildInfectionModerateProgressionSepsisTest(hawbDir);
+      hawbTest.MildInfectionSevereProgressionSepsisTest(hawbDir);
+      hawbTest.ModerateInfectionMildProgressionSepsisTest(hawbDir);
+      hawbTest.ModerateInfectionModerateProgressionSepsisTest(hawbDir);
+      hawbTest.ModerateInfectionSevereProgressionSepsisTest(hawbDir);
+      hawbTest.SevereInfectionMildProgressionSepsisTest(hawbDir);
+      hawbTest.SevereInfectionModerateProgressionSepsisTest(hawbDir);
+      hawbTest.SevereInfectionSevereProgressionSepsisTest(hawbDir);
+      hawbTest.AsepticTest(hawbDir);
+      hawbTest.MaximumSepsisTest(hawbDir);
 
       //Acid Base Tests
       //hawbTest.AcidBaseMathTest(hawbDir);

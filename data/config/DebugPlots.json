@@ -4,52 +4,34 @@
     {
       "MultiHeaderSeriesPlotter":
       {
-        "Comment": "Respiratory Methodology Report - Spirometry Flow-Volume Loops",
+        "Comment": "Sepsis Groups",
         "PlotConfig":
         {
-          "Gridlines": true, "ImageProperties": { "DimensionMode": "Square" },
-          "OutputPathOverride": "./docs/html/plots/Respiratory/"
+          "Gridlines": true, "OutputPathOverride": "./docs/html/plots/Immune"
         },
         "PlotSource":
         [
-          {
-            "CSVData": "$VERIFICATION_DIR/scenarios/miscellaneous/SpirometryComparisonResults.csv",
-            "EndRow": 1199, "Label": "Healthy"
-          },
-          {
-            "CSVData": "$VERIFICATION_DIR/scenarios/miscellaneous/SpirometryComparisonResults.csv",
-            "StartRow": 3501, "EndRow": 4699, "Label": "Moderate COPD"
-          },
-          {
-            "CSVData": "$VERIFICATION_DIR/scenarios/miscellaneous/SpirometryComparisonResults.csv",
-            "StartRow": 7001, "EndRow": 8199, "Label": "Moderate ARDS"
-          }
+          { "CSVData": "./test_results/unit_tests/pulse/MildInfectionMildProgressionSepsisTest.csv", "Label": "MildInfectionMildProgression", "LineFormat": "-^b" },
+          { "CSVData": "./test_results/unit_tests/pulse/MildInfectionModerateProgressionSepsisTest.csv", "Label": "MildInfectionModerateProgression", "LineFormat": "-^r" },
+          { "CSVData": "./test_results/unit_tests/pulse/MildInfectionSevereProgressionSepsisTest.csv", "Label": "MildInfectionSevereProgression", "LineFormat": "-^g" },
+          { "CSVData": "./test_results/unit_tests/pulse/ModerateInfectionMildProgressionSepsisTest.csv", "Label": "ModerateInfectionMildProgression", "LineFormat": ":b" },
+          { "CSVData": "./test_results/unit_tests/pulse/ModerateInfectionModerateProgressionSepsisTest.csv", "Label": "ModerateInfectionModerateProgression", "LineFormat": "-c" },
+          { "CSVData": "./test_results/unit_tests/pulse/ModerateInfectionSevereProgressionSepsisTest.csv", "Label": "ModerateInfectionSevereProgression", "LineFormat": ":g" },
+          { "CSVData": "./test_results/unit_tests/pulse/SevereInfectionMildProgressionSepsisTest.csv", "Label": "SevereInfectionMildProgression", "LineFormat": "-.b" },
+          { "CSVData": "./test_results/unit_tests/pulse/SevereInfectionModerateProgressionSepsisTest.csv", "Label": "SevereInfectionModerateProgression", "LineFormat": "-.r" },
+          { "CSVData": "./test_results/unit_tests/pulse/SevereInfectionSevereProgressionSepsisTest.csv", "Label": "SevereInfectionSevereProgression", "LineFormat": "--y" },
+          { "CSVData": "./test_results/unit_tests/pulse/MaximumSepsisTest.csv", "Label": "Maximum", "LineFormat": "-r"}
         ],
         "Series":
         [
-          { "Title": "Spirometry Flow-Volume Loops", "OutputFilename": "FlowVolumeCurves",
-              "XHeader": "TotalLungVolume(mL)", "XBounds": { "UpperBound": 0, "LowerBound": 7000 },
-              "YHeader": [ "ExpiratoryFlow(L/s)" ]  }
-        ]
-      }
-    },
-    {
-      "MultiHeaderSeriesPlotter":
-      {
-        "Comment": "Respiratory Methodology Report - Spirometry Lung Volume Comparison",
-        "PlotConfig":
-        {
-          "Gridlines": true, "OutputPathOverride": "./docs/html/plots/Respiratory/",
-          "PlotActions": true, "OmitActionsWith": [ "ConsciousRespiration", "\"Value\": 0," ]
-        },
-        "PlotSource":
-        [
-          { "CSVData": "$VERIFICATION_DIR/scenarios/miscellaneous/SpirometryComparisonResults.csv" }
-        ],
-        "Series":
-        [
-          { "Title": "Spirometry Lung Volume Comparison", "OutputFilename": "SpirometryVolumeCurves",
-              "YHeader": [ "TotalLungVolume(mL)" ] }
+          { "Title": "Sepsis Pathogen Count Groups", "OutputFilename": "SepsisPathogenCountGroups",
+              "YHeader": [ "PathogenCount" ], "YLabel": "Pathogen Count" },
+          { "Title": "Sepsis Activated Phagocytes Groups", "OutputFilename": "SepsisActivatedPhagocytesGroups",
+              "YHeader": [ "ActivatedPhagocytes" ], "YLabel": "Activated Phagocytes" },
+          { "Title": "Sepsis Tissue Damage Groups", "OutputFilename": "SepsisTissueDamageGroups",
+              "YHeader": [ "TissueDamage" ], "YLabel": "Tissue Damage" },
+          { "Title": "Sepsis AntiInflammatoryMediators Groups", "OutputFilename": "SepsisAntiInflammatoryMediatorsGroups",
+              "YHeader": [ "AntiInflammatoryMediators" ], "YLabel": "AntiInflammatory Mediators" }
         ]
       }
     }

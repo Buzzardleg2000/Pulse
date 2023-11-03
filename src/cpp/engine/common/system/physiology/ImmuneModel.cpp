@@ -158,7 +158,7 @@ namespace pulse
   {
     Model::Initialize();
 
-    m_PathogenCount = 0;
+    m_PathogenCount = 0; // max 20e6
     m_PathogenGrowthRate = 0;
     m_ActivatedPhagocytes = 0;
     m_TissueDamage = 0;
@@ -226,7 +226,7 @@ namespace pulse
           if (m_InitialPathogenCount != sepsis.GetInfectionSeverity().GetValue() && m_InitialPathogenCount >= 0)
             Warning("Changing sepsis infection severity can produce unreliable results.");
 
-          m_InitialPathogenCount = sepsis.GetInfectionSeverity().GetValue();
+          m_InitialPathogenCount = sepsis.GetInfectionSeverity().GetValue() * 1.0;
           // TODO Do we need to do some maths here to compute a count from our 0 to 1 scale?
           m_PathogenCount = m_InitialPathogenCount;
         }
@@ -237,7 +237,7 @@ namespace pulse
       }
       // Currently these variable are the same, but in the future
       // we could calculate a new growth rate based on drug values
-      m_PathogenGrowthRate = PathogenGrowthRate;
+      m_PathogenGrowthRate = PathogenGrowthRate * 1.0;
       m_SepsisModel->AdvanceModelTime(m_data.GetTimeStep_s());
 
       // TODO when do we remove sepsis? if at all

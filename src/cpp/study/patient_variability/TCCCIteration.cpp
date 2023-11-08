@@ -76,6 +76,7 @@ namespace pulse::study::patient_variability
     std::vector<size_t> opts; // -1 as the opts holds the max index of that option
     opts.push_back(m_AirwayObstructionSeverity.GetValues().size()-1);
     opts.push_back(m_HemorrhageSeverity.GetValues().size()-1);
+    opts.push_back(m_HemorrhageLocation.GetValues().size()-1);
     opts.push_back(m_TensionPneumothoraxSeverity.GetValues().size()-1);
     opts.push_back(m_InsultDuration_s.GetValues().size()-1);
     opts.push_back(m_SalineAvailable.GetValues().size()-1);
@@ -89,6 +90,7 @@ namespace pulse::study::patient_variability
     double HemorrhageSeverity = 0;
     double TensionPneumothoraxSeverity = 0;
     double InsultDuration_s = 0;
+    size_t HemorrhageLocation = 0;
 
     SetDescription(patientFolderAndStateFilename.first);
     SetEngineStateFile(patientFolderAndStateFilename.second);
@@ -97,13 +99,15 @@ namespace pulse::study::patient_variability
     {
       AirwayObstructionSeverity = m_AirwayObstructionSeverity.GetValues()[idxs[0]];
       HemorrhageSeverity = m_HemorrhageSeverity.GetValues()[idxs[1]];
-      TensionPneumothoraxSeverity = m_TensionPneumothoraxSeverity.GetValues()[idxs[2]];
-      InsultDuration_s = m_InsultDuration_s.GetValues()[idxs[3]];
+      HemorrhageLocation = m_HemorrhageLocation.GetValues()[idxs[2]];
+      TensionPneumothoraxSeverity = m_TensionPneumothoraxSeverity.GetValues()[idxs[3]];
+      InsultDuration_s = m_InsultDuration_s.GetValues()[idxs[4]];
       if (AirwayObstructionSeverity > 0 ||
           HemorrhageSeverity > 0 ||
           TensionPneumothoraxSeverity > 0)
       {
-        GenerateScenario(AirwayObstructionSeverity, HemorrhageSeverity, TensionPneumothoraxSeverity, InsultDuration_s, patientFolderAndStateFilename.first);
+        GenerateScenario(AirwayObstructionSeverity, HemorrhageSeverity, HemorrhageLocation,
+                         TensionPneumothoraxSeverity, InsultDuration_s, patientFolderAndStateFilename.first);
       }
       m_Actions.clear();
     }
@@ -111,13 +115,29 @@ namespace pulse::study::patient_variability
 
   void TCCCIteration::GenerateScenario(double AirwayObstructionSeverity,
                                        double HemorrhageSeverity,
+                                       size_t HemorrhageLocation,
                                        double TensionPneumothoraxSeverity,
                                        double InsultDuration_s,
                                        const std::string& PatientName)
   {
     std::string name;
     name =  "AO" + pulse::cdm::to_string(AirwayObstructionSeverity) + "_";
-    name += "H"  + pulse::cdm::to_string(HemorrhageSeverity) + "_";
+    name += "H"  + pulse::cdm::to_string(HemorrhageSeverity);
+    switch ((eHemorrhageLocation)HemorrhageLocation) {
+      case eHemorrhageLocation::Leg:
+        name += "Leg_";
+        break;
+      case eHemorrhageLocation::Arm:
+        name += "Arm_";
+        break;
+      case eHemorrhageLocation::Abdomen:
+        name += "Abdomen_";
+        break;
+      case eHemorrhageLocation::_LOC_COUNT:
+      default:
+        name += "Undefined_";
+        break;
+    }
     name += "TP" +pulse::cdm::to_string(TensionPneumothoraxSeverity) + "_";
     name += "D"+pulse::cdm::to_string(InsultDuration_s)+"s";
     SetName(PatientName +"/"+name);
@@ -149,6 +169,20 @@ namespace pulse::study::patient_variability
     if (HemorrhageSeverity > 0)
     {
       m_Hemorrhage.GetSeverity().SetValue(HemorrhageSeverity);
+      switch ((eHemorrhageLocation)HemorrhageLocation) {
+        case eHemorrhageLocation::Leg:
+          m_Hemorrhage.SetCompartment(eHemorrhage_Compartment::RightLeg);
+          break;
+        case eHemorrhageLocation::Arm:
+          m_Hemorrhage.SetCompartment(eHemorrhage_Compartment::RightArm);
+          break;
+        case eHemorrhageLocation::Abdomen:
+          m_Hemorrhage.SetCompartment(eHemorrhage_Compartment::Splanchnic);
+          break;
+        case eHemorrhageLocation::_LOC_COUNT:
+        default:
+          break;
+      }
       m_Actions.push_back(&m_Hemorrhage);
     }
     if (TensionPneumothoraxSeverity > 0)

@@ -88,7 +88,7 @@ int main(int argc, char* argv[])
       tccc->SetBaselineDuration_s(15);
       tccc->SetMaxSimTime_min(60);
       tccc->PerformInterventions(false);
-      tccc->GetHemorrhageSeverity().SetMinMaxStep(0, 0.9, 0.1);
+      tccc->GetHemorrhageSeverity().SetValues(ParameterIteration<double>::SetMinMaxStep(0.0, 0.9, 0.1));
       iActions.push_back(tccc);
     }
     else if (mode == "itm")
@@ -97,10 +97,14 @@ int main(int argc, char* argv[])
       tccc->SetBaselineDuration_s(15);
       tccc->SetMaxSimTime_min(60);
       tccc->PerformInterventions(true);
-      tccc->GetInsultDuration_s().SetMinMaxStep(5*60, 40*60, 5*60);
-      tccc->GetAirwayObstructionSeverity().SetMinMaxStep(0, 0.9, 0.3);
-      tccc->GetHemorrhageSeverity().SetMinMaxStep(0, 0.9, 0.3);
-      tccc->GetTensionPneumothoraxSeverity().SetMinMaxStep(0, 0.9, 0.3);
+      tccc->GetInsultDuration_s().SetValues(ParameterIteration<double>::SetMinMaxStep(5.*60, 40.*60, 5.*60));
+      tccc->GetAirwayObstructionSeverity().SetValues(ParameterIteration<double>::SetMinMaxStep(0., 0.9, 0.3));
+      tccc->GetHemorrhageSeverity().SetValues(ParameterIteration<double>::SetMinMaxStep(0., 0.9, 0.3));
+      std::vector<size_t> hemorrhageLocs;
+      for(size_t i = 0; i < (size_t)eHemorrhageLocation::_LOC_COUNT; ++i)
+        hemorrhageLocs.push_back(i);
+      tccc->GetHemorrhageLocation().SetValues(hemorrhageLocs);
+      tccc->GetTensionPneumothoraxSeverity().SetValues(ParameterIteration<double>::SetMinMaxStep(0., 0.9, 0.3));
       // What is our equipment variability?
       // Let's assume we have everything in our bag
       tccc->GetSalineAvailable().SetValues({ 1 });
@@ -138,6 +142,10 @@ int main(int argc, char* argv[])
       tccc->SetMaxSimTime_min(60);
       tccc->PerformInterventions(false);
       tccc->GetHemorrhageSeverity().SetValues({ 0.2, 0.5 });
+      std::vector<size_t> hemorrhageLocs;
+      for(size_t i = 0; i < (size_t)eHemorrhageLocation::_LOC_COUNT; ++i)
+        hemorrhageLocs.push_back(i);
+      tccc->GetHemorrhageLocation().SetValues(hemorrhageLocs);
       tccc->GetInsultDuration_s().SetValues({ 5 });
       iActions.push_back(tccc);
     }

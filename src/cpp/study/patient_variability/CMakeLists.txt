@@ -8,7 +8,7 @@ add_library_ex(PatientVariabilityEngine
     ValidationIteration.h
   CPP_FILES
     ActionIteration.cpp
-    ParameterIteration.cpp
+    ParameterIteration.tpp
     PatientIteration.cpp
     ScenarioIteration.cpp
     TCCCIteration.cpp

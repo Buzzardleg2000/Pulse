@@ -3647,6 +3647,7 @@ namespace pulse
       double alveoliCompliance_L_Per_cmH2O = alveoliCompliancePath->GetNextCompliance(VolumePerPressureUnit::L_Per_cmH2O);
       alveoliCompliance_L_Per_cmH2O *= positivePressureComplianceScalingFactor * obstructiveComplianceScalingFactor * restrictiveComplianceScalingFactor;
 
+      //------------------------------------------------------------------------------------------------------
       //Modifiers
       if (cpt.Side == eSide::Left && m_MechanicsModifiers->HasLeftComplianceMultiplier())
       {
@@ -3657,6 +3658,7 @@ namespace pulse
         alveoliCompliance_L_Per_cmH2O *= m_MechanicsModifiers->GetRightComplianceMultiplier().GetValue();
       }
 
+      //------------------------------------------------------------------------------------------------------
       alveoliCompliancePath->GetNextCompliance().SetValue(alveoliCompliance_L_Per_cmH2O, VolumePerPressureUnit::L_Per_cmH2O);
     }
   }

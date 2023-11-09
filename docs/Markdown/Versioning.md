@@ -28,6 +28,9 @@ Our version number sematic is Major.Minor.Patch-ReleaseStage, where :
     - Information for every executed scenario is then updated in the provided file:
       - The locations of the: scenario file and its generated log file, and csv file
       - Various error states if encountered: Unable to initialize and why, if there were any other errors encountered
+  - Post processing pipeline
+    - Written in python, allows us to process a log and csv file generated from a scenario and pull out (and even generate new) data into a more machine learning friendly format
+      - Unstructure Text Module looks at map of vitals to a string vector and randomly takes strings based on the vitals values to create an unstructured description of the simulation at that time. The strings and bounds are read in from a spreadsheet
 
 - Physiology Model Improvements
   - Dyspnea

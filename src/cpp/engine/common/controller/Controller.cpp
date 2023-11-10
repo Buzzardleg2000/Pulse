@@ -23,6 +23,7 @@
 #include "engine/common/system/physiology/TissueModel.h"
 #include "engine/io/protobuf/PBState.h"
 
+#include "cdm/system/physiology/SECardiovascularMechanicsModifiers.h"
 #include "cdm/engine/SEPatientActionCollection.h"
 #include "cdm/engine/SEPatientConfiguration.h"
 #include "cdm/engine/SEConditionManager.h"
@@ -39,6 +40,7 @@
 #include "cdm/engine/SEAdvanceHandler.h"
 #include "cdm/engine/SEEngineStabilization.h"
 #include "cdm/patient/SEPatient.h"
+#include "cdm/patient/actions/SECardiovascularMechanicsModification.h"
 #include "cdm/patient/actions/SEIntubation.h"
 #include "cdm/patient/actions/SEPatientAssessmentRequest.h"
 #include "cdm/patient/assessments/SEArterialBloodGasTest.h"
@@ -396,9 +398,11 @@ namespace pulse
     SEEventHandler* event_handler = m_EventManager->GetEventHandler();
     m_EventManager->ForwardEvents(nullptr);
 
-    // Setup any data requests
-
-    if (!Stabilize(patient_configuration))
+    // Copy over any conditions
+    // We need to copy conditions here, so models can prepare for them in their AtSteadyState method
+    if (patient_configuration.HasConditions())
+      m_Conditions->Copy(*patient_configuration.GetConditions(), *m_Substances);
+    if (!Stabilize())
     {
       Error("Pulse needs stabilization criteria, none provided in configuration file");
       m_EngineInitializationState = eEngineInitializationState::FailedStabilization;
@@ -516,8 +520,9 @@ namespace pulse
     return true;
   }
 
-  bool Controller::Stabilize(const SEPatientConfiguration& patient_configuration)
+  bool Controller::Stabilize()
   {
+    m_EventManager->SetEvent(eEvent::Stabilization, true, m_SimulationTime);
     // Stabilize the engine to a resting state (with a standard meal and environment)
     if (!m_Config->HasStabilization())
     {
@@ -531,10 +536,6 @@ namespace pulse
 
     // Copy any changes to the current patient to the initial patient
     m_InitialPatient->Copy(*m_CurrentPatient);
-
-    // We need to copy conditions here, so models can prepare for them in their AtSteadyState method
-    if (patient_configuration.HasConditions())
-      m_Conditions->Copy(*patient_configuration.GetConditions(), *m_Substances);
     AtSteadyState(EngineState::AtInitialStableState);// This will peek at conditions
 
     m_State = EngineState::SecondaryStabilization;
@@ -547,6 +548,7 @@ namespace pulse
         return false;
     }
     AtSteadyState(EngineState::AtSecondaryStableState);
+    m_EventManager->SetEvent(eEvent::Stabilization, false, m_SimulationTime);
     return true;
   }
 
@@ -684,9 +686,11 @@ namespace pulse
     const SEAdvanceUntilStable* adv2Stable = dynamic_cast<const SEAdvanceUntilStable*>(&action);
     if (adv2Stable != nullptr)
     {
+      m_EventManager->SetEvent(eEvent::Stabilization, true, m_SimulationTime);
       m_Config->GetStabilization()->TrackStabilization(eSwitch::On);
       if (!m_Config->GetStabilization()->Stabilize(*m_Stabilizer, SEEngineStabilization::AdvanceUntilStable))
         Error("Engine was unable to AdvanceUntilStable");
+      m_EventManager->SetEvent(eEvent::Stabilization, false, m_SimulationTime);
       return true;
     }
 
@@ -825,7 +829,29 @@ namespace pulse
       return true;
     }
 
-    return GetActions().ProcessAction(action);
+    if (!GetActions().ProcessAction(action))
+      return false;
+
+    const SECardiovascularMechanicsModification* cvMod = dynamic_cast<const SECardiovascularMechanicsModification*>(&action);
+    if (cvMod != nullptr && cvMod->Restabilize())
+    {
+      m_EventManager->SetEvent(eEvent::Stabilization, true, m_SimulationTime);
+      m_NervousModel->SetBaroreceptorFeedback(eSwitch::Off);
+      m_NervousModel->SetChemoreceptorFeedback(eSwitch::Off);
+      m_Config->GetStabilization()->TrackStabilization(eSwitch::On);
+      if (!m_Config->GetStabilization()->Stabilize(*m_Stabilizer, SEEngineStabilization::AdvanceUntilStable))
+        Error("Unable to restabilize to provided cardiovascular modifiers");
+      // Ensure systems set baselines properly
+      AtSteadyState(EngineState::AtSecondaryStableState);
+      m_Actions->GetPatientActions().GetCardiovascularMechanicsModification().SetRestabilization(false);
+      // Set any model modifiers to 1.0
+      auto& m = m_Actions->GetPatientActions().GetCardiovascularMechanicsModification().GetModifiers();
+      m.GetHeartRateMultiplier().SetValue(1.0);
+      AtSteadyState(EngineState::Active);
+      m_EventManager->SetEvent(eEvent::Stabilization, false, m_SimulationTime);
+    }
+
+    return true;
   }
 
   void Controller::InitializeModels()

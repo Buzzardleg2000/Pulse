@@ -245,16 +245,18 @@ class SEBronchoconstriction(SEPatientAction):
 
 class SECardiovascularMechanicsModification(SEPatientAction):
     __slots__ = ["_modifiers_file",
-                 "_modifiers"]
+                 "_modifiers", "_restabilize"]
 
     def __init__(self):
         super().__init__()
         self._modifiers_file = None
         self._modifiers = None
+        self._restabilize = True
 
     def clear(self):
         self._modifiers_file = None
         self._modifiers = None
+        self._restabilize = True
 
     def copy(self, src):
         if not isinstance(SECardiovascularMechanicsModification, src):
@@ -262,12 +264,18 @@ class SECardiovascularMechanicsModification(SEPatientAction):
         self.clear()
         self._modifiers_file = src._modifiers_file
         self._modifiers.copy(src._modifiers)
+        self._restabilize = src._restabilize
 
     def is_valid(self):
         return self.has_modifiers() or self.has_modifiers_file()
 
     def is_active(self):
         return True
+
+    def restabilize(self):
+        return self._restabilize
+    def set_restabilize(self, b: bool):
+        self._restabilize = b
 
     def has_modifiers_file(self):
         return self._modifiers_file is not None

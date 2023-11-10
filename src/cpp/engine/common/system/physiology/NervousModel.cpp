@@ -132,14 +132,6 @@ namespace pulse
 
   void NervousModel::AtSteadyState()
   {
-    if (m_data.GetState() == EngineState::AtInitialStableState)
-    {
-      m_ChemoreceptorFeedback = m_data.GetConfiguration().GetChemoreceptorFeedback(); // The set-points (Baselines) get reset at the end of each stabilization period.
-    }
-    else if (m_data.GetState() == EngineState::AtSecondaryStableState)
-    {
-      m_BaroreceptorFeedback = m_data.GetConfiguration().GetBaroreceptorFeedback();
-    }
     // Set-baselines at the end of each stabilization period.
     SetBaselines();
   }

@@ -18,7 +18,7 @@ namespace HowToDriver
       //HowTo_RespiratoryMechanics.Example.Run();
       HowTo_SystemModifiers.Example.Run();
       //HowTo_DeathState.Example.Run();
-      HowTo_RunScenarios.Example.Run();
+      //HowTo_RunScenarios.Example.Run();
       //HowTo_VentilationMechanics.Example.Run();
       //HowTo_UseStates.Example.Run();
     }

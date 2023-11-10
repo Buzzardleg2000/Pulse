@@ -10,12 +10,14 @@ SECardiovascularMechanicsModification::SECardiovascularMechanicsModification(Log
 {
   m_ModifiersFile = "";
   m_Modifiers = nullptr;
+  m_Restabilize = true;
 }
 
 SECardiovascularMechanicsModification::~SECardiovascularMechanicsModification()
 {
   m_ModifiersFile = "";
   SAFE_DELETE(m_Modifiers);
+  m_Restabilize = true;
 }
 
 void SECardiovascularMechanicsModification::Clear()
@@ -24,6 +26,7 @@ void SECardiovascularMechanicsModification::Clear()
   m_ModifiersFile = "";
   if (m_Modifiers)
     m_Modifiers->Clear();
+  m_Restabilize = true;
 }
 
 void SECardiovascularMechanicsModification::Copy(const SECardiovascularMechanicsModification& src, bool /*preserveState*/)
@@ -31,6 +34,7 @@ void SECardiovascularMechanicsModification::Copy(const SECardiovascularMechanics
   //if(preserveState) // Cache any state before copy,
   PBPatientAction::Copy(src, *this);
   //if(preserveState) // Put back any state
+  m_Restabilize = src.m_Restabilize;
 }
 
 void SECardiovascularMechanicsModification::Activate()
@@ -58,6 +62,15 @@ void SECardiovascularMechanicsModification::Deactivate()
   SEPatientAction::Deactivate();
   Clear();//No stateful properties
   GetModifiers().Activate();
+}
+
+bool SECardiovascularMechanicsModification::Restabilize() const
+{
+  return m_Restabilize;
+}
+void SECardiovascularMechanicsModification::SetRestabilization(bool b)
+{
+  m_Restabilize = b;
 }
 
 const SEScalar* SECardiovascularMechanicsModification::GetScalar(const std::string& name)

@@ -434,6 +434,7 @@ message RespiratoryMechanicsModificationData
     RespiratoryMechanicsModifiersData       Modifiers                       = 2;/**<< @brief A RespiratoryMechanicsModification object with properties to set in the system object. */
     string                                  ModifiersFile                   = 3;/**<< @brief File containing a RespiratoryMechanics object with properties to set in the system object. */
   }
+  bool                                      Restabilize                     = 4;/**<< @brief Restabilize the engine to a new homeostasis state. Use false if you are incrementally driving modification with very small modifiers.*/
 }
 
 /** @brief An administration of a substance that is given all at one time to raise its concentration in blood to an effective level. */

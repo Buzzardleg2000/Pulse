@@ -7,6 +7,7 @@ namespace Pulse.CDM
   {
     protected SERespiratoryMechanicsModifiers modifiers = null;
     protected string modifiersFile = "";
+    protected bool restabilize = true;
 
     public SERespiratoryMechanicsModification()
     {
@@ -24,7 +25,11 @@ namespace Pulse.CDM
       if (other.modifiers != null)
         this.GetModifiers().Copy(other.modifiers);
       this.modifiersFile = other.modifiersFile;
+      this.restabilize = other.restabilize;
     }
+
+    public bool Restabilize() { return restabilize; }
+    public void SetRestabilization(bool b) { restabilize = b; }
 
     public override void Clear()
     {
@@ -32,6 +37,7 @@ namespace Pulse.CDM
       if (this.modifiers != null)
         this.modifiers.Clear();
       this.modifiersFile = "";
+      restabilize = true;
     }
 
     public override bool IsValid()

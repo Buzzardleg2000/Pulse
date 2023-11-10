@@ -24,6 +24,7 @@
 #include "engine/io/protobuf/PBState.h"
 
 #include "cdm/system/physiology/SECardiovascularMechanicsModifiers.h"
+#include "cdm/system/physiology/SERespiratoryMechanicsModifiers.h"
 #include "cdm/engine/SEPatientActionCollection.h"
 #include "cdm/engine/SEPatientConfiguration.h"
 #include "cdm/engine/SEConditionManager.h"
@@ -43,6 +44,7 @@
 #include "cdm/patient/actions/SECardiovascularMechanicsModification.h"
 #include "cdm/patient/actions/SEIntubation.h"
 #include "cdm/patient/actions/SEPatientAssessmentRequest.h"
+#include "cdm/patient/actions/SERespiratoryMechanicsModification.h"
 #include "cdm/patient/assessments/SEArterialBloodGasTest.h"
 #include "cdm/patient/assessments/SECompleteBloodCount.h"
 #include "cdm/patient/assessments/SEComprehensiveMetabolicPanel.h"
@@ -841,12 +843,26 @@ namespace pulse
       m_Config->GetStabilization()->TrackStabilization(eSwitch::On);
       if (!m_Config->GetStabilization()->Stabilize(*m_Stabilizer, SEEngineStabilization::AdvanceUntilStable))
         Error("Unable to restabilize to provided cardiovascular modifiers");
+      m_Actions->GetPatientActions().GetCardiovascularMechanicsModification().SetRestabilization(false);
       // Ensure systems set baselines properly
       AtSteadyState(EngineState::AtSecondaryStableState);
-      m_Actions->GetPatientActions().GetCardiovascularMechanicsModification().SetRestabilization(false);
       // Set any model modifiers to 1.0
       auto& m = m_Actions->GetPatientActions().GetCardiovascularMechanicsModification().GetModifiers();
       m.GetHeartRateMultiplier().SetValue(1.0);
+      AtSteadyState(EngineState::Active);
+      m_EventManager->SetEvent(eEvent::Stabilization, false, m_SimulationTime);
+    }
+
+    const SERespiratoryMechanicsModification* rMod = dynamic_cast<const SERespiratoryMechanicsModification*>(&action);
+    if (rMod != nullptr && rMod->Restabilize())
+    {
+      m_EventManager->SetEvent(eEvent::Stabilization, true, m_SimulationTime);
+      m_Config->GetStabilization()->TrackStabilization(eSwitch::On);
+      if (!m_Config->GetStabilization()->Stabilize(*m_Stabilizer, SEEngineStabilization::AdvanceUntilStable))
+        Error("Unable to restabilize to provided respiratory modifiers");
+      m_Actions->GetPatientActions().GetRespiratoryMechanicsModification().SetRestabilization(false);
+      // Ensure systems set baselines properly
+      AtSteadyState(EngineState::AtSecondaryStableState);
       AtSteadyState(EngineState::Active);
       m_EventManager->SetEvent(eEvent::Stabilization, false, m_SimulationTime);
     }

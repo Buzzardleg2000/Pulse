@@ -434,6 +434,7 @@ def serialize_respiratory_mechanics_modification_to_bind(src:SERespiratoryMechan
         dst.ModifiersFile = src.get_modifiers_file()
     elif src.has_modifiers():
         serialize_respiratory_mechanics_modifiers_to_bind(src.get_modifiers(), dst.Modifiers)
+    dst.Restabilize = src.restabilize()
 def serialize_respiratory_mechanics_modification_from_bind(src: RespiratoryMechanicsModificationData, dst: SERespiratoryMechanicsModification):
     serialize_patient_action_from_bind(src.PatientAction, dst)
     raise Exception("serialize_respiratory_mechanics_modification_from_bind not implemented")

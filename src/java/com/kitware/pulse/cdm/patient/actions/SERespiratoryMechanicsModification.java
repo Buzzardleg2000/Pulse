@@ -10,6 +10,7 @@ public class SERespiratoryMechanicsModification extends SEPatientAction
   {
     protected SERespiratoryMechanicsModifiers modifiers = null;
     protected String modifiersFile = "";
+    protected boolean restabilize = true;
 
     public SERespiratoryMechanicsModification()
     {
@@ -27,6 +28,7 @@ public class SERespiratoryMechanicsModification extends SEPatientAction
       if (other.modifiers != null)
         this.getModifiers().copy(other.modifiers);
       this.modifiersFile = other.modifiersFile;
+      this.restabilize = other.restabilize;
     }
 
     public void clear()
@@ -35,6 +37,7 @@ public class SERespiratoryMechanicsModification extends SEPatientAction
       if (this.modifiers != null)
         this.modifiers.clear();
       this.modifiersFile = "";
+      this.restabilize = true;
     }
     
     public static void load(RespiratoryMechanicsModificationData src, SERespiratoryMechanicsModification dst)
@@ -43,6 +46,7 @@ public class SERespiratoryMechanicsModification extends SEPatientAction
         SERespiratoryMechanicsModifiers.load(src.getModifiers(), dst.getModifiers());
       else if (src.getModifiersFile().isEmpty())
         dst.setModifiersFile(src.getModifiersFile());
+      dst.restabilize = src.getRestabilize();
     }
     public static RespiratoryMechanicsModificationData unload(SERespiratoryMechanicsModification src)
     {
@@ -56,12 +60,16 @@ public class SERespiratoryMechanicsModification extends SEPatientAction
         dst.setModifiers(SERespiratoryMechanicsModifiers.unload(src.getModifiers()));
       else if (src.hasModifiersFile())
         dst.setModifiersFile(src.getModifiersFile());
+      dst.setRestabilize(src.restabilize);
     }
 
     public boolean isValid()
     {
       return hasModifiers() || hasModifiersFile();
     }
+
+    public boolean restabilize() { return this.restabilize; }
+    void setRestabilization(boolean b) { this.restabilize = b; }
 
     public boolean hasModifiers()
     {
@@ -96,6 +104,7 @@ public class SERespiratoryMechanicsModification extends SEPatientAction
       {
         str += modifiers.toString();
       }
+      str += "\n\tRestablize: " + this.restabilize;
       return str;
     }
   }

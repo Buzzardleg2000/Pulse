@@ -25,6 +25,9 @@ public:
   bool IsActive() const override;
   void Deactivate() override;
 
+  bool Restabilize() const;
+  void SetRestabilization(bool b);
+
   bool HasModifiers() const;
   SERespiratoryMechanicsModifiers& GetModifiers();
   const SERespiratoryMechanicsModifiers* GetModifiers() const;
@@ -36,4 +39,6 @@ public:
 protected:
   std::string                       m_ModifiersFile;
   SERespiratoryMechanicsModifiers*  m_Modifiers;
+  // This is for the engine
+  bool                                 m_Restabilize;
 };

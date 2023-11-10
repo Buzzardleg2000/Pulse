@@ -1303,6 +1303,7 @@ void PBPatientAction::Serialize(const CDM_BIND::RespiratoryMechanicsModification
     dst.SetModifiersFile(src.modifiersfile());
   else if (src.has_modifiers())
     PBPhysiology::Load(src.modifiers(), dst.GetModifiers());
+  dst.SetRestabilization(src.restabilize());
 }
 CDM_BIND::RespiratoryMechanicsModificationData* PBPatientAction::Unload(const SERespiratoryMechanicsModification& src)
 {
@@ -1317,6 +1318,7 @@ void PBPatientAction::Serialize(const SERespiratoryMechanicsModification& src, C
     dst.set_modifiersfile(src.m_ModifiersFile);
   else if (src.HasModifiers())
     dst.set_allocated_modifiers(PBPhysiology::Unload(*src.m_Modifiers));
+  dst.set_restabilize(src.Restabilize());
 }
 void PBPatientAction::Copy(const SERespiratoryMechanicsModification& src, SERespiratoryMechanicsModification& dst)
 {

@@ -10,12 +10,14 @@ SERespiratoryMechanicsModification::SERespiratoryMechanicsModification(Logger* l
 {
   m_ModifiersFile = "";
   m_Modifiers = nullptr;
+  m_Restabilize = true;
 }
 
 SERespiratoryMechanicsModification::~SERespiratoryMechanicsModification()
 {
   m_ModifiersFile = "";
   SAFE_DELETE(m_Modifiers);
+  m_Restabilize = true;
 }
 
 void SERespiratoryMechanicsModification::Clear()
@@ -24,12 +26,14 @@ void SERespiratoryMechanicsModification::Clear()
   m_ModifiersFile = "";
   if (m_Modifiers)
     m_Modifiers->Clear();
+  m_Restabilize = true;
 }
 
 void SERespiratoryMechanicsModification::Copy(const SERespiratoryMechanicsModification& src, bool /*preserveState*/)
 {
   //if(preserveState) // Cache any state before copy,
   PBPatientAction::Copy(src, *this);
+  m_Restabilize = src.m_Restabilize;
   //if(preserveState) // Put back any state
 }
 
@@ -51,6 +55,15 @@ void SERespiratoryMechanicsModification::Deactivate()
 const SEScalar* SERespiratoryMechanicsModification::GetScalar(const std::string& name)
 {
   return GetModifiers().GetScalar(name);
+}
+
+bool SERespiratoryMechanicsModification::Restabilize() const
+{
+  return m_Restabilize;
+}
+void SERespiratoryMechanicsModification::SetRestabilization(bool b)
+{
+  m_Restabilize = b;
 }
 
 bool SERespiratoryMechanicsModification::HasModifiers() const

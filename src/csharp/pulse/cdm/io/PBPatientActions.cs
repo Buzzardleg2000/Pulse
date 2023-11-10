@@ -1471,6 +1471,7 @@ namespace Pulse.CDM
         dst.SetModificationFile(src.ModifiersFile);
       else if (src.Modifiers != null)
         PBPhysiology.Load(src.Modifiers, dst.GetModifiers());
+      dst.SetRestabilization(src.Restabilize);
     }
     public static pulse.cdm.bind.RespiratoryMechanicsModificationData Unload(SERespiratoryMechanicsModification src)
     {
@@ -1486,6 +1487,7 @@ namespace Pulse.CDM
         dst.ModifiersFile = src.GetModifiersFile();
       else if (src.HasModifiers())
         dst.Modifiers = PBPhysiology.Unload(src.GetModifiers());
+      dst.Restabilize = src.Restabilize();
     }
     #endregion
 

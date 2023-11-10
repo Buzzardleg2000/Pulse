@@ -33,8 +33,8 @@ void SECardiovascularMechanicsModification::Copy(const SECardiovascularMechanics
 {
   //if(preserveState) // Cache any state before copy,
   PBPatientAction::Copy(src, *this);
-  //if(preserveState) // Put back any state
   m_Restabilize = src.m_Restabilize;
+  //if(preserveState) // Put back any state
 }
 
 void SECardiovascularMechanicsModification::Activate()
@@ -64,6 +64,11 @@ void SECardiovascularMechanicsModification::Deactivate()
   GetModifiers().Activate();
 }
 
+const SEScalar* SECardiovascularMechanicsModification::GetScalar(const std::string& name)
+{
+  return GetModifiers().GetScalar(name);
+}
+
 bool SECardiovascularMechanicsModification::Restabilize() const
 {
   return m_Restabilize;
@@ -71,11 +76,6 @@ bool SECardiovascularMechanicsModification::Restabilize() const
 void SECardiovascularMechanicsModification::SetRestabilization(bool b)
 {
   m_Restabilize = b;
-}
-
-const SEScalar* SECardiovascularMechanicsModification::GetScalar(const std::string& name)
-{
-  return GetModifiers().GetScalar(name);
 }
 
 bool SECardiovascularMechanicsModification::HasModifiers() const

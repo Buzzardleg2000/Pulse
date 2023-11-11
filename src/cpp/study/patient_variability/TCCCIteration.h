@@ -16,11 +16,11 @@
 
 namespace pulse::study::patient_variability
 {
-  enum class eHemorrhageLocation
+  enum class eHemorrhageWound
   {
-    Leg = 0,
-    Arm,
-    Abdomen,
+    LeftLegLaceration = 0,
+    RightArmLaceration,
+    InternalLiver,
     _LOC_COUNT
   };
 
@@ -41,8 +41,8 @@ namespace pulse::study::patient_variability
     ParameterIteration<double>& GetHemorrhageSeverity() { return m_HemorrhageSeverity; }
     const ParameterIteration<double>& GetHemorrhageSeverity() const { return m_HemorrhageSeverity; }
 
-    ParameterIteration<size_t>& GetHemorrhageLocation() { return m_HemorrhageLocation; }
-    const ParameterIteration<size_t>& GetHemorrhageLocation() const { return m_HemorrhageLocation; }
+    ParameterIteration<size_t>& GetHemorrhageWound() { return m_HemorrhageWound; }
+    const ParameterIteration<size_t>& GetHemorrhageWound() const { return m_HemorrhageWound; }
 
     ParameterIteration<double>& GetTensionPneumothoraxSeverity() { return m_TensionPneumothoraxSeverity; }
     const ParameterIteration<double>& GetTensionPneumothoraxSeverity() const { return m_TensionPneumothoraxSeverity; }
@@ -74,7 +74,7 @@ namespace pulse::study::patient_variability
     bool                  m_PerformInterventions;
     ParameterIteration<double>    m_AirwayObstructionSeverity;
     ParameterIteration<double>    m_HemorrhageSeverity;
-    ParameterIteration<size_t>    m_HemorrhageLocation;
+    ParameterIteration<size_t>    m_HemorrhageWound;
     ParameterIteration<double>    m_TensionPneumothoraxSeverity;
     ParameterIteration<double>    m_InsultDuration_s;
     ParameterIteration<double>    m_SalineAvailable;

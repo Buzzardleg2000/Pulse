@@ -17,14 +17,14 @@ using namespace pulse::study::patient_variability;
 int main(int argc, char* argv[])
 {
   bool clear                   = false;// TODO
-  bool generateOnly            = false;
+  bool generateOnly            = true;
 
   std::vector<PatientIteration*> iPatients;
   std::vector<ActionIteration*>  iActions;
 
 
   // Process arguments
-  std::string mode="test";
+  std::string mode="itm";
   if (argc > 1)
   {
     mode = argv[1];
@@ -53,11 +53,11 @@ int main(int argc, char* argv[])
     PatientIteration* male = new PatientIteration(logger);
     male->SetGenStyle(eGenStyle::Combo);
     male->SetSex(ePatient_Sex::Male);
-    male->GetAge_yr().SetValues({minAge_yr, maxAge_yr, stdAge_yr }, 2);
-    male->GetHR_bpm().SetValues({minHR_bpm, maxHR_bpm, stdHR_bpm }, 2);
-    male->GetMAP_mmHg().SetValues({ minMAP_mmHg, maxMAP_mmHg, stdMAP_mmHg }, 2);
-    male->GetPP_mmHg().SetValues({ minPulsePressure_mmHg, maxPulsePressure_mmHg, stdPulsePressure_mmHg }, 2);
-    male->GetRR_bpm().SetValues({ minRR_bpm, maxRR_bpm, stdRR_bpm }, 2);
+    //male->GetAge_yr().SetValues({minAge_yr, maxAge_yr, stdAge_yr }, 2);
+    //male->GetHR_bpm().SetValues({minHR_bpm, maxHR_bpm, stdHR_bpm }, 2);
+    //male->GetMAP_mmHg().SetValues({ minMAP_mmHg, maxMAP_mmHg, stdMAP_mmHg }, 2);
+    //male->GetPP_mmHg().SetValues({ minPulsePressure_mmHg, maxPulsePressure_mmHg, stdPulsePressure_mmHg }, 2);
+    //male->GetRR_bpm().SetValues({ minRR_bpm, maxRR_bpm, stdRR_bpm }, 2);
     male->GetHeight_cm().SetValues({ minMaleHeight_cm, maxMaleHeight_cm, stdMaleHeight_cm }, 2);
     male->GetBMI().SetValues({ minBMI, maxBMI, stdMaleBMI }, 2);
     male->GetBFF().SetValues({ minMaleBFF, maxMaleBFF, stdMaleBFF }, 2);
@@ -66,11 +66,11 @@ int main(int argc, char* argv[])
     PatientIteration* female = new PatientIteration(logger);
     female->SetGenStyle(eGenStyle::Combo);
     female->SetSex(ePatient_Sex::Female);
-    female->GetAge_yr().SetValues({ minAge_yr, maxAge_yr, stdAge_yr }, 2);
-    female->GetHR_bpm().SetValues({ minHR_bpm, maxHR_bpm, stdHR_bpm }, 2);
-    female->GetMAP_mmHg().SetValues({ minMAP_mmHg, maxMAP_mmHg, stdMAP_mmHg }, 2);
-    female->GetPP_mmHg().SetValues({ minPulsePressure_mmHg, maxPulsePressure_mmHg, stdPulsePressure_mmHg }, 2);
-    female->GetRR_bpm().SetValues({ minRR_bpm, maxRR_bpm, stdRR_bpm }, 2);
+    //female->GetAge_yr().SetValues({ minAge_yr, maxAge_yr, stdAge_yr }, 2);
+    //female->GetHR_bpm().SetValues({ minHR_bpm, maxHR_bpm, stdHR_bpm }, 2);
+    //female->GetMAP_mmHg().SetValues({ minMAP_mmHg, maxMAP_mmHg, stdMAP_mmHg }, 2);
+    //female->GetPP_mmHg().SetValues({ minPulsePressure_mmHg, maxPulsePressure_mmHg, stdPulsePressure_mmHg }, 2);
+    //female->GetRR_bpm().SetValues({ minRR_bpm, maxRR_bpm, stdRR_bpm }, 2);
     female->GetHeight_cm().SetValues({ minFemaleHeight_cm, maxFemaleHeight_cm, stdFemaleHeight_cm }, 2);
     female->GetBMI().SetValues({ minBMI, maxBMI, stdFemaleBMI }, 2);
     female->GetBFF().SetValues({ minFemaleBFF, maxFemaleBFF, stdFemaleBFF }, 2);
@@ -89,6 +89,9 @@ int main(int argc, char* argv[])
       tccc->SetMaxSimTime_min(60);
       tccc->PerformInterventions(false);
       tccc->GetHemorrhageSeverity().SetValues(ParameterIteration<double>::SetMinMaxStep(0.0, 0.9, 0.1));
+      std::vector<size_t> hemorrhageWounds;
+      for (size_t i = 0; i < (size_t)eHemorrhageWound::_LOC_COUNT; ++i)
+        hemorrhageWounds.push_back(i);
       iActions.push_back(tccc);
     }
     else if (mode == "itm")
@@ -100,10 +103,10 @@ int main(int argc, char* argv[])
       tccc->GetInsultDuration_s().SetValues(ParameterIteration<double>::SetMinMaxStep(5.*60, 40.*60, 5.*60));
       tccc->GetAirwayObstructionSeverity().SetValues(ParameterIteration<double>::SetMinMaxStep(0., 0.9, 0.3));
       tccc->GetHemorrhageSeverity().SetValues(ParameterIteration<double>::SetMinMaxStep(0., 0.9, 0.3));
-      std::vector<size_t> hemorrhageLocs;
-      for(size_t i = 0; i < (size_t)eHemorrhageLocation::_LOC_COUNT; ++i)
-        hemorrhageLocs.push_back(i);
-      tccc->GetHemorrhageLocation().SetValues(hemorrhageLocs);
+      std::vector<size_t> hemorrhageWounds;
+      for(size_t i = 0; i < (size_t)eHemorrhageWound::_LOC_COUNT; ++i)
+        hemorrhageWounds.push_back(i);
+      tccc->GetHemorrhageWound().SetValues(hemorrhageWounds);
       tccc->GetTensionPneumothoraxSeverity().SetValues(ParameterIteration<double>::SetMinMaxStep(0., 0.9, 0.3));
       // What is our equipment variability?
       // Let's assume we have everything in our bag
@@ -142,10 +145,10 @@ int main(int argc, char* argv[])
       tccc->SetMaxSimTime_min(60);
       tccc->PerformInterventions(false);
       tccc->GetHemorrhageSeverity().SetValues({ 0.2, 0.5 });
-      std::vector<size_t> hemorrhageLocs;
-      for(size_t i = 0; i < (size_t)eHemorrhageLocation::_LOC_COUNT; ++i)
-        hemorrhageLocs.push_back(i);
-      tccc->GetHemorrhageLocation().SetValues(hemorrhageLocs);
+      std::vector<size_t> hemorrhageWounds;
+      for(size_t i = 0; i < (size_t)eHemorrhageWound::_LOC_COUNT; ++i)
+        hemorrhageWounds.push_back(i);
+      tccc->GetHemorrhageWound().SetValues(hemorrhageWounds);
       tccc->GetInsultDuration_s().SetValues({ 5 });
       iActions.push_back(tccc);
     }

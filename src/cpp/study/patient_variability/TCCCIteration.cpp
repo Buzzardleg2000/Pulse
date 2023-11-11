@@ -8,7 +8,9 @@
 #include "cdm/properties/SEScalar0To1.h"
 #include "cdm/properties/SEScalarFrequency.h"
 #include "cdm/properties/SEScalarPressure.h"
+#include "cdm/properties/SEScalarTemperature.h"
 #include "cdm/properties/SEScalarTime.h"
+#include "cdm/properties/SEScalarVolume.h"
 #include "cdm/properties/SEScalarVolumePerTime.h"
 #include "cdm/utils/GeneralMath.h"
 
@@ -31,10 +33,26 @@ namespace pulse::study::patient_variability
     m_DataRequestMgr->CreatePhysiologyDataRequest("RespirationRate", FrequencyUnit::Per_min);
     m_DataRequestMgr->CreatePhysiologyDataRequest("OxygenSaturation");
     m_DataRequestMgr->CreatePhysiologyDataRequest("PeripheralPerfusionIndex");
+    m_DataRequestMgr->CreatePhysiologyDataRequest("MeanArterialPressure", PressureUnit::mmHg);
+    m_DataRequestMgr->CreatePhysiologyDataRequest("MeanArterialPressure", PressureUnit::mmHg);
     m_DataRequestMgr->CreatePhysiologyDataRequest("SystolicArterialPressure", PressureUnit::mmHg);
     m_DataRequestMgr->CreatePhysiologyDataRequest("DiastolicArterialPressure", PressureUnit::mmHg);
-    m_DataRequestMgr->CreateLiquidCompartmentDataRequest("RightArmVasculature", "InFlow", VolumePerTimeUnit::mL_Per_s);
+    m_DataRequestMgr->CreatePhysiologyDataRequest("CoreTemperature", TemperatureUnit::F);
+    m_DataRequestMgr->CreatePhysiologyDataRequest("SkinTemperature", TemperatureUnit::F);
+
+    m_DataRequestMgr->CreatePhysiologyDataRequest("BloodVolume", VolumeUnit::mL);
+    m_DataRequestMgr->CreatePhysiologyDataRequest("TotalHemorrhageRate", VolumePerTimeUnit::mL_Per_min);
+    m_DataRequestMgr->CreatePhysiologyDataRequest("TotalHemorrhagedVolume", VolumeUnit::mL);
     m_DataRequestMgr->CreateLiquidCompartmentDataRequest("BrainVasculature", "Oxygen", "PartialPressure", PressureUnit::mmHg);
+
+    m_DataRequestMgr->CreatePatientDataRequest("VitalCapacity", VolumeUnit::mL);
+    m_DataRequestMgr->CreatePatientDataRequest("ResidualVolume", VolumeUnit::mL);
+    m_DataRequestMgr->CreatePhysiologyDataRequest("EndTidalCarbonDioxideFraction");
+    m_DataRequestMgr->CreatePhysiologyDataRequest("TidalVolume", VolumeUnit::mL);
+    m_DataRequestMgr->CreatePhysiologyDataRequest("TotalLungVolume", VolumeUnit::mL);
+    m_DataRequestMgr->CreatePhysiologyDataRequest("HorowitzIndex", PressureUnit::cmH2O);
+    m_DataRequestMgr->CreateGasCompartmentDataRequest("Carina", "Oxygen", "PartialPressure", PressureUnit::mmHg);
+
 
   }
   TCCCIteration::~TCCCIteration()
@@ -54,6 +72,9 @@ namespace pulse::study::patient_variability
       m_AirwayObstructionSeverity.SetValues({ 0 });
     if (m_HemorrhageSeverity.Empty())
       m_HemorrhageSeverity.SetValues({ 0 });
+    if (m_HemorrhageWound.Empty())
+      for (size_t i = 0; i < (size_t)eHemorrhageWound::_LOC_COUNT; ++i)
+        m_HemorrhageWound.GetValues().push_back(i);
     if (m_TensionPneumothoraxSeverity.Empty())
       m_TensionPneumothoraxSeverity.SetValues({ 0 });
     if (m_InsultDuration_s.Empty())
@@ -76,7 +97,7 @@ namespace pulse::study::patient_variability
     std::vector<size_t> opts; // -1 as the opts holds the max index of that option
     opts.push_back(m_AirwayObstructionSeverity.GetValues().size()-1);
     opts.push_back(m_HemorrhageSeverity.GetValues().size()-1);
-    opts.push_back(m_HemorrhageLocation.GetValues().size()-1);
+    opts.push_back(m_HemorrhageWound.GetValues().size()-1);
     opts.push_back(m_TensionPneumothoraxSeverity.GetValues().size()-1);
     opts.push_back(m_InsultDuration_s.GetValues().size()-1);
     opts.push_back(m_SalineAvailable.GetValues().size()-1);
@@ -90,7 +111,7 @@ namespace pulse::study::patient_variability
     double HemorrhageSeverity = 0;
     double TensionPneumothoraxSeverity = 0;
     double InsultDuration_s = 0;
-    size_t HemorrhageLocation = 0;
+    size_t HemorrhageWound = 0;
 
     SetDescription(patientFolderAndStateFilename.first);
     SetEngineStateFile(patientFolderAndStateFilename.second);
@@ -99,14 +120,14 @@ namespace pulse::study::patient_variability
     {
       AirwayObstructionSeverity = m_AirwayObstructionSeverity.GetValues()[idxs[0]];
       HemorrhageSeverity = m_HemorrhageSeverity.GetValues()[idxs[1]];
-      HemorrhageLocation = m_HemorrhageLocation.GetValues()[idxs[2]];
+      HemorrhageWound = m_HemorrhageWound.GetValues()[idxs[2]];
       TensionPneumothoraxSeverity = m_TensionPneumothoraxSeverity.GetValues()[idxs[3]];
       InsultDuration_s = m_InsultDuration_s.GetValues()[idxs[4]];
       if (AirwayObstructionSeverity > 0 ||
           HemorrhageSeverity > 0 ||
           TensionPneumothoraxSeverity > 0)
       {
-        GenerateScenario(AirwayObstructionSeverity, HemorrhageSeverity, HemorrhageLocation,
+        GenerateScenario(AirwayObstructionSeverity, HemorrhageSeverity, HemorrhageWound,
                          TensionPneumothoraxSeverity, InsultDuration_s, patientFolderAndStateFilename.first);
       }
       m_Actions.clear();
@@ -115,7 +136,7 @@ namespace pulse::study::patient_variability
 
   void TCCCIteration::GenerateScenario(double AirwayObstructionSeverity,
                                        double HemorrhageSeverity,
-                                       size_t HemorrhageLocation,
+                                       size_t HemorrhageWound,
                                        double TensionPneumothoraxSeverity,
                                        double InsultDuration_s,
                                        const std::string& PatientName)
@@ -123,20 +144,23 @@ namespace pulse::study::patient_variability
     std::string name;
     name =  "AO" + pulse::cdm::to_string(AirwayObstructionSeverity) + "_";
     name += "H"  + pulse::cdm::to_string(HemorrhageSeverity);
-    switch ((eHemorrhageLocation)HemorrhageLocation) {
-      case eHemorrhageLocation::Leg:
-        name += "Leg_";
+    if (HemorrhageSeverity > 0)
+    {
+      switch ((eHemorrhageWound)HemorrhageWound) {
+      case eHemorrhageWound::LeftLegLaceration:
+        name += "LLL_";
         break;
-      case eHemorrhageLocation::Arm:
-        name += "Arm_";
+      case eHemorrhageWound::RightArmLaceration:
+        name += "RAL_";
         break;
-      case eHemorrhageLocation::Abdomen:
-        name += "Abdomen_";
+      case eHemorrhageWound::InternalLiver:
+        name += "IA_";
         break;
-      case eHemorrhageLocation::_LOC_COUNT:
+      case eHemorrhageWound::_LOC_COUNT:
       default:
         name += "Undefined_";
         break;
+      }
     }
     name += "TP" +pulse::cdm::to_string(TensionPneumothoraxSeverity) + "_";
     name += "D"+pulse::cdm::to_string(InsultDuration_s)+"s";
@@ -169,17 +193,20 @@ namespace pulse::study::patient_variability
     if (HemorrhageSeverity > 0)
     {
       m_Hemorrhage.GetSeverity().SetValue(HemorrhageSeverity);
-      switch ((eHemorrhageLocation)HemorrhageLocation) {
-        case eHemorrhageLocation::Leg:
+      switch ((eHemorrhageWound)HemorrhageWound) {
+        case eHemorrhageWound::LeftLegLaceration:
+          m_Hemorrhage.SetType(eHemorrhage_Type::External);
           m_Hemorrhage.SetCompartment(eHemorrhage_Compartment::RightLeg);
           break;
-        case eHemorrhageLocation::Arm:
+        case eHemorrhageWound::RightArmLaceration:
+          m_Hemorrhage.SetType(eHemorrhage_Type::External);
           m_Hemorrhage.SetCompartment(eHemorrhage_Compartment::RightArm);
           break;
-        case eHemorrhageLocation::Abdomen:
-          m_Hemorrhage.SetCompartment(eHemorrhage_Compartment::Splanchnic);
+        case eHemorrhageWound::InternalLiver:
+          m_Hemorrhage.SetType(eHemorrhage_Type::Internal);
+          m_Hemorrhage.SetCompartment(eHemorrhage_Compartment::Liver);
           break;
-        case eHemorrhageLocation::_LOC_COUNT:
+        case eHemorrhageWound::_LOC_COUNT:
         default:
           break;
       }
@@ -217,6 +244,7 @@ namespace pulse::study::patient_variability
     }
 
     // Track and Write the scenario
+    Info(name);
     WriteScenario();
   }
 }

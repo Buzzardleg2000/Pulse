@@ -17,14 +17,14 @@ using namespace pulse::study::patient_variability;
 int main(int argc, char* argv[])
 {
   bool clear                   = false;// TODO
-  bool generateOnly            = true;
+  bool generateOnly            = false;
 
   std::vector<PatientIteration*> iPatients;
   std::vector<ActionIteration*>  iActions;
 
 
   // Process arguments
-  std::string mode="itm";
+  std::string mode="test";
   if (argc > 1)
   {
     mode = argv[1];
@@ -156,7 +156,10 @@ int main(int argc, char* argv[])
 
   for (PatientIteration* pi : iPatients)
   {
-    pi->GenerateScenarios();
+    if (!clear && FileExists(pi->GetScenarioExecListFilename()))
+      logger.Info("Using previously run scenario exec list file: " + pi->GetScenarioExecListFilename());
+    else
+      pi->GenerateScenarios();
 
     // Note, not setting the output directory on the opts
     // Our scenarios aleady have a relative (to the working dir) results csv location set,
@@ -173,7 +176,10 @@ int main(int argc, char* argv[])
 
     for (ActionIteration* ai : iActions)
     {
-      ai->GenerateScenarios(*pi);
+      if (!clear && FileExists(ai->GetScenarioExecListFilename()))
+        logger.Info("Using previously run scenario exec list file: " + ai->GetScenarioExecListFilename());
+      else
+        ai->GenerateScenarios(*pi);
 
       if (!generateOnly)
       {

@@ -100,12 +100,27 @@ bool PulseScenarioExec::Execute()
     if (numThreadsToUse > m_Statuses.size())
       numThreadsToUse = m_Statuses.size();
 
+    // How many scenarios do we need to run
+    m_Completed = 0;
+    for (auto& status : m_Statuses)
+    {
+      if (status.GetScenarioExecutionState() == eScenarioExecutionState::Complete)
+        m_Completed++;
+    }
+    size_t ToExecute = m_Statuses.size() - m_Completed;
+    Info("We need to run " + std::to_string(ToExecute) + "/" + std::to_string(m_Statuses.size()) + " scenarios");
+    if (ToExecute == 0)
+    {
+      Info("Nothing to do");
+      return true;
+    }
+
     std::string copy;
     SerializeToString(copy, eSerializationFormat::JSON, GetLogger());
     for (size_t p = 0; p < numThreadsToUse; p++)
     {
       m_Threads.push_back(std::thread(&PulseScenarioExec::ControllerLoop,
-        copy, &m_Mutex, &m_Statuses, m_ScenarioExecListFilename, GetLogger()));
+        copy, &m_Mutex, &m_Statuses, &m_Completed, m_ScenarioExecListFilename, GetLogger()));
     }
     for (size_t p = 0; p < numThreadsToUse; p++)
       m_Threads[p].join();
@@ -225,6 +240,7 @@ size_t PulseScenarioExec::ComputeNumThreads()
 void PulseScenarioExec::ControllerLoop(const std::string copy,
                                        std::mutex* mutex,
                                        std::vector<SEScenarioExecStatus>* statuses,
+                                       size_t* completed,
                                        const std::string scenarioExecListFilename,
                                        Logger* logger)
 {
@@ -256,7 +272,10 @@ void PulseScenarioExec::ControllerLoop(const std::string copy,
     // Execute this scenario
     PulseScenario sce(exec.GetDataRootDirectory());
     if (sce.SerializeFromFile(working.GetScenarioFilename()))
+    {
+      //exec.Info("Executing " + working.GetScenarioFilename());
       exec.Execute(sce, &working);
+    }
     else
     {
       working.SetFatalRuntimeError(true);
@@ -267,7 +286,8 @@ void PulseScenarioExec::ControllerLoop(const std::string copy,
     mutex->lock();
     working.SetScenarioExecutionState(eScenarioExecutionState::Complete);
     found->Copy(working);
-    exec.Info("Completed " + working.GetScenarioFilename());
+    (*completed)++;
+    exec.Info("Completed " + std::to_string(*completed)+"/"+ std::to_string(statuses->size()) + " " + working.GetScenarioFilename());
     SEScenarioExecStatus::SerializeToFile(*statuses, scenarioExecListFilename, exec.GetLogger());
     mutex->unlock();
   }

@@ -244,7 +244,6 @@ namespace pulse::study::patient_variability
     }
 
     // Track and Write the scenario
-    Info(name);
     WriteScenario();
   }
 }

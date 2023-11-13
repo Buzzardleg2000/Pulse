@@ -844,12 +844,16 @@ namespace pulse
       if (!m_Config->GetStabilization()->Stabilize(*m_Stabilizer, SEEngineStabilization::AdvanceUntilStable))
         Error("Unable to restabilize to provided cardiovascular modifiers");
       m_Actions->GetPatientActions().GetCardiovascularMechanicsModification().SetRestabilization(false);
-      // Ensure systems set baselines properly
-      AtSteadyState(EngineState::AtSecondaryStableState);
-      // Set any model modifiers to 1.0
+      // Since the heart rate has a baseline, when we get to this stable point, we will update the hr baseline
+      // The heart driver will then be using that as its new base frequency, so we don't want to add this
+      // modifier to that, since the baseline frequency now has that modifier built into it
       auto& m = m_Actions->GetPatientActions().GetCardiovascularMechanicsModification().GetModifiers();
       m.GetHeartRateMultiplier().SetValue(1.0);
+      // Ensure systems set baselines properly
+      AtSteadyState(EngineState::AtInitialStableState);
+      AtSteadyState(EngineState::AtSecondaryStableState);
       AtSteadyState(EngineState::Active);
+      
       m_EventManager->SetEvent(eEvent::Stabilization, false, m_SimulationTime);
     }
 
@@ -862,6 +866,7 @@ namespace pulse
         Error("Unable to restabilize to provided respiratory modifiers");
       m_Actions->GetPatientActions().GetRespiratoryMechanicsModification().SetRestabilization(false);
       // Ensure systems set baselines properly
+      AtSteadyState(EngineState::AtInitialStableState);
       AtSteadyState(EngineState::AtSecondaryStableState);
       AtSteadyState(EngineState::Active);
       m_EventManager->SetEvent(eEvent::Stabilization, false, m_SimulationTime);

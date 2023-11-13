@@ -81,9 +81,9 @@ namespace pulse { namespace human_adult_ventilation_mechanics
     SetupTracker();
   }
 
-  bool Controller::Stabilize()
+  bool Controller::Stabilize(const SEPatientConfiguration& patient_configuration)
   {
-    if (!m_Conditions->IsEmpty())
+    if (patient_configuration.HasConditions() && !patient_configuration.GetConditions()->IsEmpty())
       Warning("Provided conditions will be ignored, this engine does not need to stabilize");
 
     return true;// Nothing to do here, we are good to go!

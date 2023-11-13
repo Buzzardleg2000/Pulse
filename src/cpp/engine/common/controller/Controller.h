@@ -318,7 +318,7 @@ namespace pulse
     virtual bool ModifyCircuits(const SEScalarProperties& modifiers);
 
     virtual bool Initialize(const SEPatient& patient);
-    virtual bool Stabilize();
+    virtual bool Stabilize(const SEPatientConfiguration& patient_configuration);
 
     // Allocate all the models this engine supports
     virtual void Allocate();

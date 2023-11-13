@@ -34,7 +34,7 @@ namespace pulse { namespace human_adult_hemodynamics
   protected:
     std::string GetTypeName() const override { return "Human Adult Hemodynamics"; }
     void Allocate() override;
-    bool Stabilize() override;
+    bool Stabilize(const SEPatientConfiguration& patient_configuration) override;
 
     void InitializeModels() override { pulse::Controller::InitializeModels(); }
   };

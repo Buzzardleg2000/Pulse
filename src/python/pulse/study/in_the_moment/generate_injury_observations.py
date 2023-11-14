@@ -450,7 +450,7 @@ def generate_observations(injury_scenario: SEScenarioExecStatus) -> None:
         None,                                                # events filter
         Path("./tccc_corpus.json"),                          # unstructured text corpus file
         Path("./tccc_elapsed_time.json"),                    # unstructured text elapsed time corpus file
-        reported_vitals=[                                    # unstructured text reported files
+        reported_vitals=[                                    # unstructured text reported vitals
             "RespirationRate(1/min)",
             "HeartRate(1/min)"
         ]

@@ -1404,6 +1404,14 @@ class SEScalarTemperature(SEScalarQuantity):
         else:
             raise Exception("Provided argument must be a TemperatureUnit")
 
+
+class SEScalarUnsigned(SEScalar):
+    def set_value(self, value: float):
+        if value < 0.0:
+            raise Exception("ScalarUnsigned must be greater than or equal to 0")
+        self._value = value
+
+
 class TimeUnit(SEScalarUnit):
     @staticmethod
     def from_string(string: str):

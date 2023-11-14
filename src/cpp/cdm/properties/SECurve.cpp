@@ -28,7 +28,7 @@ bool SECurve::IsValid() const
     if (!s->IsValid())
       return false;
 
-  // TODO JBW Make sure no segment gaps and anything else
+  ///\TODO Make sure no segment gaps and anything else
   return true;
 }
 

@@ -17,6 +17,7 @@
 #include "cdm/engine/SEPatientActionCollection.h"
 #include "cdm/patient/actions/SEArrhythmia.h"
 #include "cdm/patient/actions/SEBrainInjury.h"
+#include "cdm/patient/actions/SECardiovascularMechanicsModification.h"
 #include "cdm/patient/actions/SEChestCompression.h"
 #include "cdm/patient/actions/SEChestCompressionAutomated.h"
 #include "cdm/patient/actions/SEChestCompressionInstantaneous.h"
@@ -25,6 +26,7 @@
 #include "cdm/patient/actions/SEPericardialEffusion.h"
 // Dependent Systems
 #include "cdm/system/physiology/SEBloodChemistrySystem.h"
+#include "cdm/system/physiology/SECardiovascularMechanicsModifiers.h"
 #include "cdm/system/physiology/SEDrugSystem.h"
 #include "cdm/system/physiology/SEEnergySystem.h"
 #include "cdm/system/physiology/SENervousSystem.h"
@@ -183,8 +185,11 @@ namespace pulse
 
     m_HeartCompliancePaths.clear();
     m_AortaCompliancePaths.clear();
+    m_AortaResistancePaths.clear();
     m_VenaCavaCompliancePaths.clear();
+    m_VenaCavaResistancePaths.clear();
     m_PulmonaryCompliancePaths.clear();
+    m_PulmonaryResistancePaths.clear();
     m_SystemicCompliancePaths.clear();
     m_SystemicResistancePaths.clear();
     m_MuscleResistancePaths.clear();
@@ -335,6 +340,10 @@ namespace pulse
   //--------------------------------------------------------------------------------------------------
   void CardiovascularModel::SetUp()
   {
+    // Grab the modifiers pointer from the action manager
+    m_MechanicsModifiers = &m_data.GetActions().GetPatientActions().GetCardiovascularMechanicsModification().GetModifiers();
+    m_MechanicsModifiers->Activate(); // Ensure all multipliers have a value so we can write cleaner code
+
     m_HemorrhageTrack.clear();
 
     m_LeftCardiacCyclePerfusionVolumes_mL.clear();
@@ -391,6 +400,7 @@ namespace pulse
     m_AortaCompliancePath = m_CirculatoryCircuit->GetPath(pulse::CardiovascularPath::Aorta1ToAorta4);
     m_AortaResistancePath = m_CirculatoryCircuit->GetPath(pulse::CardiovascularPath::Aorta3ToAorta1);
     m_VenaCavaCompliancePath = m_CirculatoryCircuit->GetPath(pulse::CardiovascularPath::VenaCava1ToGround);
+    m_VenaCavaResistancePath = m_CirculatoryCircuit->GetPath(pulse::CardiovascularPath::VenaCava1ToRightHeart2);
 
     m_InternalHemorrhageToAorta = m_CirculatoryCircuit->GetPath(pulse::CardiovascularPath::GroundToAorta4);
     m_GndToAbdominalCavity = m_CirculatoryCircuit->GetPath(pulse::CardiovascularPath::GroundToAbdominalCavity1);
@@ -669,6 +679,9 @@ namespace pulse
     m_HeartCompliancePaths.push_back(m_LeftHeartCompliancePath);
     m_HeartCompliancePaths.push_back(m_RightHeartCompliancePath);
 
+    m_AortaResistancePaths.push_back(m_AortaResistancePath);
+    m_VenaCavaResistancePaths.push_back(m_VenaCavaResistancePath);
+
     if (m_data.GetConfiguration().UseExpandedRespiratory() == eSwitch::On)
     {
       //Not yet implemented
@@ -684,6 +697,28 @@ namespace pulse
     
     m_PulmonaryCompliancePaths.push_back(m_CirculatoryCircuit->GetPath(pulse::CardiovascularPath::LeftPulmonaryVeins1ToGround));
     m_PulmonaryCompliancePaths.push_back(m_CirculatoryCircuit->GetPath(pulse::CardiovascularPath::RightPulmonaryVeins1ToGround));
+
+    if (m_data.GetConfiguration().UseExpandedRespiratory() == eSwitch::On)
+    {
+      //Not yet implemented
+      //jbw
+    }
+    else
+    {
+      m_PulmonaryResistancePaths.push_back(m_CirculatoryCircuit->GetPath(pulse::CardiovascularPath::LeftPulmonaryArteries1ToLeftPulmonaryVeins1));
+      m_PulmonaryResistancePaths.push_back(m_CirculatoryCircuit->GetPath(pulse::CardiovascularPath::LeftPulmonaryArteries1ToLeftPulmonaryCapillaries1));
+      m_PulmonaryResistancePaths.push_back(m_CirculatoryCircuit->GetPath(pulse::CardiovascularPath::LeftPulmonaryCapillaries1ToLeftPulmonaryVeins1));
+
+      m_PulmonaryResistancePaths.push_back(m_CirculatoryCircuit->GetPath(pulse::CardiovascularPath::RightPulmonaryArteries1ToRightPulmonaryVeins1));
+      m_PulmonaryResistancePaths.push_back(m_CirculatoryCircuit->GetPath(pulse::CardiovascularPath::RightPulmonaryArteries1ToRightPulmonaryCapillaries1));
+      m_PulmonaryResistancePaths.push_back(m_CirculatoryCircuit->GetPath(pulse::CardiovascularPath::RightPulmonaryCapillaries1ToRightPulmonaryVeins1));
+    }
+
+    m_PulmonaryResistancePaths.push_back(m_CirculatoryCircuit->GetPath(pulse::CardiovascularPath::LeftIntermediatePulmonaryArteries1ToLeftPulmonaryArteries1));
+    m_PulmonaryResistancePaths.push_back(m_CirculatoryCircuit->GetPath(pulse::CardiovascularPath::LeftPulmonaryVeins1ToLeftIntermediatePulmonaryVeins1));
+
+    m_PulmonaryResistancePaths.push_back(m_CirculatoryCircuit->GetPath(pulse::CardiovascularPath::RightIntermediatePulmonaryArteries1ToRightPulmonaryArteries1));
+    m_PulmonaryResistancePaths.push_back(m_CirculatoryCircuit->GetPath(pulse::CardiovascularPath::RightPulmonaryVeins1ToRightIntermediatePulmonaryVeins1));
 
     // Add the expanded kidney paths
     if (m_data.GetConfiguration().IsRenalEnabled())
@@ -2426,10 +2461,22 @@ namespace pulse
     if (m_data.GetDrugs().HasHeartRateChange())
       HeartDriverFrequency_Per_Min += m_data.GetDrugs().GetHeartRateChange(FrequencyUnit::Per_min);
 
+    // Custom modifier
+    HeartDriverFrequency_Per_Min *= m_MechanicsModifiers->GetHeartRateMultiplier().GetValue();
+
     BLIM(HeartDriverFrequency_Per_Min, m_data.GetCurrentPatient().GetHeartRateMinimum(FrequencyUnit::Per_min), m_data.GetCurrentPatient().GetHeartRateMaximum(FrequencyUnit::Per_min));
 
     //Apply heart failure effects
     m_LeftHeartElastanceMax_mmHg_Per_mL *= m_LeftHeartElastanceModifier;
+
+    // Custom modifier
+    double strokeVolumeMultiplier = m_MechanicsModifiers->GetStrokeVolumeMultiplier().GetValue();
+    if (strokeVolumeMultiplier > 1.0)
+    {
+      strokeVolumeMultiplier *= strokeVolumeMultiplier;
+    }
+    m_LeftHeartElastanceMax_mmHg_Per_mL *= strokeVolumeMultiplier;
+    m_RightHeartElastanceMax_mmHg_Per_mL *= strokeVolumeMultiplier;
 #endif
 
     m_DriverCyclePeriod_s = 60.0 / HeartDriverFrequency_Per_Min;
@@ -2577,6 +2624,7 @@ namespace pulse
       UpdatedResistance_mmHg_s_Per_mL *= m_SystemicVascularResistanceModifier->GetCurrent();
       if (UpdatedResistance_mmHg_s_Per_mL < m_MinIndividialSystemicResistance_mmHg_s_Per_mL)
         UpdatedResistance_mmHg_s_Per_mL = m_MinIndividialSystemicResistance_mmHg_s_Per_mL;
+      UpdatedResistance_mmHg_s_Per_mL *= m_MechanicsModifiers->GetSystemicResistanceMultiplier().GetValue();
       Path->GetNextResistance().SetValue(UpdatedResistance_mmHg_s_Per_mL, PressureTimePerVolumeUnit::mmHg_s_Per_mL);
     }
 
@@ -2585,27 +2633,52 @@ namespace pulse
       UpdatedCompliance_mL_Per_mmHg = Path->GetNextCompliance(VolumePerPressureUnit::mL_Per_mmHg);
       UpdatedCompliance_mL_Per_mmHg *= BaroreceptorComplianceScale;
       UpdatedCompliance_mL_Per_mmHg *= m_SystemicVascularComplianceModifier->GetCurrent();
+      UpdatedCompliance_mL_Per_mmHg *= m_MechanicsModifiers->GetSystemicComplianceMultiplier().GetValue();
       Path->GetNextCompliance().SetValue(UpdatedCompliance_mL_Per_mmHg, VolumePerPressureUnit::mL_Per_mmHg);
+    }
+
+    for (SEFluidCircuitPath* Path : m_AortaResistancePaths)
+    {
+      UpdatedResistance_mmHg_s_Per_mL = Path->GetNextResistance(PressureTimePerVolumeUnit::mmHg_s_Per_mL);
+      UpdatedResistance_mmHg_s_Per_mL *= m_MechanicsModifiers->GetArterialResistanceMultiplier().GetValue();
+      Path->GetNextResistance().SetValue(UpdatedResistance_mmHg_s_Per_mL, PressureTimePerVolumeUnit::mmHg_s_Per_mL);
     }
 
     for (SEFluidCircuitPath* Path : m_AortaCompliancePaths)
     {
       UpdatedCompliance_mL_Per_mmHg = Path->GetNextCompliance(VolumePerPressureUnit::mL_Per_mmHg);
       UpdatedCompliance_mL_Per_mmHg *= m_AortaComplianceModifier->GetCurrent();
+      UpdatedCompliance_mL_Per_mmHg *= m_MechanicsModifiers->GetArterialComplianceMultiplier().GetValue();
       Path->GetNextCompliance().SetValue(UpdatedCompliance_mL_Per_mmHg, VolumePerPressureUnit::mL_Per_mmHg);
+    }
+
+    for (SEFluidCircuitPath* Path : m_VenaCavaResistancePaths)
+    {
+      UpdatedResistance_mmHg_s_Per_mL = Path->GetNextResistance(PressureTimePerVolumeUnit::mmHg_s_Per_mL);
+      UpdatedResistance_mmHg_s_Per_mL *= m_MechanicsModifiers->GetVenousResistanceMultiplier().GetValue();
+      Path->GetNextResistance().SetValue(UpdatedResistance_mmHg_s_Per_mL, PressureTimePerVolumeUnit::mmHg_s_Per_mL);
     }
 
     for (SEFluidCircuitPath* Path : m_VenaCavaCompliancePaths)
     {
       UpdatedCompliance_mL_Per_mmHg = Path->GetNextCompliance(VolumePerPressureUnit::mL_Per_mmHg);
       UpdatedCompliance_mL_Per_mmHg *= m_VenaCavaComplianceModifier->GetCurrent();
+      UpdatedCompliance_mL_Per_mmHg *= m_MechanicsModifiers->GetVenousComplianceMultiplier().GetValue();
       Path->GetNextCompliance().SetValue(UpdatedCompliance_mL_Per_mmHg, VolumePerPressureUnit::mL_Per_mmHg);
+    }
+
+    for (SEFluidCircuitPath* Path : m_PulmonaryResistancePaths)
+    {
+      UpdatedResistance_mmHg_s_Per_mL = Path->GetNextResistance(PressureTimePerVolumeUnit::mmHg_s_Per_mL);
+      UpdatedResistance_mmHg_s_Per_mL *= m_MechanicsModifiers->GetPulmonaryResistanceMultiplier().GetValue();
+      Path->GetNextResistance().SetValue(UpdatedResistance_mmHg_s_Per_mL, PressureTimePerVolumeUnit::mmHg_s_Per_mL);
     }
 
     for (SEFluidCircuitPath* Path : m_PulmonaryCompliancePaths)
     {
       UpdatedCompliance_mL_Per_mmHg = Path->GetNextCompliance(VolumePerPressureUnit::mL_Per_mmHg);
       UpdatedCompliance_mL_Per_mmHg *= m_PulmonaryComplianceModifier->GetCurrent();
+      UpdatedCompliance_mL_Per_mmHg *= m_MechanicsModifiers->GetPulmonaryComplianceMultiplier().GetValue();
       Path->GetNextCompliance().SetValue(UpdatedCompliance_mL_Per_mmHg, VolumePerPressureUnit::mL_Per_mmHg);
     }
 

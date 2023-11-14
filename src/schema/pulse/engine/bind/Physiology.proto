@@ -182,28 +182,29 @@ message RespiratoryData
   double                                   PeakExpiratoryPressure_cmH2O                        = 26;
   double                                   PreviousTargetAlveolarVentilation_L_Per_min         = 27;
   double                                   VentilationFrequency_Per_min                        = 28;
-  double                                   VentilationToTidalVolumeSlope                       = 29;
-  pulse.cdm.bind.RunningAverageData        ArterialO2RunningAverage_mmHg                       = 30;
-  pulse.cdm.bind.RunningAverageData        ArterialCO2RunningAverage_mmHg                      = 31;
+  double                                   VentilationPeriod_s                                 = 29;
+  double                                   VentilationToTidalVolumeSlope                       = 30;
+  pulse.cdm.bind.RunningAverageData        ArterialO2RunningAverage_mmHg                       = 31;
+  pulse.cdm.bind.RunningAverageData        ArterialCO2RunningAverage_mmHg                      = 32;
   // Muscle Pressure Waveform
-  double                                   ExpiratoryHoldFraction                              = 32;
-  double                                   ExpiratoryReleaseFraction                           = 33;
-  double                                   ExpiratoryRiseFraction                              = 34;
-  double                                   InspiratoryHoldFraction                             = 35;
-  double                                   InspiratoryReleaseFraction                          = 36;
-  double                                   InspiratoryRiseFraction                             = 37;
-  double                                   InspiratoryToExpiratoryPauseFraction                = 38;
-  double                                   ResidueFraction                                     = 39;
-  double                                   PreviousDyspneaSeverity                             = 40;
+  double                                   ExpiratoryHoldFraction                              = 33;
+  double                                   ExpiratoryReleaseFraction                           = 34;
+  double                                   ExpiratoryRiseFraction                              = 35;
+  double                                   InspiratoryHoldFraction                             = 36;
+  double                                   InspiratoryReleaseFraction                          = 37;
+  double                                   InspiratoryRiseFraction                             = 38;
+  double                                   InspiratoryToExpiratoryPauseFraction                = 39;
+  double                                   ResidueFraction                                     = 40;
+  double                                   PreviousDyspneaSeverity                             = 41;
   
   // Conscious Breathing
-  bool                                     ActiveConsciousRespirationCommand                   = 41;
+  bool                                     ActiveConsciousRespirationCommand                   = 42;
   // Disease States
-  double                                   LeftAlveoliDecrease_L                               = 42;
-  double                                   RightAlveoliDecrease_L                              = 43;
+  double                                   LeftAlveoliDecrease_L                               = 43;
+  double                                   RightAlveoliDecrease_L                              = 44;
   // Overrides
-  double                                   RespiratoryComplianceOverride_L_Per_cmH2O           = 44;
-  double                                   RespiratoryResistanceOverride_cmH2O_s_Per_L         = 45;
+  double                                   RespiratoryComplianceOverride_L_Per_cmH2O           = 45;
+  double                                   RespiratoryResistanceOverride_cmH2O_s_Per_L         = 46;
 }
 
 message TissueData

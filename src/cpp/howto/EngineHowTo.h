@@ -20,6 +20,7 @@ void HowToAsthmaAttack();
 void HowToBagValveMask();
 void HowToBolusDrug();
 void HowToBrainInjury();
+void HowToCardiovascularMechanicsModification();
 void HowToCombatMultitrauma();
 void HowToConsumeNutrients();
 void HowToCOPD();
@@ -36,6 +37,7 @@ void HowToMechanicalVentilation();
 void HowToMechanicalVentilator();
 void HowToPulmonaryFibrosis();
 void HowToRespiratoryMechanics();
+void HowToRespiratoryMechanicsModification();
 void HowToSmoke();
 void HowToTensionPneumothorax();
 

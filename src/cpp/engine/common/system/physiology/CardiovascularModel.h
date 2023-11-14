@@ -18,6 +18,7 @@ class SEFluidCircuit;
 class SEFluidCircuitNode;
 class SEFluidCircuitPath;
 class SEFluidCircuitCalculator;
+class SECardiovascularMechanicsModifiers;
 
 namespace pulse
 {
@@ -161,7 +162,7 @@ namespace pulse
 
 
     // Stateless member variable (Set in SetUp())
-
+    SECardiovascularMechanicsModifiers* m_MechanicsModifiers;
     // Hemorrhage
     struct HemorrhageTrack
     {
@@ -191,6 +192,7 @@ namespace pulse
     SEFluidCircuitNode*              m_RightPulmonaryVeinsNode;
 
     SEFluidCircuitPath*              m_VenaCavaCompliancePath;
+    SEFluidCircuitPath*              m_VenaCavaResistancePath;
 
     SEFluidCircuitPath*              m_BrainToVenaCava;
     SEFluidCircuitPath*              m_MyocardiumToVenaCava;
@@ -246,8 +248,11 @@ namespace pulse
 
     std::vector<SEFluidCircuitPath*> m_HeartCompliancePaths;
     std::vector<SEFluidCircuitPath*> m_AortaCompliancePaths;
+    std::vector<SEFluidCircuitPath*> m_AortaResistancePaths;
     std::vector<SEFluidCircuitPath*> m_VenaCavaCompliancePaths;
+    std::vector<SEFluidCircuitPath*> m_VenaCavaResistancePaths;
     std::vector<SEFluidCircuitPath*> m_PulmonaryCompliancePaths;
+    std::vector<SEFluidCircuitPath*> m_PulmonaryResistancePaths;
     std::vector<SEFluidCircuitPath*> m_SystemicCompliancePaths;
     std::vector<SEFluidCircuitPath*> m_SystemicResistancePaths;
     std::vector<SEFluidCircuitPath*> m_MuscleResistancePaths;

@@ -18,6 +18,7 @@ class SEFluidCircuitNode;
 class SEFluidCircuitPath;
 class SEFluidCircuitCalculator;
 class SEConsciousRespirationCommand;
+class SERespiratoryMechanicsModifiers;
 
 namespace pulse
 {
@@ -73,7 +74,6 @@ namespace pulse
     void UpdateDiffusion();
     void UpdatePulmonaryCapillary();
     void UpdatePulmonaryShunt();
-    double GetBreathCycleTime();
     SESegment* GetSegement(const std::vector<SESegment*>& segments, double volume_L);
     //Overrides
     void SetRespiratoryResistance();
@@ -134,6 +134,7 @@ namespace pulse
     double m_PeakExpiratoryPressure_cmH2O;
     double m_PreviousTargetAlveolarVentilation_L_Per_min;
     double m_VentilationFrequency_Per_min;
+    double m_VentilationPeriod_s;
     double m_VentilationToTidalVolumeSlope;
     SERunningAverage* m_ArterialO2RunningAverage_mmHg;
     SERunningAverage* m_ArterialCO2RunningAverage_mmHg;
@@ -161,6 +162,7 @@ namespace pulse
     double m_RespiratoryComplianceOverride_L_Per_cmH2O;
 
     // Stateless member variable (Set in SetUp())
+    SERespiratoryMechanicsModifiers* m_MechanicsModifiers;
     // Respiratory Driver
     double m_MaxDriverPressure_cmH2O;
     // Configuration parameters

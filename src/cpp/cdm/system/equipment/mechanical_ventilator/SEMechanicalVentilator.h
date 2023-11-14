@@ -60,6 +60,10 @@ public:
   virtual SEScalarVolumePerTime& GetExpiratoryFlow();
   virtual double GetExpiratoryFlow(const VolumePerTimeUnit& unit) const;
 
+  virtual bool HasExpiratoryResistance() const;
+  virtual SEScalarPressureTimePerVolume& GetExpiratoryResistance();
+  virtual double GetExpiratoryResistance(const PressureTimePerVolumeUnit& unit) const;
+
   virtual bool HasExpiratoryTidalVolume() const;
   virtual SEScalarVolume& GetExpiratoryTidalVolume();
   virtual double GetExpiratoryTidalVolume(const VolumeUnit& unit) const;
@@ -71,6 +75,10 @@ public:
   virtual bool HasInspiratoryFlow() const;
   virtual SEScalarVolumePerTime& GetInspiratoryFlow();
   virtual double GetInspiratoryFlow(const VolumePerTimeUnit& unit) const;
+
+  virtual bool HasInspiratoryResistance() const;
+  virtual SEScalarPressureTimePerVolume& GetInspiratoryResistance();
+  virtual double GetInspiratoryResistance(const PressureTimePerVolumeUnit& unit) const;
 
   virtual bool HasInspiratoryTidalVolume() const;
   virtual SEScalarVolume& GetInspiratoryTidalVolume();
@@ -88,6 +96,10 @@ public:
   virtual SEScalarPressure& GetMeanAirwayPressure();
   virtual double GetMeanAirwayPressure(const PressureUnit& unit) const;
 
+  virtual bool HasPeakExpiratoryFlow() const;
+  virtual SEScalarVolumePerTime& GetPeakExpiratoryFlow();
+  virtual double GetPeakExpiratoryFlow(const VolumePerTimeUnit& unit) const;
+
   virtual bool HasPeakInspiratoryPressure() const;
   virtual SEScalarPressure& GetPeakInspiratoryPressure();
   virtual double GetPeakInspiratoryPressure(const PressureUnit& unit) const;
@@ -99,10 +111,6 @@ public:
   virtual bool HasPositiveEndExpiratoryPressure() const;
   virtual SEScalarPressure& GetPositiveEndExpiratoryPressure();
   virtual double GetPositiveEndExpiratoryPressure(const PressureUnit& unit) const;
-
-  virtual bool HasPulmonaryResistance() const;
-  virtual SEScalarPressureTimePerVolume& GetPulmonaryResistance();
-  virtual double GetPulmonaryResistance(const PressureTimePerVolumeUnit& unit) const;
 
   virtual bool HasRespirationRate() const;
   virtual SEScalarFrequency& GetRespirationRate();
@@ -139,17 +147,19 @@ protected:
   SEScalar0To1*                      m_EndTidalOxygenFraction;
   SEScalarPressure*                  m_EndTidalOxygenPressure;
   SEScalarVolumePerTime*             m_ExpiratoryFlow;
+  SEScalarPressureTimePerVolume*     m_ExpiratoryResistance;
   SEScalarVolume*                    m_ExpiratoryTidalVolume;
   SEScalar*                          m_InspiratoryExpiratoryRatio;
   SEScalarVolumePerTime*             m_InspiratoryFlow;
+  SEScalarPressureTimePerVolume*     m_InspiratoryResistance;
   SEScalarVolume*                    m_InspiratoryTidalVolume;
   SEScalarPressure*                  m_IntrinsicPositiveEndExpiredPressure;
   SEScalar0To1*                      m_LeakFraction;
   SEScalarPressure*                  m_MeanAirwayPressure;
+  SEScalarVolumePerTime*             m_PeakExpiratoryFlow;
   SEScalarPressure*                  m_PeakInspiratoryPressure;
   SEScalarPressure*                  m_PlateauPressure;
   SEScalarPressure*                  m_PositiveEndExpiratoryPressure;
-  SEScalarPressureTimePerVolume*     m_PulmonaryResistance;
   SEScalarFrequency*                 m_RespirationRate;
   SEScalarVolumePerPressure*         m_StaticPulmonaryCompliance;
   SEScalarVolume*                    m_TidalVolume;

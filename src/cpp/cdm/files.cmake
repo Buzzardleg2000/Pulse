@@ -121,6 +121,7 @@ set(CDM_H_FILES
   cdm/patient/actions/SEAsthmaAttack.h
   cdm/patient/actions/SEBrainInjury.h
   cdm/patient/actions/SEBronchoconstriction.h
+  cdm/patient/actions/SECardiovascularMechanicsModification.h
   cdm/patient/actions/SEChestCompression.h
   cdm/patient/actions/SEChestCompressionAutomated.h
   cdm/patient/actions/SEChestCompressionInstantaneous.h
@@ -147,6 +148,7 @@ set(CDM_H_FILES
   cdm/patient/actions/SEPulmonaryShuntExacerbation.h
   cdm/patient/actions/SERespiratoryFatigue.h
   cdm/patient/actions/SERespiratoryMechanicsConfiguration.h
+  cdm/patient/actions/SERespiratoryMechanicsModification.h
   cdm/patient/actions/SESubstanceAdministration.h
   cdm/patient/actions/SESubstanceBolus.h
   cdm/patient/actions/SESubstanceCompoundInfusion.h
@@ -245,6 +247,7 @@ set(CDM_H_FILES
   cdm/properties/SEScalarPressureTimeSquaredPerVolume.h
   cdm/properties/SEScalarTemperature.h
   cdm/properties/SEScalarTime.h
+  cdm/properties/SEScalarUnsigned.h
   cdm/properties/SEScalarVolume.h
   cdm/properties/SEScalarVolumePerPressure.h
   cdm/properties/SEScalarVolumePerTime.h
@@ -324,6 +327,7 @@ set(CDM_H_FILES
   cdm/system/equipment/mechanical_ventilator/actions/SEMechanicalVentilatorVolumeControl.h
   cdm/system/physiology/SEBloodChemistrySystem.h
   cdm/system/physiology/SECardiovascularSystem.h
+  cdm/system/physiology/SECardiovascularMechanicsModifiers.h
   cdm/system/physiology/SEDrugSystem.h
   cdm/system/physiology/SEEndocrineSystem.h
   cdm/system/physiology/SEEnergySystem.h
@@ -333,6 +337,7 @@ set(CDM_H_FILES
   cdm/system/physiology/SEPupillaryResponse.h
   cdm/system/physiology/SERenalSystem.h
   cdm/system/physiology/SERespiratoryMechanics.h
+  cdm/system/physiology/SERespiratoryMechanicsModifiers.h
   cdm/system/physiology/SERespiratorySystem.h
   cdm/system/physiology/SETissueSystem.h
   cdm/utils/ConfigParser.h
@@ -497,6 +502,7 @@ set(CDM_CPP_FILES
   cdm/patient/actions/SEAsthmaAttack.cpp
   cdm/patient/actions/SEBrainInjury.cpp
   cdm/patient/actions/SEBronchoconstriction.cpp
+  cdm/patient/actions/SECardiovascularMechanicsModification.cpp
   cdm/patient/actions/SEChestCompression.cpp
   cdm/patient/actions/SEChestCompressionAutomated.cpp
   cdm/patient/actions/SEChestCompressionInstantaneous.cpp
@@ -523,6 +529,7 @@ set(CDM_CPP_FILES
   cdm/patient/actions/SEPulmonaryShuntExacerbation.cpp
   cdm/patient/actions/SERespiratoryFatigue.cpp
   cdm/patient/actions/SERespiratoryMechanicsConfiguration.cpp
+  cdm/patient/actions/SERespiratoryMechanicsModification.cpp
   cdm/patient/actions/SESubstanceAdministration.cpp
   cdm/patient/actions/SESubstanceBolus.cpp
   cdm/patient/actions/SESubstanceCompoundInfusion.cpp
@@ -621,6 +628,7 @@ set(CDM_CPP_FILES
   cdm/properties/SEScalarPressureTimeSquaredPerVolume.cpp
   cdm/properties/SEScalarTemperature.cpp
   cdm/properties/SEScalarTime.cpp
+  cdm/properties/SEScalarUnsigned.cpp
   cdm/properties/SEScalarVolume.cpp
   cdm/properties/SEScalarVolumePerPressure.cpp
   cdm/properties/SEScalarVolumePerTime.cpp
@@ -700,6 +708,7 @@ set(CDM_CPP_FILES
   cdm/system/equipment/mechanical_ventilator/actions/SEMechanicalVentilatorPressureControl.cpp
   cdm/system/equipment/mechanical_ventilator/actions/SEMechanicalVentilatorVolumeControl.cpp
   cdm/system/physiology/SEBloodChemistrySystem.cpp
+  cdm/system/physiology/SECardiovascularMechanicsModifiers.cpp
   cdm/system/physiology/SECardiovascularSystem.cpp
   cdm/system/physiology/SEDrugSystem.cpp
   cdm/system/physiology/SEEndocrineSystem.cpp
@@ -710,6 +719,7 @@ set(CDM_CPP_FILES
   cdm/system/physiology/SEPupillaryResponse.cpp
   cdm/system/physiology/SERenalSystem.cpp
   cdm/system/physiology/SERespiratoryMechanics.cpp
+  cdm/system/physiology/SERespiratoryMechanicsModifiers.cpp
   cdm/system/physiology/SERespiratorySystem.cpp
   cdm/system/physiology/SETissueSystem.cpp
   cdm/utils/ConfigParser.cpp

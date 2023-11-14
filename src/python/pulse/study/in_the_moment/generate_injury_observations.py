@@ -438,6 +438,9 @@ def generate_observations(injury_scenario: SEScenarioExecStatus) -> None:
     parts[parts.index("scenarios")] = "observations"
     out_file = Path(*parts)
 
+    # TODO: Ask for observation frequency
+    observation_frequency_min = 3
+
     # Call our post processor to generate observation files for each scenario
     report = ITMScenarioReport(
         log_file=Path(injury_scenario.get_log_filename()),
@@ -469,12 +472,11 @@ if __name__ == "__main__":
     injury_scenarios = []
     serialize_scenario_exec_status_list_from_file(injury_scenarios_list_filename, injury_scenarios)
 
-    # TODO: Ask for observation frequency
-    observation_frequency_min = 3
+    for injury_scenario in injury_scenarios:
+        generate_observations(injury_scenario)
 
     # TODO: Ask number of processes
     num_processes = 5
-
     # TODO: Chunksize? Setting chunksize can reduce overhead for very long iterables
     chunksize = 1
 

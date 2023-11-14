@@ -261,8 +261,8 @@ class TCCCUnstructuredText(SEObservationReportModule):
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
 
-    if len(sys.argv) < 4:
-        _pulse_logger.error("Expected inputs : <xls file> <corpus json filepath> <elapsed time json file>")
+    if len(sys.argv) < 1:
+        _pulse_logger.error("Expected inputs : <xls file>")
         sys.exit(1)
 
     xls_file = Path(sys.argv[1])
@@ -270,8 +270,9 @@ if __name__ == "__main__":
         _pulse_logger.error("Please provide a valid xls file")
         sys.exit(1)
 
-    corpus_json = Path(sys.argv[2])
-    elapsed_time_json = Path(sys.argv[3])
+
+    corpus_json = Path(f"{xls_file.parent}/{xls_file.stem}_corpus.json")
+    elapsed_time_json = Path(f"{xls_file.parent}/{xls_file.stem}_elapsed_time.json")
 
     reader = TCCCUnstructuredTextReader(xls_file=xls_file)
     reader.parse(corpus_file=corpus_json, elapsed_time_file=elapsed_time_json)

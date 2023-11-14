@@ -353,9 +353,11 @@ class ITMScenarioReport(SEScenarioReport):
         self,
         log_file: Path,
         csv_file: Path,
-        observation_frequency_min: float=3,
-        actions_filter: Optional[List[str]] = None,
-        events_filter: Optional[List[str]] = None
+        observation_frequency_min: float,
+        actions_filter: Optional[List[str]],
+        events_filter: Optional[List[str]],
+        *unstructured_text_args: Any,
+        **unstructured_text_kwargs: Any
     ):
         """
         Generates ITM report from given results and log files.
@@ -367,6 +369,7 @@ class ITMScenarioReport(SEScenarioReport):
         :param actions_filter: Exclude actions containing any of these strings
         :param events_filter: Exclude events containing any of these strings
         """
+
         # Always filter advance time and serialize actions
         adv_time = "AdvanceTime"
         if actions_filter is None or adv_time not in actions_filter:
@@ -392,10 +395,7 @@ class ITMScenarioReport(SEScenarioReport):
             STARTObservationModule(),
             ClinicalAbnormalityObservationModule(),
             TCCCActionsObservationModule(),
-            TCCCUnstructuredText(
-                corpus_json=Path("./tccc_corpus.json"),
-                elapsed_time_json=Path("./tccc_elapsed_time.json")
-            )
+            TCCCUnstructuredText(*unstructured_text_args, **unstructured_text_kwargs)
         ]
         timestep_modules = None
         death_check_module = TCCCDeathCheckModule()
@@ -443,9 +443,17 @@ def generate_observations(injury_scenario: SEScenarioExecStatus) -> None:
 
     # Call our post processor to generate observation files for each scenario
     report = ITMScenarioReport(
-        log_file=Path(injury_scenario.get_log_filename()),
-        csv_file=Path(injury_scenario.get_csv_filename()),
-        observation_frequency_min=observation_frequency_min
+        Path(injury_scenario.get_log_filename()),            # log file
+        Path(injury_scenario.get_csv_filename()),            # csv file
+        3,                                                   # observation frequency (min)
+        None,                                                # actions filter
+        None,                                                # events filter
+        Path("./tccc_corpus.json"),                          # unstructured text corpus file
+        Path("./tccc_elapsed_time.json"),                    # unstructured text elapsed time corpus file
+        reported_vitals=[                                    # unstructured text reported files
+            "RespirationRate(1/min)",
+            "HeartRate(1/min)"
+        ]
     )
     report.write(out_file)
 
@@ -475,6 +483,7 @@ if __name__ == "__main__":
     for injury_scenario in injury_scenarios:
         generate_observations(injury_scenario)
 
+    """
     # TODO: Ask number of processes
     num_processes = 5
     # TODO: Chunksize? Setting chunksize can reduce overhead for very long iterables
@@ -490,3 +499,4 @@ if __name__ == "__main__":
         p.close()
         # Wait for all issued tasks to complete
         p.join()
+    """

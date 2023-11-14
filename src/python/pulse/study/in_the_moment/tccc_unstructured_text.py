@@ -162,13 +162,19 @@ class TCCCUnstructuredTextReader:
 
 
 class TCCCUnstructuredText(SEObservationReportModule):
-    __slots__ = ("_seed", "_injury_time", "_elapsed_time", "_corpus", "_events")
+    __slots__ = ("_seed", "_injury_time", "_elapsed_time", "_corpus", "_events", "_reported_vitals")
 
     TIME_s = "Time(s)"
     RR_Per_min = "RespirationRate(1/min)"
     HR_Per_min = "HeartRate(1/min)"
 
-    def __init__(self, corpus_json: Path, elapsed_time_json: Path, seed: Optional[int]=None):
+    def __init__(
+        self,
+        corpus_json: Path,
+        elapsed_time_json: Path,
+        reported_vitals: List[str]=None,
+        seed: Optional[int]=None
+    ):
         self._headers = [
             self.TIME_s,
             self.RR_Per_min,
@@ -182,11 +188,17 @@ class TCCCUnstructuredText(SEObservationReportModule):
         self._injury_time = None
         self._events = list()
 
-        # Read in pre-parse corpus
+        # Read in pre-parsed corpus
         self._corpus = list()
         self._elapsed_time = SEUnstructuredTextGroup()
         serialize_unstructured_text_corpus_from_file(corpus_json, self._corpus)
         serialize_unstructured_text_group_from_file(elapsed_time_json, self._elapsed_time)
+
+        if reported_vitals is None:
+            reported_vitals = list()
+        self._reported_vitals = reported_vitals
+
+        self._headers.extend(h for h in self._reported_vitals if h not in self._headers)
 
     def _add_phrases(self, choices: List[List[Template]], out_phrases: List[Template]) -> None:
         """
@@ -240,6 +252,9 @@ class TCCCUnstructuredText(SEObservationReportModule):
             template_vals["elapsed_time_verb"] = "have" if time_elapsed_min != 1 else "has"
 
             self._add_phrases(choices=self._elapsed_time.get_phrases(), out_phrases=phrases)
+
+        for vital in self._reported_vitals:
+            phrases.append(Template(f"{vital} is {round(data_slice[slice_idx[vital]])}."))
 
         # Process stateless properties
         for property_group in self._corpus:

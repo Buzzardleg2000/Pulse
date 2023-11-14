@@ -15,7 +15,7 @@ from pulse.cdm.patient import eSex
 from pulse.cdm.scalars import TimeUnit, FrequencyUnit, SEScalarFrequency, SEScalarTime
 from pulse.cdm.scenario import SEScenarioExecStatus, SEScenarioReport, \
                                SEObservationReportModule, SETimestepReportModule
-from pulse.cdm.utils.logger import break_camel_case
+from pulse.cdm.utils.logger import break_camel_case, get_severity_str
 from pulse.study.in_the_moment.tccc_unstructured_text import TCCCUnstructuredText
 from pulse.cdm.io.scenario import serialize_scenario_exec_status_list_from_file
 
@@ -132,6 +132,7 @@ class ClinicalAbnormalityObservationModule(SEObservationReportModule):
         return [("Abnormality", self._active_events[:])]  # Need to return a copy of list so it doesn't keep updating
 
 
+
 class TCCCActionsObservationModule(SEObservationReportModule):
     """
     Reports insults and interventions applied from the beginning of the
@@ -146,23 +147,6 @@ class TCCCActionsObservationModule(SEObservationReportModule):
         self._interventions = list()
         self._max_hemorrhage = -1
 
-    @staticmethod
-    def _get_severity_str(severity: float) -> str:
-        """
-        :param severity: The severity value.
-
-        :return: Severity as a qualitative string.
-        """
-        if severity == 0:
-            raise ValueError("Severity string undefined for 0 severity")
-        elif severity <= 0.3:
-            severity_str = "Mild"
-        elif severity <= 0.6:
-            severity_str = "Moderate"
-        else:
-            severity_str = "Severe"
-
-        return severity_str
 
     def handle_action(self, action: str, action_time: SEScalarTime) -> None:
         """
@@ -203,7 +187,7 @@ class TCCCActionsObservationModule(SEObservationReportModule):
                         _pulse_logger.warning(f"Ignoring zero-severity action: {action_data}")
                         return
                 else:  # Insult
-                    severity_str = TCCCActionsObservationModule._get_severity_str(severity)
+                    severity_str = get_severity_str(severity)
 
             action_out = f"{severity_str} {break_camel_case(action_name)}".strip()
 
@@ -225,7 +209,7 @@ class TCCCActionsObservationModule(SEObservationReportModule):
         # Add max severity hemorrhage, if one exists (want only one hemorrhage in results)
         insults = self._insults[:]
         if self._max_hemorrhage > 0:
-            insults.append(f"{TCCCActionsObservationModule._get_severity_str( self._max_hemorrhage)} Hemorrhage")
+            insults.append(f"{get_severity_str( self._max_hemorrhage)} Hemorrhage")
 
         return [
             ("Insults", insults),

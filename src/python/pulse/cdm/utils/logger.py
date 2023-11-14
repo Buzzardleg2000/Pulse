@@ -12,6 +12,24 @@ from pulse.cdm.engine import SEAction
 _pulse_logger = logging.getLogger('pulse')
 
 
+def get_severity_str(severity: float) -> str:
+    """
+    :param severity: The severity value.
+
+    :return: Severity as a qualitative string.
+    """
+    if severity == 0:
+        raise ValueError("Severity string undefined for 0 severity")
+    elif severity <= 0.3:
+        severity_str = "Mild"
+    elif severity <= 0.6:
+        severity_str = "Moderate"
+    else:
+        severity_str = "Severe"
+
+    return severity_str
+
+
 def break_camel_case(string: str):
     # https://stackoverflow.com/a/9283563
     camel_case_regex = r"""

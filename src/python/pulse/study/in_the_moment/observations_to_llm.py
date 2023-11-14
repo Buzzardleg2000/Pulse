@@ -29,11 +29,25 @@ def observations_to_llm(filename: Path, START_counts: Dict[str, int]):
     out_obs = list()
     for obs in observations["Observations"]:
         out_obs.append(dict())
-        out_obs[-1]["scenario"] = f"{obs['UnstructuredText']} blah blah blah"
+        out_obs[-1]["scenario_id"] = f"{filename.parts[-2]}/{filename.name}"
+        out_obs[-1]["probe_id"] = obs["SimTime_min"]
+        out_obs[-1]["scenario"] = obs['UnstructuredText']
         out_obs[-1]["state"] = None
-        out_obs[-1]["probe"] = ""
-        choices = list()
+        out_obs[-1]["probe"] = "What triage category would you assign?"
+
+        tag_choices = {"GREEN": "Minimal", "YELLOW": "Delayed", "RED": "Immediate", "BLACK": "Expectant"}
+        choices = [
+            f"Tag civilian as {tag_color} for {tag_status}." for tag_color, tag_status in tag_choices.items()
+        ]
         out_obs[-1]["choices"] = choices  # Note this list will continue to change if you modify it
+
+        # Compute accuracy scores for probe choices
+        out_obs.append(list())
+        for tag_color, tag_status in tag_choices.items():
+            acc = 0.
+            if tag_color.lower() == obs["START"].lower():
+                acc = 10.0
+            out_obs[-1].append({"accuracy": acc})
 
         # Accumulate START tag counts
         if obs["START"] not in START_counts:

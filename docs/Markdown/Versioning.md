@@ -39,6 +39,10 @@ Our version number sematic is Major.Minor.Patch-ReleaseStage, where :
     - **Note** any previous scenarios using Dyspnea severity should apply that value to the Tidal Volume severity
   - Mechanical Ventilator Model
     - Ventilation will immediately stop at limits.
+  - Modifier Actions (SECardiovascularMechanicsModification, SERespiratoryMechanicsModification)
+    - We now provide 2 new actions to modify the respiratory and cardiovascular model parameters
+    - For example, you can provide a multipliers to modify the heart rate, respiration rate, systemic vascular and pulmonary resistances
+    - This provides the end user more low level control to fine tune the physiology to their specific needs
 ---
 
 ## Pulse v4.2.0 (October 2023)

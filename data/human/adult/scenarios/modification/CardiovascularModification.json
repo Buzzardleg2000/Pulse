@@ -1,7 +1,7 @@
 {
   "Name": "HeartRate",
   "Description": "Heart rate change through modifier action.",
-  "PatientConfiguration": { "PatientFile": "StandardMale.json" },
+  "EngineStateFile":"./states/StandardMale@0s.json",
   "DataRequestFile": [
     "StandardDataRequests.json"
   ],

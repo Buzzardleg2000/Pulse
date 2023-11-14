@@ -10,7 +10,7 @@ public class SECardiovascularMechanicsModification extends SEPatientAction
   {
     protected SECardiovascularMechanicsModifiers modifiers = null;
     protected String modifiersFile = "";
-    protected boolean restabilize = true;
+    protected boolean incremental = false;
 
     public SECardiovascularMechanicsModification()
     {
@@ -28,7 +28,7 @@ public class SECardiovascularMechanicsModification extends SEPatientAction
       if (other.modifiers != null)
         this.getModifiers().copy(other.modifiers);
       this.modifiersFile = other.modifiersFile;
-      this.restabilize = other.restabilize;
+      this.incremental = other.incremental;
     }
 
     public void clear()
@@ -37,7 +37,7 @@ public class SECardiovascularMechanicsModification extends SEPatientAction
       if (this.modifiers != null)
         this.modifiers.clear();
       this.modifiersFile = "";
-      this.restabilize = true;
+      this.incremental = false;
     }
     
     public static void load(CardiovascularMechanicsModificationData src, SECardiovascularMechanicsModification dst)
@@ -46,7 +46,7 @@ public class SECardiovascularMechanicsModification extends SEPatientAction
         SECardiovascularMechanicsModifiers.load(src.getModifiers(), dst.getModifiers());
       else if (src.getModifiersFile().isEmpty())
         dst.setModifiersFile(src.getModifiersFile());
-      dst.restabilize = src.getRestabilize();
+      dst.incremental = src.getIncremental();
     }
     public static CardiovascularMechanicsModificationData unload(SECardiovascularMechanicsModification src)
     {
@@ -60,7 +60,7 @@ public class SECardiovascularMechanicsModification extends SEPatientAction
         dst.setModifiers(SECardiovascularMechanicsModifiers.unload(src.getModifiers()));
       else if (src.hasModifiersFile())
         dst.setModifiersFile(src.getModifiersFile());
-      dst.setRestabilize(src.restabilize);
+      dst.setIncremental(src.incremental);
     }
 
     public boolean isValid()
@@ -68,8 +68,8 @@ public class SECardiovascularMechanicsModification extends SEPatientAction
       return hasModifiers() || hasModifiersFile();
     }
     
-    public boolean restabilize() { return this.restabilize; }
-    void setRestabilization(boolean b) { this.restabilize = b; }
+    public boolean getIncremental() { return this.incremental; }
+    void setIncremental(boolean b) { this.incremental = b; }
 
     public boolean hasModifiers()
     {
@@ -104,7 +104,7 @@ public class SECardiovascularMechanicsModification extends SEPatientAction
       {
         str += modifiers.toString();
       }
-      str += "\n\tRestablize: " + this.restabilize;
+      str += "\n\tIncremental: " + this.incremental;
       return str;
     }
   }

@@ -135,7 +135,7 @@ message CardiovascularMechanicsModificationData
     CardiovascularMechanicsModifiersData    Modifiers                       = 2;/**<< @brief A CardiovascularMechanicsModification object with properties to set in the system object. */
     string                                  ModifiersFile                   = 3;/**<< @brief File containing a RespiratoryMechanics object with properties to set in the system object. */
   }
-  bool                                      Restabilize                     = 4;/**<< @brief Restabilize the engine to a new homeostasis state. Use false if you are incrementally driving modification with very small modifiers.*/
+  bool                                      Incremental                     = 4;/**<< @brief When off (Default) the engine will Restabilize a new homeostasis state. Use true if you are incrementally driving modification with very small modifiers and the engine will not stabilize.*/
 }
 
 /** @brief A single CPR compression to the chest cavity in order to pump blood through the heart. */
@@ -434,7 +434,7 @@ message RespiratoryMechanicsModificationData
     RespiratoryMechanicsModifiersData       Modifiers                       = 2;/**<< @brief A RespiratoryMechanicsModification object with properties to set in the system object. */
     string                                  ModifiersFile                   = 3;/**<< @brief File containing a RespiratoryMechanics object with properties to set in the system object. */
   }
-  bool                                      Restabilize                     = 4;/**<< @brief Restabilize the engine to a new homeostasis state. Use false if you are incrementally driving modification with very small modifiers.*/
+  bool                                      Incremental                     = 4;/**<< @brief When off (Default) the engine will Restabilize a new homeostasis state. Use true if you are incrementally driving modification with very small modifiers and the engine will not stabilize.*/
 }
 
 /** @brief An administration of a substance that is given all at one time to raise its concentration in blood to an effective level. */

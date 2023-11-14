@@ -10,14 +10,14 @@ SECardiovascularMechanicsModification::SECardiovascularMechanicsModification(Log
 {
   m_ModifiersFile = "";
   m_Modifiers = nullptr;
-  m_Restabilize = true;
+  m_Incremental = false;
 }
 
 SECardiovascularMechanicsModification::~SECardiovascularMechanicsModification()
 {
   m_ModifiersFile = "";
   SAFE_DELETE(m_Modifiers);
-  m_Restabilize = true;
+  m_Incremental = false;
 }
 
 void SECardiovascularMechanicsModification::Clear()
@@ -26,14 +26,14 @@ void SECardiovascularMechanicsModification::Clear()
   m_ModifiersFile = "";
   if (m_Modifiers)
     m_Modifiers->Clear();
-  m_Restabilize = true;
+  m_Incremental = false;
 }
 
 void SECardiovascularMechanicsModification::Copy(const SECardiovascularMechanicsModification& src, bool /*preserveState*/)
 {
   //if(preserveState) // Cache any state before copy,
   PBPatientAction::Copy(src, *this);
-  m_Restabilize = src.m_Restabilize;
+  m_Incremental = src.m_Incremental;
   //if(preserveState) // Put back any state
 }
 
@@ -69,13 +69,13 @@ const SEScalar* SECardiovascularMechanicsModification::GetScalar(const std::stri
   return GetModifiers().GetScalar(name);
 }
 
-bool SECardiovascularMechanicsModification::Restabilize() const
+bool SECardiovascularMechanicsModification::GetIncremental() const
 {
-  return m_Restabilize;
+  return m_Incremental;
 }
-void SECardiovascularMechanicsModification::SetRestabilization(bool b)
+void SECardiovascularMechanicsModification::SetIncremental(bool b)
 {
-  m_Restabilize = b;
+  m_Incremental = b;
 }
 
 bool SECardiovascularMechanicsModification::HasModifiers() const

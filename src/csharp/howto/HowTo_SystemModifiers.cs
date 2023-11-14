@@ -68,6 +68,11 @@ namespace HowTo_SystemModifiers
       cMods.GetHeartRateMultiplier().SetValue(1.05);
       pulse.ProcessAction(cMod);
 
+      // By default, the engine will run a stabilization stage to get to a new homeostatis based on the provided modifiers
+      // You can listen to the Stabilization event to see when the stabilization stage ends(and starts)
+      // If you are slowly modifying the system with your own logic, and don't want the stabilization stage to run
+      // set the incremental flag to true, and the engine apply this action and not run a stabilization stage
+
       for (int i = 0; i < 12; i++)
       {
         pulse.AdvanceTime_s(10);

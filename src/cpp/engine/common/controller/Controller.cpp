@@ -835,7 +835,7 @@ namespace pulse
       return false;
 
     const SECardiovascularMechanicsModification* cvMod = dynamic_cast<const SECardiovascularMechanicsModification*>(&action);
-    if (cvMod != nullptr && cvMod->Restabilize())
+    if (cvMod != nullptr && !cvMod->GetIncremental())
     {
       m_EventManager->SetEvent(eEvent::Stabilization, true, m_SimulationTime);
       m_NervousModel->SetBaroreceptorFeedback(eSwitch::Off);
@@ -843,32 +843,25 @@ namespace pulse
       m_Config->GetStabilization()->TrackStabilization(eSwitch::On);
       if (!m_Config->GetStabilization()->Stabilize(*m_Stabilizer, SEEngineStabilization::AdvanceUntilStable))
         Error("Unable to restabilize to provided cardiovascular modifiers");
-      m_Actions->GetPatientActions().GetCardiovascularMechanicsModification().SetRestabilization(false);
-      // Since the heart rate has a baseline, when we get to this stable point, we will update the hr baseline
-      // The heart driver will then be using that as its new base frequency, so we don't want to add this
-      // modifier to that, since the baseline frequency now has that modifier built into it
-      auto& m = m_Actions->GetPatientActions().GetCardiovascularMechanicsModification().GetModifiers();
-      m.GetHeartRateMultiplier().SetValue(1.0);
-      // Ensure systems set baselines properly
-      AtSteadyState(EngineState::AtInitialStableState);
-      AtSteadyState(EngineState::AtSecondaryStableState);
-      AtSteadyState(EngineState::Active);
-      
+      m_Actions->GetPatientActions().GetCardiovascularMechanicsModification().SetIncremental(true);
+
+      m_NervousModel->SetBaroreceptorFeedback(eSwitch::On);
+      m_NervousModel->SetChemoreceptorFeedback(eSwitch::On);
+      GetCurrentPatient().GetMeanArterialPressureBaseline().Set(GetCardiovascular().GetMeanArterialPressure());
+      GetCurrentPatient().GetSystolicArterialPressureBaseline().Set(GetCardiovascular().GetSystolicArterialPressure());
+      GetCurrentPatient().GetDiastolicArterialPressureBaseline().Set(GetCardiovascular().GetDiastolicArterialPressure());
+
       m_EventManager->SetEvent(eEvent::Stabilization, false, m_SimulationTime);
     }
 
     const SERespiratoryMechanicsModification* rMod = dynamic_cast<const SERespiratoryMechanicsModification*>(&action);
-    if (rMod != nullptr && rMod->Restabilize())
+    if (rMod != nullptr && !rMod->GetIncremental())
     {
       m_EventManager->SetEvent(eEvent::Stabilization, true, m_SimulationTime);
       m_Config->GetStabilization()->TrackStabilization(eSwitch::On);
       if (!m_Config->GetStabilization()->Stabilize(*m_Stabilizer, SEEngineStabilization::AdvanceUntilStable))
         Error("Unable to restabilize to provided respiratory modifiers");
-      m_Actions->GetPatientActions().GetRespiratoryMechanicsModification().SetRestabilization(false);
-      // Ensure systems set baselines properly
-      AtSteadyState(EngineState::AtInitialStableState);
-      AtSteadyState(EngineState::AtSecondaryStableState);
-      AtSteadyState(EngineState::Active);
+      m_Actions->GetPatientActions().GetRespiratoryMechanicsModification().SetIncremental(true);
       m_EventManager->SetEvent(eEvent::Stabilization, false, m_SimulationTime);
     }
 

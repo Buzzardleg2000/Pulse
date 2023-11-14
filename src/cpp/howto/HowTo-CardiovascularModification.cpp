@@ -64,16 +64,13 @@ void HowToCardiovascularMechanicsModification()
   SECardiovascularMechanicsModification config;
   SECardiovascularMechanicsModifiers& mechanics = config.GetModifiers();
   mechanics.GetHeartRateMultiplier().SetValue(1.05);
-  // We want the system to restabilize to our requested modification
-  // This is TRUE by default, so you don't need to explicitly set it
-  config.SetRestabilization(true);
-  // If you were wanting to incrementally modify the system, you can set this to false
-  // When we do restabilization, we turn OFF the feedback systems (like baroreceptors)
-  // Then reset all the baselines once we get to homeostatis
-  // If you don't restabilize, the feedback systems are NOT turned off, so make sure increments are small
+  // By default, the engine will run a stabilization stage to get to a new homeostatis based on the provided modifiers
+  // You can listen to the Stabilization event to see when the stabilization stage ends(and starts)
+  // If you are slowly modifying the system with your own logic, and don't want the stabilization stage to run
+  // set the incremental flag to true, and the engine apply this action and not run a stabilization stage
   pe->ProcessAction(config);
 
-  for (size_t i = 0; i < 12; i++)
+  for (size_t i = 0; i < 36; i++)
   {
     AdvanceAndTrackTime_s(10, *pe);
     pe->GetEngineTracker()->LogRequestedValues();

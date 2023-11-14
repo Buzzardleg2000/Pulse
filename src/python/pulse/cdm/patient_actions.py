@@ -245,18 +245,18 @@ class SEBronchoconstriction(SEPatientAction):
 
 class SECardiovascularMechanicsModification(SEPatientAction):
     __slots__ = ["_modifiers_file",
-                 "_modifiers", "_restabilize"]
+                 "_modifiers", "_incremental"]
 
     def __init__(self):
         super().__init__()
         self._modifiers_file = None
         self._modifiers = None
-        self._restabilize = True
+        self._incremental = False
 
     def clear(self):
         self._modifiers_file = None
         self._modifiers = None
-        self._restabilize = True
+        self._incremental = False
 
     def copy(self, src):
         if not isinstance(SECardiovascularMechanicsModification, src):
@@ -264,7 +264,7 @@ class SECardiovascularMechanicsModification(SEPatientAction):
         self.clear()
         self._modifiers_file = src._modifiers_file
         self._modifiers.copy(src._modifiers)
-        self._restabilize = src._restabilize
+        self._incremental = src._incremental
 
     def is_valid(self):
         return self.has_modifiers() or self.has_modifiers_file()
@@ -272,10 +272,10 @@ class SECardiovascularMechanicsModification(SEPatientAction):
     def is_active(self):
         return True
 
-    def restabilize(self):
-        return self._restabilize
-    def set_restabilize(self, b: bool):
-        self._restabilize = b
+    def get_incremental(self):
+        return self._incremental
+    def set_incremental(self, b: bool):
+        self._incremental = b
 
     def has_modifiers_file(self):
         return self._modifiers_file is not None
@@ -1253,18 +1253,18 @@ class SERespiratoryMechanicsConfiguration(SEPatientAction):
 
 class SERespiratoryMechanicsModification(SEPatientAction):
     __slots__ = ["_modifiers_file",
-                 "_modifiers", "_restabilize"]
+                 "_modifiers", "_incremental"]
 
     def __init__(self):
         super().__init__()
         self._modifiers_file = None
         self._modifiers = None
-        self._restabilize = True
+        self._incremental = False
 
     def clear(self):
         self._modifiers_file = None
         self._modifiers = None
-        self._restabilize = True
+        self._incremental = False
 
     def copy(self, src):
         if not isinstance(SERespiratoryMechanicsModification, src):
@@ -1272,7 +1272,7 @@ class SERespiratoryMechanicsModification(SEPatientAction):
         self.clear()
         self._modifiers_file = src._modifiers_file
         self._modifiers.copy(src._modifiers)
-        self._restabilize = src._restabilize
+        self._incremental = src._incremental
 
     def is_valid(self):
         return self.has_modifiers() or self.has_modifiers_file()
@@ -1280,10 +1280,10 @@ class SERespiratoryMechanicsModification(SEPatientAction):
     def is_active(self):
         return True
     
-    def restabilize(self):
-        return self._restabilize
-    def set_restabilize(self, b: bool):
-        self._restabilize = b
+    def get_incremental(self):
+        return self._incremental
+    def set_incremental(self, b: bool):
+        self._incremental = b
 
     def has_modifiers_file(self):
         return self._modifiers_file is not None

@@ -7,7 +7,7 @@ namespace Pulse.CDM
   {
     protected SECardiovascularMechanicsModifiers modifiers = null;
     protected string modifiersFile = "";
-    protected bool restabilize = true;
+    protected bool incremental = false;
 
     public SECardiovascularMechanicsModification()
     {
@@ -25,7 +25,7 @@ namespace Pulse.CDM
       if (other.modifiers != null)
         this.GetModifiers().Copy(other.modifiers);
       this.modifiersFile = other.modifiersFile;
-      this.restabilize = other.restabilize;
+      this.incremental = other.incremental;
     }
 
     public override void Clear()
@@ -34,7 +34,7 @@ namespace Pulse.CDM
       if (this.modifiers != null)
         this.modifiers.Clear();
       this.modifiersFile = "";
-      restabilize = true;
+      incremental = false;
     }
 
     public override bool IsValid()
@@ -42,8 +42,8 @@ namespace Pulse.CDM
       return HasModifiers() || HasModifiersFile();
     }
 
-    public bool Restabilize() { return restabilize; }
-    public void SetRestabilization(bool b) { restabilize = b; }
+    public bool GetIncremental() { return incremental; }
+    public void SetIncremental(bool b) { incremental = b; }
 
     public bool HasModifiers()
     {
@@ -78,7 +78,7 @@ namespace Pulse.CDM
       {
         str += modifiers.ToString();
       }
-      str += "\n\tRestabilize: " + this.restabilize;
+      str += "\n\tIncremental: " + this.incremental;
       return str;
     }
   }

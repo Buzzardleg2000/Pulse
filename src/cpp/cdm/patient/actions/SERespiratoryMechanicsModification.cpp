@@ -10,14 +10,14 @@ SERespiratoryMechanicsModification::SERespiratoryMechanicsModification(Logger* l
 {
   m_ModifiersFile = "";
   m_Modifiers = nullptr;
-  m_Restabilize = true;
+  m_Incremental = false;
 }
 
 SERespiratoryMechanicsModification::~SERespiratoryMechanicsModification()
 {
   m_ModifiersFile = "";
   SAFE_DELETE(m_Modifiers);
-  m_Restabilize = true;
+  m_Incremental = false;
 }
 
 void SERespiratoryMechanicsModification::Clear()
@@ -26,14 +26,14 @@ void SERespiratoryMechanicsModification::Clear()
   m_ModifiersFile = "";
   if (m_Modifiers)
     m_Modifiers->Clear();
-  m_Restabilize = true;
+  m_Incremental = false;
 }
 
 void SERespiratoryMechanicsModification::Copy(const SERespiratoryMechanicsModification& src, bool /*preserveState*/)
 {
   //if(preserveState) // Cache any state before copy,
   PBPatientAction::Copy(src, *this);
-  m_Restabilize = src.m_Restabilize;
+  m_Incremental = src.m_Incremental;
   //if(preserveState) // Put back any state
 }
 
@@ -57,13 +57,13 @@ const SEScalar* SERespiratoryMechanicsModification::GetScalar(const std::string&
   return GetModifiers().GetScalar(name);
 }
 
-bool SERespiratoryMechanicsModification::Restabilize() const
+bool SERespiratoryMechanicsModification::GetIncremental() const
 {
-  return m_Restabilize;
+  return m_Incremental;
 }
-void SERespiratoryMechanicsModification::SetRestabilization(bool b)
+void SERespiratoryMechanicsModification::SetIncremental(bool b)
 {
-  m_Restabilize = b;
+  m_Incremental = b;
 }
 
 bool SERespiratoryMechanicsModification::HasModifiers() const

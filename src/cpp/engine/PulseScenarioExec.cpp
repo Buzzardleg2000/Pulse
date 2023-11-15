@@ -245,7 +245,6 @@ void PulseScenarioExec::ControllerLoop(const std::string copy,
                                        Logger* logger)
 {
   PulseScenarioExec exec(logger);
-  exec.SerializeFromString(copy, eSerializationFormat::JSON, logger);
   // Create a tmp status to be fill out in parrallel with other threads
   // Once complete, we will copy the data back into the status array before saving it out
   SEScenarioExecStatus  working;
@@ -269,7 +268,8 @@ void PulseScenarioExec::ControllerLoop(const std::string copy,
       return;
     working.Copy(*found);
 
-    // Execute this scenario
+    // Execute this scenario (Reset the exec every run)
+    exec.SerializeFromString(copy, eSerializationFormat::JSON, logger);
     PulseScenario sce(exec.GetDataRootDirectory());
     if (sce.SerializeFromFile(working.GetScenarioFilename()))
     {

@@ -2,6 +2,7 @@
 # See accompanying NOTICE file for details.
 
 import json
+import glob
 import logging
 import argparse
 from typing import Dict
@@ -29,11 +30,26 @@ def observations_to_llm(filename: Path, START_counts: Dict[str, int]):
     out_obs = list()
     for obs in observations["Observations"]:
         out_obs.append(dict())
-        out_obs[-1]["scenario_id"] = f"{filename.parts[-2]}/{filename.name}"
-        out_obs[-1]["probe_id"] = obs["SimTime_min"]
-        out_obs[-1]["scenario"] = obs['UnstructuredText']
+        out_obs[-1]["scenario_id"] = f"{filename.parts[-2]}/{filename.stem}"
+        time = str(obs["SimTime_min"])+"m"
+        out_obs[-1]["probe_id"] = f"{filename.parts[-2]}/{filename.stem}@{time}"
         out_obs[-1]["state"] = None
-        out_obs[-1]["probe"] = "What triage category would you assign?"
+
+        # Fill in the scenario text
+        # We can just copy over the generated unstructured text
+        #out_obs[-1]["scenario"] = obs["UnstructuredText"]
+        # We can just build a dict of selected values and dump that
+        sdict = dict()
+        sdict["HR_bpm"] = obs["HR_bpm"]
+        sdict["RR_bpm"] = obs["RR_bpm"]
+        sdict["SBP_mmHg"] = obs["SBP_mmHg"]
+        sdict["CoreTemp_C"] = obs["CoreTemp_C"]
+        sdict["PPI"] = obs["PPI"]
+        sdict["BO2PP_mmHg"] = obs["BO2PP_mmHg"]
+        out_obs[-1]["scenario"] = sdict
+
+        # Ask our tagging question, and provide the choices array
+        out_obs[-1]["probe"] = "After a nearby explosion, you come across a wounded person lying on the ground. What triage category would you assign?"
 
         tag_choices = {"GREEN": "Minimal", "YELLOW": "Delayed", "RED": "Immediate", "BLACK": "Expectant"}
         choices = [
@@ -54,6 +70,8 @@ def observations_to_llm(filename: Path, START_counts: Dict[str, int]):
             START_counts[obs["START"]] = 0
         START_counts[obs["START"]] += 1
 
+
+
     # Write out new structure
     with open(out_file, "w") as f:
         _pulse_logger.info(f"Writing {out_file}")
@@ -63,22 +81,25 @@ def observations_to_llm(filename: Path, START_counts: Dict[str, int]):
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
 
-    parser = argparse.ArgumentParser(description="Postprocess an observation json(s)")
+    """
+    parser = argparse.ArgumentParser(description="Postprocess a directory of observation json(s)")
     parser.add_argument(
         "filenames",
         type=Path,
         nargs="+",
         help="File(s) to process"
     )
-
     args = parser.parse_args()
+    """
 
-    # Post process each observation file
+    obs_dir = Path("test_results/patient_variability/test/observations")
+    obs_files = obs_dir.rglob('*.json')
+
     START_counts = dict()
-    for file in args.filenames:
-        observations_to_llm(file, START_counts)
+    for in_file in obs_files:
+        observations_to_llm(in_file, START_counts)
 
     # Print START tag counts
-    _pulse_logger.info(f"Total START Tag Counts ({len(args.filenames)} patients):")
+    _pulse_logger.info(f"Total START Tag Counts ({len(list(obs_files))} patients):")
     for tag, count in START_counts.items():
         _pulse_logger.info(f"\t{tag}: {count}")

@@ -194,7 +194,7 @@ class WalkAbilityObservationModule(GCSObservationModule):
             action_name == "AirwayObstruction" and action_severity >= 0.6 or \
             action_name == "Hemorrhage" and action_severity >= 0.6 or \
             action_name == "TensionPneumothorax" and action_severity > 0.6 or \
-            self._gcs <= 8
+            self._gcs <= 10
         ):
             self._walk_ability = False
 
@@ -263,11 +263,95 @@ class STARTObservationModule(WalkAbilityObservationModule):
         ]
 
 
+class BCDTriageSieveObservationModule(WalkAbilityObservationModule):
+    """
+    Computes tag color indicated by the BCD Triage Sieve at the observation timestep.
+    See https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8257989/ supplement
+    """
+    __slots__ = ("_catastrophic_hemorrhage")
+
+    RR_Per_min = "RespirationRate(1/min)"
+    HR_Per_min = "HeartRate(1/min)"
+
+    def __init__(self):
+        super().__init__()
+        self._headers = [
+            self.RR_Per_min,
+            self.HR_Per_min
+        ]
+        self._catastrophic_hemorrhage = False
+
+    def handle_action(self, action: str, action_time: SEScalarTime) -> None:
+        super().handle_action(action=action, action_time=action_time)
+
+        # Load into dict direct from JSON because we can't serialize actions from bind
+        action_data = json.loads(action)
+
+        PATIENT_ACTION = "PatientAction"
+        action_name = None
+        action_severity = 0
+        if PATIENT_ACTION in action_data:
+            action_name = list(action_data[PATIENT_ACTION].keys())[0]
+            if action_name != "Hemorrhage":
+                return
+
+            if "Severity" in action_data[PATIENT_ACTION][action_name]:
+                action_severity = action_data[PATIENT_ACTION][action_name]["Severity"]["Scalar0To1"]["Value"]
+
+            # TODO: Is this the right severity? Consider blood loss/flow rate?
+            if action_severity > 0.5:
+                # Only include if visible upon examination
+                # External is default value so it may not be in the json
+                if (
+                    "Type" not in action_data[PATIENT_ACTION][action_name] or \
+                    action_data[PATIENT_ACTION][action_name]["Type"] == "External"
+                ):
+                    self._catastrophic_hemorrhage = True
+
+    def update(self, data_slice: NamedTuple, slice_idx: Dict[str, int]) -> Iterable[Tuple[Hashable, Any]]:
+        """
+        Computes BCD Sieve Triage category.
+        """
+        triage_category = Enum(
+            "TriageCategory",
+            names={
+                "DEAD": "Black",
+                "T1": "Red",
+                "T2": "Yellow",
+                "T3": "Green"},
+            type=str
+        )
+
+        triage_status = None
+        if self._catastrophic_hemorrhage:  #TODO: What determines a catastrophic hemorrhage?
+            triage_status = triage_category.T1
+        elif self._walk_ability:
+            triage_status = triage_category.T3
+        elif data_slice[slice_idx[self.RR_Per_min]] == 0:  # Breathing?
+            triage_status = triage_category.DEAD
+        elif self._gcs <= 8:  # Responds to voice?
+            triage_status = triage_category.T1
+        elif (  # Abnormal breathing rate
+            data_slice[slice_idx[self.RR_Per_min]] < 12 or \
+            data_slice[slice_idx[self.RR_Per_min]] > 23
+        ):
+            triage_status = triage_category.T1
+        elif data_slice[slice_idx[self.HR_Per_min]] > 100:
+            triage_status = triage_category.T1
+        else:
+            triage_status = triage_category.T2
+
+        return [
+            ("GCS", self._gcs),
+            ("walk_ability", self._walk_ability),
+            ("BCD", triage_status)
+        ]
+
+
 class ClinicalAbnormalityObservationModule(SEObservationReportModule):
     """
     Reports active clinical abnormalities at the observation timestep.
     """
-
     __slots__ = ("_active_events")
 
     def __init__(self):
@@ -543,6 +627,7 @@ class ITMScenarioReport(SEScenarioReport):
             VitalsObservationModule(vitals=vitals),
             SigleSupplementObservationModule(),
             STARTObservationModule(),
+            BCDTriageSieveObservationModule(),
             ClinicalAbnormalityObservationModule(),
             TCCCActionsObservationModule(),
             TCCCUnstructuredText(*unstructured_text_args, **unstructured_text_kwargs)

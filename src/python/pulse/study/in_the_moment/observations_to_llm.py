@@ -11,7 +11,7 @@ from pathlib import Path
 _pulse_logger = logging.getLogger('pulse')
 
 
-def observations_to_llm(filename: Path, START_counts: Dict[str, int]):
+def observations_to_llm(filename: Path, tag_counts: Dict[str, Dict[str, int]]):
     """
     Post process the observation json for LLM input
     """
@@ -70,12 +70,14 @@ def observations_to_llm(filename: Path, START_counts: Dict[str, int]):
                 acc = 10.0
             out_obs[-1].append({"accuracy": acc})
 
-        # Accumulate START tag counts
-        if obs["START"] not in START_counts:
-            START_counts[obs["START"]] = 0
-        START_counts[obs["START"]] += 1
-
-
+        # Accumulate tag counts
+        tag_algos = ["START", "BCD"]
+        for tag_algo in tag_algos:
+            if tag_algo not in tag_counts:
+                tag_counts[tag_algo] = {}
+            if obs[tag_algo] not in tag_counts[tag_algo]:
+                tag_counts[tag_algo][obs[tag_algo]] = 0
+            tag_counts[tag_algo][obs[tag_algo]] += 1
 
     # Write out new structure
     with open(out_file, "w") as f:
@@ -103,11 +105,12 @@ if __name__ == "__main__":
     obs_dir = Path(f"test_results/patient_variability/{mode}/observations")
     obs_files = list(obs_dir.rglob('*.json'))
 
-    START_counts = dict()
+    tag_counts = dict()
     for in_file in obs_files:
-        observations_to_llm(in_file, START_counts)
+        observations_to_llm(in_file, tag_counts)
 
-    # Print START tag counts
-    _pulse_logger.info(f"Total START Tag Counts ({len(obs_files)} patients):")
-    for tag, count in START_counts.items():
-        _pulse_logger.info(f"\t{tag}: {count}")
+    # Print tag counts
+    for tag_algo, counts in tag_counts.items():
+        _pulse_logger.info(f"Total {tag_algo} Tag Counts ({len(obs_files)} patients):")
+        for tag, count in counts.items():
+            _pulse_logger.info(f"\t{tag}: {count}")

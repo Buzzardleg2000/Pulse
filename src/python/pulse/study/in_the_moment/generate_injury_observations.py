@@ -162,8 +162,44 @@ class GCSObservationModule(SEObservationReportModule):
                 self._gcs = 3
 
 
+class WalkAbilityObservationModule(GCSObservationModule):
+    """
+    Attempts to determine if the patient would have the ability to walk based on
+    applied actions and approximated GCS.
+    """
+    __slots__ = ("_walk_ability")
 
-class STARTObservationModule(GCSObservationModule):
+    def __init__(self):
+        super().__init__()
+        self._walk_ability = True
+
+    def handle_action(self, action: str, action_time: SEScalarTime) -> None:
+        super().handle_action(action=action, action_time=action_time)
+
+        # Load into dict direct from JSON because we can't serialize actions from bind
+        action_data = json.loads(action)
+
+        PATIENT_ACTION = "PatientAction"
+        action_name = None
+        action_severity = 0
+        if PATIENT_ACTION in action_data:
+            action_name = list(action_data[PATIENT_ACTION].keys())[0]
+
+            if "Severity" in action_data[PATIENT_ACTION][action_name]:
+                action_severity = action_data[PATIENT_ACTION][action_name]["Severity"]["Scalar0To1"]["Value"]
+
+        # TODO: Do we care about e.g what extremity the hemorrhage is on?
+        # TODO: Address interventions returning walk ability
+        if (
+            action_name == "AirwayObstruction" and action_severity >= 0.6 or \
+            action_name == "Hemorrhage" and action_severity >= 0.6 or \
+            action_name == "TensionPneumothorax" and action_severity > 0.6 or \
+            self._gcs <= 8
+        ):
+            self._walk_ability = False
+
+
+class STARTObservationModule(WalkAbilityObservationModule):
     """
     Computes tag color indicated by the START algorithm at the observation timestep.
     """
@@ -198,7 +234,9 @@ class STARTObservationModule(GCSObservationModule):
         )
 
         triage_status = None
-        if data_slice[slice_idx[self.RR_Per_min]] == 0:
+        if self._walk_ability:
+            triage_status = triage_category.MINOR
+        elif data_slice[slice_idx[self.RR_Per_min]] == 0:
             triage_status = triage_category.EXPECTANT
         elif data_slice[slice_idx[self.RR_Per_min]] > 30:
             triage_status = triage_category.IMMEDIATE
@@ -209,10 +247,10 @@ class STARTObservationModule(GCSObservationModule):
             triage_status = triage_category.IMMEDIATE
         elif self._gcs <= 8:
             triage_status = triage_category.IMMEDIATE
-        elif self._gcs <= 12:
-            triage_status = triage_category.DELAYED
         elif data_slice[slice_idx[self.BRAIN_VASC_O2PP_mmHg]] < 19:
             triage_status = triage_category.IMMEDIATE
+        elif self._gcs <= 12:
+            triage_status = triage_category.DELAYED
         elif data_slice[slice_idx[self.SPO2]] < .92:
             triage_status = triage_category.DELAYED
         else:
@@ -220,6 +258,7 @@ class STARTObservationModule(GCSObservationModule):
 
         return [
             ("GCS", self._gcs),
+            ("walk_ability", self._walk_ability),
             ("START", triage_status)
         ]
 

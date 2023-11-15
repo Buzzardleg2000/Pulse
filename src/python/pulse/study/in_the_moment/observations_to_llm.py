@@ -46,6 +46,7 @@ def observations_to_llm(filename: Path, START_counts: Dict[str, int]):
         sdict["PPI"] = obs["PPI"]
         sdict["BO2PP_mmHg"] = obs["BO2PP_mmHg"]
         sdict["GCS"] = obs["GCS"]
+        sdict["walk_ability"] = obs["walk_ability"]
         optional_keys = ["SkinColor", "SkinTouch", "CRT_s", "RadialPulsePalpability"]
         for key in optional_keys:
             if key in obs:

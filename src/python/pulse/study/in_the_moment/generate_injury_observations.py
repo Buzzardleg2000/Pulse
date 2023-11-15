@@ -48,7 +48,44 @@ class VitalsObservationModule(SEObservationReportModule):
         return vitals_out
 
 
-class STARTObservationModule(SEObservationReportModule):
+class GCSObservationModule(SEObservationReportModule):
+    """
+    Approximates GCS score from BrainInjury severity
+    """
+    __slots__ = ("_gcs")
+
+    def __init__(self):
+        super().__init__()
+        self._gcs = 15
+
+    def handle_action(self, action: str, action_time: SEScalarTime) -> None:
+        """
+        Determine if action is insult or intervention.
+        """
+        # Load into dict direct from JSON because we can't serialize actions from bind
+        action_data = json.loads(action)
+
+        PATIENT_ACTION = "PatientAction"
+        if PATIENT_ACTION in action_data:
+            action_name = list(action_data[PATIENT_ACTION].keys())[0]
+            if action_name != "BrainInjury":
+                return
+
+            action_severity = 0
+            if "Severity" in action_data[PATIENT_ACTION][action_name]:
+                action_severity = action_data[PATIENT_ACTION][action_name]["Severity"]["Scalar0To1"]["Value"]
+
+            if action_severity == 0:
+                self._gcs = 14
+            elif action_severity <= 0.3:
+                self._gcs = 11
+            elif action_severity <=0.6:
+                self._gcs = 8
+            else:
+                self._gcs = 3
+
+
+class STARTObservationModule(GCSObservationModule):
     """
     Computes tag color indicated by the START algorithm at the observation timestep.
     """
@@ -92,6 +129,10 @@ class STARTObservationModule(SEObservationReportModule):
         # PPI is serving as a replacement for capillary refill time (CRT)
         elif data_slice[slice_idx[self.PPI]] < 0.003:
             triage_status = triage_category.IMMEDIATE
+        elif self._gcs <= 8:
+            triage_status = triage_category.IMMEDIATE
+        elif self._gcs <= 12:
+            triage_status = triage_category.DELAYED
         elif data_slice[slice_idx[self.BRAIN_VASC_O2PP_mmHg]] < 19:
             triage_status = triage_category.IMMEDIATE
         elif data_slice[slice_idx[self.SPO2]] < .92:
@@ -99,7 +140,10 @@ class STARTObservationModule(SEObservationReportModule):
         else:
             triage_status = triage_category.MINOR
 
-        return [("START", triage_status)]
+        return [
+            ("GCS", self._gcs),
+            ("START", triage_status)
+        ]
 
 
 class ClinicalAbnormalityObservationModule(SEObservationReportModule):

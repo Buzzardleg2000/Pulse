@@ -46,6 +46,7 @@ def observations_to_llm(filename: Path, START_counts: Dict[str, int]):
         sdict["CoreTemp_C"] = obs["CoreTemp_C"]
         sdict["PPI"] = obs["PPI"]
         sdict["BO2PP_mmHg"] = obs["BO2PP_mmHg"]
+        sdict["GCS"] = obs["GCS"]
         out_obs[-1]["scenario"] = sdict
 
         # Ask our tagging question, and provide the choices array
@@ -93,13 +94,13 @@ if __name__ == "__main__":
     """
 
     obs_dir = Path("test_results/patient_variability/test/observations")
-    obs_files = obs_dir.rglob('*.json')
+    obs_files = list(obs_dir.rglob('*.json'))
 
     START_counts = dict()
     for in_file in obs_files:
         observations_to_llm(in_file, START_counts)
 
     # Print START tag counts
-    _pulse_logger.info(f"Total START Tag Counts ({len(list(obs_files))} patients):")
+    _pulse_logger.info(f"Total START Tag Counts ({len(obs_files)} patients):")
     for tag, count in START_counts.items():
         _pulse_logger.info(f"\t{tag}: {count}")

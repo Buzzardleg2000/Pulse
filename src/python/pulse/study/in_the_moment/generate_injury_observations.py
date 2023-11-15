@@ -76,11 +76,25 @@ class GCSObservationModule(SEObservationReportModule):
                 action_severity = action_data[PATIENT_ACTION][action_name]["Severity"]["Scalar0To1"]["Value"]
 
             if action_severity == 0:
+                self._gcs = 15
+            elif action_severity <= 0.1:
+                self._gcs = 14
+            elif action_severity <= 0.2:
                 self._gcs = 14
             elif action_severity <= 0.3:
-                self._gcs = 11
-            elif action_severity <=0.6:
+                self._gcs = 13
+            elif action_severity <= 0.4:
+                self._gcs = 12
+            elif action_severity <= 0.5:
+                self._gcs = 10
+            elif action_severity <= 0.6:
+                self._gcs = 9
+            elif action_severity <= 0.7:
                 self._gcs = 8
+            elif action_severity <= 0.8:
+                self._gcs = 6
+            elif action_severity <= 0.9:
+                self._gcs = 4
             else:
                 self._gcs = 3
 

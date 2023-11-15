@@ -116,6 +116,7 @@ int main(int argc, char* argv[])
       hemorrhageWounds.push_back((size_t)eHemorrhageWound::LeftLegLaceration);
       tccc->GetHemorrhageWound().SetValues(hemorrhageWounds);
       tccc->GetTensionPneumothoraxSeverity().SetValues(ParameterIteration<double>::SetMinMaxStep(0., 0.9, 0.3));
+      tccc->GetTBISeverity().SetValues(ParameterIteration<double>::SetMinMaxStep(0., 0.9, 0.3));
       // What is our equipment variability?
       // Let's assume we have everything in our bag
       //tccc->GetInsultDuration_s().SetValues(ParameterIteration<double>::SetMinMaxStep(5. * 60, 40. * 60, 5. * 60));

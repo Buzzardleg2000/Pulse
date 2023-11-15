@@ -1,10 +1,9 @@
 # Distributed under the Apache License, Version 2.0.
 # See accompanying NOTICE file for details.
 
+import sys
 import json
-import glob
 import logging
-import argparse
 from typing import Dict
 from pathlib import Path
 
@@ -92,8 +91,11 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
     """
-
-    obs_dir = Path("test_results/patient_variability/test/observations")
+    mode = "test"
+    if len(sys.argv) > 1:
+        mode = sys.argv[1]
+    injury_scenarios_list_filename = f"./test_results/patient_variability/{mode}/scenarios/tccc.json"
+    obs_dir = Path(f"test_results/patient_variability/{mode}/observations")
     obs_files = list(obs_dir.rglob('*.json'))
 
     START_counts = dict()

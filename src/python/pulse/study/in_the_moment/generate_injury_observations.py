@@ -507,20 +507,10 @@ def generate_observations(injury_scenario: SEScenarioExecStatus) -> None:
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
 
-    #  Add various options to clear statuses for a full rerun
-    patient_scenarios_list_filename = "./test_results/scenarios"
-    # Look for a patient scenario exec status list file
-    # if it's not there
-    #   Call C++ to generate our patient scenarios
-    #   This will make a patient scenario exec status list file
-    # Execute all those scenarios
-
-    injury_scenarios_list_filename = "./test_results/patient_variability/test/scenarios/tccc.json"
-    # Look for an injury scenario exec status list file
-    # if it's not there
-    # Call C++ to generate our tccc injury scenarios
-    #   This will make an injury scenario exec status list file
-    # Execute all those scenarios
+    mode = "test"
+    if len(sys.argv) > 1:
+        mode = sys.argv[1]
+    injury_scenarios_list_filename = f"./test_results/patient_variability/{mode}/scenarios/tccc.json"
 
     # Read in the executed injury scenario exec status
     injury_scenarios = []

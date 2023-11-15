@@ -17,7 +17,7 @@ using namespace pulse::study::patient_variability;
 int main(int argc, char* argv[])
 {
   bool clear                   = false;// TODO
-  bool generateOnly            = true;
+  bool generateOnly            = false;
 
   std::vector<PatientIteration*> iPatients;
   std::vector<ActionIteration*>  iActions;
@@ -134,7 +134,17 @@ int main(int argc, char* argv[])
     male->SetStateDirectory(rootDir + "/states/" + male->GetIterationName());
     male->SetResultsDirectory(rootDir + "/results/" + male->GetIterationName());
     iPatients.push_back(male);
-    if (true)
+
+    PatientIteration* female = new PatientIteration(logger);
+    female->SetIterationName("default_female");
+    female->SetGenStyle(eGenStyle::Combo);
+    female->SetSex(ePatient_Sex::Female);
+    female->SetScenarioExecListFilename(rootDir + "/scenarios/" + female->GetIterationName() + ".json");
+    female->SetStateDirectory(rootDir + "/states/" + female->GetIterationName());
+    female->SetResultsDirectory(rootDir + "/results/" + female->GetIterationName());
+    iPatients.push_back(female);
+
+    if (false)
     {
       ValidationIteration* vi = new ValidationIteration(logger);
       vi->SetIterationName("validation");
@@ -178,26 +188,29 @@ int main(int argc, char* argv[])
       opts.SetScenarioExecListFilename(pi->GetScenarioExecListFilename());
       opts.Execute();
     }
+  }
 
-    for (ActionIteration* ai : iActions)
+  for (ActionIteration* ai : iActions)
+  {
+    ai->SetScenarioExecListFilename(rootDir + "/scenarios/" + ai->GetIterationName() + ".json");
+    ai->SetStateDirectory(rootDir + "/states/" + ai->GetIterationName());
+    ai->SetResultsDirectory(rootDir + "/results/" + ai->GetIterationName());
+
+    if (!clear && FileExists(ai->GetScenarioExecListFilename()))
+      logger.Info("Using previously run scenario exec list file: " + ai->GetScenarioExecListFilename());
+    else
     {
-      ai->SetScenarioExecListFilename(rootDir + "/scenarios/" + pi->GetIterationName() + "_" + ai->GetIterationName() + ".json");
-      ai->SetStateDirectory(rootDir + "/states/" + pi->GetIterationName() + "_" + ai->GetIterationName());
-      ai->SetResultsDirectory(rootDir + "/results/" + pi->GetIterationName() + "_" + ai->GetIterationName());
-
-      if (!clear && FileExists(ai->GetScenarioExecListFilename()))
-        logger.Info("Using previously run scenario exec list file: " + ai->GetScenarioExecListFilename());
-      else
+      for (PatientIteration* pi : iPatients)
         ai->GenerateScenarios(*pi);
+    }
 
-      if (!generateOnly)
-      {
-        PulseScenarioExec opts(&logger);
-        opts.SetModelType(eModelType::HumanAdultWholeBody);
-        opts.LogToConsole(eSwitch::Off);
-        opts.SetScenarioExecListFilename(ai->GetScenarioExecListFilename());
-        opts.Execute();
-      }
+    if (!generateOnly)
+    {
+      PulseScenarioExec opts(&logger);
+      opts.SetModelType(eModelType::HumanAdultWholeBody);
+      opts.LogToConsole(eSwitch::Off);
+      opts.SetScenarioExecListFilename(ai->GetScenarioExecListFilename());
+      opts.Execute();
     }
   }
 

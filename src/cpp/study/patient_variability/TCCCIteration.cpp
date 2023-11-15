@@ -37,8 +37,8 @@ namespace pulse::study::patient_variability
     m_DataRequestMgr->CreatePhysiologyDataRequest("MeanArterialPressure", PressureUnit::mmHg);
     m_DataRequestMgr->CreatePhysiologyDataRequest("SystolicArterialPressure", PressureUnit::mmHg);
     m_DataRequestMgr->CreatePhysiologyDataRequest("DiastolicArterialPressure", PressureUnit::mmHg);
-    m_DataRequestMgr->CreatePhysiologyDataRequest("CoreTemperature", TemperatureUnit::F);
-    m_DataRequestMgr->CreatePhysiologyDataRequest("SkinTemperature", TemperatureUnit::F);
+    m_DataRequestMgr->CreatePhysiologyDataRequest("CoreTemperature", TemperatureUnit::C);
+    m_DataRequestMgr->CreatePhysiologyDataRequest("SkinTemperature", TemperatureUnit::C);
 
     m_DataRequestMgr->CreatePhysiologyDataRequest("BloodVolume", VolumeUnit::mL);
     m_DataRequestMgr->CreatePhysiologyDataRequest("TotalHemorrhageRate", VolumePerTimeUnit::mL_Per_min);

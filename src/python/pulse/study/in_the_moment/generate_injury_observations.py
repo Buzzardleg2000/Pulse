@@ -366,11 +366,15 @@ class ITMScenarioReport(SEScenarioReport):
 
         # Desired vitals and display names
         vitals = {
-            "HeartRate(1/min)" : "HR",
-            "RespirationRate(1/min)" : "RR",
+            "HeartRate(1/min)": "HR_bpm",
+            "RespirationRate(1/min)": "RR_bpm",
             "OxygenSaturation": "SpO2",
-            "SystolicArterialPressure(mmHg)": "Systolic",
-            "DiastolicArterialPressure(mmHg)": "Diastolic",
+            "SystolicArterialPressure(mmHg)": "SBP_mmHg",
+            "DiastolicArterialPressure(mmHg)": "DBP_mmHg",
+            "CoreTemperature(degC)": "CoreTemp_C",
+            "SkinTemperature(degC)": "SkinTemp_C",
+            "PeripheralPerfusionIndex": "PPI",
+            "BrainVasculature-Oxygen-PartialPressure(mmHg)": "BO2PP_mmHg",
         }
 
         # Report modules

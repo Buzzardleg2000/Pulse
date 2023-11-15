@@ -17,7 +17,7 @@ using namespace pulse::study::patient_variability;
 int main(int argc, char* argv[])
 {
   bool clear                   = false;// TODO
-  bool generateOnly            = false;
+  bool generateOnly            = true;
 
   std::vector<PatientIteration*> iPatients;
   std::vector<ActionIteration*>  iActions;
@@ -51,6 +51,10 @@ int main(int argc, char* argv[])
   if (mode == "validation" || mode == "hemorrhage" || mode == "itm")
   {
     PatientIteration* male = new PatientIteration(logger);
+    male->SetIterationName("male");
+    male->SetScenarioExecListFilename(rootDir + "/scenarios/" + male->GetIterationName() + ".json");
+    male->SetStateDirectory(rootDir + "/states/" + male->GetIterationName());
+    male->SetResultsDirectory(rootDir + "/results/" + male->GetIterationName());
     male->SetGenStyle(eGenStyle::Combo);
     male->SetSex(ePatient_Sex::Male);
     //male->GetAge_yr().SetValues({minAge_yr, maxAge_yr, stdAge_yr }, 2);
@@ -64,6 +68,10 @@ int main(int argc, char* argv[])
     iPatients.push_back(male);
 
     PatientIteration* female = new PatientIteration(logger);
+    female->SetIterationName("female");
+    female->SetScenarioExecListFilename(rootDir + "/scenarios/" + female->GetIterationName() + ".json");
+    female->SetStateDirectory(rootDir + "/states/" + female->GetIterationName());
+    female->SetResultsDirectory(rootDir + "/results/" + female->GetIterationName());
     female->SetGenStyle(eGenStyle::Combo);
     female->SetSex(ePatient_Sex::Female);
     //female->GetAge_yr().SetValues({ minAge_yr, maxAge_yr, stdAge_yr }, 2);
@@ -97,22 +105,24 @@ int main(int argc, char* argv[])
     else if (mode == "itm")
     {
       TCCCIteration* tccc = new TCCCIteration(logger);
+      tccc->SetIterationName("tccc");
       tccc->SetBaselineDuration_s(15);
       tccc->SetMaxSimTime_min(60);
       tccc->PerformInterventions(true);
-      tccc->GetInsultDuration_s().SetValues(ParameterIteration<double>::SetMinMaxStep(5.*60, 40.*60, 5.*60));
       tccc->GetAirwayObstructionSeverity().SetValues(ParameterIteration<double>::SetMinMaxStep(0., 0.9, 0.3));
       tccc->GetHemorrhageSeverity().SetValues(ParameterIteration<double>::SetMinMaxStep(0., 0.9, 0.3));
       std::vector<size_t> hemorrhageWounds;
-      for(size_t i = 0; i < (size_t)eHemorrhageWound::_LOC_COUNT; ++i)
-        hemorrhageWounds.push_back(i);
+      //for(size_t i = 0; i < (size_t)eHemorrhageWound::_LOC_COUNT; ++i)
+      //  hemorrhageWounds.push_back(i);
+      hemorrhageWounds.push_back((size_t)eHemorrhageWound::LeftLegLaceration);
       tccc->GetHemorrhageWound().SetValues(hemorrhageWounds);
       tccc->GetTensionPneumothoraxSeverity().SetValues(ParameterIteration<double>::SetMinMaxStep(0., 0.9, 0.3));
       // What is our equipment variability?
       // Let's assume we have everything in our bag
-      tccc->GetSalineAvailable().SetValues({ 1 });
-      tccc->GetNeedleAvailable().SetValues({ 1 });
-      tccc->GetChestWrapAvailable().SetValues({ 1 });
+      //tccc->GetInsultDuration_s().SetValues(ParameterIteration<double>::SetMinMaxStep(5. * 60, 40. * 60, 5. * 60));
+      //tccc->GetSalineAvailable().SetValues({ 1 });
+      //tccc->GetNeedleAvailable().SetValues({ 1 });
+      //tccc->GetChestWrapAvailable().SetValues({ 1 });
       iActions.push_back(tccc);
     }
   }
@@ -128,26 +138,21 @@ int main(int argc, char* argv[])
     {
       ValidationIteration* vi = new ValidationIteration(logger);
       vi->SetIterationName("validation");
-      vi->SetScenarioExecListFilename(rootDir + "/scenarios/" + vi->GetIterationName()+".json");
-      vi->SetStateDirectory(rootDir + "/states/" + vi->GetIterationName());
-      vi->SetResultsDirectory(rootDir + "/results/" + vi->GetIterationName());
       iActions.push_back(vi);
     }
     if (true)
     {
       TCCCIteration* tccc = new TCCCIteration(logger);
       tccc->SetIterationName("tccc");
-      tccc->SetScenarioExecListFilename(rootDir + "/scenarios/" + tccc->GetIterationName()+".json");
-      tccc->SetStateDirectory(rootDir + "/states/" + tccc->GetIterationName());
-      tccc->SetResultsDirectory(rootDir + "/results/" + tccc->GetIterationName());
       tccc->CreateStates(true);
       tccc->SetBaselineDuration_s(15);
       tccc->SetMaxSimTime_min(60);
       tccc->PerformInterventions(false);
       tccc->GetHemorrhageSeverity().SetValues({ 0.2, 0.5 });
       std::vector<size_t> hemorrhageWounds;
-      for(size_t i = 0; i < (size_t)eHemorrhageWound::_LOC_COUNT; ++i)
-        hemorrhageWounds.push_back(i);
+      //for(size_t i = 0; i < (size_t)eHemorrhageWound::_LOC_COUNT; ++i)
+      //  hemorrhageWounds.push_back(i);
+      hemorrhageWounds.push_back((size_t)eHemorrhageWound::LeftLegLaceration);
       tccc->GetHemorrhageWound().SetValues(hemorrhageWounds);
       tccc->GetInsultDuration_s().SetValues({ 5 });
       iActions.push_back(tccc);
@@ -176,6 +181,10 @@ int main(int argc, char* argv[])
 
     for (ActionIteration* ai : iActions)
     {
+      ai->SetScenarioExecListFilename(rootDir + "/scenarios/" + pi->GetIterationName() + "_" + ai->GetIterationName() + ".json");
+      ai->SetStateDirectory(rootDir + "/states/" + pi->GetIterationName() + "_" + ai->GetIterationName());
+      ai->SetResultsDirectory(rootDir + "/results/" + pi->GetIterationName() + "_" + ai->GetIterationName());
+
       if (!clear && FileExists(ai->GetScenarioExecListFilename()))
         logger.Info("Using previously run scenario exec list file: " + ai->GetScenarioExecListFilename());
       else

@@ -143,7 +143,7 @@ namespace pulse::study::patient_variability
   {
     std::string name;
     name =  "AO" + pulse::cdm::to_string(AirwayObstructionSeverity) + "_";
-    name += "H"  + pulse::cdm::to_string(HemorrhageSeverity);
+    name += "H"  + pulse::cdm::to_string(HemorrhageSeverity) + "_";
     if (HemorrhageSeverity > 0)
     {
       switch ((eHemorrhageWound)HemorrhageWound) {

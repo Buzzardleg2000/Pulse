@@ -22,9 +22,8 @@ int main(int argc, char* argv[])
   std::vector<PatientIteration*> iPatients;
   std::vector<ActionIteration*>  iActions;
 
-
-  // Process arguments
   std::string mode="test";
+  // Process arguments
   if (argc > 1)
   {
     mode = argv[1];
@@ -62,9 +61,9 @@ int main(int argc, char* argv[])
     //male->GetMAP_mmHg().SetValues({ minMAP_mmHg, maxMAP_mmHg, stdMAP_mmHg }, 2);
     //male->GetPP_mmHg().SetValues({ minPulsePressure_mmHg, maxPulsePressure_mmHg, stdPulsePressure_mmHg }, 2);
     //male->GetRR_bpm().SetValues({ minRR_bpm, maxRR_bpm, stdRR_bpm }, 2);
-    male->GetHeight_cm().SetValues({ minMaleHeight_cm, maxMaleHeight_cm, stdMaleHeight_cm }, 2);
-    male->GetBMI().SetValues({ minBMI, maxBMI, stdMaleBMI }, 2);
-    male->GetBFF().SetValues({ minMaleBFF, maxMaleBFF, stdMaleBFF }, 2);
+    //male->GetHeight_cm().SetValues({ minMaleHeight_cm, maxMaleHeight_cm, stdMaleHeight_cm }, 2);
+    //male->GetBMI().SetValues({ minBMI, maxBMI, stdMaleBMI }, 2);
+    //male->GetBFF().SetValues({ minMaleBFF, maxMaleBFF, stdMaleBFF }, 2);
     iPatients.push_back(male);
 
     PatientIteration* female = new PatientIteration(logger);
@@ -79,9 +78,9 @@ int main(int argc, char* argv[])
     //female->GetMAP_mmHg().SetValues({ minMAP_mmHg, maxMAP_mmHg, stdMAP_mmHg }, 2);
     //female->GetPP_mmHg().SetValues({ minPulsePressure_mmHg, maxPulsePressure_mmHg, stdPulsePressure_mmHg }, 2);
     //female->GetRR_bpm().SetValues({ minRR_bpm, maxRR_bpm, stdRR_bpm }, 2);
-    female->GetHeight_cm().SetValues({ minFemaleHeight_cm, maxFemaleHeight_cm, stdFemaleHeight_cm }, 2);
-    female->GetBMI().SetValues({ minBMI, maxBMI, stdFemaleBMI }, 2);
-    female->GetBFF().SetValues({ minFemaleBFF, maxFemaleBFF, stdFemaleBFF }, 2);
+    //female->GetHeight_cm().SetValues({ minFemaleHeight_cm, maxFemaleHeight_cm, stdFemaleHeight_cm }, 2);
+    //female->GetBMI().SetValues({ minBMI, maxBMI, stdFemaleBMI }, 2);
+    //female->GetBFF().SetValues({ minFemaleBFF, maxFemaleBFF, stdFemaleBFF }, 2);
     iPatients.push_back(female);
 
     if (mode == "validation")

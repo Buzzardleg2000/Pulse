@@ -46,6 +46,10 @@ def observations_to_llm(filename: Path, START_counts: Dict[str, int]):
         sdict["PPI"] = obs["PPI"]
         sdict["BO2PP_mmHg"] = obs["BO2PP_mmHg"]
         sdict["GCS"] = obs["GCS"]
+        optional_keys = ["SkinColor", "SkinTouch", "CRT_s", "RadialPulsePalpability"]
+        for key in optional_keys:
+            if key in obs:
+                sdict[key] = obs[key]
         out_obs[-1]["scenario"] = sdict
 
         # Ask our tagging question, and provide the choices array

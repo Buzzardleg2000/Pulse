@@ -48,9 +48,72 @@ class VitalsObservationModule(SEObservationReportModule):
         return vitals_out
 
 
+class SigleSupplementObservationModule(SEObservationReportModule):
+    """
+    Approximates capilary refill time (CRT), skin touch, and pulse palpability from vitals.
+    Based on https://www.jmir.org/2023//e44042/
+    """
+    SAP_mmHg = "SystolicArterialPressure(mmHg)"
+    RR_Per_min = "RespirationRate(1/min)"
+    CORE_TEMP_C = "CoreTemperature(degC)"
+
+    def __init__(self):
+        super().__init__()
+        self._headers = [
+            self.SAP_mmHg,
+            self.RR_Per_min,
+            self.CORE_TEMP_C
+        ]
+
+    def update(self, data_slice: NamedTuple, slice_idx: Dict[str, int]) -> Iterable[Tuple[Hashable, Any]]:
+        """
+        Estimate patient properties from vitals.
+        """
+        sbp_mmHg = data_slice[slice_idx[self.SAP_mmHg]]
+        rr_Per_min = data_slice[slice_idx[self.RR_Per_min]]
+        core_temp_C = data_slice[slice_idx[self.CORE_TEMP_C]]
+
+        skin_color = "normal"
+        if rr_Per_min > 0 and rr_Per_min <= 9:
+            skin_color = "cyanotic"
+        elif rr_Per_min == 0:
+            skin_color = "grey"
+
+        # TODO: Use skin temp directly?
+        skin_touch = "hot"
+        if core_temp_C >= 35 and core_temp_C < 39:
+            skin_touch = "normal"
+        elif core_temp_C >= 32 and core_temp_C < 35:
+            skin_touch = "cold/pale"
+        elif core_temp_C < 32:
+            skin_touch = "cold"
+
+        crt_s = 1
+        radial_pulse_palpability = True
+        if sbp_mmHg >= 80 and sbp_mmHg <= 100:
+            crt_s = 2
+            radial_pulse_palpability = True
+        elif sbp_mmHg >= 60 and sbp_mmHg < 80:
+            crt_s = 3
+            radial_pulse_palpability = False
+        elif sbp_mmHg < 60:
+            # This was a random value between 4-10 in the original paper
+            # Set to 7 for deterministic behavior
+            # Global seeding prevents randomness of unstructured text
+            crt_s = 7
+            radial_pulse_palpability = False
+
+        return [
+            ("SkinColor", skin_color),
+            ("SkinTouch", skin_touch),
+            ("CRT_s", crt_s),
+            ("RadialPulsePalpability", radial_pulse_palpability)
+        ]
+
+
 class GCSObservationModule(SEObservationReportModule):
     """
-    Approximates GCS score from BrainInjury severity
+    Approximates GCS score from BrainInjury severity.
     """
     __slots__ = ("_gcs")
 
@@ -60,7 +123,7 @@ class GCSObservationModule(SEObservationReportModule):
 
     def handle_action(self, action: str, action_time: SEScalarTime) -> None:
         """
-        Determine if action is insult or intervention.
+        Estimate GCS from BrainInjury actions received.
         """
         # Load into dict direct from JSON because we can't serialize actions from bind
         action_data = json.loads(action)
@@ -97,6 +160,7 @@ class GCSObservationModule(SEObservationReportModule):
                 self._gcs = 4
             else:
                 self._gcs = 3
+
 
 
 class STARTObservationModule(GCSObservationModule):
@@ -438,6 +502,7 @@ class ITMScenarioReport(SEScenarioReport):
         # Report modules
         observation_modules = [
             VitalsObservationModule(vitals=vitals),
+            SigleSupplementObservationModule(),
             STARTObservationModule(),
             ClinicalAbnormalityObservationModule(),
             TCCCActionsObservationModule(),

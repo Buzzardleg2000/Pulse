@@ -24,6 +24,7 @@ namespace pulse::study::patient_variability
 
     m_PerformInterventions = false;
 
+    m_BrainInjury.SetType(eBrainInjury_Type::LeftFocal);
     m_Hemorrhage.SetType(eHemorrhage_Type::External);
     m_Hemorrhage.SetCompartment(eHemorrhage_Compartment::RightLeg);
     m_TensionPneumothorax.SetType(eGate::Open);
@@ -77,6 +78,8 @@ namespace pulse::study::patient_variability
         m_HemorrhageWound.GetValues().push_back(i);
     if (m_TensionPneumothoraxSeverity.Empty())
       m_TensionPneumothoraxSeverity.SetValues({ 0 });
+    if (m_TBISeverity.Empty())
+      m_TBISeverity.SetValues({ 0 });
     if (m_InsultDuration_s.Empty())
       m_InsultDuration_s.SetValues({ 0 });
     if (m_SalineAvailable.Empty())
@@ -99,6 +102,7 @@ namespace pulse::study::patient_variability
     opts.push_back(m_HemorrhageSeverity.GetValues().size()-1);
     opts.push_back(m_HemorrhageWound.GetValues().size()-1);
     opts.push_back(m_TensionPneumothoraxSeverity.GetValues().size()-1);
+    opts.push_back(m_TBISeverity.GetValues().size() - 1);
     opts.push_back(m_InsultDuration_s.GetValues().size()-1);
     opts.push_back(m_SalineAvailable.GetValues().size()-1);
     opts.push_back(m_NeedleAvailable.GetValues().size()-1);
@@ -110,6 +114,7 @@ namespace pulse::study::patient_variability
     double AirwayObstructionSeverity = 0;
     double HemorrhageSeverity = 0;
     double TensionPneumothoraxSeverity = 0;
+    double TBISeverity = 0;
     double InsultDuration_s = 0;
     size_t HemorrhageWound = 0;
 
@@ -122,13 +127,14 @@ namespace pulse::study::patient_variability
       HemorrhageSeverity = m_HemorrhageSeverity.GetValues()[idxs[1]];
       HemorrhageWound = m_HemorrhageWound.GetValues()[idxs[2]];
       TensionPneumothoraxSeverity = m_TensionPneumothoraxSeverity.GetValues()[idxs[3]];
-      InsultDuration_s = m_InsultDuration_s.GetValues()[idxs[4]];
+      TBISeverity = m_TBISeverity.GetValues()[idxs[4]];
+      InsultDuration_s = m_InsultDuration_s.GetValues()[idxs[5]];
       if (AirwayObstructionSeverity > 0 ||
           HemorrhageSeverity > 0 ||
           TensionPneumothoraxSeverity > 0)
       {
         GenerateScenario(AirwayObstructionSeverity, HemorrhageSeverity, HemorrhageWound,
-                         TensionPneumothoraxSeverity, InsultDuration_s, patientFolderAndStateFilename.first);
+          TBISeverity, TensionPneumothoraxSeverity, InsultDuration_s, patientFolderAndStateFilename.first);
       }
       m_Actions.clear();
     }
@@ -137,6 +143,7 @@ namespace pulse::study::patient_variability
   void TCCCIteration::GenerateScenario(double AirwayObstructionSeverity,
                                        double HemorrhageSeverity,
                                        size_t HemorrhageWound,
+                                       double TBISeverity,
                                        double TensionPneumothoraxSeverity,
                                        double InsultDuration_s,
                                        const std::string& PatientName)
@@ -162,6 +169,7 @@ namespace pulse::study::patient_variability
         break;
       }
     }
+    name += "TBI" + pulse::cdm::to_string(TBISeverity) + "_";
     name += "TP" +pulse::cdm::to_string(TensionPneumothoraxSeverity) + "_";
     name += "D"+pulse::cdm::to_string(InsultDuration_s)+"s";
     SetName(PatientName +"/"+name);
@@ -211,6 +219,11 @@ namespace pulse::study::patient_variability
           break;
       }
       m_Actions.push_back(&m_Hemorrhage);
+    }
+    if (TBISeverity > 0)
+    {
+      m_BrainInjury.GetSeverity().SetValue(TBISeverity);
+      m_Actions.push_back(&m_BrainInjury);
     }
     if (TensionPneumothoraxSeverity > 0)
     {

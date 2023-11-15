@@ -158,6 +158,7 @@ int main(int argc, char* argv[])
       tccc->SetBaselineDuration_s(15);
       tccc->SetMaxSimTime_min(60);
       tccc->PerformInterventions(false);
+      tccc->GetTBISeverity().SetValues({ 0.2, 0.5 });
       tccc->GetHemorrhageSeverity().SetValues({ 0.2, 0.5 });
       std::vector<size_t> hemorrhageWounds;
       //for(size_t i = 0; i < (size_t)eHemorrhageWound::_LOC_COUNT; ++i)

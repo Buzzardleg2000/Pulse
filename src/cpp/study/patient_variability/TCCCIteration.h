@@ -12,6 +12,7 @@
 #include "cdm/patient/actions/SEHemorrhage.h"
 #include "cdm/patient/actions/SENeedleDecompression.h"
 #include "cdm/patient/actions/SESubstanceCompoundInfusion.h"
+#include "cdm/patient/actions/SEBrainInjury.h"
 #include "cdm/patient/actions/SETensionPneumothorax.h"
 
 namespace pulse::study::patient_variability
@@ -44,6 +45,9 @@ namespace pulse::study::patient_variability
     ParameterIteration<size_t>& GetHemorrhageWound() { return m_HemorrhageWound; }
     const ParameterIteration<size_t>& GetHemorrhageWound() const { return m_HemorrhageWound; }
 
+    ParameterIteration<double>& GetTBISeverity() { return m_TBISeverity; }
+    const ParameterIteration<double>& GetTBISeverity() const { return m_TBISeverity; }
+
     ParameterIteration<double>& GetTensionPneumothoraxSeverity() { return m_TensionPneumothoraxSeverity; }
     const ParameterIteration<double>& GetTensionPneumothoraxSeverity() const { return m_TensionPneumothoraxSeverity; }
 
@@ -66,6 +70,7 @@ namespace pulse::study::patient_variability
     void GenerateScenario(double AirwayObstructionSeverity,
                           double HemorrhageSeverity,
                           size_t HemorrhageLocation,
+                          double TBISeverity,
                           double TensionPneumothoraxSeverity,
                           double InsultDuration_s,
                           const std::string& PatientName);
@@ -75,6 +80,7 @@ namespace pulse::study::patient_variability
     ParameterIteration<double>    m_AirwayObstructionSeverity;
     ParameterIteration<double>    m_HemorrhageSeverity;
     ParameterIteration<size_t>    m_HemorrhageWound;
+    ParameterIteration<double>    m_TBISeverity;
     ParameterIteration<double>    m_TensionPneumothoraxSeverity;
     ParameterIteration<double>    m_InsultDuration_s;
     ParameterIteration<double>    m_SalineAvailable;
@@ -83,6 +89,7 @@ namespace pulse::study::patient_variability
     // Stateless
     SEAdvanceTime         m_Adv2Insult;
     SEAirwayObstruction   m_AirwayObstruction;
+    SEBrainInjury         m_BrainInjury;
     SEHemorrhage          m_Hemorrhage;
     SETensionPneumothorax m_TensionPneumothorax;
     SEAdvanceTime         m_Adv2Intervention;

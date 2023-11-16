@@ -1,9 +1,11 @@
 {
-  "Name": "NorNorepinephrine",
-  "Description": "Inject standard patient with NorNorepinephrine.",
+  "Name": "Norepinephrine",
+  "Description": "Inject standard patient with Norepinephrine.",
   "PatientConfiguration": { "PatientFile": "StandardMale.json" },
   "DataRequestFile": [
-    "StandardDataRequests.json"
+    "StandardDataRequests.json",
+    "DrugDataRequests.json",
+    "NervousDataRequests.json"
   ],
   "DataRequestManager": {
     "DataRequest":

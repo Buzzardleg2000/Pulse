@@ -63,7 +63,7 @@ void HowToCardiovascularMechanicsModification()
 
   SECardiovascularMechanicsModification config;
   SECardiovascularMechanicsModifiers& mechanics = config.GetModifiers();
-  mechanics.GetHeartRateMultiplier().SetValue(1.05);
+  mechanics.GetHeartRateMultiplier().SetValue(2.0);
   // By default, the engine will run a stabilization stage to get to a new homeostatis based on the provided modifiers
   // You can listen to the Stabilization event to see when the stabilization stage ends(and starts)
   // If you are slowly modifying the system with your own logic, and don't want the stabilization stage to run

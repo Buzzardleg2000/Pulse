@@ -592,7 +592,7 @@ namespace pulse
     //Translate Diastolic and Systolic Pressure to pulse pressure and mean pressure
     double deltaMeanPressure_mmHg = (2 * deltaDiastolicBP_mmHg + deltaSystolicBP_mmHg) / 3;
 
-    double deltaPulsePressure_mmHg = (deltaSystolicBP_mmHg - deltaDiastolicBP_mmHg);
+    double deltaPulsePressure_mmHg = deltaSystolicBP_mmHg - deltaDiastolicBP_mmHg;
 
     //Bound things that are fractions
     sedationLevel = LIMIT(sedationLevel, 0.0, 1.0);

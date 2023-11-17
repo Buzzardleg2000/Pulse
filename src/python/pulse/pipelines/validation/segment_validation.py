@@ -65,8 +65,11 @@ def evaluate(seg_id: int, tgt: SESegmentValidationTarget, results: SEDataRequest
 
     result = results.get_segment(seg_id)
     if result is None:
-        raise Exception("Could not find result for segment " + str(seg_id))
-    engine_val = result.values[results.get_header_index(header)]
+        raise ValueError(f"Could not find result for segment {seg_id}")
+    header_idx = results.get_header_index(header)
+    if header_idx is None:
+        raise ValueError(f"Could not find results for {header} in segment {seg_id}")
+    engine_val = result.values[header_idx]
 
     # Convert to validation unit if needed
     paren_idx = header.find("(")

@@ -11,6 +11,8 @@ from enum import Enum
 from pathlib import Path
 
 from pulse.cdm.engine import eSwitch
+from pulse.cdm.scenario import SEScenarioExecStatus
+from pulse.cdm.io.scenario import serialize_scenario_exec_status_list_to_file
 from pulse.cdm.validation import SESegmentValidationPipelineConfig
 from pulse.cdm.io.validation import serialize_segment_validation_pipeline_config_from_file
 from pulse.cdm.utils.markdown import process_file
@@ -124,16 +126,32 @@ def segment_validation_pipeline(xls_file: Path, exec_opt: eExecOpt, use_test_res
 
     # Run scenarios if we are running full pipeline
     if exec_opt is eExecOpt.Full:
+        sce_exec = PulseScenarioExec()
+        sce_exec.set_log_to_console(eSwitch.Off)
+
         # Get list of all scenarios
-        scenarios = [item.name for item in scenario_dir.glob("*")
-                     if not item.is_dir() and "-ValidationTargets.json" not in item.name]
+        scenarios = [
+            item.name for item in scenario_dir.glob("*")
+            if not item.is_dir() and "-ValidationTargets.json" not in item.name and \
+                "-ExecStatus.json" not in item.name
+        ]
+
+        # Create exec statuses for each scenario
+        sce_list = []
         for scenario in scenarios:
             scenario_file = scenario_dir / scenario
-            sce_exec = PulseScenarioExec()
-            sce_exec.set_log_to_console(eSwitch.On)
-            sce_exec.set_scenario_filename(scenario_file.as_posix())
-            if not sce_exec.execute_scenario():
-                _pulse_logger.warning(f"Scenario {scenario} was not successfully run.")
+
+            sce_status = SEScenarioExecStatus()
+            sce_status.set_scenario_filename(scenario_file.as_posix())
+            sce_list.append(sce_status)
+
+        # Save statuses to file to send over to C++ for parallel execution
+        sce_exec_list_file = scenario_dir / f"{xls_basename}-ExecStatus.json"
+        serialize_scenario_exec_status_list_to_file(sce_list, sce_exec_list_file)
+        sce_exec.set_scenario_exec_list_filename(sce_exec_list_file.as_posix())
+        _pulse_logger.info("Executing scenarios")
+        if not sce_exec.execute_scenario():
+            _pulse_logger.warning(f"Scenarios not successfully run. Check {sce_exec_list_file} for details")
 
     plots = None
     if plots_file is not None:

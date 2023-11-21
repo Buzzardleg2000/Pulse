@@ -84,11 +84,15 @@ def segment_validation_pipeline(xls_file: Path, exec_opt: eExecOpt, use_test_res
     # It is assumed the json and md file names are the same, just different extension
 
     md_files = []
-    sheets.insert(0, xls_basename)
+    base_md = Path(xls_dir / f"{xls_basename}.md")
+    if not base_md.is_file():
+        base_md = Path(get_root_dir()) / "docs" / "Validation" / f"{xls_basename}.md"
+    if base_md.is_file():
+        md_files.append(base_md)
     for sheet in sheets:
-        md_file = Path(xls_dir / (xls_basename + "-" + sheet + ".md"))
+        md_file = Path(xls_dir / f"{xls_basename}-{sheet}.md")
         if not md_file.is_file():
-            md_file = Path(get_root_dir()) / "docs" / "Validation" / (sheet + ".md")
+            md_file = Path(get_root_dir()) / "docs" / "Validation" / f"{sheet}.md"
             if not md_file.is_file():
                 md_file = None
         if md_file is not None:
@@ -99,9 +103,9 @@ def segment_validation_pipeline(xls_file: Path, exec_opt: eExecOpt, use_test_res
         _pulse_logger.error(f"Could not find md files, at least one should be in:")
         _pulse_logger.error(f"The same dir as the xlsx, or in your source/docs/Validation directory")
         sys.exit(1)
-    plots_file = Path(xls_dir / (xls_basename + ".json"))
+    plots_file = Path(xls_dir / f"{xls_basename}.json")
     if not plots_file.is_file():
-        plots_file = Path(get_root_dir()) / "docs" / "Validation" / (xls_basename + ".json")
+        plots_file = Path(get_root_dir()) / "docs" / "Validation" / f"{xls_basename}.json"
     if not plots_file.is_file():
         plots_file = None
     # Is there a custom bib file
@@ -114,7 +118,7 @@ def segment_validation_pipeline(xls_file: Path, exec_opt: eExecOpt, use_test_res
         for image in images:
             ext = [".jpg", ".png"]
             if image.endswith(tuple(ext)):
-                image_dir = Path("./docs/html/Images/"+xls_basename)
+                image_dir = Path(f"./docs/html/Images/{xls_basename}")
                 image_dir.mkdir(parents=True, exist_ok=True)
                 shutil.copy(image, str(image_dir))
 

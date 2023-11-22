@@ -5,6 +5,7 @@ import re
 import sys
 import json
 import logging
+import faulthandler
 from enum import Enum
 from pathlib import Path
 from multiprocessing import Pool
@@ -115,11 +116,13 @@ class GCSObservationModule(SEObservationReportModule):
     """
     Approximates GCS score from BrainInjury severity.
     """
-    __slots__ = ("_gcs")
+    __slots__ = ("_gcs", "_command_responsiveness", "_conscious")
 
     def __init__(self):
         super().__init__()
         self._gcs = 15
+        self._command_responsiveness = True
+        self._conscious = True
 
     def handle_action(self, action: str, action_time: SEScalarTime) -> None:
         """
@@ -140,26 +143,48 @@ class GCSObservationModule(SEObservationReportModule):
 
             if action_severity == 0:
                 self._gcs = 15
+                self._command_responsiveness = True
+                self._conscious = True
             elif action_severity <= 0.1:
                 self._gcs = 14
+                self._command_responsiveness = True
+                self._conscious = True
             elif action_severity <= 0.2:
                 self._gcs = 14
+                self._command_responsiveness = True
+                self._conscious = True
             elif action_severity <= 0.3:
                 self._gcs = 13
+                self._command_responsiveness = True
+                self._conscious = True
             elif action_severity <= 0.4:
                 self._gcs = 12
+                self._command_responsiveness = True
+                self._conscious = True
             elif action_severity <= 0.5:
                 self._gcs = 10
+                self._command_responsiveness = False
+                self._conscious = True
             elif action_severity <= 0.6:
                 self._gcs = 9
+                self._command_responsiveness = False
+                self._conscious = True
             elif action_severity <= 0.7:
                 self._gcs = 8
+                self._command_responsiveness = False
+                self._conscious = True
             elif action_severity <= 0.8:
                 self._gcs = 6
+                self._command_responsiveness = False
+                self._conscious = False
             elif action_severity <= 0.9:
                 self._gcs = 4
+                self._command_responsiveness = False
+                self._conscious = False
             else:
                 self._gcs = 3
+                self._command_responsiveness = False
+                self._conscious = False
 
 
 class WalkAbilityObservationModule(GCSObservationModule):
@@ -167,11 +192,15 @@ class WalkAbilityObservationModule(GCSObservationModule):
     Attempts to determine if the patient would have the ability to walk based on
     applied actions and approximated GCS.
     """
-    __slots__ = ("_walk_ability")
+    __slots__ = ("_walk_ability",
+                 "_hemorrhage_type",
+                 "_airway_maneuverable")
 
     def __init__(self):
         super().__init__()
         self._walk_ability = True
+        self._hemorrhage_type = None
+        self._airway_maneuverable = True
 
     def handle_action(self, action: str, action_time: SEScalarTime) -> None:
         super().handle_action(action=action, action_time=action_time)
@@ -188,35 +217,51 @@ class WalkAbilityObservationModule(GCSObservationModule):
             if "Severity" in action_data[PATIENT_ACTION][action_name]:
                 action_severity = action_data[PATIENT_ACTION][action_name]["Severity"]["Scalar0To1"]["Value"]
 
-        # TODO: Do we care about e.g what extremity the hemorrhage is on?
-        # TODO: Address interventions returning walk ability
-        if (
-            action_name == "AirwayObstruction" and action_severity >= 0.6 or \
-            action_name == "Hemorrhage" and action_severity >= 0.6 or \
-            action_name == "TensionPneumothorax" and action_severity > 0.6 or \
-            self._gcs <= 10
-        ):
+        if self._gcs <= 10:
             self._walk_ability = False
+
+        if action_name == "Hemorrhage":
+            if action_severity <= 0.29:
+                self._hemorrhage_type = "mild"
+            elif action_severity <= 0.59:
+                self._hemorrhage_type = "moderate"
+            else:
+                self._hemorrhage_type = "severe"
+            if action_severity >= 0.49:
+                self._walk_ability = False
+
+        if action_name == "AirwayObstruction":
+            if action_severity >= 0.59:
+                self._walk_ability = False
+                if action_severity >= 0.89:
+                    self._airway_maneuverable = False
+
+        if action_name == "TensionPneumothorax":
+            if action_severity > 0.59:
+                self._walk_ability = False
 
 
 class STARTObservationModule(WalkAbilityObservationModule):
     """
     Computes tag color indicated by the START algorithm at the observation timestep.
     """
-    RR_Per_min = "RespirationRate(1/min)"
-    SAP_mmHg = "SystolicArterialPressure(mmHg)"
+    HR_bpm = "HeartRate(1/min)"
+    RR_bpm = "RespirationRate(1/min)"
     PPI = "PeripheralPerfusionIndex"
-    BRAIN_VASC_O2PP_mmHg = "BrainVasculature-Oxygen-PartialPressure(mmHg)"
+    SBP_mmHg = "SystolicArterialPressure(mmHg)"
     SPO2 = "OxygenSaturation"
+    TV_mL = "TidalVolume(mL)"
+    #BRAIN_VASC_O2PP_mmHg = "BrainVasculature-Oxygen-PartialPressure(mmHg)"
 
     def __init__(self):
         super().__init__()
         self._headers = [
-            self.RR_Per_min,
-            self.SAP_mmHg,
+            self.HR_bpm,
+            self.RR_bpm,
             self.PPI,
-            self.BRAIN_VASC_O2PP_mmHg,
-            self.SPO2
+            self.SBP_mmHg,
+            self.SPO2,
+            self.TV_mL
         ]
 
     def update(self, data_slice: NamedTuple, slice_idx: Dict[str, int]) -> Iterable[Tuple[Hashable, Any]]:
@@ -232,35 +277,81 @@ class STARTObservationModule(WalkAbilityObservationModule):
                 "MINOR": "Green"},
             type=str
         )
+        results = [("GCS", self._gcs)]
 
-        triage_status = None
+
         if self._walk_ability:
-            triage_status = triage_category.MINOR
-        elif data_slice[slice_idx[self.RR_Per_min]] == 0:
-            triage_status = triage_category.EXPECTANT
-        elif data_slice[slice_idx[self.RR_Per_min]] > 30:
-            triage_status = triage_category.IMMEDIATE
-        elif data_slice[slice_idx[self.SAP_mmHg]] < 85.1:
-            triage_status = triage_category.IMMEDIATE
-        # PPI is serving as a replacement for capillary refill time (CRT)
-        elif data_slice[slice_idx[self.PPI]] < 0.003:
-            triage_status = triage_category.IMMEDIATE
-        elif self._gcs <= 8:
-            triage_status = triage_category.IMMEDIATE
-        elif data_slice[slice_idx[self.BRAIN_VASC_O2PP_mmHg]] < 19:
-            triage_status = triage_category.IMMEDIATE
-        elif self._gcs <= 12:
-            triage_status = triage_category.DELAYED
-        elif data_slice[slice_idx[self.SPO2]] < .92:
-            triage_status = triage_category.DELAYED
-        else:
-            triage_status = triage_category.MINOR
+            results.append(("START", triage_category.MINOR))
+            results.append(("Description", "Patient is able to walk to the designated safety area."))
+            return results
 
-        return [
-            ("GCS", self._gcs),
-            ("walk_ability", self._walk_ability),
-            ("START", triage_status)
-        ]
+        rr = data_slice[slice_idx[self.RR_bpm]]
+        hr = data_slice[slice_idx[self.HR_bpm]]
+        sbp = data_slice[slice_idx[self.SBP_mmHg]]
+        # spO2 = data_slice[slice_idx[self.SPO2]]
+        # tv = data_slice[slice_idx[self.TV_mL]]
+
+        description = ""
+        triage_status = None
+
+        if sbp < 85.1:
+            self._conscious = False;
+        if self._conscious:
+            description = "The patient is conscious. "
+        else:
+            description = "The patient is unconscious. "
+
+        if rr < 12:
+            if rr <= 3:
+                if self._airway_maneuverable:
+                    description += "Patient was not breathing. "
+                    description += "By repositioning the airway, the patient is now breathing again. "
+                    triage_status = triage_category.IMMEDIATE if triage_status is None else triage_status
+                else:
+                    description += "Patient is not breathing. Repositioning the airway did not help. "
+                    triage_status = triage_category.EXPECTANT if triage_status is None else triage_status
+            else:
+                description += "Patient in breathing slowly. "
+        elif rr >= 30:
+            description += "Patient is breathing too fast, respiration rate looks greater than 30. "
+            triage_status = triage_category.IMMEDIATE if triage_status is None else triage_status
+        elif 18 >= rr >= 12:
+            description += "Patient is breathing normally. "
+        else:
+            description += "Patient is breathing fast, respiration rate looks be less than 30. "
+
+        if self._hemorrhage_type is not None:
+            description += f"Patient has a {self._hemorrhage_type} hemorrhage. "
+            description += "You have used a tourniquet to stop the bleeding. "
+
+        if sbp < 85.1:
+            triage_status = triage_category.IMMEDIATE if triage_status is None else triage_status
+            description += "No radial pulse can be detected on the patient. "
+        else:
+            if hr > 100:
+                description += "Patient pulse is abnormally high. "
+            elif hr < 60:
+                description += "Patient pulse is abnormally slow. "
+            else:
+                description += "Patient pulse is within the normal range. "
+
+
+        # PPI is serving as a replacement for capillary refill time (CRT)
+        if data_slice[slice_idx[self.PPI]] < 0.003:
+            triage_status = triage_category.IMMEDIATE if triage_status is None else triage_status
+            description += "Capillary refill time is more than 3 seconds. "
+
+
+        if self._conscious and self._command_responsiveness:
+            triage_status = triage_category.DELAYED if triage_status is None else triage_status
+            description += "The patient is able to follow basic commands."
+        else:
+            triage_status = triage_category.IMMEDIATE if triage_status is None else triage_status
+            description += "The patient is not able to follow basic commands."
+
+        results.append(("Description", description))
+        results.append(("START", triage_status))
+        return results
 
 
 class BCDTriageSieveObservationModule(WalkAbilityObservationModule):
@@ -564,9 +655,9 @@ class TCCCDeathCheckModule(SETimestepReportModule):
         else:
             self._spO2_deficit = False
 
-        if data_slice[slice_idx[self.SAP_mmHg]] < 60:
-            self._survived = False
-            raise StopIteration(f"Patient died from SBP < 60 @{curr_time_s}s")
+        #if data_slice[slice_idx[self.SAP_mmHg]] < 60:
+        #    self._survived = False
+        #    raise StopIteration(f"Patient died from SBP < 60 @{curr_time_s}s")
 
     def report(self) -> Iterable[Tuple[Hashable, Any]]:
         """
@@ -625,12 +716,12 @@ class ITMScenarioReport(SEScenarioReport):
         # Report modules
         observation_modules = [
             VitalsObservationModule(vitals=vitals),
-            SigleSupplementObservationModule(),
+            #SigleSupplementObservationModule(),
             STARTObservationModule(),
-            BCDTriageSieveObservationModule(),
+            #BCDTriageSieveObservationModule(),
             ClinicalAbnormalityObservationModule(),
             TCCCActionsObservationModule(),
-            TCCCUnstructuredText(*unstructured_text_args, **unstructured_text_kwargs)
+            #TCCCUnstructuredText(*unstructured_text_args, **unstructured_text_kwargs)
         ]
         timestep_modules = None
         death_check_module = TCCCDeathCheckModule()
@@ -694,9 +785,10 @@ def generate_observations(injury_scenario: SEScenarioExecStatus) -> None:
 
 
 if __name__ == "__main__":
+    #faulthandler.enable()
     logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
 
-    mode = "test"
+    mode = "itm"
     if len(sys.argv) > 1:
         mode = sys.argv[1]
     injury_scenarios_list_filename = f"./test_results/patient_variability/{mode}/scenarios/tccc.json"
@@ -705,8 +797,14 @@ if __name__ == "__main__":
     injury_scenarios = []
     serialize_scenario_exec_status_list_from_file(injury_scenarios_list_filename, injury_scenarios)
 
+    print("Running "+str(len(injury_scenarios))+" scenarios")
+    i = 0
     for injury_scenario in injury_scenarios:
+        #if "AO0.9_H0_TBI0_TP0_D0s.json" in injury_scenario.get_scenario_filename():
+        #    pass
         generate_observations(injury_scenario)
+        print(str(i))
+        i += 1
 
     """
     # TODO: Ask number of processes

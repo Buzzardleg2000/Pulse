@@ -1,7 +1,6 @@
 # Distributed under the Apache License, Version 2.0.
 # See accompanying NOTICE file for details.
 
-import math, copy
 from enum import Enum
 import PyPulse
 from pulse.cdm.patient import SEPatient, SEPatientConfiguration
@@ -14,8 +13,10 @@ from pulse.cdm.io.engine import serialize_actions_to_string, \
                                 serialize_active_event_list_from_string, \
                                 serialize_log_messages_from_string
 from pulse.cdm.io.patient import serialize_patient_from_string
+from pulse.engine.io.PulseConfiguration import serialize_pulse_configuration_to_string
 from pulse.cdm.scalars import ElectricPotentialUnit, FrequencyUnit, \
                               PressureUnit, TemperatureUnit, VolumeUnit, VolumePerTimeUnit
+from pulse.engine import PulseConfiguration
 
 class eModelType(Enum):
     HumanAdultWholeBody = 0
@@ -85,6 +86,10 @@ class PulseEngine:
         if self._is_ready:
             return self.__pulse.serialize_to_string(format)
         return None
+
+    def set_configuration_override(self, cfg: PulseConfiguration) -> bool:
+        json = serialize_pulse_configuration_to_string(cfg, eSerializationFormat.JSON)
+        return self.__pulse.set_configuration_override(json, PyPulse.serialization_format.json)
 
     def initialize_engine(self, patient_configuration: SEPatientConfiguration,
                                 data_request_mgr: SEDataRequestManager):

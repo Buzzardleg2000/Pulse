@@ -1,5 +1,6 @@
 # Distributed under the Apache License, Version 2.0.
 # See accompanying NOTICE file for details.
+
 from enum import Enum
 from pulse.cdm.scalars import SEScalar, SEScalar0To1, SEScalarArea, SEScalarFrequency, SEScalarLength, \
                               SEScalarMass, SEScalarMassPerTime, SEScalarMassPerVolume, SEScalarPower, \

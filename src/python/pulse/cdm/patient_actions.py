@@ -58,6 +58,9 @@ class SEAcuteRespiratoryDistressSyndromeExacerbation(SEPatientAction):
             self._severities[cmpt] = s
         return s
 
+    def get_severities(self):
+        return self._severities
+
     def __repr__(self):
         out = "Acute Respiratory Distress Syndrome Exacerbation\n";
         for c, s in self._severities.items():

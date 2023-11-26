@@ -462,22 +462,6 @@ namespace pulse
     if (!m_Config->IsPDEnabled())
       Info("PD IS DISABLED!!!!");
 
-    // Now we can check the config
-    if (m_Config->IsWritingPatientBaselineFile())
-    {
-      std::string out = m_Config->GetInitialPatientBaselineFilepath();
-      if (out.empty())
-      {
-        out = m_DataDir + "/stable/";
-        MakeDirectory(out.c_str());
-        m_CurrentPatient->SerializeToFile(out + m_CurrentPatient->GetName() + ".json");
-      }
-      else
-      {
-        m_CurrentPatient->SerializeToFile(out);
-      }
-    }
-
     // This will also Initialize the environment
     // Due to needing the initial environment values for circuits to construct properly
     Info("Creating Circuits and Compartments");

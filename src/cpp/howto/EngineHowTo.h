@@ -21,6 +21,7 @@ void HowToBagValveMask();
 void HowToBolusDrug();
 void HowToBrainInjury();
 void HowToCardiovascularMechanicsModification();
+void HowToCardiovascularMechanicsModificationAnalysis();
 void HowToCombatMultitrauma();
 void HowToConsumeNutrients();
 void HowToCOPD();

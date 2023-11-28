@@ -3893,48 +3893,9 @@ namespace pulse
       }
     }
 
-    //------------------------------------------------------------------------------------------------------
-    //Collapsing lung (e.g., pneumothorax and hemothorax
-    double rightLungDiffusionScalingFactor = 1.0;
-    double leftLungDiffusionScalingFactor = 1.0;
-
-    double rightLungRatio = m_data.GetCurrentPatient().GetRightLungRatio().GetValue();
-    double leftLungRatio = 1.0 - rightLungRatio;
-    for (unsigned int iterLung = 0; iterLung < 2; iterLung++)
-    {
-      //0 = right lung, 1 = left lung
-      double lungRatio = 0.0;
-      double lungVolume_L = 0.0;
-
-      if (iterLung == 0) //right lung
-      {
-        lungRatio = rightLungRatio;
-        lungVolume_L = m_RightLung->GetVolume(VolumeUnit::L);
-      }
-      else //left lung
-      {
-        lungRatio = leftLungRatio;
-        lungVolume_L = m_LeftLung->GetVolume(VolumeUnit::L);
-      }
-
-      double functionalResidualCapacity_L = m_data.GetCurrentPatient().GetFunctionalResidualCapacity(VolumeUnit::L) * lungRatio;
-      double residualVolume_L = m_data.GetCurrentPatient().GetResidualVolume(VolumeUnit::L) * lungRatio;
-
-      if (lungVolume_L < functionalResidualCapacity_L - 0.01) //0.01 is fudge factor to prevent hitting this when healthy
-      {
-        double severity = 0.0;
-        severity = 1.0 - (lungVolume_L - residualVolume_L) / (functionalResidualCapacity_L - residualVolume_L);
-        severity = LIMIT(severity, 0.0, 1.0);
-        if (iterLung == 0) //right lung
-        {
-          rightLungDiffusionScalingFactor = GeneralMath::ExponentialDecayFunction(10, 0.1, 1.0, severity);
-        }
-        else //left lung
-        {
-          leftLungDiffusionScalingFactor = GeneralMath::ExponentialDecayFunction(10, 0.1, 1.0, severity);
-        }
-      }
-    }
+    double totalScalingFactor = 1.0;
+    double damageScalingFactor = 1.0;
+    double recruitmentScalingFactor = 1.0;
 
     double totalBaselineAlveoliVolume_L = 0.0;
     for (auto& itr : m_LungComponents)
@@ -3954,27 +3915,43 @@ namespace pulse
       double alveoliVolumeBaseline_L = cpt.AlveoliNode->GetVolumeBaseline(VolumeUnit::L);
       double alveoliVolumeRatio = alveoliVolumeBaseline_L / totalBaselineAlveoliVolume_L;
       double initialAlveoliDiffusionArea_cm2 = initialPatientAlveoliDiffusionArea_cm2 * alveoliVolumeRatio;
+      double residualVolume_L = m_data.GetInitialPatient().GetResidualVolume(VolumeUnit::L);
 
       //------------------------------------------------------------------------------------------------------
-      //Apply collapsed lung effects
-      double gasDiffusionScalingFactor = cpt.Side == eSide::Right ? rightLungDiffusionScalingFactor : leftLungDiffusionScalingFactor;
+      //Restrictive - includes recruitment effects
+      //------------------------------------------------------------------------------------------------------
 
       //------------------------------------------------------------------------------------------------------
-      //COPD
+      //Lung recruitment
+      //Alveoli volume decreases cause more shunting, such as with ARDS
+      //Collapsed lung causes more shunting, such as with pneumothorax and hemothorax
+      //Aeration improves when mechanically ventilated with increased PEEP
+
+      double alveoliVolume_L = cpt.AlveoliNode->GetNextVolume(VolumeUnit::L);
+      double cptResidualVolume_L = residualVolume_L * alveoliVolumeRatio;
+
+      //0.01 is sensitivity factor to prevent hitting this when healthy
+      double recruitedFraction = (alveoliVolume_L - cptResidualVolume_L + 0.01) / (alveoliVolumeBaseline_L - cptResidualVolume_L);
+      recruitedFraction = LIMIT(recruitedFraction, 0.0, 1.0);
+
+      recruitmentScalingFactor = GeneralMath::ExponentialDecayFunction(10, 0.1, 1.0, 1.0 - recruitedFraction);
+
+      //------------------------------------------------------------------------------------------------------
+      //ARDS
       //Exacerbation will overwrite the condition, even if it means improvement
-      if (m_data.GetConditions().HasChronicObstructivePulmonaryDisease() || m_PatientActions->HasChronicObstructivePulmonaryDiseaseExacerbation())
+      if (m_data.GetConditions().HasAcuteRespiratoryDistressSyndrome() || m_PatientActions->HasAcuteRespiratoryDistressSyndromeExacerbation())
       {
-        double emphysemaSeverity = 0.0;
-        if (m_PatientActions->HasChronicObstructivePulmonaryDiseaseExacerbation())
+        double severity = 0.0;
+        if (m_PatientActions->HasAcuteRespiratoryDistressSyndromeExacerbation())
         {
-          emphysemaSeverity = m_PatientActions->GetChronicObstructivePulmonaryDiseaseExacerbation().GetEmphysemaSeverity(cmpt).GetValue();
+          severity = m_PatientActions->GetAcuteRespiratoryDistressSyndromeExacerbation().GetSeverity(cmpt).GetValue();
         }
         else
         {
-          emphysemaSeverity = m_data.GetConditions().GetChronicObstructivePulmonaryDisease().GetEmphysemaSeverity(cmpt).GetValue();
+          severity = m_data.GetConditions().GetAcuteRespiratoryDistressSyndrome().GetSeverity(cmpt).GetValue();
         }
 
-        gasDiffusionScalingFactor = MIN(gasDiffusionScalingFactor, GeneralMath::ExponentialDecayFunction(10, 0.15, 1.0, emphysemaSeverity));
+        damageScalingFactor = MIN(damageScalingFactor, GeneralMath::ExponentialDecayFunction(10, 0.1, 1.0, severity));
       }
 
       //------------------------------------------------------------------------------------------------------
@@ -3992,7 +3969,7 @@ namespace pulse
           severity = m_data.GetConditions().GetPneumonia().GetSeverity(cmpt).GetValue();
         }
 
-        gasDiffusionScalingFactor = MIN(gasDiffusionScalingFactor, GeneralMath::ExponentialDecayFunction(10, 0.1, 1.0, severity));
+        damageScalingFactor = MIN(damageScalingFactor, GeneralMath::ExponentialDecayFunction(10, 0.1, 1.0, severity));
       }
 
       //------------------------------------------------------------------------------------------------------
@@ -4001,28 +3978,46 @@ namespace pulse
       {
         double severity = m_data.GetConditions().GetPulmonaryFibrosis().GetSeverity().GetValue();
 
-        gasDiffusionScalingFactor = MIN(gasDiffusionScalingFactor, GeneralMath::ExponentialDecayFunction(10, 0.1, 1.0, severity));
+        damageScalingFactor = MIN(damageScalingFactor, GeneralMath::ExponentialDecayFunction(10, 0.1, 1.0, severity));
       }
 
       //------------------------------------------------------------------------------------------------------
-      //ARDS
+      //Combine effects
+      totalScalingFactor = recruitmentScalingFactor * 0.5 + damageScalingFactor * 0.5; //Factors must sum to 1.0
+
+      //------------------------------------------------------------------------------------------------------
+      //Obstructive - does not includes recruitment effects
+      //------------------------------------------------------------------------------------------------------
+
+      //------------------------------------------------------------------------------------------------------
+      //COPD
       //Exacerbation will overwrite the condition, even if it means improvement
-      if (m_data.GetConditions().HasAcuteRespiratoryDistressSyndrome() || m_PatientActions->HasAcuteRespiratoryDistressSyndromeExacerbation())
+      if (m_data.GetConditions().HasChronicObstructivePulmonaryDisease() || m_PatientActions->HasChronicObstructivePulmonaryDiseaseExacerbation())
       {
-        double severity = 0.0;
-        if (m_PatientActions->HasAcuteRespiratoryDistressSyndromeExacerbation())
+        double emphysemaSeverity = 0.0;
+        if (m_PatientActions->HasChronicObstructivePulmonaryDiseaseExacerbation())
         {
-          severity = m_PatientActions->GetAcuteRespiratoryDistressSyndromeExacerbation().GetSeverity(cmpt).GetValue();
+          emphysemaSeverity = m_PatientActions->GetChronicObstructivePulmonaryDiseaseExacerbation().GetEmphysemaSeverity(cmpt).GetValue();
         }
         else
         {
-          severity = m_data.GetConditions().GetAcuteRespiratoryDistressSyndrome().GetSeverity(cmpt).GetValue();
+          emphysemaSeverity = m_data.GetConditions().GetChronicObstructivePulmonaryDisease().GetEmphysemaSeverity(cmpt).GetValue();
         }
 
-        gasDiffusionScalingFactor = MIN(gasDiffusionScalingFactor, GeneralMath::ExponentialDecayFunction(10, 0.1, 1.0, severity));
+        totalScalingFactor = MIN(totalScalingFactor, GeneralMath::ExponentialDecayFunction(10, 0.15, 1.0, emphysemaSeverity));
       }
 
-      double alveoliDiffusionArea_cm2 = initialAlveoliDiffusionArea_cm2 * gasDiffusionScalingFactor;
+      //------------------------------------------------------------------------------------------------------
+      double alveoliDiffusionArea_cm2 = initialAlveoliDiffusionArea_cm2 * totalScalingFactor;
+      double perviousAlveoliDiffusionArea_cm2 = alveoliCompartment->GetDiffusionSurfaceArea(AreaUnit::cm2);
+
+      if (m_data.GetState() > EngineState::InitialStabilization) //Only dampen response if we're not initializing
+      {
+        //Dampen the change to prevent potential craziness
+        //It will only change a fraction as much as it wants to each time step to ensure it's critically damped and doesn't overshoot
+        double dampenFraction_perSec = 0.001 * 50.0;
+        alveoliDiffusionArea_cm2 = GeneralMath::Damper(alveoliDiffusionArea_cm2, perviousAlveoliDiffusionArea_cm2, dampenFraction_perSec, m_data.GetTimeStep_s());
+      }
       alveoliCompartment->GetDiffusionSurfaceArea().SetValue(alveoliDiffusionArea_cm2, AreaUnit::cm2);
 
       totalAlveoliDiffusionArea_cm2 += alveoliDiffusionArea_cm2;
@@ -4112,42 +4107,40 @@ namespace pulse
       }
     }
 
+    double residualVolume_L = m_data.GetInitialPatient().GetResidualVolume(VolumeUnit::L);
+
+    double totalBaselineAlveoliVolume_L = 0.0;
+    for (auto& itr : m_LungComponents)
+    {
+      LungComponent& cpt = itr.second;
+      totalBaselineAlveoliVolume_L += cpt.AlveoliNode->GetVolumeBaseline(VolumeUnit::L);
+    }
+
     for (auto& itr : m_LungComponents)
     {
       eLungCompartment cmpt = itr.first;
       LungComponent& cpt = itr.second;
 
+      SEFluidCircuitNode* alveoliNode = cpt.AlveoliNode;
       SEFluidCircuitPath* shuntPath = cpt.ShuntPath;
 
-      double combinedSeverity = 0.0;
-      double scalingFactor = 1.0;
+      double combinedSeverity = 0.0; //Damage and fluid effects
+      double recruitedFraction = 1.0; //Recruitment effects
 
       //------------------------------------------------------------------------------------------------------
-      //Positive Pressure Ventilation
-      if (m_data.GetAirwayMode() == eAirwayMode::AnesthesiaMachine ||
-        m_data.GetAirwayMode() == eAirwayMode::MechanicalVentilation ||
-        m_data.GetAirwayMode() == eAirwayMode::MechanicalVentilator)
-      {
-        scalingFactor = 0.45;
-      }
+      //Lung recruitment
+      //Alveoli volume decreases cause more shunting, such as with ARDS
+      //Collapsed lung causes more shunting, such as with pneumothorax and hemothorax
+      //Aeration improves when mechanically ventilated with increased PEEP
 
-      //------------------------------------------------------------------------------------------------------
-      //PulmonaryShunt
-      //Exacerbation will overwrite the condition, even if it means improvement
-      if (m_data.GetConditions().HasPulmonaryShunt() || m_PatientActions->HasPulmonaryShuntExacerbation())
-      {
-        double severity = 0.0;
-        if (m_PatientActions->HasPulmonaryShuntExacerbation())
-        {
-          severity = m_PatientActions->GetPulmonaryShuntExacerbation().GetSeverity().GetValue();
-        }
-        else
-        {
-          severity = m_data.GetConditions().GetPulmonaryShunt().GetSeverity().GetValue();
-        }
+      double alveoliVolumeBaseline_L = alveoliNode->GetVolumeBaseline(VolumeUnit::L);
+      double alveoliVolumeRatio = alveoliVolumeBaseline_L / totalBaselineAlveoliVolume_L;
+      double alveoliVolume_L = alveoliNode->GetNextVolume(VolumeUnit::L);
+      double cptResidualVolume_L = residualVolume_L * alveoliVolumeRatio;
 
-        combinedSeverity = severity;
-      }
+      //0.01 is sensitivity factor to prevent hitting this when healthy
+      recruitedFraction = (alveoliVolume_L - cptResidualVolume_L + 0.01) / (alveoliVolumeBaseline_L - cptResidualVolume_L);
+      recruitedFraction = LIMIT(recruitedFraction, 0.0, 1.0);
 
       //------------------------------------------------------------------------------------------------------
       //Pneumonia
@@ -4186,38 +4179,33 @@ namespace pulse
       }
 
       //------------------------------------------------------------------------------------------------------
-      //Collapsed lung - Pneumothorax and Hemothorax
-      double rightLungRatio = m_data.GetCurrentPatient().GetRightLungRatio().GetValue();
-      double leftLungRatio = 1.0 - rightLungRatio;
-      double functionalResidualCapacity_L = m_data.GetCurrentPatient().GetFunctionalResidualCapacity(VolumeUnit::L);
-      double residualVolume_L = m_data.GetCurrentPatient().GetResidualVolume(VolumeUnit::L);
+      //Combine effects
+      double recruitmentScalingFactor = GeneralMath::ExponentialDecayFunction(10, 0.02, 1.0, 1.0 - recruitedFraction);
+      double damageScalingFactor = GeneralMath::ExponentialDecayFunction(10, 0.02, 1.0, combinedSeverity);
+      double totalScalingFactor = recruitmentScalingFactor * 0.5 + damageScalingFactor * 0.5; //Factors must sum to 1.0
 
-      double leftLungVolume_L = m_LeftLung->GetVolume(VolumeUnit::L);
-      double rightLungVolume_L = m_RightLung->GetVolume(VolumeUnit::L);
-      double leftLungFunctionalResidualCapacity_L = functionalResidualCapacity_L * leftLungRatio;
-      double rightLungFunctionalResidualCapacity_L = functionalResidualCapacity_L * rightLungRatio;
-      double leftLungResidualVolume_L = residualVolume_L * leftLungRatio;
-      double rightLungResidualVolume_L = residualVolume_L * rightLungRatio;
+      //------------------------------------------------------------------------------------------------------
+      //PulmonaryShunt
+      //Exacerbation will overwrite the condition, even if it means improvement
+      if (m_data.GetConditions().HasPulmonaryShunt() || m_PatientActions->HasPulmonaryShuntExacerbation())
+      {
+        double severity = 0.0;
+        if (m_PatientActions->HasPulmonaryShuntExacerbation())
+        {
+          severity = m_PatientActions->GetPulmonaryShuntExacerbation().GetSeverity().GetValue();
+        }
+        else
+        {
+          severity = m_data.GetConditions().GetPulmonaryShunt().GetSeverity().GetValue();
+        }
 
-      double volumeSensitivity_L = 0.01;
-      if (cpt.Side == eSide::Left && leftLungVolume_L < leftLungFunctionalResidualCapacity_L - volumeSensitivity_L)
-      {
-        leftLungVolume_L = LIMIT(leftLungVolume_L, leftLungResidualVolume_L, leftLungFunctionalResidualCapacity_L);
-        //Linear function: Min = 0.0, Max = 0.8 (increasing with severity)
-        double leftLocalSeverity = GeneralMath::LinearInterpolator(leftLungResidualVolume_L, leftLungFunctionalResidualCapacity_L, 1.0, 0.0, leftLungVolume_L);
-        combinedSeverity = MAX(combinedSeverity, leftLocalSeverity);
-      }
-      if (cpt.Side == eSide::Right && rightLungVolume_L < rightLungFunctionalResidualCapacity_L - volumeSensitivity_L)
-      {
-        rightLungVolume_L = LIMIT(rightLungVolume_L, rightLungResidualVolume_L, rightLungFunctionalResidualCapacity_L);
-        //Linear function: Min = 0.0, Max = 0.8 (increasing with severity)
-        double rightLocalSeverity = GeneralMath::LinearInterpolator(rightLungResidualVolume_L, rightLungFunctionalResidualCapacity_L, 1.0, 0.0, rightLungVolume_L);
-        combinedSeverity = MAX(combinedSeverity, rightLocalSeverity);
+        double scalingFactor = GeneralMath::ExponentialDecayFunction(10, 0.02, 1.0, severity);
+        totalScalingFactor = MIN(totalScalingFactor, scalingFactor);
       }
 
       //------------------------------------------------------------------------------------------------------
       //Apply the shunt
-      scalingFactor = MIN(scalingFactor, GeneralMath::ExponentialDecayFunction(10, 0.02, 1.0, combinedSeverity));
+
       //Tuning factor for imbalanced shunt flow (due to unequal number of paths between left and right)
       //This is linearly interpolated with experimentally calibrated values
       double segmentedRightCalibratedValue = 1.8;
@@ -4225,15 +4213,17 @@ namespace pulse
       unsigned int numComponents = cpt.Side == eSide::Right ? numRightComponents : numLeftComponents;
       if (numComponents > 1)
       {
-        scalingFactor *= segmentedLeftCalibratedValue + (numComponents - double(numLeftComponents)) / (double(numRightComponents) - double(numLeftComponents)) * (segmentedRightCalibratedValue - segmentedLeftCalibratedValue);
+        totalScalingFactor *= segmentedLeftCalibratedValue + (numComponents - double(numLeftComponents)) / (double(numRightComponents) - double(numLeftComponents)) * (segmentedRightCalibratedValue - segmentedLeftCalibratedValue);
       }
 
       double previousShuntResistance_mmHg_s_Per_mL = shuntPath->GetResistance().GetValue(PressureTimePerVolumeUnit::mmHg_s_Per_mL);
       double shuntResistance_mmHg_s_Per_mL = shuntPath->GetNextResistance().GetValue(PressureTimePerVolumeUnit::mmHg_s_Per_mL);
+      double baselineShuntResistance_mmHg_s_Per_mL = shuntPath->GetResistanceBaseline().GetValue(PressureTimePerVolumeUnit::mmHg_s_Per_mL);
 
-      shuntResistance_mmHg_s_Per_mL *= scalingFactor;
+      shuntResistance_mmHg_s_Per_mL *= totalScalingFactor;
+      shuntResistance_mmHg_s_Per_mL = LIMIT(shuntResistance_mmHg_s_Per_mL, m_DefaultClosedResistance_cmH2O_s_Per_L, baselineShuntResistance_mmHg_s_Per_mL);
 
-      if (m_data.GetState() == EngineState::Active) //Only dampen response if we're not initializing
+      if (m_data.GetState() > EngineState::InitialStabilization) //Only dampen response if we're not initializing
       {
         //Dampen the change to prevent potential craziness
         //It will only change a fraction as much as it wants to each time step to ensure it's critically damped and doesn't overshoot

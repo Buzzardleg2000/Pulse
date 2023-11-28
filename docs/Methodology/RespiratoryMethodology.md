@@ -1525,7 +1525,7 @@ The %Respiratory Model outputs a number of system-level and compartment-level re
 Scenario Validation
 -------------------
 
-The actions and interventions associated with the %Respiratory System were validated quantitatively where possible and qualitatively elsewhere by comparing the engine output to expected trends and values. For each scenario, the table shows the total number of results in each category. For many investigated scenarios, the model shows good agreement with the expected trends. For the scenarios that did not match with the expected trends, improvements are planned for future engine releases. Many of the parameters that do not meet validation are specific to the cardiovascular system, including heart rate and blood pressures.
+The actions and interventions associated with the %Respiratory System were validated quantitatively where possible and qualitatively elsewhere by comparing the engine output to expected trends and values. For each scenario, the table shows the total number of results in each category. For many investigated scenarios, the model shows good agreement with the expected trends. For the scenarios that did not match with the expected trends, improvements are planned for future engine releases.
 
 <center><br>
 *@tabledef {cond_validation}. Cumulative validation results for %Respiratory specific conditions and actions scenarios.*

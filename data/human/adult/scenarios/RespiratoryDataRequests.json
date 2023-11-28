@@ -17,6 +17,7 @@
     { "DecimalFormat": { "Precision": 4 }, "Category": "Physiology", "PropertyName": "LungCompliance",                             "Unit": "L/cmH2O"   },
     { "DecimalFormat": { "Precision": 4 }, "Category": "Physiology", "PropertyName": "PeakInspiratoryPressure",                    "Unit": "cmH2O"     },
     { "DecimalFormat": { "Precision": 4 }, "Category": "Physiology", "PropertyName": "PhysiologicDeadSpace",                       "Unit": "mL"        },
+    { "DecimalFormat": { "Precision": 4 }, "Category": "Physiology", "PropertyName": "PhysiologicDeadSpaceTidalVolumeRatio",       "Unit": "unitless"  },
     { "DecimalFormat": { "Precision": 4 }, "Category": "Physiology", "PropertyName": "PositiveEndExpiratoryPressure",              "Unit": "cmH2O"     },
     { "DecimalFormat": { "Precision": 4 }, "Category": "Physiology", "PropertyName": "PulmonaryCompliance",                        "Unit": "L/cmH2O"   },
     { "DecimalFormat": { "Precision": 4 }, "Category": "Physiology", "PropertyName": "RespiratoryMuscleFatigue",                   "Unit": "unitless"  },

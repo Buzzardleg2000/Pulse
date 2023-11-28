@@ -234,7 +234,8 @@ def csv_plotter(csv: Path, benchmark: bool = False):
                 plot_actions=config.get_plot_actions(),
                 plot_events=config.get_plot_events(),
                 omit_actions_with=config.get_omit_actions_with(),
-                omit_events_with=config.get_omit_events_with()
+                omit_events_with=config.get_omit_events_with(),
+                count_limit=20
             )
             if ae:
                 config.set_legend_mode(eLegendMode.OnlyActionEventLegend)
@@ -367,7 +368,8 @@ def compare_plotter(plotter: SEComparePlotter, benchmark: bool = False):
                 plot_actions=config.get_plot_actions(),
                 plot_events=config.get_plot_events(),
                 omit_actions_with=config.get_omit_actions_with(),
-                omit_events_with=config.get_omit_events_with()
+                omit_events_with=config.get_omit_events_with(),
+                count_limit=20
             )
             if ae:
                 expected_source.set_actions_events(ae)
@@ -776,7 +778,8 @@ def create_plot(plot_sources: [SEPlotSource],
             plot_actions=plot_config.get_plot_actions(),
             plot_events=plot_config.get_plot_events(),
             omit_actions_with=plot_config.get_omit_actions_with(),
-            omit_events_with=plot_config.get_omit_events_with()
+            omit_events_with=plot_config.get_omit_events_with(),
+            count_limit=20
         ):
             color = next(action_event_fmt_cycler)['color']
             ax3.axvline(x=ae.time, color = color, label = f"{ae.category.name}:{ae.text}\nt={ae.time}")

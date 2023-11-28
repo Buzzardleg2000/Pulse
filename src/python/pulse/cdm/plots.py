@@ -611,10 +611,16 @@ class SEPlotSource():
 
         return True
     def get_actions_events(self, plot_actions: bool=True, plot_events: bool=True,
-            omit_actions_with: List[str]=[], omit_events_with: List[str]=[]
+            omit_actions_with: List[str]=None, omit_events_with: List[str]=None,
+            count_limit: int=None
     ) -> List[LogActionEvent]:
+        if omit_actions_with is None:
+            omit_actions_with = list()
+        if omit_events_with is None:
+            omit_events_with = list()
 
         filtered = []
+        ae_counts = {eActionEventCategory.ACTION: {}, eActionEventCategory.EVENT: {}}
         for ae in self._actions_events:
             if plot_actions and ae.category == eActionEventCategory.ACTION:
                 keep = True
@@ -624,6 +630,9 @@ class SEPlotSource():
                         break
                 if keep:
                     filtered.append(ae)
+                    if ae.name not in ae_counts[ae.category]:
+                        ae_counts[ae.category][ae.name] = 0
+                    ae_counts[ae.category][ae.name] += 1
             elif plot_events and ae.category == eActionEventCategory.EVENT:
                 keep = True
                 for o in omit_events_with:
@@ -632,6 +641,12 @@ class SEPlotSource():
                         break
                 if keep:
                     filtered.append(ae)
+                    if ae.name not in ae_counts[ae.category]:
+                        ae_counts[ae.category][ae.name] = 0
+                    ae_counts[ae.category][ae.name] += 1
+
+        if count_limit is not None:
+            filtered = [ae for ae in filtered if not ae_counts[ae.category][ae.name] > count_limit]
 
         return filtered
     def set_actions_events(self, actions_events: List[LogActionEvent]) -> None:

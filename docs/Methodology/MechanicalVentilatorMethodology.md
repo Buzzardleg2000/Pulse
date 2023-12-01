@@ -785,8 +785,8 @@ Table 22. Validation results for a scenario testing increased PEEP for improved 
 
 |	Segment	|	Notes	|	Action Occurrence Time (s)	|	Sampled Scenario Time (s)	|	Pulmonary Shunt (%)	|	Horowitz Index (mmHg)	|	Arterial Oxygen Partial Pressure (mmHg)	|	Arterial Carbon Dioxide Partial Pressure (mmHg)	|
 |	---	|	---	|	---	|	---	|	---	|	---	|	---	|	---	|
-|	Ventilate patient with moderate ARDS	|	Apneic and intubated; VC-CMV: RR = 15 bpm, I:E = 0.6, TV = 7 mL/kg(ideal), FIO2 = 0.5, PEEP = 5.0 cmH2O	|	30	|	330	|<span class="success">	33 +/- 15 @cite karbing2020changes	|<span class="success">	130 +/- 58 @cite karbing2020changes	|<span class="success">	Increase @cite karbing2020changes	|<span class="success">	No Change @cite musch2008relation	</span>|
-|	Increase PEEP	|	PEEP = 20.0 cmH2O	|	330	|	630	|<span class="success">	22 +/- 14 @cite karbing2020changes	</span>|<span class="success">	220 +/- 82 @cite karbing2020changes	</span>|<span class="success">	Increase @cite karbing2020changes	</span>|<span class="success">	No Change @cite musch2008relation	</span>|
+|	Ventilate patient with moderate ARDS	|	Apneic and intubated; VC-CMV: RR = 15 bpm, I:E = 0.6, TV = 7 mL/kg(ideal), FIO2 = 0.5, PEEP = 5.0 cmH2O	|	30	|	330	|<span class="success">	33 +/- 15 @cite karbing2020changes	</span>|<span class="success">	130 +/- 58 @cite karbing2020changes	</span>|<span class="success">	Increase @cite karbing2020changes	</span>|<span class="success">	No Change @cite musch2008relation	</span>|
+|	Increase PEEP	|	PEEP = 15.0 cmH2O	|	330	|	630	|<span class="success">	22 +/- 14 @cite karbing2020changes	</span>|<span class="success">	220 +/- 82 @cite karbing2020changes	</span>|<span class="success">	Increase @cite karbing2020changes	</span>|<span class="success">	No Change @cite musch2008relation	</span>|
 
 @anchor ventilator-conclusion
 ## Conclusion

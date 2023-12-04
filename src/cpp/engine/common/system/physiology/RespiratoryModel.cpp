@@ -3922,7 +3922,7 @@ namespace pulse
       //------------------------------------------------------------------------------------------------------
 
       //------------------------------------------------------------------------------------------------------
-      //Lung recruitment
+      //Acinar recruitment
       //Alveoli volume decreases cause more shunting, such as with ARDS
       //Collapsed lung causes more shunting, such as with pneumothorax and hemothorax
       //Aeration improves when mechanically ventilated with increased PEEP
@@ -3983,7 +3983,7 @@ namespace pulse
 
       //------------------------------------------------------------------------------------------------------
       //Combine effects
-      totalScalingFactor = recruitmentScalingFactor * 0.5 + damageScalingFactor * 0.5; //Factors must sum to 1.0
+      totalScalingFactor = recruitmentScalingFactor * 0.9 + damageScalingFactor * 0.1; //Factors must sum to 1.0
 
       //------------------------------------------------------------------------------------------------------
       //Obstructive - does not includes recruitment effects
@@ -4128,7 +4128,7 @@ namespace pulse
       double recruitedFraction = 1.0; //Recruitment effects
 
       //------------------------------------------------------------------------------------------------------
-      //Lung recruitment
+      //Acinar recruitment
       //Alveoli volume decreases cause more shunting, such as with ARDS
       //Collapsed lung causes more shunting, such as with pneumothorax and hemothorax
       //Aeration improves when mechanically ventilated with increased PEEP
@@ -4180,9 +4180,9 @@ namespace pulse
 
       //------------------------------------------------------------------------------------------------------
       //Combine effects
-      double recruitmentScalingFactor = GeneralMath::ExponentialDecayFunction(10, 0.02, 1.0, 1.0 - recruitedFraction);
+      double recruitmentScalingFactor = GeneralMath::ExponentialDecayFunction(10, 0.04, 1.0, 1.0 - recruitedFraction);
       double damageScalingFactor = GeneralMath::ExponentialDecayFunction(10, 0.02, 1.0, combinedSeverity);
-      double totalScalingFactor = recruitmentScalingFactor * 0.5 + damageScalingFactor * 0.5; //Factors must sum to 1.0
+      double totalScalingFactor = 0.9 * recruitmentScalingFactor + 0.1 * damageScalingFactor; //Factors must sum to 1.0
 
       //------------------------------------------------------------------------------------------------------
       //PulmonaryShunt

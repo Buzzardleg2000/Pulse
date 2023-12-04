@@ -16,6 +16,7 @@ from typing import Any, Dict, Hashable, Iterable, List, NamedTuple, Optional, Tu
 from pulse.cdm.engine import SEEventChange
 from pulse.cdm.scalars import TimeUnit, SEScalarTime
 from pulse.cdm.scenario import SEObservationReportModule
+from pulse.cdm.utils.logger import get_severity_str
 from pulse.study.in_the_moment.unstructured_text import SEUnstructuredTextProperty, SEUnstructuredTextGroup
 from pulse.study.in_the_moment.io.unstructured_text import serialize_unstructured_text_corpus_to_file, \
                                                            serialize_unstructured_text_group_to_file, \
@@ -162,13 +163,20 @@ class TCCCUnstructuredTextReader:
 
 
 class TCCCUnstructuredText(SEObservationReportModule):
-    __slots__ = ("_seed", "_injury_time", "_elapsed_time", "_corpus", "_events")
+    __slots__ = ("_seed", "_injury_time", "_elapsed_time", "_corpus", "_events", "_reported_vitals",
+                 "_hemorrhage", "_airway_obstruction")
 
     TIME_s = "Time(s)"
     RR_Per_min = "RespirationRate(1/min)"
     HR_Per_min = "HeartRate(1/min)"
 
-    def __init__(self, corpus_json: Path, elapsed_time_json: Path, seed: Optional[int]=None):
+    def __init__(
+        self,
+        corpus_json: Path,
+        elapsed_time_json: Path,
+        reported_vitals: List[str]=None,
+        seed: Optional[int]=None
+    ):
         self._headers = [
             self.TIME_s,
             self.RR_Per_min,
@@ -181,12 +189,20 @@ class TCCCUnstructuredText(SEObservationReportModule):
 
         self._injury_time = None
         self._events = list()
+        self._hemorrhage = None
+        self._airway_obstruction = None
 
-        # Read in pre-parse corpus
+        # Read in pre-parsed corpus
         self._corpus = list()
         self._elapsed_time = SEUnstructuredTextGroup()
         serialize_unstructured_text_corpus_from_file(corpus_json, self._corpus)
         serialize_unstructured_text_group_from_file(elapsed_time_json, self._elapsed_time)
+
+        if reported_vitals is None:
+            reported_vitals = list()
+        self._reported_vitals = reported_vitals
+
+        self._headers.extend(h for h in self._reported_vitals if h not in self._headers)
 
     def _add_phrases(self, choices: List[List[Template]], out_phrases: List[Template]) -> None:
         """
@@ -194,6 +210,48 @@ class TCCCUnstructuredText(SEObservationReportModule):
         """
         for c in choices:
             out_phrases.append(random.choice(c))
+
+    def _action_phrases(self, out_phrases: List[Template]) -> None:
+        # Severity will be included in these dicts since it was checked that it was greater than 0 when saving
+        if self._hemorrhage is not None:
+            severity = self._hemorrhage["Severity"]["Scalar0To1"]["Value"]
+
+            # Only include if visible upon examination
+            # External is default value so it may not be in the json
+            if "Type" not in self._hemorrhage or self._hemorrhage["Type"] == "External":
+                wound = None
+                if "Arm" in self._hemorrhage["Compartment"]:
+                    wound = "arm"
+                elif "Leg" in self._hemorrhage["Compartment"]:
+                    wound = "leg"
+                else:
+                    _pulse_logger.error(f"Unhandled hemorrhage location {self._hemorrhage['Compartment']}")
+
+                choices = [
+                    Template(f"They have a {get_severity_str(severity).lower()} laceration on their {wound}."),
+                    Template(f"The person has a {get_severity_str(severity).lower()} laceration on their {wound}."),
+                    Template(f"The patient has a {get_severity_str(severity).lower()} laceration on their {wound}."),
+                    Template(f"You notice a {get_severity_str(severity).lower()} laceration on their {wound}."),
+                    Template(f"A {get_severity_str(severity).lower()} laceration on their {wound} is visible."),
+                ]
+
+                self._add_phrases(choices=[choices], out_phrases=out_phrases)
+
+        if self._airway_obstruction is not None:
+            severity = self._airway_obstruction["Severity"]["Scalar0To1"]["Value"]
+
+            choices = [
+                Template(f"They are having {get_severity_str(severity).lower()} difficulty breathing."),
+                Template(f"The patient is experiencing {get_severity_str(severity).lower()} difficulty breathing."),
+                Template(f"You notice the patient is having {get_severity_str(severity).lower()} difficulty breathing."),
+                Template(f"The patient is having trobule breathing."),
+                Template(f"The patient is having difficulty breathing."),
+                Template(f"They are having trouble breathing.")
+            ]
+
+            self._add_phrases(choices=[choices], out_phrases=out_phrases)
+
+        # TODO: Pneumothorax?
 
     def handle_event(self, change: SEEventChange) -> None:
         """ Process given event change """
@@ -222,6 +280,20 @@ class TCCCUnstructuredText(SEObservationReportModule):
             elif self._injury_time is None:  # First insult time
                 self._injury_time = action_time
 
+            if action_name == "Hemorrhage":
+                if insult:
+                    # TODO: Multiple hemorrhages?
+                    self._hemorrhage = action_data[PATIENT_ACTION]["Hemorrhage"]
+                else:
+                    self._hemorrhage = None
+
+            if action_name == "AirwayObstruction":
+                if insult:
+                    self._airway_obstruction = action_data[PATIENT_ACTION]["AirwayObstruction"]
+                else:
+                    self._airway_obstruction = None
+
+            # TODO: Pneumothorax?
 
     def update(self, data_slice: NamedTuple, slice_idx: Dict[str, int]) -> Iterable[Tuple[Hashable, Any]]:
         """
@@ -241,6 +313,11 @@ class TCCCUnstructuredText(SEObservationReportModule):
 
             self._add_phrases(choices=self._elapsed_time.get_phrases(), out_phrases=phrases)
 
+        for vital in self._reported_vitals:
+            phrases.append(Template(f"{vital} is {round(data_slice[slice_idx[vital]])}."))
+
+        self._action_phrases(phrases)
+
         # Process stateless properties
         for property_group in self._corpus:
             if property_group.evaluate(
@@ -254,6 +331,8 @@ class TCCCUnstructuredText(SEObservationReportModule):
         phrases = [phrase.safe_substitute(template_vals) for phrase in phrases if phrase]
         random.shuffle(phrases)
 
+        phrases.insert(0, "After a nearby explosion, you come across a wounded person lying on the ground.")
+
         return [
             ("UnstructuredText", " ".join(phrases))
         ]
@@ -261,8 +340,8 @@ class TCCCUnstructuredText(SEObservationReportModule):
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
 
-    if len(sys.argv) < 4:
-        _pulse_logger.error("Expected inputs : <xls file> <corpus json filepath> <elapsed time json file>")
+    if len(sys.argv) < 1:
+        _pulse_logger.error("Expected inputs : <xls file>")
         sys.exit(1)
 
     xls_file = Path(sys.argv[1])
@@ -270,8 +349,9 @@ if __name__ == "__main__":
         _pulse_logger.error("Please provide a valid xls file")
         sys.exit(1)
 
-    corpus_json = Path(sys.argv[2])
-    elapsed_time_json = Path(sys.argv[3])
+
+    corpus_json = Path(f"{xls_file.parent}/{xls_file.stem}_corpus.json")
+    elapsed_time_json = Path(f"{xls_file.parent}/{xls_file.stem}_elapsed_time.json")
 
     reader = TCCCUnstructuredTextReader(xls_file=xls_file)
     reader.parse(corpus_file=corpus_json, elapsed_time_file=elapsed_time_json)

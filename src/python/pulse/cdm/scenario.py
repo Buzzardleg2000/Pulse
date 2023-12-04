@@ -594,7 +594,7 @@ class SEScenarioReport(SEScenarioLog):
         super()._parse_events(lines)
 
         events_out = list()
-        for time_s, event in self._events:
+        for time, event in self._events:
             # Determine event name and active status
             # Note: using re.match here instead of re.search because we expect the match at index 0
             match = re.match(r'\[Event\s*(?P<event>\D*)(?P<active>\d)\]', event, re.IGNORECASE)
@@ -602,11 +602,11 @@ class SEScenarioReport(SEScenarioLog):
                 _pulse_logger.warning(f"Could not identify if event is active, ignoring: {event}")
                 continue
             events_out.append((
-                time_s,
+                time,
                 SEEventChange(
                     event=eEvent[match["event"].strip()],
                     active=bool(int(match["active"])),
-                    sim_time_s=time_s
+                    sim_time_s=time.get_value(TimeUnit.s)
                 )
             ))
 
@@ -742,7 +742,7 @@ class SEScenarioReport(SEScenarioLog):
                 if self._death_check_module is not None:
                     self._death_check_module(data_slice=data_slice, slice_idx=idx)
             except StopIteration:  # Death indication: stop iterating, do one last observation
-                observations.append(_generate_observation())
+                # observations.append(_generate_observation())
                 break
 
             # If this is an observation time, update those modules

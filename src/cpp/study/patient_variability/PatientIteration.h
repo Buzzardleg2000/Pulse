@@ -55,29 +55,29 @@ namespace pulse::study::patient_variability
     ePatient_Sex GetSex() const { return m_Sex; }
     void SetSex(ePatient_Sex s) { m_Sex = s; }
 
-    ParameterIteration& GetAge_yr() { return m_Age_yr; }
-    const ParameterIteration& GetAge_yr() const { return m_Age_yr; }
+    ParameterIteration<double>& GetAge_yr() { return m_Age_yr; }
+    const ParameterIteration<double>& GetAge_yr() const { return m_Age_yr; }
 
-    ParameterIteration& GetHeight_cm() { return m_Height_cm; }
-    const ParameterIteration& GetHeight_cm() const { return m_Height_cm; }
+    ParameterIteration<double>& GetHeight_cm() { return m_Height_cm; }
+    const ParameterIteration<double>& GetHeight_cm() const { return m_Height_cm; }
 
-    ParameterIteration& GetBMI() { return m_BMI; }
-    const ParameterIteration& GetBMI() const { return m_BMI; }
+    ParameterIteration<double>& GetBMI() { return m_BMI; }
+    const ParameterIteration<double>& GetBMI() const { return m_BMI; }
 
-    ParameterIteration& GetBFF() { return m_BFF; }
-    const ParameterIteration& GetBFF() const { return m_BFF; }
+    ParameterIteration<double>& GetBFF() { return m_BFF; }
+    const ParameterIteration<double>& GetBFF() const { return m_BFF; }
 
-    ParameterIteration& GetHR_bpm() { return m_HR_bpm; }
-    const ParameterIteration& GetHR_bpm() const { return m_HR_bpm; }
+    ParameterIteration<double>& GetHR_bpm() { return m_HR_bpm; }
+    const ParameterIteration<double>& GetHR_bpm() const { return m_HR_bpm; }
 
-    ParameterIteration& GetMAP_mmHg() { return m_MAP_mmHg; }
-    const ParameterIteration& GetMAP_mmHg() const { return m_MAP_mmHg; }
+    ParameterIteration<double>& GetMAP_mmHg() { return m_MAP_mmHg; }
+    const ParameterIteration<double>& GetMAP_mmHg() const { return m_MAP_mmHg; }
 
-    ParameterIteration& GetPP_mmHg() { return m_PP_mmHg; }
-    const ParameterIteration& GetPP_mmHg() const { return m_PP_mmHg; }
+    ParameterIteration<double>& GetPP_mmHg() { return m_PP_mmHg; }
+    const ParameterIteration<double>& GetPP_mmHg() const { return m_PP_mmHg; }
 
-    ParameterIteration& GetRR_bpm() { return m_RR_bpm; }
-    const ParameterIteration& GetRR_bpm() const { return m_RR_bpm; }
+    ParameterIteration<double>& GetRR_bpm() { return m_RR_bpm; }
+    const ParameterIteration<double>& GetRR_bpm() const { return m_RR_bpm; }
 
     void GenerateScenarios();
     const std::map<std::string, std::string>& GetPatientStates() const { return m_PatientStates; }
@@ -91,14 +91,14 @@ namespace pulse::study::patient_variability
     static std::string ToString(SEPatient& patient);
 
     ePatient_Sex                           m_Sex;
-    ParameterIteration                     m_Age_yr;
-    ParameterIteration                     m_Height_cm;
-    ParameterIteration                     m_BMI;
-    ParameterIteration                     m_BFF;
-    ParameterIteration                     m_HR_bpm;
-    ParameterIteration                     m_MAP_mmHg;
-    ParameterIteration                     m_PP_mmHg;
-    ParameterIteration                     m_RR_bpm;
+    ParameterIteration<double>             m_Age_yr;
+    ParameterIteration<double>             m_Height_cm;
+    ParameterIteration<double>             m_BMI;
+    ParameterIteration<double>             m_BFF;
+    ParameterIteration<double>             m_HR_bpm;
+    ParameterIteration<double>             m_MAP_mmHg;
+    ParameterIteration<double>             m_PP_mmHg;
+    ParameterIteration<double>             m_RR_bpm;
 
     SEPatient*                             m_Patient;
     std::map<std::string, std::string>     m_PatientStates;

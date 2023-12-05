@@ -13,18 +13,18 @@ endif()
 
 # Support getting various versions, as end users could be using a different versions
 # And their application runtime environment needs to have all consistent dlls, or they fight!
-# Note that the Protobuf C++ API changed and required Pulse updates
-# Versions older than 22.0 are not supported anymore
 # Generally, We only support the latest version at the time of a release
 # And any release that somebody has requested we support for compatibility with their application
 
 set(Protobuf_VERSION "24.3" CACHE STRING "Select the  version of ProtoBuf to build.")
-set_property(CACHE Protobuf_VERSION PROPERTY STRINGS "24.3")
-
-set(Protobuf_url "https://github.com/protocolbuffers/protobuf/releases/download/v${Protobuf_VERSION}/protobuf-${Protobuf_VERSION}.zip" )
+set_property(CACHE Protobuf_VERSION PROPERTY STRINGS "24.3" "21.12")
 
 if (Protobuf_VERSION VERSION_EQUAL 24.3)# Latest, Can change
+  set(Protobuf_url "https://github.com/protocolbuffers/protobuf/releases/download/v${Protobuf_VERSION}/protobuf-${Protobuf_VERSION}.zip" )
   set(Protobuf_md5 "d425496d9fbfaeaecde6fb07fdf41312" )
+elseif (Protobuf_VERSION VERSION_EQUAL 21.12)# Last version before the ABSL dependency
+  set(Protobuf_url "https://github.com/protocolbuffers/protobuf/releases/download/v${Protobuf_VERSION}/protobuf-all-${Protobuf_VERSION}.zip" )
+  set(Protobuf_md5 "4ef7148d6f8b42bcdba687ea1b60292f" )
 else()
   message(STATUS "Using Protobuf Version ${Protobuf_VERSION}, with no git hash, will redownload if you rebuild.")
   set(Protobuf_md5 "" )
@@ -33,6 +33,16 @@ endif()
 set(BUILD_PROTOC_BINARIES ON)
 if(${PROJECT_NAME}_C_AS_STATIC)
   set(BUILD_PROTOC_BINARIES OFF)
+endif()
+
+set(_pb_args)
+set(_pb_dependencies)
+message(STATUS "We are using protobuf ${Protobuf_VERSION}")
+if (Protobuf_VERSION VERSION_GREATER_EQUAL "22.0")
+  message(STATUS "Added ABSL dependency")
+  define_dependency(absl)
+  set (_pb_dependencies absl)
+  set(_pb_args -Dprotobuf_ABSL_PROVIDER:STRING=package -Dabsl_DIR:PATH=${absl_DIR})
 endif()
 
 include(AddExternalProject)
@@ -50,12 +60,11 @@ add_external_project_ex( protobuf
     -Dprotobuf_MSVC_STATIC_RUNTIME:BOOL=OFF#Don't change MSVC runtime settings (/MD or /MT)
     -Dprotobuf_WITH_ZLIB:BOOL=OFF
     -Dprotobuf_BUILD_PROTOC_BINARIES:BOOL=${BUILD_PROTOC_BINARIES}
-    -Dprotobuf_ABSL_PROVIDER:STRING=package
-    -Dabsl_DIR:PATH=${absl_DIR}
+    ${_pb_args}
   ${PROTOBUF_MULTI_BUILD}
   ${PROTOBUF_MULTI_INSTALL}
   RELATIVE_INCLUDE_PATH "include"
-  DEPENDENCIES absl
+  DEPENDENCIES ${_pb_dependencies}
   #VERBOSE
 )
 

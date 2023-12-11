@@ -5,7 +5,9 @@
 
 #include "engine/common/system/Model.h"
 #include "engine/common/system/Systems.h"
-#include "cdm/substance/SESubstanceTransport.h"
+#include "cdm/circuit/fluid/SEFluidCircuitCalculator.h"
+#include "cdm/compartment/fluid/SEGasCompartmentGraph.h"
+#include "cdm/compartment/fluid/SELiquidCompartmentGraph.h"
 
 class SEPatient;
 class SEPatientActionCollection;
@@ -16,7 +18,6 @@ class SELiquidSubstanceQuantity;
 class SEFluidCircuit;
 class SEFluidCircuitNode;
 class SEFluidCircuitPath;
-class SEFluidCircuitCalculator;
 class SEConsciousRespirationCommand;
 class SERespiratoryMechanicsModifiers;
 

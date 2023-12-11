@@ -2,22 +2,8 @@
    See accompanying NOTICE file for details.*/
  
 #pragma once
-
-#ifdef SHARED_CDM
-  #if defined (__clang__)
-      #define CDM_DECL
-  #elif defined(__gnu_linux__)
-      #define CDM_DECL __attribute__ ((visibility ("default")))
-  #else
-      #ifdef SHARED_CDM
-        #define CDM_DECL __declspec(dllexport)
-      #else
-        #define CDM_DECL __declspec(dllimport)
-      #endif
-  #endif
-#else
-  #define CDM_DECL
-#endif
+#include "pulse_export.h"
+#define CDM_DECL PULSE_EXPORT
 
 #if (0)
 #define DEBUGOUT(x) x
@@ -62,6 +48,7 @@
 // for all three sections MSVC, GCC/CLANG, other
 #if defined(_MSC_VER)
 
+  __pragma(warning(disable : 4251)) // Ignore needs dll-interface warnings
   //#pragma warning(disable:4100) // unreferenced formal parameter (intentional in base classes)
 
   #define DISABLE_WARNING_PUSH           __pragma(warning( push ))
@@ -153,32 +140,32 @@ struct CommonDataModelException : public std::runtime_error
 // Keep enums in sync with appropriate schema/cdm/Enums.proto file !!
 //
 enum class eSide { NullSide = 0, Left, Right };
-extern const std::string& eSide_Name(eSide m);
+extern CDM_DECL const std::string& eSide_Name(eSide m);
 
 enum class eGate { NullGate = 0, Open, Closed };
-extern const std::string& eGate_Name(eGate m);
+extern CDM_DECL const std::string& eGate_Name(eGate m);
 
 enum class eSwitch { NullSwitch = 0, Off, On };
-extern const std::string& eSwitch_Name(eSwitch m);
+extern CDM_DECL const std::string& eSwitch_Name(eSwitch m);
 
 enum class eCharge { NullCharge = 0, Negative, Neutral, Positive };
-extern const std::string& eCharge_Name(eCharge m);
+extern CDM_DECL const std::string& eCharge_Name(eCharge m);
 
 enum class eBreathState { NoBreath=0,
                           PatientInhale, PatientPause, PatientExhale,
                           EquipmentInhale, EquipmentPause, EquipmentExhale,
                           ExpiratoryHold, InspiratoryHold };
-extern const std::string& eBreathState_Name(eBreathState m);
+extern CDM_DECL const std::string& eBreathState_Name(eBreathState m);
 
 enum class eDefaultType { Model = 0, Zero };
-extern const std::string& eDefaultType_Name(eDefaultType m);
+extern CDM_DECL const std::string& eDefaultType_Name(eDefaultType m);
 
 enum class eDriverWaveform { NullDriverWaveform = 0, Square,
                                                   AscendingRamp, DescendingRamp,
                                                   ExponentialGrowth, ExponentialDecay,
                                                   SinusoidalRise, SinusoidalFall,
                                                   SigmoidalRise, SigmoidalFall };
-extern const std::string& eDriverWaveform_Name(eDriverWaveform m);
+extern CDM_DECL const std::string& eDriverWaveform_Name(eDriverWaveform m);
 
 //
 // End General Enum
@@ -192,7 +179,7 @@ class CCompoundUnit;
 // Used for overrides and modifiers, a super generic way of enumerating a list of properties
 // properties are an actual scalar member variable on an object
 // map<variable_name,SEScalarPair(value,unit)>
-class SEScalarPair
+class CDM_DECL SEScalarPair
 {
 public:
   SEScalarPair();

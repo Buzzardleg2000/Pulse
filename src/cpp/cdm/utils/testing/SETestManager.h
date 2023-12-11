@@ -7,7 +7,7 @@
 class CDM_DECL SETestManager : public Loggable
 {
 public:
-  SETestManager(Logger* logger = nullptr) : Loggable(logger) {};
+  SETestManager(Logger* logger = nullptr);
 
   virtual ~SETestManager() = default;
 

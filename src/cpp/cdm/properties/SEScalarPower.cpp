@@ -44,3 +44,5 @@ const PowerUnit& PowerUnit::GetCompoundUnit(const std::string& unit)
     return BTU_Per_hr;
   throw CommonDataModelException(unit + " is not a valid Power unit");
 }
+
+template class SEScalarQuantity<PowerUnit>;

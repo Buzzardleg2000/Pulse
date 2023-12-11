@@ -45,3 +45,5 @@ double SEScalarTemperature::GetValue(const TemperatureUnit& unit) const
     return m_value;
   return Convert(m_value, *m_unit, unit);
 }
+
+template class SEScalarQuantity<TemperatureUnit>;

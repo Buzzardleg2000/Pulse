@@ -39,3 +39,5 @@ const VolumePerPressureUnit& VolumePerPressureUnit::GetCompoundUnit(const std::s
     return mL_Per_mmHg;
   throw CommonDataModelException(unit + " is not a valid VolumePerPressure unit");
 }
+
+template class SEScalarQuantity<VolumePerPressureUnit>;

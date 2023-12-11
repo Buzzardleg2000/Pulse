@@ -34,3 +34,5 @@ const LengthPerTimePressureUnit& LengthPerTimePressureUnit::GetCompoundUnit(cons
     return cm_Per_min_mmHg;
   throw CommonDataModelException(unit + " is not a valid LengthPerTimePressure unit");
 }
+
+template class SEScalarQuantity<LengthPerTimePressureUnit>;

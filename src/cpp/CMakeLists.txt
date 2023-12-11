@@ -29,7 +29,7 @@ add_library_ex(Pulse ${${PROJECT_NAME}_LIB_TYPE}
 )
 target_include_directories(Pulse PRIVATE ${EIGEN3_INCLUDE_DIR})
 
-add_library_ex(PulseTests ${${PROJECT_NAME}_LIB_TYPE}
+add_library_ex(PulseTests STATIC
   H_FILES
     ${CDM_TEST_H_FILES}
     ${ENGINE_TEST_H_FILES}
@@ -43,13 +43,15 @@ add_library_ex(PulseTests ${${PROJECT_NAME}_LIB_TYPE}
 )
 target_include_directories(PulseTests PRIVATE ${EIGEN3_INCLUDE_DIR})
 
-if(${PROJECT_NAME}_C_AS_STATIC)
-  return()
-endif()
-
 add_subdirectory(howto)
 add_subdirectory(scenario_driver)
 add_subdirectory(test_driver)
+
+if(${PROJECT_NAME}_AS_SHARED)
+  return()
+endif()
+# Study libraries will not link since the protobuf bind files are not exporting
+# Could probably make this happen if this is a needed build combination
 
 add_subdirectory(study/circuit_optimization)
 add_subdirectory(study/hydrocephalus)

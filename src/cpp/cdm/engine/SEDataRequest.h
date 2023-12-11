@@ -12,7 +12,7 @@ enum class eDataRequest_Category {
   GasCompartment, LiquidCompartment, ThermalCompartment, TissueCompartment,
   Substance, AnesthesiaMachine, BagValveMask, ECG, ECMO, Inhaler, MechanicalVentilator
 };
-extern const std::string& eDataRequest_Category_Name(eDataRequest_Category m);
+extern CDM_DECL const std::string& eDataRequest_Category_Name(eDataRequest_Category m);
 
 class CDM_DECL SEDataRequest : public SEDecimalFormat
 {

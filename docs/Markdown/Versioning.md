@@ -15,7 +15,7 @@ Our version number sematic is Major.Minor.Patch-ReleaseStage, where :
 
 - Software Architecture Improvements
   - Combined DataModelBindings, CommonDataModel and PulseEngine into a single Pulse library
-    - Plan is to provide an option to build a shared Pulse library rather than a static one
+    - This single library can be built as a shared/dynamic library or a static (default) library
   - Implement system/patient validation framework in Python
     - Provides access to more discrete modules in our validation pipeline for more versatile use
   - Initial architecture for automated validation

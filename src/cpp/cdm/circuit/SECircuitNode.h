@@ -94,3 +94,6 @@ private:
   int                     m_CalculatorIndex;
   bool                    m_IsReferenceNode = false;
 };
+
+
+#include "cdm/circuit/SECircuitNode.hxx"

@@ -19,7 +19,7 @@ class SETissueCompartment;
 
 // Keep enums in sync with appropriate schema/cdm/CompartmentEnums.proto file !!
 enum class eCompartment_Type { Electrical = 0, Gas, Liquid, Thermal, Tissue };
-extern const std::string& eCompartment_Type_Name(eCompartment_Type m);
+extern CDM_DECL const std::string& eCompartment_Type_Name(eCompartment_Type m);
 
 class CDM_DECL SECompartmentManager : public Loggable
 {

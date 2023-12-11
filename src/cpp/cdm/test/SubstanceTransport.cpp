@@ -29,7 +29,7 @@ void CommonDataModelTest::LargeFlowTransportTest(const std::string& sTestDirecto
 {
   m_Logger->SetLogFile(sTestDirectory + "/LargeFlowTransportTest.log");
   SEFluidCircuit& circuit = m_Circuits->CreateFluidCircuit("Circuit");
-  SEFluidCircuitCalculator CircuitCalculator(m_Logger);
+  SEFluidCircuitCalculator CircuitCalculator(DefaultFluidCircuitCalculatorUnits, m_Logger);
 
   // Only give volumes to node that have mass & concentration
   SEFluidCircuitNode& GroundNode = circuit.CreateNode("Ground");
@@ -134,7 +134,7 @@ void CommonDataModelTest::LiquidTransportTest(const std::string& rptDirectory)
 {
   Logger logger(rptDirectory + "/LiquidTransportTest.log");
   SEFluidCircuit& circuit = m_Circuits->CreateFluidCircuit("Circuit");
-  SEFluidCircuitCalculator CircuitCalculator(&logger);
+  SEFluidCircuitCalculator CircuitCalculator(DefaultFluidCircuitCalculatorUnits, &logger);
 
 
   SEFluidCircuitNode& Ground = circuit.CreateNode("Ground");  
@@ -319,9 +319,9 @@ void CommonDataModelTest::GasTransportTest(const std::string& rptDirectory)
 {
   Logger logger(rptDirectory + "/GasTransportTest.log");
   SEFluidCircuit& circuit = m_Circuits->CreateFluidCircuit("Circuit");
-  SEFluidCircuitCalculator CircuitCalculator(&logger);
+  SEFluidCircuitCalculator CircuitCalculator(DefaultFluidCircuitCalculatorUnits, &logger);
 
-  SEFluidCircuitNode& Ground = circuit.CreateNode("Ground");  
+  SEFluidCircuitNode& Ground = circuit.CreateNode("Ground");
   Ground.SetAsReferenceNode();
   Ground.GetPressure().SetValue(0.0, PressureUnit::mmHg);
   SEFluidCircuitNode& Node1 = circuit.CreateNode("Node1");
@@ -449,7 +449,7 @@ void CommonDataModelTest::GasTransportTest(const std::string& rptDirectory)
   cmptMgr.StateChange();
 
   bool serialized = false;
-  SEGasTransporter Transporter(VolumePerTimeUnit::mL_Per_s, VolumeUnit::mL, VolumeUnit::mL, &logger);
+  SEGasTransporter Transporter(VolumePerTimeUnit::mL_Per_s, VolumeUnit::mL, VolumeUnit::mL, NoUnit::unitless, &logger);
   double deltaT_s = 1.0 / 165;
   DataTrack outTrk;
   std::ofstream file;

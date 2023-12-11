@@ -1,5 +1,4 @@
-
-add_library_ex(MultiplexVentilationEngine
+add_library_ex(MultiplexVentilationEngine STATIC
   H_FILES
     MVEngine.h
     MVGenerator.h

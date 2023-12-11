@@ -7,7 +7,7 @@
 #include "cdm/engine/SEDataRequest.h"
 #include "cdm/engine/SEEventManager.h"
 
-class SEValidationTarget : public Loggable
+class CDM_DECL SEValidationTarget : public Loggable
 {
   friend class PBValidation;//friend the serialization class
 protected:
@@ -41,7 +41,7 @@ protected:
   double                                     m_TargetMinimum;
 };
 
-class SESegmentValidationTarget : public SEValidationTarget
+class CDM_DECL SESegmentValidationTarget : public SEValidationTarget
 {
   friend class PBValidation;//friend the serialization class
 public:
@@ -75,7 +75,7 @@ protected:
   int                                        m_TargetSegment;
 };
 
-class SETimeSeriesValidationTarget : public SEValidationTarget
+class CDM_DECL SETimeSeriesValidationTarget : public SEValidationTarget
 {
   friend class PBValidation;//friend the serialization class
 public:

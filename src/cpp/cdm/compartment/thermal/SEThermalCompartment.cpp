@@ -5,7 +5,6 @@
 #include "cdm/compartment/thermal/SEThermalCompartment.h"
 #include "cdm/compartment/thermal/SEThermalCompartmentLink.h"
 #include "cdm/circuit/thermal/SEThermalCircuitNode.h"
-#include "cdm/circuit/SECircuitManager.h"
 #include "cdm/properties/SEScalarPower.h"
 #include "cdm/properties/SEScalarEnergy.h"
 #include "cdm/properties/SEScalarTemperature.h"

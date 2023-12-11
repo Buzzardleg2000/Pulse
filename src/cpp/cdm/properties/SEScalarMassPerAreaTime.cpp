@@ -19,3 +19,5 @@ const MassPerAreaTimeUnit& MassPerAreaTimeUnit::GetCompoundUnit(const std::strin
     return g_Per_cm2_s;
   throw CommonDataModelException(unit + " is not a valid MassPerAreaTime unit");
 }
+
+template class SEScalarQuantity<MassPerAreaTimeUnit>;

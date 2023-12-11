@@ -10,7 +10,9 @@ namespace py = pybind11;
 void PulseEngineBind(py::module&);
 void PulseEnginePoolBind(py::module&);
 // Studies
+#ifndef EXCLUDE_STUDIES
 void MultiplexVentilationEngineBind(py::module&);
+#endif
 
 double convert(double val, const std::string& from, const std::string& to)
 {
@@ -51,7 +53,9 @@ PYBIND11_MODULE(PyPulse, m)
 
   PulseEngineBind(m);
   PulseEnginePoolBind(m);
+#ifndef EXCLUDE_STUDIES
   MultiplexVentilationEngineBind(m);
+#endif
 
   m.def("execute_scenario", &execute_scenario, "Executes a scenario file");
 

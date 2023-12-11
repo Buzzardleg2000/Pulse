@@ -10,7 +10,7 @@ enum class ePatientAssessment_Type {
   ComprehensiveMetabolicPanel,
   Urinalysis
 };
-extern const std::string& ePatientAssessment_Type_Name(ePatientAssessment_Type m);
+extern CDM_DECL const std::string& ePatientAssessment_Type_Name(ePatientAssessment_Type m);
 
 /**
  * @brief

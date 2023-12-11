@@ -29,3 +29,5 @@ const ForceUnit& ForceUnit::GetCompoundUnit(const std::string& unit)
     return dyn;
   throw CommonDataModelException(unit + " is not a valid Force unit");
 }
+
+template class SEScalarQuantity<ForceUnit>;

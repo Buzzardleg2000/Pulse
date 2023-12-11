@@ -13,11 +13,11 @@ class SEGasSubstanceQuantity;
 
 // Keep enums in sync with appropriate schema/cdm/AnesthesiaMachineEnums.proto file !!
 enum class eAnesthesiaMachine_OxygenSource { NullSource = 0, NoSource, Wall, BottleOne, BottleTwo };
-extern const std::string& eAnesthesiaMachine_OxygenSource_Name(eAnesthesiaMachine_OxygenSource m);
+extern CDM_DECL const std::string& eAnesthesiaMachine_OxygenSource_Name(eAnesthesiaMachine_OxygenSource m);
 
 // Keep enums in sync with appropriate schema/cdm/AnesthesiaMachineEnums.proto file !!
 enum class eAnesthesiaMachine_PrimaryGas { NullGas = 0, NoGas, Air, Nitrogen };
-extern const std::string& eAnesthesiaMachine_PrimaryGas_Name(eAnesthesiaMachine_PrimaryGas m);
+extern CDM_DECL const std::string& eAnesthesiaMachine_PrimaryGas_Name(eAnesthesiaMachine_PrimaryGas m);
 
 
 class CDM_DECL SEAnesthesiaMachine : public SEEquipment

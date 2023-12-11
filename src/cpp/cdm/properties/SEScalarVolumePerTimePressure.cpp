@@ -34,3 +34,5 @@ const VolumePerTimePressureUnit& VolumePerTimePressureUnit::GetCompoundUnit(cons
     return mL_Per_min_mmHg;
   throw CommonDataModelException(unit + " is not a valid VolumePerTimePressure unit");
 }
+
+template class SEScalarQuantity<VolumePerTimePressureUnit>;

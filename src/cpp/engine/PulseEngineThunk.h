@@ -4,10 +4,9 @@
 #pragma once
 
 #include "cdm/PhysiologyEngineThunk.h"
-#include "engine/PulseEngine.h"
 #include "engine/PulseConfiguration.h"
 
-class PulseEngineThunk : public PhysiologyEngineThunk
+class PULSE_DECL PulseEngineThunk : public PhysiologyEngineThunk
 {
 public:
   PulseEngineThunk(eModelType t, const std::string& dataDir = "./");

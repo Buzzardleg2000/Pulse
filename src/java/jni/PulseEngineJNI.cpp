@@ -96,7 +96,7 @@ JNIEXPORT jboolean JNICALL Java_com_kitware_pulse_engine_PulseScenarioExec_nativ
   Logger logger;
   LoggerForwardJNI jniForward;
   jniForward.jniEnv = env;
-  jniForward.jniObj = obj;  
+  jniForward.jniObj = obj;
   logger.AddForward(&jniForward);
   bRet = PulseEngineThunk::ExecuteScenario(sceOptsStr, (eSerializationFormat)scenario_format, &logger);
   env->ReleaseStringUTFChars(sceOpts, sceOptsStr);

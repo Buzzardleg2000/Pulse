@@ -60,8 +60,8 @@ namespace pulse { namespace human_adult_whole_body
     pc.m_Config->EnableTissue(eSwitch::On);
     pc.CreateCircuitsAndCompartments();
 
-    SEFluidCircuitCalculator fluidCalc(tsSolverSpeed.GetLogger());
-    SEThermalCircuitCalculator thermalCalc(tsSolverSpeed.GetLogger());
+    SEFluidCircuitCalculator fluidCalc(DefaultFluidCircuitCalculatorUnits, tsSolverSpeed.GetLogger());
+    SEThermalCircuitCalculator thermalCalc(DefaultThermalCircuitCalculatorUnits, tsSolverSpeed.GetLogger());
 
     //Hold the average solving times for each solver
     std::vector<std::chrono::microseconds::rep> anesthesiaMachineTimes;

@@ -1,8 +1,8 @@
 /* Distributed under the Apache License, Version 2.0.
    See accompanying NOTICE file for details.*/
 
-#include "PulseEngineThunk.h"
-#include "PulseEnginePool.h"
+#include "engine/PulseEngineThunk.h"
+#include "engine/PulseEnginePool.h"
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl_bind.h>

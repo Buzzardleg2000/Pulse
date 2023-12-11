@@ -6,7 +6,7 @@
 
 // Keep enums in sync with appropriate schema/cdm/PatientActionEnums.proto file !!
 enum class eBrainInjury_Type { Diffuse = 0, LeftFocal, RightFocal };
-extern const std::string& eBrainInjury_Type_Name(eBrainInjury_Type m);
+extern CDM_DECL const std::string& eBrainInjury_Type_Name(eBrainInjury_Type m);
 
 class CDM_DECL SEBrainInjury : public SEPatientAction
 {

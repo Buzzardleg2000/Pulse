@@ -44,3 +44,5 @@ const PressureTimePerVolumeUnit& PressureTimePerVolumeUnit::GetCompoundUnit(cons
     return Pa_s_Per_m3;
   throw CommonDataModelException(unit + " is not a valid PressureTimePerVolume unit");
 }
+
+template class SEScalarQuantity<PressureTimePerVolumeUnit>;

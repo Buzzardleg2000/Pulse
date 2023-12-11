@@ -7,7 +7,7 @@ class SESubstance;
 
 // Keep enums in sync with appropriate schema/cdm/PatientActionEnums.proto file !!
 enum class eSupplementalOxygen_Device { None = 0, NasalCannula, SimpleMask, NonRebreatherMask };
-extern const std::string& eSupplementalOxygen_Device_Name(eSupplementalOxygen_Device e);
+extern CDM_DECL const std::string& eSupplementalOxygen_Device_Name(eSupplementalOxygen_Device e);
 
 class CDM_DECL SESupplementalOxygen : public SEPatientAction
 {

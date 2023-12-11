@@ -6,11 +6,6 @@
 #include "cdm/circuit/SECircuitCalculator.h"
 #include "cdm/circuit/fluid/SEFluidCircuit.h"
 
-class CDM_DECL SEFluidCircuitCalculator : public SECircuitCalculator<SEFluidCircuit, SEFluidCircuitNode, SEFluidCircuitPath, VolumePerPressureUnit, VolumePerTimeUnit, PressureTimeSquaredPerVolumeUnit, PressureUnit, VolumeUnit, PressureTimePerVolumeUnit>
-{
-public:
+using SEFluidCircuitCalculator = SECircuitCalculator<SEFluidCircuit, SEFluidCircuitNode, SEFluidCircuitPath, VolumePerPressureUnit, VolumePerTimeUnit, PressureTimeSquaredPerVolumeUnit, PressureUnit, VolumeUnit, PressureTimePerVolumeUnit>;
 
-  SEFluidCircuitCalculator(Logger* logger);
-  SEFluidCircuitCalculator(const VolumePerPressureUnit&, const VolumePerTimeUnit&, const PressureTimeSquaredPerVolumeUnit&, const PressureUnit&, const VolumeUnit&, const PressureTimePerVolumeUnit&, Logger* logger);
-  virtual ~SEFluidCircuitCalculator();
-};
+#define DefaultFluidCircuitCalculatorUnits VolumePerPressureUnit::m3_Per_Pa,VolumePerTimeUnit::m3_Per_s, PressureTimeSquaredPerVolumeUnit::Pa_s2_Per_m3,PressureUnit::Pa,VolumeUnit::m3,PressureTimePerVolumeUnit::Pa_s_Per_m3

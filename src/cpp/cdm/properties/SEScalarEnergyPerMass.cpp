@@ -34,3 +34,5 @@ const EnergyPerMassUnit& EnergyPerMassUnit::GetCompoundUnit(const std::string& u
     return kcal_Per_kg;
   throw CommonDataModelException(unit + " is not a valid EnergyPerMass unit");
 }
+
+template class SEScalarQuantity<EnergyPerMassUnit>;

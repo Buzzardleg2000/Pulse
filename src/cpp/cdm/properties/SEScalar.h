@@ -209,7 +209,7 @@ class SEScalarQuantity : public SEUnitScalar
 {
   friend class PBProperty;//friend the serialization class
 public:
-  SEScalarQuantity() : SEUnitScalar() {};
+  SEScalarQuantity() : SEUnitScalar() {}
   virtual ~SEScalarQuantity();
 
   void Invalidate() override;
@@ -417,3 +417,5 @@ inline void IncrementOverride(SEScalarQuantity<Unit>& s, double value, const Uni
     double Get##name(const type##Unit& unit) const { return m_##name.GetValue(unit); } \
   protected: \
     SEScalar##type m_##name;
+
+#include "cdm/properties/SEScalar.hxx"

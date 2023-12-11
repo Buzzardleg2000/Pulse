@@ -24,3 +24,5 @@ const MassPerMassUnit& MassPerMassUnit::GetCompoundUnit(const std::string& unit)
     return mg_Per_g;
   throw CommonDataModelException(unit + " is not a valid MassPerMass unit");
 }
+
+template class SEScalarQuantity<MassPerMassUnit>;

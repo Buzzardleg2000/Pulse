@@ -7,6 +7,7 @@ set(CDM_H_FILES
   cdm/PhysiologyEngineThunk.h
   cdm/PhysiologyEnginePool.h
   cdm/blackbox/SEBlackBox.h
+  cdm/blackbox/SEBlackBox.hxx
   cdm/blackbox/SEBlackBoxManager.h
   cdm/blackbox/electrical/SEElectricalBlackBox.h
   cdm/blackbox/fluid/SEFluidBlackBox.h
@@ -14,10 +15,14 @@ set(CDM_H_FILES
   cdm/blackbox/fluid/SELiquidBlackBox.h
   cdm/blackbox/thermal/SEThermalBlackBox.h
   cdm/circuit/SECircuit.h
-  cdm/circuit/SECircuitCalculator.h
+  cdm/circuit/SECircuit.hxx
+  cdm/circuit/SECircuitCalculator.h  
   cdm/circuit/SECircuitManager.h
+  cdm/circuit/SECircuitManager.hxx
   cdm/circuit/SECircuitNode.h
+  cdm/circuit/SECircuitNode.hxx
   cdm/circuit/SECircuitPath.h
+  cdm/circuit/SECircuitPath.hxx
   cdm/circuit/electrical/SEElectricalCircuit.h
   cdm/circuit/electrical/SEElectricalCircuitCalculator.h
   cdm/circuit/electrical/SEElectricalCircuitNode.h
@@ -32,14 +37,19 @@ set(CDM_H_FILES
   cdm/circuit/thermal/SEThermalCircuitPath.h
   cdm/compartment/SECompartment.h
   cdm/compartment/SECompartmentGraph.h
+  cdm/compartment/SECompartmentGraph.hxx
   cdm/compartment/SECompartmentLink.h
   cdm/compartment/SECompartmentManager.h
   cdm/compartment/SECompartmentNodes.h
+  cdm/compartment/SECompartmentNodes.hxx
   cdm/compartment/SECompartmentTransportGraph.h
+  cdm/compartment/SECompartmentTransportGraph.hxx
   cdm/compartment/electrical/SEElectricalCompartment.h
   cdm/compartment/electrical/SEElectricalCompartmentLink.h
-  cdm/compartment/fluid/SEFluidCompartment.h
+  cdm/compartment/fluid/SEFluidCompartment.h  
+  cdm/compartment/fluid/SEFluidCompartment.hxx
   cdm/compartment/fluid/SEFluidCompartmentLink.h
+  cdm/compartment/fluid/SEFluidCompartmentLink.hxx
   cdm/compartment/fluid/SEGasCompartment.h
   cdm/compartment/fluid/SEGasCompartmentGraph.h
   cdm/compartment/fluid/SEGasCompartmentLink.h
@@ -196,6 +206,7 @@ set(CDM_H_FILES
   cdm/properties/SESegmentParabolic.h
   cdm/properties/SESegmentSigmoidal.h
   cdm/properties/SEScalar.h
+  cdm/properties/SEScalar.hxx
   cdm/properties/SEScalar0To1.h
   cdm/properties/SEScalarAmount.h
   cdm/properties/SEScalarAmountPerMass.h
@@ -375,18 +386,14 @@ set(CDM_H_FILES
 set(CDM_CPP_FILES
   cdm/PhysiologyEngineThunk.cpp
   cdm/PhysiologyEnginePool.cpp
-  cdm/blackbox/SEBlackBox.cpp
   cdm/blackbox/SEBlackBoxManager.cpp
   cdm/blackbox/electrical/SEElectricalBlackBox.cpp
   cdm/blackbox/fluid/SEFluidBlackBox.cpp
   cdm/blackbox/fluid/SEGasBlackBox.cpp
   cdm/blackbox/fluid/SELiquidBlackBox.cpp
   cdm/blackbox/thermal/SEThermalBlackBox.cpp
-  cdm/circuit/SECircuit.cpp
   cdm/circuit/SECircuitCalculator.cpp
   cdm/circuit/SECircuitManager.cpp
-  cdm/circuit/SECircuitNode.cpp
-  cdm/circuit/SECircuitPath.cpp
   cdm/circuit/electrical/SEElectricalCircuit.cpp
   cdm/circuit/electrical/SEElectricalCircuitCalculator.cpp
   cdm/circuit/electrical/SEElectricalCircuitNode.cpp
@@ -400,15 +407,10 @@ set(CDM_CPP_FILES
   cdm/circuit/thermal/SEThermalCircuitNode.cpp
   cdm/circuit/thermal/SEThermalCircuitPath.cpp
   cdm/compartment/SECompartment.cpp
-  cdm/compartment/SECompartmentGraph.cpp
   cdm/compartment/SECompartmentLink.cpp
   cdm/compartment/SECompartmentManager.cpp
-  cdm/compartment/SECompartmentNodes.cpp
-  cdm/compartment/SECompartmentTransportGraph.cpp
   cdm/compartment/electrical/SEElectricalCompartment.cpp
   cdm/compartment/electrical/SEElectricalCompartmentLink.cpp
-  cdm/compartment/fluid/SEFluidCompartment.cpp
-  cdm/compartment/fluid/SEFluidCompartmentLink.cpp
   cdm/compartment/fluid/SEGasCompartment.cpp
   cdm/compartment/fluid/SEGasCompartmentGraph.cpp
   cdm/compartment/fluid/SEGasCompartmentLink.cpp
@@ -735,6 +737,7 @@ set(CDM_CPP_FILES
   cdm/utils/base64.cpp
   cdm/utils/testing/SETestCase.cpp
   cdm/utils/testing/SETestErrorStatistics.cpp
+  cdm/utils/testing/SETestManager.cpp
   cdm/utils/testing/SETestReport.cpp
   cdm/utils/testing/SETestSuite.cpp
   cdm/utils/unitconversion/CompoundUnit.cpp

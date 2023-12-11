@@ -104,7 +104,7 @@ namespace pulse
   }
   void PBScenario::Serialize(const PULSE_BIND::ScenarioExecData& src, PulseScenarioExec& dst)
   {
-    CDM_DECL::PBScenario::Serialize(src.scenarioexec(), dst);
+    ::PBScenario::Serialize(src.scenarioexec(), dst);
     dst.SetModelType((eModelType)src.modeltype());
   }
 
@@ -116,7 +116,7 @@ namespace pulse
   }
   void PBScenario::Serialize(const PulseScenarioExec& src, PULSE_BIND::ScenarioExecData& dst)
   {
-    CDM_DECL::PBScenario::Serialize(src, *dst.mutable_scenarioexec());
+    ::PBScenario::Serialize(src, *dst.mutable_scenarioexec());
     dst.set_modeltype((PULSE_BIND::eModelType)src.GetModelType());
   }
 

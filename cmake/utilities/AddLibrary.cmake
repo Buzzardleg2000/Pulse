@@ -1,3 +1,5 @@
+
+
 macro(_subdir_list result curdir)
   file(GLOB children RELATIVE ${curdir} ${curdir}/*)
   set(dirlist "")
@@ -20,6 +22,7 @@ function(add_library_ex target)
   cmake_parse_arguments(target "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN} )
 
   message(STATUS "Configuring ${target}")
+  string(TOLOWER ${target} _little_target)
 
   #-----------------------------------------------------------------------------
   # Verbose (display arguments)
@@ -62,6 +65,7 @@ function(add_library_ex target)
   if(target_SHARED)
     set(target_LIB_TYPE SHARED)
   endif()
+  set(target_export_header ${CMAKE_CURRENT_BINARY_DIR}/${_little_target}_export.h)
   
   string(REPLACE ${CMAKE_SOURCE_DIR}/src/cpp "" REL_PATH ${CMAKE_CURRENT_SOURCE_DIR})
   foreach(h ${target_CONFIG_H_FILES})
@@ -75,10 +79,13 @@ function(add_library_ex target)
     ${target_H_FILES}
     ${target_BIND_H_FILES}
     ${target_BUILD_CONFIG_H_FILES}
+    ${target_export_header}
     ${target_CPP_FILES}
     ${target_BIND_CPP_FILES}
     ${target_BUILD_CONFIG_CPP_FILES}
-    )
+    ) 
+  include(GenerateExportHeader)
+  generate_export_header(${target})
 
   if(target_SHARED)
     add_custom_command(TARGET ${target} POST_BUILD
@@ -125,6 +132,7 @@ function(add_library_ex target)
     PRIVATE # Bind files
       ${DST_ROOT}/cpp
     )
+  target_include_directories(${target} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
   target_include_directories(${target} PRIVATE ${CMAKE_SOURCE_DIR}/src/cpp)
 
   #-----------------------------------------------------------------------------
@@ -151,6 +159,10 @@ function(add_library_ex target)
           COMPONENT Development
         )
       endforeach()
+      install(FILES ${target_export_header} 
+              DESTINATION include/${${PROJECT_NAME}_INSTALL_FOLDER}/${target_INSTALL_HEADER_DIR}
+              COMPONENT Development
+      )
     endif()
     
     #-----------------------------------------------------------------------------
@@ -194,4 +206,6 @@ function(add_library_ex target)
   source_group(TREE "${CMAKE_BINARY_DIR}/src/cpp/${REL_PATH}" FILES ${target_BUILD_CONFIG_H_FILES})
   source_group(TREE "${CMAKE_BINARY_DIR}/src/cpp/${REL_PATH}" FILES ${target_BUILD_CONFIG_CPP_FILES})
 
+  source_group(TREE "${CMAKE_CURRENT_BINARY_DIR}" FILES ${target_export_header})
+  
 endfunction()

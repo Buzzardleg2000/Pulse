@@ -20,7 +20,7 @@ struct CDM_DECL EigenCircuitSolver
 };
 
 template<CIRCUIT_CALCULATOR_TEMPLATE>
-class SECircuitCalculator : public Loggable
+class CDM_DECL SECircuitCalculator : public Loggable
 {
 public:
   SECircuitCalculator(const CapacitanceUnit& c, const FluxUnit& f, const InductanceUnit& i, const PotentialUnit& p, const QuantityUnit& q, const ResistanceUnit& r, Logger* logger);

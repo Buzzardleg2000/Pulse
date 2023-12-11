@@ -36,7 +36,8 @@ int main()
   //HowToECMO();
   //HowToEnvironmentChange();
   //HowToExercise();
-  //HowToHemorrhage();  HowToExpandedVasculature();
+  //HowToHemorrhage();
+  //HowToExpandedVasculature();
   //HowToHemorrhage();
   //HowToHemothorax();
   //HowToPneumonia();

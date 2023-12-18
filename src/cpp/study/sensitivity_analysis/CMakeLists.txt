@@ -1,5 +1,4 @@
-
-add_library_ex(SensitivityAnalysisEngine
+add_library_ex(SensitivityAnalysisEngine STATIC
   H_FILES
     SARunner.h
   CPP_FILES

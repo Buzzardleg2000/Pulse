@@ -34,3 +34,5 @@ const InversePressureUnit& InversePressureUnit::GetCompoundUnit(const std::strin
     return Inverse_atm;
   throw CommonDataModelException(unit + " is not a valid InversePressure unit");
 }
+
+template class SEScalarQuantity<InversePressureUnit>;

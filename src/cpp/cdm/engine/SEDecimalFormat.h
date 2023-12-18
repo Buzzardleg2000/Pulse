@@ -4,7 +4,7 @@
 #pragma once
 
 enum class eDecimalFormat_Type { SystemFormatting = 0, DefaultFloat, FixedMantissa, SignificantDigits };
-extern const std::string& eDecimalFormat_Type_Name(eDecimalFormat_Type m);
+extern CDM_DECL const std::string& eDecimalFormat_Type_Name(eDecimalFormat_Type m);
 
 class CDM_DECL SEDecimalFormat
 {

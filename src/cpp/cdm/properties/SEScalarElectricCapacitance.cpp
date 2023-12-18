@@ -19,3 +19,5 @@ const ElectricCapacitanceUnit& ElectricCapacitanceUnit::GetCompoundUnit(const st
     return F;
   throw CommonDataModelException(unit + " is not a valid  ElectricCapacitance unit");
 }
+
+template class SEScalarQuantity<ElectricCapacitanceUnit>;

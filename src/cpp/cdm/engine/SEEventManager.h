@@ -63,7 +63,7 @@ enum class eEvent
   SupplementalOxygenBottleExhausted = 1004,
   NonRebreatherMaskOxygenBagEmpty = 1005
 };
-extern const std::string& eEvent_Name(eEvent m);
+extern CDM_DECL const std::string& eEvent_Name(eEvent m);
 
 class CDM_DECL SEEventHandler
 {

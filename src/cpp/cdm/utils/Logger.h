@@ -14,9 +14,9 @@ enum class ePrettyPrintType { Action = 0, Condition };
 namespace pulse { namespace cdm
 {
   // Not happy with how std does this for floats/doubles
-  std::string to_string(float f);
-  std::string to_string(double d);
-  std::string PrettyPrint(const std::string& str, ePrettyPrintType ppt);
+  CDM_DECL std::string to_string(float f);
+  CDM_DECL std::string to_string(double d);
+  CDM_DECL std::string PrettyPrint(const std::string& str, ePrettyPrintType ppt);
 }}
 
 class CDM_DECL Loggable

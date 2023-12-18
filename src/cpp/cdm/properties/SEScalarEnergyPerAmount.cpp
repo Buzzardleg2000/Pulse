@@ -24,3 +24,5 @@ const EnergyPerAmountUnit& EnergyPerAmountUnit::GetCompoundUnit(const std::strin
     return kJ_Per_mol;
   throw CommonDataModelException(unit + " is not a valid EnergyPerAmount unit");
 }
+
+template class SEScalarQuantity<EnergyPerAmountUnit>;

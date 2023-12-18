@@ -29,3 +29,5 @@ const HeatConductancePerAreaUnit& HeatConductancePerAreaUnit::GetCompoundUnit(co
     return BTU_Per_hr_ft2_C;
   throw CommonDataModelException(unit + " is not a valid HeatConductancePerArea unit");
 }
+
+template class SEScalarQuantity<HeatConductancePerAreaUnit>;

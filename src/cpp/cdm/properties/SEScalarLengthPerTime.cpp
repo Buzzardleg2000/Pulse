@@ -49,3 +49,5 @@ const LengthPerTimeUnit& LengthPerTimeUnit::GetCompoundUnit(const std::string& u
     return km_Per_hr;
   throw CommonDataModelException(unit + " is not a valid LengthPerTime unit");
 }
+
+template class SEScalarQuantity<LengthPerTimeUnit>;

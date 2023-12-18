@@ -23,3 +23,5 @@ const AmountPerMassUnit& AmountPerMassUnit::GetCompoundUnit(const std::string& u
     return ct_Per_ug;
   throw CommonDataModelException(unit + " is not a valid AmountPerMass unit");
 }
+
+template class SEScalarQuantity<AmountPerMassUnit>;

@@ -28,7 +28,7 @@ void CommonDataModelTest::BasicBlackBoxComparisonTest(const std::string& sOutput
   double currentTime_s = 0.0;
   DataTrack trk1;
   DataTrack trk2;
-  SEFluidCircuitCalculator fluidCalculator(m_Logger);
+  SEFluidCircuitCalculator fluidCalculator(DefaultFluidCircuitCalculatorUnits, m_Logger);
 
   //Test Circuit
   SEFluidCircuit* fluidCircuit = &m_Circuits->CreateFluidCircuit("Fluid");
@@ -97,7 +97,7 @@ void CommonDataModelTest::BasicBlackBoxTest(const std::string& sOutputDirectory)
   DataTrack trk1;
   DataTrack trk2;
 
-  SEFluidCircuitCalculator fluidCalculator(m_Logger);
+  SEFluidCircuitCalculator fluidCalculator(DefaultFluidCircuitCalculatorUnits, m_Logger);
 
   //Circuit 1
   SEFluidCircuit* fluidCircuit1 = &m_Circuits->CreateFluidCircuit("fluidCircuit1");
@@ -231,7 +231,7 @@ void CommonDataModelTest::WindkesselBlackBoxTest(const std::string& sOutputDirec
     }
 
     SEBlackBoxManager managerBlackBox(m_Logger);
-    SEFluidCircuitCalculator fluidCalculator(m_Logger);
+    SEFluidCircuitCalculator fluidCalculator(DefaultFluidCircuitCalculatorUnits, m_Logger);
 
     SEFluidCircuit* circuitCombined = &m_Circuits->CreateFluidCircuit("circuitCombined");
     SEFluidCircuit* circuitWindkessel = &m_Circuits->CreateFluidCircuit("circuitWindkessel");
@@ -503,7 +503,7 @@ void CommonDataModelTest::BlackBoxComplianceTest(const std::string& sOutputDirec
     double currentTime_s = 0.0;
     DataTrack trk;
 
-    SEFluidCircuitCalculator fluidCalculator(m_Logger);
+    SEFluidCircuitCalculator fluidCalculator(DefaultFluidCircuitCalculatorUnits, m_Logger);
 
     //Circuit 1
     SEFluidCircuit* fluidCircuit = &m_Circuits->CreateFluidCircuit("fluidCircuit");
@@ -680,7 +680,7 @@ void CommonDataModelTest::BlackBoxSourcesTest(const std::string& sOutputDirector
             double currentTime_s = 0.0;
             DataTrack trk;
 
-            SEFluidCircuitCalculator fluidCalculator(m_Logger);
+            SEFluidCircuitCalculator fluidCalculator(DefaultFluidCircuitCalculatorUnits, m_Logger);
 
             //Circuit 1
             SEFluidCircuit* fluidCircuit = &m_Circuits->CreateFluidCircuit("fluidCircuit");

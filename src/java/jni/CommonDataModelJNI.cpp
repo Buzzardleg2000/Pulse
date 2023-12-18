@@ -3,7 +3,7 @@
 
 #include <jni.h>
 #include <iostream>
-#include "CommonDefs.h" 
+#include "CommonDefs.h"
 #include "utils/unitconversion/UCCommon.h"
 #include "utils/Logger.h"
 #include "cdm/test/CommonDataModelTest.h"

@@ -47,7 +47,7 @@ void CommonDataModelTest::ElectricalCircuitTest(const std::string& sTestDirector
   double timeStep_s = 1.0 / 165.0;
   Info("Electric Circuit");
   SEElectricalCircuit* ElectricalCircuit = &m_Circuits->CreateElectricalCircuit("Electric");
-  SEElectricalCircuitCalculator ElectricalCircuitCalculator(m_Logger);
+  SEElectricalCircuitCalculator ElectricalCircuitCalculator(DefaultElectricalCircuitCalculatorUnits, m_Logger);
   ElectricalCircuit->StateChange();
   std::string sOutputFile = sTestDirectory + "/ElectricalCircuit.csv";
   //-----------------------------------------------------------
@@ -113,7 +113,7 @@ void CommonDataModelTest::FluidCircuitTest(const std::string& sTestDirectory)
   double timeStep_s = 1.0 / 165.0;
   Info("Fluid Circuit");
   SEFluidCircuit*  fluidCircuit = &m_Circuits->CreateFluidCircuit("Fluid");
-  SEFluidCircuitCalculator      fluidCalculator(m_Logger);
+  SEFluidCircuitCalculator      fluidCalculator(DefaultFluidCircuitCalculatorUnits, m_Logger);
   fluidCircuit->StateChange();
   std::string sOutputFile = sTestDirectory + "/FluidCircuit.csv";
   //-----------------------------------------------------------
@@ -179,7 +179,7 @@ void CommonDataModelTest::ThermalCircuitTest(const std::string& sTestDirectory)
   double timeStep_s = 1.0 / 165.0;
   Info("Thermal Circuit");
   SEThermalCircuit* ThermalCircuit = &m_Circuits->CreateThermalCircuit("Thermal");
-  SEThermalCircuitCalculator    ThermalCircuitCalculator(m_Logger);
+  SEThermalCircuitCalculator ThermalCircuitCalculator(DefaultThermalCircuitCalculatorUnits, m_Logger);
   ThermalCircuit->StateChange();
   std::string sOutputFile = sTestDirectory + "/ThermalCircuit.csv";
   //-----------------------------------------------------------
@@ -269,7 +269,7 @@ void CommonDataModelTest::CombinedCircuitTest(const std::string& sTestDirectory)
   double timeStep_s = 1.0 / 165.0;
   double currentTime_s = 0.0;
   DataTrack trk1;
-  SEFluidCircuitCalculator fluidCalculator(m_Logger);
+  SEFluidCircuitCalculator fluidCalculator(DefaultFluidCircuitCalculatorUnits, m_Logger);
 
   //Master Circuit
   SEFluidCircuit* MasterCircuit = &m_Circuits->CreateFluidCircuit("Master");
@@ -379,7 +379,7 @@ void CommonDataModelTest::CircuitErrorTest(const std::string& sTestDirectory)
   std::cout << "CircuitErrorTest\n";
   //Setup a basic circuit
   m_Logger->SetLogFile(sTestDirectory + "/CombinedCircuitTest.log");
-  SEFluidCircuitCalculator fluidCalculator(m_Logger);
+  SEFluidCircuitCalculator fluidCalculator(DefaultFluidCircuitCalculatorUnits, m_Logger);
   SEFluidCircuit* fluidCircuit = &m_Circuits->CreateFluidCircuit("Fluid");
   //-----------------------------------------------------------
   //Nodes
@@ -434,7 +434,7 @@ void CommonDataModelTest::DynamicallyChangingCircuitTest(const std::string& sTes
   TimingProfile p;
   double timeStep_s = 1.0 / 165.0;
   DataTrack trk1;
-  SEFluidCircuitCalculator fluidCalculator(m_Logger);
+  SEFluidCircuitCalculator fluidCalculator(DefaultFluidCircuitCalculatorUnits, m_Logger);
 
   //Test Circuit
   SEFluidCircuit* fluidCircuit = &m_Circuits->CreateFluidCircuit("Fluid");
@@ -535,7 +535,7 @@ void CommonDataModelTest::NonZeroReferencePositive(const std::string& sTestDirec
   TimingProfile p;
   double timeStep_s = 1.0 / 165.0;
   DataTrack trk1;
-  SEFluidCircuitCalculator fluidCalculator(m_Logger);
+  SEFluidCircuitCalculator fluidCalculator(DefaultFluidCircuitCalculatorUnits, m_Logger);
   SEFluidCircuit* fluidCircuit = &m_Circuits->CreateFluidCircuit("Fluid");
   //-----------------------------------------------------------
   //Nodes
@@ -609,7 +609,7 @@ void CommonDataModelTest::NonZeroReferenceNegative(const std::string& sTestDirec
   TimingProfile p;
   double timeStep_s = 1.0 / 165.0;
   DataTrack trk1;
-  SEFluidCircuitCalculator fluidCalculator(m_Logger);
+  SEFluidCircuitCalculator fluidCalculator(DefaultFluidCircuitCalculatorUnits, m_Logger);
   SEFluidCircuit* fluidCircuit = &m_Circuits->CreateFluidCircuit("Fluid");
   //-----------------------------------------------------------
   //Nodes
@@ -686,7 +686,7 @@ void CommonDataModelTest::PolarizedCapacitorTest(const std::string& sTestDirecto
   double timeStep_s = 1.0 / 100.0;
   double currentTime_s = 0.0;
   DataTrack trk1;
-  SEFluidCircuitCalculator fluidCalculator(m_Logger);
+  SEFluidCircuitCalculator fluidCalculator(DefaultFluidCircuitCalculatorUnits, m_Logger);
   SEFluidCircuit* fluidCircuit = &m_Circuits->CreateFluidCircuit("Fluid");
   //-----------------------------------------------------------
   //Nodes
@@ -754,7 +754,7 @@ void CommonDataModelTest::PreChargeComplianceZeroVolume(const std::string& sTest
   double currentTime_s = 0.0;
   DataTrack trk1;
 
-  SEFluidCircuitCalculator fluidCalculator(m_Logger);
+  SEFluidCircuitCalculator fluidCalculator(DefaultFluidCircuitCalculatorUnits, m_Logger);
   SEFluidCircuit* fluidCircuit = &m_Circuits->CreateFluidCircuit("Fluid");
 
   SEFluidCircuitNode& node1 = fluidCircuit->CreateNode("node1");
@@ -802,7 +802,7 @@ void CommonDataModelTest::PreChargeComplianceNonZeroVolume(const std::string& sT
   double currentTime_s = 0.0;
   DataTrack trk1;
 
-  SEFluidCircuitCalculator fluidCalculator(m_Logger);
+  SEFluidCircuitCalculator fluidCalculator(DefaultFluidCircuitCalculatorUnits, m_Logger);
   SEFluidCircuit* fluidCircuit = &m_Circuits->CreateFluidCircuit("Fluid");
 
   SEFluidCircuitNode& node1 = fluidCircuit->CreateNode("node1");
@@ -850,7 +850,7 @@ void CommonDataModelTest::ComplianceVolumeChange(const std::string& sTestDirecto
   double currentTime_s = 0.0;
   DataTrack trk1;
 
-  SEFluidCircuitCalculator fluidCalculator(m_Logger);
+  SEFluidCircuitCalculator fluidCalculator(DefaultFluidCircuitCalculatorUnits, m_Logger);
   SEFluidCircuit* fluidCircuit = &m_Circuits->CreateFluidCircuit("Fluid");
 
   SEFluidCircuitNode* ground = &fluidCircuit->CreateNode("node1");

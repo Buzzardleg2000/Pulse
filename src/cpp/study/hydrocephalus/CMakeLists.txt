@@ -1,5 +1,4 @@
-
-add_library_ex(HydrocephalusEngine
+add_library_ex(HydrocephalusEngine STATIC
   H_FILES
     HRunner.h
   CPP_FILES

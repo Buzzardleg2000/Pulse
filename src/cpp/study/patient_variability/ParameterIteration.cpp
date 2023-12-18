@@ -2,6 +2,7 @@
    See accompanying NOTICE file for details.*/
 
 #include "cdm/CommonDefs.h"
+#include "study/patient_variability/ParameterIteration.h"
 
 namespace pulse::study::patient_variability
 {
@@ -45,4 +46,7 @@ namespace pulse::study::patient_variability
     std::vector<T> v(values);
     this->SetValues(v, sliceIdx);
   }
+
+  template class ParameterIteration<size_t>;
+  template class ParameterIteration<double>;
 }

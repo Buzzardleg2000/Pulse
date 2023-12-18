@@ -79,7 +79,7 @@ namespace pulse { namespace human_adult_whole_body
 
     DataTrack outTrk;
     std::ofstream file;
-    SEThermalCircuitCalculator calc(pc.GetLogger());
+    SEThermalCircuitCalculator calc(DefaultThermalCircuitCalculatorUnits, pc.GetLogger());
 
     double deltaT_s = 1.0 / 90;
     double inv_deltaT_s = 1.0 / deltaT_s;
@@ -162,7 +162,7 @@ namespace pulse { namespace human_adult_whole_body
 
     std::ofstream file;
 
-    SEThermalCircuitCalculator calc(pc.GetLogger());
+    SEThermalCircuitCalculator calc(DefaultThermalCircuitCalculatorUnits, pc.GetLogger());
 
     double deltaT_s = 1.0 / 90;
     double inv_deltaT_s = 1.0 / deltaT_s;
@@ -264,7 +264,7 @@ namespace pulse { namespace human_adult_whole_body
 
     std::ofstream file;
 
-    SEThermalCircuitCalculator calc(pc.GetLogger());
+    SEThermalCircuitCalculator calc(DefaultThermalCircuitCalculatorUnits, pc.GetLogger());
 
     double deltaT_s = 1.0 / 90;
     double inv_deltaT_s = 1.0 / deltaT_s;
@@ -387,7 +387,7 @@ namespace pulse { namespace human_adult_whole_body
 
     std::ofstream file;
 
-    SEThermalCircuitCalculator calc(pc.GetLogger());
+    SEThermalCircuitCalculator calc(DefaultThermalCircuitCalculatorUnits, pc.GetLogger());
 
     double deltaT_s = 1.0 / 90;
     double inv_deltaT_s = 1.0 / deltaT_s;
@@ -515,7 +515,7 @@ namespace pulse { namespace human_adult_whole_body
 
     DataTrack outTrk;
     std::ofstream file;
-    SEThermalCircuitCalculator calc(pc.GetLogger());
+    SEThermalCircuitCalculator calc(DefaultThermalCircuitCalculatorUnits, pc.GetLogger());
 
     double deltaT_s = 1.0 / 90;
     double inv_deltaT_s = 1.0 / deltaT_s;
@@ -668,7 +668,7 @@ namespace pulse { namespace human_adult_whole_body
 
     DataTrack outTrk;
     std::ofstream file;
-    SEThermalCircuitCalculator calc(pc.GetLogger());
+    SEThermalCircuitCalculator calc(DefaultThermalCircuitCalculatorUnits, pc.GetLogger());
 
     double deltaT_s = 1.0 / 30;
     double inv_deltaT_s = 1.0 / deltaT_s;
@@ -776,7 +776,7 @@ namespace pulse { namespace human_adult_whole_body
     EnvironmentCircuit.StateChange();
 
     double deltaT = 1.0 / 90;
-    SEThermalCircuitCalculator calc(pc.GetLogger());
+    SEThermalCircuitCalculator calc(DefaultThermalCircuitCalculatorUnits, pc.GetLogger());
 
     for (unsigned int i = 0; i < 13; i++)
     {

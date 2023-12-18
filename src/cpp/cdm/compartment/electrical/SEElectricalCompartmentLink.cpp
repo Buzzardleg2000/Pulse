@@ -4,7 +4,6 @@
 #include "cdm/CommonDefs.h"
 #include "cdm/compartment/electrical/SEElectricalCompartment.h"
 #include "cdm/compartment/electrical/SEElectricalCompartmentLink.h"
-#include "cdm/circuit/SECircuitManager.h"
 #include "cdm/circuit/electrical/SEElectricalCircuitPath.h"
 #include "cdm/properties/SEScalarElectricCurrent.h"
 

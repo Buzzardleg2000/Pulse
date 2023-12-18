@@ -13,7 +13,7 @@
  * An instance of an engine where the interface is define in stl and base data types.
  * This interface is a thunk layer using serialized cdm objects to drive a Pulse engine.
  */
-class PhysiologyEngineThunk : public LoggerForward, public SEEventHandler
+class CDM_DECL PhysiologyEngineThunk : public LoggerForward, public SEEventHandler
 {
 public:
   PhysiologyEngineThunk(const std::string& dataDir = "./");

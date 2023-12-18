@@ -66,5 +66,7 @@ protected:
   std::map<const NodeType*, std::vector<PathType*>*> m_ConnectedPathMap;
 
   std::vector<PathType*>            m_ValvePaths;
-  std::vector<PathType*>            m_PolarizedElementPaths; 
+  std::vector<PathType*>            m_PolarizedElementPaths;
 };
+
+#include "cdm/circuit/SECircuit.hxx"

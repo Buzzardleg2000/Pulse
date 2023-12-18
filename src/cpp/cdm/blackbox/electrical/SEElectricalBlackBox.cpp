@@ -12,3 +12,5 @@ SEElectricalBlackBox::~SEElectricalBlackBox()
 {
   Clear();
 }
+
+template class SEBlackBox<ELECTRICAL_BLACK_BOX>;

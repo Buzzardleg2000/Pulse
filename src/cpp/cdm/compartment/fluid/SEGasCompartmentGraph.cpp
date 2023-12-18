@@ -53,3 +53,5 @@ void SEGasCompartmentGraph::AddGraph(SEGasCompartmentGraph& graph)
   for (SEGasCompartmentLink* lnk : graph.GetLinks())
     AddLink(*lnk);
 }
+
+template class SECompartmentGraph<SEGasCompartment, SEGasCompartmentLink>;

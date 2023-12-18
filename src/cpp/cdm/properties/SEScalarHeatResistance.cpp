@@ -34,3 +34,5 @@ const HeatResistanceUnit& HeatResistanceUnit::GetCompoundUnit(const std::string&
     return C_s_Per_kcal;
   throw CommonDataModelException(unit + " is not a valid HeatResistance unit");
 }
+
+template class SEScalarQuantity<HeatResistanceUnit>;

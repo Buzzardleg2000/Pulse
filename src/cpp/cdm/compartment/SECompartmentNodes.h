@@ -53,3 +53,4 @@ protected:
   PotentialScalar* m_Potential;
 };
 
+#include "cdm/compartment/SECompartmentNodes.hxx"

@@ -19,3 +19,5 @@ const ElectricChargeUnit& ElectricChargeUnit::GetCompoundUnit(const std::string&
     return C;
   throw CommonDataModelException(unit + " is not a valid ElectricCharge unit");
 }
+
+template class SEScalarQuantity<ElectricChargeUnit>;

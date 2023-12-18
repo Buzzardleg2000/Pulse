@@ -11,7 +11,7 @@ enum class eUrinalysis_PresenceIndicator {
   Positive,
   Negative
 };
-extern const std::string& eUrinalysis_PresenceIndicator_Name(eUrinalysis_PresenceIndicator m);
+extern CDM_DECL const std::string& eUrinalysis_PresenceIndicator_Name(eUrinalysis_PresenceIndicator m);
 
 // Keep enums in sync with appropriate schema/cdm/PatienAssessmentEnums.proto file !!
 enum class eUrinalysis_ClarityIndicator {
@@ -21,7 +21,7 @@ enum class eUrinalysis_ClarityIndicator {
   Cloudy,
   Turbid
 };
-extern const std::string& eUrinalysis_ClarityIndicator_Name(eUrinalysis_ClarityIndicator m);
+extern CDM_DECL const std::string& eUrinalysis_ClarityIndicator_Name(eUrinalysis_ClarityIndicator m);
 
 // Keep enums in sync with appropriate schema/cdm/PatienAssessmentEnums.proto file !!
 enum class eUrinalysis_UrineColor {
@@ -30,7 +30,7 @@ enum class eUrinalysis_UrineColor {
   Yellow,
   DarkYellow
 };
-extern const std::string& eUrinalysis_UrineColor_Name(eUrinalysis_UrineColor m);
+extern CDM_DECL const std::string& eUrinalysis_UrineColor_Name(eUrinalysis_UrineColor m);
 
 
 class CDM_DECL SEUrinalysis : public SEPatientAssessment

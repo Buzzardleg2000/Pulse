@@ -3,7 +3,9 @@
 
 #include "cdm/CommonDefs.h"
 #include "cdm/compartment/fluid/SELiquidCompartmentGraph.h"
-#include "cdm/compartment/SECompartmentManager.h"
+
+#include "cdm/properties/SEScalarMass.h"
+#include "cdm/properties/SEScalarMassPerVolume.h"
 
 void SELiquidCompartmentGraph::BalanceByIntensive()
 {
@@ -18,3 +20,5 @@ void SELiquidCompartmentGraph::AddGraph(SELiquidCompartmentGraph& graph)
   for (SELiquidCompartmentLink* lnk : graph.GetLinks())
     AddLink(*lnk);
 }
+
+template class SECompartmentGraph<SELiquidCompartment, SELiquidCompartmentLink>;

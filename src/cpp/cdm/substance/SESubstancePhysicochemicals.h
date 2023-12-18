@@ -5,11 +5,11 @@
 
 // Keep enums in sync with appropriate schema/cdm/SubstanceEnums.proto file !!
 enum class eSubstance_IonicState { NullIonicState = 0, Acid, Base, Neutral, WeakBase };
-extern const std::string& eSubstance_IonicState_Name(eSubstance_IonicState m);
+extern CDM_DECL const std::string& eSubstance_IonicState_Name(eSubstance_IonicState m);
 
 // Keep enums in sync with appropriate schema/cdm/SubstanceEnums.proto file !!
 enum class eSubstance_BindingProtein { NullBindingProtein = 0, AAG, Albumin, Lipoprotein };
-extern const std::string& eSubstance_BindingProtein_Name(eSubstance_BindingProtein m);
+extern CDM_DECL const std::string& eSubstance_BindingProtein_Name(eSubstance_BindingProtein m);
 
 class CDM_DECL SESubstancePhysicochemicals : public Loggable
 {

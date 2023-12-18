@@ -44,3 +44,6 @@ const PressureUnit& PressureUnit::GetCompoundUnit(const std::string& unit)
     return mbar;
   throw CommonDataModelException(unit + " is not a valid Pressure unit");
 }
+
+template class SEScalarQuantity<PressureUnit>;
+

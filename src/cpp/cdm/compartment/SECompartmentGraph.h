@@ -40,3 +40,5 @@ protected:
   std::vector<CompartmentType*>     m_Compartments;
   std::vector<CompartmentLinkType*> m_CompartmentLinks;
 };
+
+#include "cdm/compartment/SECompartmentGraph.hxx"

@@ -18,7 +18,7 @@ enum class eHeartRhythm
   StableVentricularTachycardia,
   UnstableVentricularTachycardia
 };
-extern const std::string& eHeartRhythm_Name(eHeartRhythm m);
+extern CDM_DECL const std::string& eHeartRhythm_Name(eHeartRhythm m);
 
 class CDM_DECL SECardiovascularSystem : public SESystem
 {

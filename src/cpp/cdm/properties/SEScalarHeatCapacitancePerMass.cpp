@@ -34,3 +34,5 @@ const HeatCapacitancePerMassUnit& HeatCapacitancePerMassUnit::GetCompoundUnit(co
     return kcal_Per_C_kg;
   throw CommonDataModelException(unit + " is not a valid HeatCapacitancePerMass unit");
 }
+
+template class SEScalarQuantity<HeatCapacitancePerMassUnit>;

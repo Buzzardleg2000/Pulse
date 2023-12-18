@@ -39,3 +39,5 @@ const MassUnit& MassUnit::GetCompoundUnit(const std::string& unit)
     return lb;
   throw CommonDataModelException(unit + " is not a valid Mass unit");
 }
+
+template class SEScalarQuantity<MassUnit>;

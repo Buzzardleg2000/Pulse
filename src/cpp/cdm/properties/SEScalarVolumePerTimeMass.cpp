@@ -39,3 +39,5 @@ const VolumePerTimeMassUnit& VolumePerTimeMassUnit::GetCompoundUnit(const std::s
     return uL_Per_min_kg;
   throw CommonDataModelException(unit + " is not a valid VolumePerTimeMass unit");
 }
+
+template class SEScalarQuantity<VolumePerTimeMassUnit>;

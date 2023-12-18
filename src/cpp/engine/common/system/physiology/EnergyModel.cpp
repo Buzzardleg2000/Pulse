@@ -60,7 +60,7 @@ namespace pulse
   {
     m_BloodpH = new SERunningAverage();
     m_BicarbonateMolarity_mmol_Per_L = new SERunningAverage();
-    m_circuitCalculator = new SEThermalCircuitCalculator(GetLogger());
+    m_circuitCalculator = new SEThermalCircuitCalculator(DefaultThermalCircuitCalculatorUnits, GetLogger());
     Clear();
   }
 

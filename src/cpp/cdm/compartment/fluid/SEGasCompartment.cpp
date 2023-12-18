@@ -254,3 +254,5 @@ SEGasSubstanceQuantity& SEGasCompartment::CreateSubstanceQuantity(SESubstance& s
   }
   return *subQ;
 }
+
+template class SEFluidCompartment<SEGasCompartmentLink, SEGasTransportVertex, SEGasTransportSubstance, SEGasSubstanceQuantity>;

@@ -24,3 +24,5 @@ const OsmolalityUnit& OsmolalityUnit::GetCompoundUnit(const std::string& unit)
     return mOsm_Per_kg;
   throw CommonDataModelException(unit + " is not a valid Osmolality unit");
 }
+
+template class SEScalarQuantity<OsmolalityUnit>;

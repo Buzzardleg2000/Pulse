@@ -19,3 +19,5 @@ const HeatInductanceUnit& HeatInductanceUnit::GetCompoundUnit(const std::string&
     return K_s_Per_W;
   throw CommonDataModelException(unit + " is not a valid HeatInductance unit");
 }
+
+template class SEScalarQuantity<HeatInductanceUnit>;

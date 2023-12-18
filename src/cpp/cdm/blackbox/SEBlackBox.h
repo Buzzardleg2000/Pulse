@@ -120,3 +120,5 @@ protected:
   PathType* m_SourcePath = nullptr;
   PathType* m_TargetPath = nullptr;
 };
+
+#include "cdm/blackbox/SEBlackBox.hxx"

@@ -15,9 +15,9 @@ struct PULSE_DECL PulseBuildInformation
 };
 
 enum class eModelType { HumanAdultWholeBody=0, HumanAdultVentilationMechanics, HumanAdultHemodynamics };
-bool eModelType_ValueOf(const std::string s, eModelType& t);
+PULSE_DECL bool eModelType_ValueOf(const std::string s, eModelType& t);
 
-std::unique_ptr<PhysiologyEngine> CreatePulseEngine(eModelType type = eModelType::HumanAdultWholeBody, Logger* logger = nullptr);
+PULSE_DECL std::unique_ptr<PhysiologyEngine> CreatePulseEngine(eModelType type = eModelType::HumanAdultWholeBody, Logger* logger = nullptr);
 
 struct IrreversibleStateException : public std::runtime_error
 {

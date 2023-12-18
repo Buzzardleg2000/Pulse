@@ -575,7 +575,7 @@ namespace pulse { namespace human_adult_whole_body
     SEFluidCircuitPath& LeftAortaSourcePath = RenalCircuit.CreatePath(*ReferenceNode, *LeftRenalArteryNode, "LeftAortaSourcePath");
     SEFluidCircuitPath& LeftVenaCavaSourcePath = RenalCircuit.CreatePath(*ReferenceNode, *LeftRenalVenaCavaConnectionNode, "LeftVenaCavaSourcePath");
 
-    SEFluidCircuitCalculator calc(pc.GetLogger());
+    SEFluidCircuitCalculator calc(DefaultFluidCircuitCalculatorUnits, pc.GetLogger());
     SELiquidTransporter txpt(VolumePerTimeUnit::mL_Per_s, VolumeUnit::mL, MassUnit::ug, MassPerVolumeUnit::ug_Per_mL, pc.GetLogger());
 
     double deltaT_s = 1.0 / 90.0;

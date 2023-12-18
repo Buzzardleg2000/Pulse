@@ -13,3 +13,5 @@ SEThermalBlackBox::~SEThermalBlackBox()
 {
   Clear();
 }
+
+template class SEBlackBox<THERMAL_BLACK_BOX>;

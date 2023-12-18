@@ -29,5 +29,3 @@ namespace pulse::study::patient_variability
     std::vector<T>  m_Values;
   };
 }
-
-#include "ParameterIteration.tpp"

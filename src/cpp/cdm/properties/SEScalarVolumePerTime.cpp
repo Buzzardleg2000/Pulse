@@ -59,3 +59,5 @@ const VolumePerTimeUnit& VolumePerTimeUnit::GetCompoundUnit(const std::string& u
     return mL_Per_hr;
   throw CommonDataModelException(unit + " is not a valid VolumePerTime unit");
 }
+
+template class SEScalarQuantity<VolumePerTimeUnit>;

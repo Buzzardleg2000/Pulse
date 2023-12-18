@@ -24,3 +24,5 @@ const InverseVolumeUnit& InverseVolumeUnit::GetCompoundUnit(const std::string& u
     return Inverse_mL;
   throw CommonDataModelException(unit + " is not a valid InverseVolume unit");
 }
+
+template class SEScalarQuantity<InverseVolumeUnit>;

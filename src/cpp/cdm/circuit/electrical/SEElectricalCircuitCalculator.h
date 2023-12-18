@@ -2,15 +2,9 @@
    See accompanying NOTICE file for details.*/
 
 #pragma once
-//CDM_BIND_DECL(ElectricalCircuitData)
 #include "cdm/circuit/SECircuitCalculator.h"
 #include "cdm/circuit/electrical/SEElectricalCircuit.h"
 
-class CDM_DECL SEElectricalCircuitCalculator : public SECircuitCalculator<SEElectricalCircuit, SEElectricalCircuitNode, SEElectricalCircuitPath, ElectricCapacitanceUnit, ElectricCurrentUnit, ElectricInductanceUnit, ElectricPotentialUnit, ElectricChargeUnit, ElectricResistanceUnit>
-{
-public:
+using SEElectricalCircuitCalculator = SECircuitCalculator<SEElectricalCircuit, SEElectricalCircuitNode, SEElectricalCircuitPath, ElectricCapacitanceUnit, ElectricCurrentUnit, ElectricInductanceUnit, ElectricPotentialUnit, ElectricChargeUnit, ElectricResistanceUnit>;
 
-  SEElectricalCircuitCalculator(Logger* logger);
-  SEElectricalCircuitCalculator(const ElectricCapacitanceUnit&, const ElectricCurrentUnit&, const ElectricInductanceUnit&, const ElectricPotentialUnit&, const ElectricChargeUnit&, const ElectricResistanceUnit&, Logger* logger);
-  virtual ~SEElectricalCircuitCalculator();
-};
+#define DefaultElectricalCircuitCalculatorUnits ElectricCapacitanceUnit::F, ElectricCurrentUnit::A, ElectricInductanceUnit::H, ElectricPotentialUnit::V, ElectricChargeUnit::C, ElectricResistanceUnit::Ohm

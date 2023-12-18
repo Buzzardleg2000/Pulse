@@ -42,3 +42,5 @@ const TimeUnit& TimeUnit::GetCompoundUnit(const std::string& unit)
     return yr;
   throw CommonDataModelException(unit + " is not a valid Time unit");
 }
+
+template class SEScalarQuantity<TimeUnit>;

@@ -5,7 +5,6 @@
 #include "cdm/compartment/fluid/SEFluidCompartment.h"
 #include "cdm/compartment/fluid/SELiquidCompartmentLink.h"
 #include "cdm/compartment/substances/SELiquidSubstanceQuantity.h"
-#include "cdm/substance/SESubstanceTransport.h"
 class SELiquidBlackBox;
 
 class CDM_DECL SELiquidCompartment : public SEFluidCompartment<SELiquidCompartmentLink, SELiquidTransportVertex, SELiquidTransportSubstance, SELiquidSubstanceQuantity>

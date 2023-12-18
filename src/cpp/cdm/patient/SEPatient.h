@@ -7,7 +7,7 @@ class SENutrition;
 
 // Keep enums in sync with appropriate schema/cdm/PatientEnums.proto file !!
 enum class ePatient_Sex { Male = 0, Female };
-extern const std::string& ePatient_Sex_Name(ePatient_Sex m);
+extern CDM_DECL const std::string& ePatient_Sex_Name(ePatient_Sex m);
 
 class CDM_DECL SEPatient : public Loggable
 {

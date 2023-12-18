@@ -14,7 +14,7 @@ class SEEngineConfiguration;
 class SEScenarioExecStatus;
 
 enum class eRelativeSerialization { ToWorkingDir = 0, ToOutputDir, ToScenarioDir };
-extern const std::string& eRelativeSerialization_Name(eRelativeSerialization rt);
+extern CDM_DECL const std::string& eRelativeSerialization_Name(eRelativeSerialization rt);
 
 class CDM_DECL SEScenarioExec : public Loggable
 {
@@ -214,7 +214,7 @@ protected:
 };
 
 enum class eScenarioExecutionState { Waiting = 0, Executing, Complete };
-extern const std::string& eScenarioExecutionState_Name(eScenarioExecutionState s);
+extern CDM_DECL const std::string& eScenarioExecutionState_Name(eScenarioExecutionState s);
 
 class CDM_DECL SEScenarioExecStatus : public SEEngineInitializationStatus
 {

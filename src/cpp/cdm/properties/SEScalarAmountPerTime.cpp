@@ -44,3 +44,5 @@ const AmountPerTimeUnit& AmountPerTimeUnit::GetCompoundUnit(const std::string& u
     return umol_Per_min;
   throw CommonDataModelException(unit + " is not a valid  AmountPerTime unit");
 }
+
+template class SEScalarQuantity<AmountPerTimeUnit>;

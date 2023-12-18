@@ -11,7 +11,7 @@ class HowToTracker;
 
 namespace pulse { namespace human_adult_whole_body
 {
-  class PULSE_DECL EngineTest : public SETestManager
+  class EngineTest : public SETestManager
   {
     public:
       EngineTest(Logger* logger = nullptr);

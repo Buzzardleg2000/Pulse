@@ -10,7 +10,7 @@
 
 #define TRANSPORT_AMOUNT_TYPES ExtensiveScalar, IntensiveScalar
 template<typename ExtensiveScalar, typename IntensiveScalar>
-class SESubstanceTransportAmount
+class CDM_DECL SESubstanceTransportAmount
 {
   template<SUBSTANCE_TRANSPORTER_TEMPLATE> friend class SESubstanceTransporter;
 public:
@@ -29,7 +29,7 @@ using SELiquidTransportSubstance = SESubstanceTransportAmount<SEScalarMass, SESc
 
 #define TRANSPORT_VERTEX_TYPES QuantityScalar, ExtensiveScalar, IntensiveScalar
 template <typename QuantityScalar, typename ExtensiveScalar, typename IntensiveScalar>
-class SESubstanceTransportVertex
+class CDM_DECL SESubstanceTransportVertex
 {
   template<SUBSTANCE_TRANSPORTER_TEMPLATE> friend class SESubstanceTransporter;
 public:
@@ -48,7 +48,7 @@ using SELiquidTransportVertex = SESubstanceTransportVertex<SEScalarVolume, SESca
 
 #define TRANSPORT_EDGE_TYPES FluxScalar, QuantityScalar, ExtensiveScalar, IntensiveScalar
 template <typename FluxScalar, typename QuantityScalar, typename ExtensiveScalar, typename IntensiveScalar>
-class SESubstanceTransportEdge
+class CDM_DECL SESubstanceTransportEdge
 {
   template<SUBSTANCE_TRANSPORTER_TEMPLATE> friend class SESubstanceTransporter;
 public:
@@ -67,7 +67,7 @@ using SEGasTransportEdge = SESubstanceTransportEdge<SEScalarVolumePerTime, SESca
 using SELiquidTransportEdge = SESubstanceTransportEdge<SEScalarVolumePerTime, SEScalarVolume, SEScalarMass, SEScalarMassPerVolume>;
 
 template <typename FluxScalar, typename QuantityScalar, typename ExtensiveScalar, typename IntensiveScalar>
-class SESubstanceTransportGraph
+class CDM_DECL SESubstanceTransportGraph
 {
   template<SUBSTANCE_TRANSPORTER_TEMPLATE> friend class SESubstanceTransporter;
 public:
@@ -80,11 +80,9 @@ protected:
   virtual const std::vector<SESubstanceTransportEdge<TRANSPORT_EDGE_TYPES>*>* GetSourceEdges(const SESubstanceTransportVertex<TRANSPORT_VERTEX_TYPES>& v) const = 0;
   virtual const std::vector<SESubstanceTransportEdge<TRANSPORT_EDGE_TYPES>*>* GetTargetEdges(const SESubstanceTransportVertex<TRANSPORT_VERTEX_TYPES>& v) const = 0;
 };
-using SEGasTransportGraph = SESubstanceTransportGraph<SEScalarVolumePerTime, SEScalarVolume, SEScalarVolume, SEScalar0To1>;
-using SELiquidTransportGraph = SESubstanceTransportGraph<SEScalarVolumePerTime, SEScalarVolume, SEScalarMass, SEScalarMassPerVolume>;
 
 template <SUBSTANCE_TRANSPORTER_TEMPLATE>
-class SESubstanceTransporter : public Loggable
+class CDM_DECL SESubstanceTransporter : public Loggable
 {
 public:
   SESubstanceTransporter(const FluxUnit& fUnit, const QuantityUnit& qUnit, const ExtensiveUnit& eUnit, const IntensiveUnit& iUnit, Logger* logger);
@@ -98,21 +96,3 @@ protected:
   const ExtensiveUnit &m_ExtensiveUnit;
   const IntensiveUnit &m_IntensiveUnit;
 };
-
-class SEGasTransporter : public SESubstanceTransporter<SEGasTransportGraph, VolumePerTimeUnit, VolumeUnit, VolumeUnit, NoUnit>
-{
-public:
-  SEGasTransporter(Logger* logger);
-  SEGasTransporter(const VolumePerTimeUnit& fUnit, const VolumeUnit& qUnit, const VolumeUnit& eUnit, Logger* logger);
-  ~SEGasTransporter();
-};
-
-class SELiquidTransporter : public SESubstanceTransporter<SELiquidTransportGraph, VolumePerTimeUnit, VolumeUnit, MassUnit, MassPerVolumeUnit>
-{
-public:
-  SELiquidTransporter(Logger* logger);
-  SELiquidTransporter(const VolumePerTimeUnit& fUnit, const VolumeUnit& qUnit, const MassUnit& eUnit, const MassPerVolumeUnit& iUnit, Logger* logger);
-  ~SELiquidTransporter();
-};
-
-

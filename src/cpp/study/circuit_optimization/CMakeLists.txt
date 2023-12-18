@@ -1,4 +1,4 @@
-add_library_ex(CircuitOptimizationEngine
+add_library_ex(CircuitOptimizationEngine STATIC
   H_FILES
     CircuitOptimizer.h
   CPP_FILES

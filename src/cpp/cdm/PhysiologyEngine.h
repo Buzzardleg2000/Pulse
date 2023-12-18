@@ -49,7 +49,7 @@ enum class eEngineInitializationState
   FailedStabilization = 3,
   Initialized = 4
 };
-extern const std::string& eEngineInitializationState_Name(eEngineInitializationState s);
+extern CDM_DECL const std::string& eEngineInitializationState_Name(eEngineInitializationState s);
 
 /**
  * @brief
@@ -68,7 +68,7 @@ class CDM_DECL PhysiologyEngine : public Loggable
 {
 public:
   PhysiologyEngine(Logger* logger = nullptr) : Loggable(logger) {}
-  virtual ~PhysiologyEngine() {}
+  virtual ~PhysiologyEngine() = default;
 
   //--------------------------------------------------------------------------------------------------
   /// \brief

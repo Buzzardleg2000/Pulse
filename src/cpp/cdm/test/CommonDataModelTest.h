@@ -1,6 +1,6 @@
-// The following tests will be exported and runnable
+/* Distributed under the Apache License, Version 2.0.
+   See accompanying NOTICE file for details.*/
 
-#include "CommonDefs.h"
 #include "utils/testing/SETestManager.h"
 class SEFluidCircuit;
 class SECircuitManager;
@@ -14,22 +14,6 @@ class SELiquidSubstanceQuantity;
 class SETestSuite;
 class SETestCase;
 
-
-#define CDM_TEST_DECL
-#ifdef SHARED_CDM_TEST
-  #if defined (__clang__)
-   #define CDM_TEST_DECL
-  #elif defined(__gnu_linux__)
-    #define CDM_TEST_DECL __attribute__ ((visibility ("default")))
-  #else
-    #ifdef SHARED_CDM_TEST
-      #define CDM_TEST_DECL __declspec(dllexport)
-    #else
-      #define CDM_TEST_DECL __declspec(dllimport)
-    #endif
-  #endif
-#endif
-
 enum enumCDMTestSourceType
 {
   DC,
@@ -38,7 +22,7 @@ enum enumCDMTestSourceType
   ZEROCENTEREDSIN
 };
 
-class CDM_TEST_DECL CommonDataModelTest : public SETestManager
+class CommonDataModelTest : public SETestManager
 {
 public:
   CommonDataModelTest(Logger* logger=nullptr);

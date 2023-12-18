@@ -13,3 +13,5 @@ SEFluidBlackBox::~SEFluidBlackBox()
 {
   Clear();
 }
+
+template class SEBlackBox<FLUID_BLACK_BOX>;

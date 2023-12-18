@@ -5,6 +5,7 @@
 
 #include "engine/common/system/Model.h"
 #include "engine/common/system/Systems.h"
+#include "cdm/circuit/thermal/SEThermalCircuitCalculator.h"
 
 class SEPatient;
 class SELiquidSubstanceQuantity;
@@ -12,7 +13,6 @@ class SEFluidCircuitPath;
 class SEThermalCircuit;
 class SEThermalCircuitNode;
 class SEThermalCircuitPath;
-class SEThermalCircuitCalculator;
 
 namespace pulse
 {

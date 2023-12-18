@@ -31,6 +31,9 @@ Our version number sematic is Major.Minor.Patch-ReleaseStage, where :
   - Post processing pipeline
     - Written in python, allows us to process a log and csv file generated from a scenario and pull out (and even generate new) data into a more machine learning friendly format
       - Unstructure Text Module looks at map of vitals to a string vector and randomly takes strings based on the vitals values to create an unstructured description of the simulation at that time. The strings and bounds are read in from a spreadsheet
+  - Testing Utils
+    - Add a run.cmake option to generate a config of all the failures for a quick and easy rebase (once they have been reviewed and approved of course)
+    - Remove action vertical lines in our verification plots of actions that occur many many times. These actions are usually testing sensor driven inputs and make data interpretation difficult.
 
 - Physiology Model Improvements
   - Dyspnea

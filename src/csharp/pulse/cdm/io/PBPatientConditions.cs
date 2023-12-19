@@ -463,8 +463,10 @@ namespace Pulse.CDM
     {
       if (src.PatientCondition != null)
         Serialize(src.PatientCondition, dst);
-      if (src.Severity != null)
-        PBProperty.Load(src.Severity, dst.GetSeverity());
+      if (src.InfectionSeverity != null)
+        PBProperty.Load(src.InfectionSeverity, dst.GetInfectionSeverity());
+      if (src.ProgressionSeverity != null)
+        PBProperty.Load(src.ProgressionSeverity, dst.GetProgressionSeverity());
     }
     public static pulse.cdm.bind.SepsisData Unload(SESepsis src)
     {
@@ -476,8 +478,10 @@ namespace Pulse.CDM
     {
       dst.PatientCondition = new pulse.cdm.bind.PatientConditionData();
       Serialize(src, dst.PatientCondition);
-      if (src.HasSeverity())
-        dst.Severity = PBProperty.Unload(src.GetSeverity());
+      if (src.HasInfectionSeverity())
+        dst.InfectionSeverity = PBProperty.Unload(src.GetInfectionSeverity());
+      if (src.HasProgressionSeverity())
+        dst.ProgressionSeverity = PBProperty.Unload(src.GetProgressionSeverity());
     }
     #endregion
 

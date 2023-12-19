@@ -185,6 +185,12 @@ namespace Pulse.CDM
         Serialize(any.RespiratoryMechanicsModification, rmm);
         return rmm;
       }
+      if (any.SepsisExacerbation != null)
+      {
+        SESepsisExacerbation se = new SESepsisExacerbation();
+        Serialize(any.SepsisExacerbation, se);
+        return se;
+      }
       if (any.SubstanceBolus != null)
       {
         SESubstanceBolus sb = new SESubstanceBolus();
@@ -377,6 +383,11 @@ namespace Pulse.CDM
       if (action.GetType().IsAssignableFrom(typeof(SERespiratoryMechanicsModification)))
       {
         any.RespiratoryMechanicsModification = Unload((SERespiratoryMechanicsModification)action);
+        return any;
+      }
+      if (action.GetType().IsAssignableFrom(typeof(SESepsisExacerbation)))
+      {
+        any.SepsisExacerbation = Unload((SESepsisExacerbation)action);
         return any;
       }
       if (action.GetType().IsAssignableFrom(typeof(SESubstanceBolus)))
@@ -1488,6 +1499,29 @@ namespace Pulse.CDM
       else if (src.HasModifiers())
         dst.Modifiers = PBPhysiology.Unload(src.GetModifiers());
       dst.Incremental = src.GetIncremental();
+    }
+    #endregion
+
+    #region SESepsisExacerbation
+    public static void Load(pulse.cdm.bind.SepsisExacerbationData src, SESepsisExacerbation dst)
+    {
+      Serialize(src, dst);
+    }
+    public static void Serialize(pulse.cdm.bind.SepsisExacerbationData src, SESepsisExacerbation dst)
+    {
+      if (src.PatientAction != null)
+        Serialize(src.PatientAction, dst);
+    }
+    public static pulse.cdm.bind.SepsisExacerbationData Unload(SESepsisExacerbation src)
+    {
+      pulse.cdm.bind.SepsisExacerbationData dst = new pulse.cdm.bind.SepsisExacerbationData();
+      Serialize(src, dst);
+      return dst;
+    }
+    public static void Serialize(SESepsisExacerbation src, pulse.cdm.bind.SepsisExacerbationData dst)
+    {
+      dst.PatientAction = new pulse.cdm.bind.PatientActionData();
+      Serialize(src, dst.PatientAction);
     }
     #endregion
 

@@ -21,10 +21,15 @@ public:
   bool IsValid() const override;
   bool IsActive() const override;
 
-  virtual bool HasSeverity() const;
-  virtual SEScalar0To1& GetSeverity();
-  virtual double GetSeverity() const;
+  virtual bool HasInfectionSeverity() const;
+  virtual SEScalar0To1& GetInfectionSeverity();
+  virtual double GetInfectionSeverity() const;
+
+  virtual bool HasProgressionSeverity() const;
+  virtual SEScalar0To1& GetProgressionSeverity();
+  virtual double GetProgressionSeverity() const;
 
 protected:
-  SEScalar0To1*           m_Severity;
+  SEScalar0To1* m_InfectionSeverity;
+  SEScalar0To1* m_ProgressionSeverity;
 };

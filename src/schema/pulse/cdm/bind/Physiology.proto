@@ -194,6 +194,11 @@ message HepaticSystemData
 
 }
 
+message ImmuneSystemData
+{
+ 
+}
+
 /** @brief 
     @details
  */

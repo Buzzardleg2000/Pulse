@@ -222,6 +222,12 @@ public abstract class SEPatientAction extends SEAction
       SERespiratoryMechanicsModification.load(c.getRespiratoryMechanicsModification(), dst);
       return dst;
     }
+    case SEPSISEXACERBATION:
+    {
+      SESepsisExacerbation dst = new SESepsisExacerbation();
+      SESepsisExacerbation.load(c.getSepsisExacerbation(), dst);
+      return dst;
+    }
     case SUBSTANCEBOLUS:
     {
       SESubstanceBolus dst = new SESubstanceBolus();
@@ -422,6 +428,11 @@ public abstract class SEPatientAction extends SEAction
     if(c instanceof SERespiratoryMechanicsModification)
     {
       dst.setRespiratoryMechanicsModification(SERespiratoryMechanicsModification.unload((SERespiratoryMechanicsModification)c));
+      return dst.build();
+    }
+    if(c instanceof SESepsisExacerbation)
+    {
+      dst.setSepsisExacerbation(SESepsisExacerbation.unload((SESepsisExacerbation)c));
       return dst.build();
     }
     if(c instanceof SESubstanceBolus)

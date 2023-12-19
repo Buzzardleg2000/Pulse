@@ -419,8 +419,10 @@ void PBPatientCondition::Load(const CDM_BIND::SepsisData& src, SESepsis& dst)
 void PBPatientCondition::Serialize(const CDM_BIND::SepsisData& src, SESepsis& dst)
 {
   PBPatientCondition::Serialize(src.patientcondition(), dst);
-  if (src.has_severity())
-    PBProperty::Load(src.severity(), dst.GetSeverity());
+  if (src.has_infectionseverity())
+    PBProperty::Load(src.infectionseverity(), dst.GetInfectionSeverity());
+  if (src.has_progressionseverity())
+    PBProperty::Load(src.progressionseverity(), dst.GetProgressionSeverity());
 }
 CDM_BIND::SepsisData* PBPatientCondition::Unload(const SESepsis& src)
 {
@@ -431,8 +433,10 @@ CDM_BIND::SepsisData* PBPatientCondition::Unload(const SESepsis& src)
 void PBPatientCondition::Serialize(const SESepsis& src, CDM_BIND::SepsisData& dst)
 {
   PBPatientCondition::Serialize(src, *dst.mutable_patientcondition());
-  if (src.HasSeverity())
-    dst.set_allocated_severity(PBProperty::Unload(*src.m_Severity));
+  if (src.HasInfectionSeverity())
+    dst.set_allocated_infectionseverity(PBProperty::Unload(*src.m_InfectionSeverity));
+  if (src.HasProgressionSeverity())
+    dst.set_allocated_progressionseverity(PBProperty::Unload(*src.m_ProgressionSeverity));
 }
 void PBPatientCondition::Copy(const SESepsis& src, SESepsis& dst)
 {

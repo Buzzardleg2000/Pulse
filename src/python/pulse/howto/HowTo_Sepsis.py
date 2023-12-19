@@ -14,7 +14,8 @@ def HowTo_Sepsis():
     pc = SEPatientConfiguration()
     pc.set_patient_file("./patients/StandardMale.json")
     sepsis = pc.get_conditions().get_sepsis()
-    sepsis.get_severity().set_value(.7)
+    sepsis.get_infection_severity().set_value(.3)
+    sepsis.get_progression_severity().set_value(.7)
 
     # Get some data from the engine
     results = pulse.pull_data()

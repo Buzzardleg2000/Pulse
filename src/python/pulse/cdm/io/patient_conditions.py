@@ -149,8 +149,10 @@ def serialize_pulmonary_shunt_from_bind(src: PulmonaryShuntData, dst: SEPulmonar
 
 def serialize_sepsis_to_bind(src: SESepsis, dst:SepsisData):
     serialize_patient_condition_to_bind(src, dst.PatientCondition)
-    if src.has_severity():
-        serialize_scalar_0to1_to_bind(src.get_severity(), dst.Severity)
+    if src.has_infection_severity():
+        serialize_scalar_0to1_to_bind(src.get_infection_severity(), dst.InfectionSeverity)
+    if src.has_progression_severity():
+        serialize_scalar_0to1_to_bind(src.get_progression_severity(), dst.ProgressionSeverity)
 
 def serialize_sepsis_from_bind(src: SepsisData, dst: SESepsis):
     serialize_patient_condition_from_bind(src.PatientCondition, dst)

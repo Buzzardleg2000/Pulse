@@ -47,6 +47,7 @@ int main()
   //HowToPulmonaryFibrosis();
   //HowToRespiratoryMechanics();
   //HowToRespiratoryMechanicsModification();
+  HowToSepsis();
   //HowToSmoke();
   //HowToTensionPneumothorax();
 

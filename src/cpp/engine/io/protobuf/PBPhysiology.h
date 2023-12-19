@@ -9,6 +9,7 @@ PULSE_BIND_DECL(Endocrine)
 PULSE_BIND_DECL(Energy)
 PULSE_BIND_DECL(Gastrointestinal)
 PULSE_BIND_DECL(Hepatic)
+PULSE_BIND_DECL(Immune)
 PULSE_BIND_DECL(Nervous)
 PULSE_BIND_DECL(Renal)
 PULSE_BIND_DECL(Respiratory)
@@ -20,6 +21,7 @@ PULSE_BIND_DECL(Tissue)
 #include "engine/common/system/physiology/EnergyModel.h"
 #include "engine/common/system/physiology/GastrointestinalModel.h"
 #include "engine/common/system/physiology/HepaticModel.h"
+#include "engine/common/system/physiology/ImmuneModel.h"
 #include "engine/common/system/physiology/NervousModel.h"
 #include "engine/common/system/physiology/RenalModel.h"
 #include "engine/common/system/physiology/RespiratoryModel.h"
@@ -65,6 +67,11 @@ namespace pulse
     static PULSE_BIND::HepaticData* Unload(const HepaticModel& src);
     static void Serialize(const PULSE_BIND::HepaticData& src, HepaticModel& dst);
     static void Serialize(const HepaticModel& src, PULSE_BIND::HepaticData& dst);
+
+    static void Load(const PULSE_BIND::ImmuneData& src, ImmuneModel& dst);
+    static PULSE_BIND::ImmuneData* Unload(const ImmuneModel& src);
+    static void Serialize(const PULSE_BIND::ImmuneData& src, ImmuneModel& dst);
+    static void Serialize(const ImmuneModel& src, PULSE_BIND::ImmuneData& dst);
 
     static void Load(const PULSE_BIND::NervousData& src, NervousModel& dst);
     static PULSE_BIND::NervousData* Unload(const NervousModel& src);

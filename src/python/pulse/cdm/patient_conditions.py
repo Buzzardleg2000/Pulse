@@ -321,22 +321,32 @@ class SEPulmonaryShunt(SEPatientCondition):
                 "  Severity: {}\n").format(self._severity)
 
 class SESepsis(SEPatientCondition):
-    __slots__ = ["_severity"]
+    __slots__ = ["_infection_severity", "_progression_severity"]
 
     def __init__(self):
         super().__init__()
-        self._severity = None
+        self._infection_severity = None
+        self._progression_severity = None
     def clear(self):
-        if self._severity is not None:
-            self._severity.invalidate()
+        if self._infection_severity is not None:
+            self._infection_severity.invalidate()
+        if self._progression_severity is not None:
+            self._progression_severity.invalidate()
     def is_valid(self):
-        return self.has_severity()
-    def has_severity(self):
-        return self._severity is not None
-    def get_severity(self):
-        if self._severity is None:
-            self._severity = SEScalar0To1()
-        return self._severity
+        return self.has_infection_severity() or self.has_severity()
+    def has_infection_severity(self):
+        return self._infection_severity is not None
+    def get_infection_severity(self):
+        if self._infection_severity is None:
+            self._infection_severity = SEScalar0To1()
+        return self._infection_severity
+    def has_progression_severity(self):
+        return self._progression_severity is not None
+    def get_progression_severity(self):
+        if self._progression_severity is None:
+            self._progression_severity = SEScalar0To1()
+        return self._progression_severity
     def __repr__(self):
         return ("Sepsis\n"
-                "  Severity: {}\n").format(self._severity)
+                "  Infection Severity: {}\n"
+                "  Progression Severity: {}\n").format(self._infection_severity, self._progression_severity)

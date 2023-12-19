@@ -11,6 +11,7 @@ CDM_BIND_DECL2(DrugSystem)
 CDM_BIND_DECL2(EnergySystem)
 CDM_BIND_DECL2(GastrointestinalSystem)
 CDM_BIND_DECL2(HepaticSystem)
+CDM_BIND_DECL2(ImmuneSystem)
 CDM_BIND_DECL2(NervousSystem)
 CDM_BIND_DECL2(PupillaryResponse)
 CDM_BIND_DECL2(RenalSystem)
@@ -74,6 +75,12 @@ public:
   static CDM_BIND::HepaticSystemData* Unload(const SEHepaticSystem& src);
   static void Serialize(const CDM_BIND::HepaticSystemData& src, SEHepaticSystem& dst);
   static void Serialize(const SEHepaticSystem& src, CDM_BIND::HepaticSystemData& dst);
+
+  // Immune
+  static void Load(const CDM_BIND::ImmuneSystemData& src, SEImmuneSystem& dst);
+  static CDM_BIND::ImmuneSystemData* Unload(const SEImmuneSystem& src);
+  static void Serialize(const CDM_BIND::ImmuneSystemData& src, SEImmuneSystem& dst);
+  static void Serialize(const SEImmuneSystem& src, CDM_BIND::ImmuneSystemData& dst);
 
   /// Nervous
   static void Load(const CDM_BIND::NervousSystemData& src, SENervousSystem& dst);

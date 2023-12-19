@@ -36,6 +36,7 @@ add_executable_ex(HowToDriver
   HowTo-Sandbox.cpp
   HowTo-ScenarioBase.cpp
   HowTo-ScenarioFromLog.cpp
+  HowTo-Sepsis.cpp
   HowTo-Serialize.cpp
   HowTo-Smoke.cpp
   HowTo-TensionPneumothorax.cpp

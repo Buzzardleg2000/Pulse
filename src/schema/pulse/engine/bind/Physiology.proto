@@ -114,6 +114,17 @@ message HepaticData
   pulse.cdm.bind.HepaticSystemData          Common                                              = 1;
 }
 
+message ImmuneData
+{
+  pulse.cdm.bind.ImmuneSystemData           Common                                              = 1;
+  double                                    ActivatedPhagocytes                                 = 2;/**<< @brief */
+  double                                    AntiInflammatoryMediators                           = 3;/**<< @brief */
+  double                                    PathogenGrowthRate                                  = 4;/**<< @brief */
+  double                                    PathogenCount                                       = 5;/**<< @brief */
+  double                                    TissueDamage                                        = 6;/**<< @brief */
+}
+
+
 message NervousData
 {
   pulse.cdm.bind.NervousSystemData          Common                                              = 1;

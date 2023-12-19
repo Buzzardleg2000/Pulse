@@ -206,6 +206,11 @@ namespace pulse
     return &GetController().GetData().GetHepatic();
   }
 
+  const SEImmuneSystem* Engine::GetImmuneSystem() const
+  {
+    return &GetController().GetData().GetImmune();
+  }
+
   const SENervousSystem* Engine::GetNervousSystem() const
   {
     return &GetController().GetData().GetNervous();

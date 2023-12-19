@@ -46,13 +46,14 @@ message AnyPatientActionData
     RespiratoryFatigueData                             RespiratoryFatigue                             = 28;
     RespiratoryMechanicsConfigurationData              RespiratoryMechanicsConfiguration              = 29;
     RespiratoryMechanicsModificationData               RespiratoryMechanicsModification               = 30;
-    SubstanceBolusData                                 SubstanceBolus                                 = 31;
-    SubstanceCompoundInfusionData                      SubstanceCompoundInfusion                      = 32;
-    SubstanceInfusionData                              SubstanceInfusion                              = 33;
-    SupplementalOxygenData                             SupplementalOxygen                             = 34;
-    TensionPneumothoraxData                            TensionPneumothorax                            = 35;
-    TubeThoracostomyData                               TubeThoracostomy                               = 36;
-    UrinateData                                        Urinate                                        = 37;
+    SepsisExacerbationData                             SepsisExacerbation                             = 31;
+    SubstanceBolusData                                 SubstanceBolus                                 = 32;
+    SubstanceCompoundInfusionData                      SubstanceCompoundInfusion                      = 33;
+    SubstanceInfusionData                              SubstanceInfusion                              = 34;
+    SupplementalOxygenData                             SupplementalOxygen                             = 35;
+    TensionPneumothoraxData                            TensionPneumothorax                            = 36;
+    TubeThoracostomyData                               TubeThoracostomy                               = 37;
+    UrinateData                                        Urinate                                        = 38;
   }
 }
 
@@ -435,6 +436,14 @@ message RespiratoryMechanicsModificationData
     string                                  ModifiersFile                   = 3;/**<< @brief File containing a RespiratoryMechanics object with properties to set in the system object. */
   }
   bool                                      Incremental                     = 4;/**<< @brief When off (Default) the engine will Restabilize a new homeostasis state. Use true if you are incrementally driving modification with very small modifiers and the engine will not stabilize.*/
+}
+
+/** @brief A potentially life-threatening condition caused by the body's response to an infection. */
+message SepsisExacerbationData
+{
+  PatientActionData                         PatientAction                   = 1;
+  Scalar0To1Data                            InfectionSeverity               = 2;/**<< @brief Initial Scale of affect, 0 being none, 1 being the highest possible. */
+  Scalar0To1Data                            ProgressionSeverity             = 3;/**<< @brief Scale of affect, 0 being none, 1 being the highest possible. */
 }
 
 /** @brief An administration of a substance that is given all at one time to raise its concentration in blood to an effective level. */

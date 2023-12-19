@@ -12,6 +12,7 @@ See accompanying NOTICE file for details.*/
 #include "cdm/system/physiology/SEEnergySystem.h"
 #include "cdm/system/physiology/SEGastrointestinalSystem.h"
 #include "cdm/system/physiology/SEHepaticSystem.h"
+#include "cdm/system/physiology/SEImmuneSystem.h"
 #include "cdm/system/physiology/SENervousSystem.h"
 #include "cdm/system/physiology/SERenalSystem.h"
 #include "cdm/system/physiology/SERespiratorySystem.h"
@@ -205,6 +206,32 @@ namespace pulse
     virtual const SEScalar* GetScalar(const std::string & name) override
     {
       const SEScalar* s = SEHepaticSystem::GetScalar(name);
+      if (s != nullptr)
+        return s;
+      // Check to see if this a model specific request
+      //if (name.compare("ModelParameter") == 0)
+      //  return m_ModelParameter;
+      return nullptr;
+    }
+    virtual void ComputeExposedModelParameters() = 0;
+  protected:
+    //SEScalar m_ModelParameter;
+  };
+
+  class PULSE_DECL ImmuneSystem : public SEImmuneSystem
+  {
+  public:
+    ImmuneSystem(Logger* logger = nullptr) : SEImmuneSystem(logger) {}
+    virtual ~ImmuneSystem() = default;
+
+    void Clear() override
+    {
+      SEImmuneSystem::Clear();
+    }
+
+    virtual const SEScalar* GetScalar(const std::string& name) override
+    {
+      const SEScalar* s = SEImmuneSystem::GetScalar(name);
       if (s != nullptr)
         return s;
       // Check to see if this a model specific request

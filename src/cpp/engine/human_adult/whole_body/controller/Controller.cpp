@@ -21,6 +21,7 @@
 #include "engine/human_adult/whole_body/system/physiology/EnergyModel.h"
 #include "engine/human_adult/whole_body/system/physiology/GastrointestinalModel.h"
 #include "engine/human_adult/whole_body/system/physiology/HepaticModel.h"
+#include "engine/human_adult/whole_body/system/physiology/ImmuneModel.h"
 #include "engine/human_adult/whole_body/system/physiology/NervousModel.h"
 #include "engine/human_adult/whole_body/system/physiology/RenalModel.h"
 #include "engine/human_adult/whole_body/system/physiology/RespiratoryModel.h"
@@ -81,6 +82,7 @@ namespace pulse { namespace human_adult_whole_body
     m_EnergyModel = new EnergyModel(*this);
     m_GastrointestinalModel = new GastrointestinalModel(*this);
     m_HepaticModel = new HepaticModel(*this);
+    m_ImmuneModel = new ImmuneModel(*this);
     m_NervousModel = new NervousModel(*this);
     m_RenalModel = new RenalModel(*this);
     m_RespiratoryModel = new RespiratoryModel(*this);
@@ -111,6 +113,7 @@ namespace pulse { namespace human_adult_whole_body
     m_Models.push_back(m_EnergyModel);
     m_Models.push_back(m_EndocrineModel);
     m_Models.push_back(m_DrugModel);
+    m_Models.push_back(m_ImmuneModel);
     m_Models.push_back(m_BloodChemistryModel);
     m_Models.push_back(m_TissueModel);
     m_Models.push_back(m_ElectroCardioGramModel);

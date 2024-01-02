@@ -37,6 +37,7 @@ int main()
   //HowToEnvironmentChange();
   //HowToExercise();
   //HowToHemorrhage();
+  //HowToIsoShuntAnalysis();
   //HowToExpandedVasculature();
   //HowToHemorrhage();
   //HowToHemothorax();

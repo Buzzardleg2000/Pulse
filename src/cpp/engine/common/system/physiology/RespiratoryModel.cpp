@@ -4181,8 +4181,8 @@ namespace pulse
       //------------------------------------------------------------------------------------------------------
       //Combine effects
       double recruitmentScalingFactor = GeneralMath::ExponentialDecayFunction(10, 0.04, 1.0, 1.0 - recruitedFraction);
-      double damageScalingFactor = GeneralMath::ExponentialDecayFunction(10, 0.02, 1.0, combinedSeverity);
-      double totalScalingFactor = 0.9 * recruitmentScalingFactor + 0.1 * damageScalingFactor; //Factors must sum to 1.0
+      double damageScalingFactor = GeneralMath::ExponentialDecayFunction(10, 0.1, 1.0, combinedSeverity); //Acts as floor if fully recruited
+      double totalScalingFactor = MIN(recruitmentScalingFactor, damageScalingFactor);
 
       //------------------------------------------------------------------------------------------------------
       //PulmonaryShunt

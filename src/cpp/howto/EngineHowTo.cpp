@@ -14,7 +14,7 @@ int main()
 
   //HowToSandbox();
 
-  //HowToEngineUse();
+  HowToEngineUse();
   //HowToCreateAPatient();
   //HowToSerialize();
   //HowToPulseEnginePool();
@@ -27,7 +27,7 @@ int main()
   //HowToBagValveMask();
   //HowToBolusDrug();
   //HowToBrainInjury();
-  HowToCardiovascularMechanicsModification();
+  //HowToCardiovascularMechanicsModification();
   //HowToCombatMultitrauma();
   //HowToConsumeNutrients();
   //HowToCOPD();

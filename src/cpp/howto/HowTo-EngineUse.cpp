@@ -159,6 +159,7 @@ void HowToEngineUse()
   const SESubstance* CO2 = pe->GetSubstanceManager().GetSubstance("CarbonDioxide");
 
   // Create data requests for each value that should be written to the output log as the engine is executing
+  SEDataRequest& hrDR = 
   pe->GetEngineTracker()->GetDataRequestManager().CreatePhysiologyDataRequest("HeartRate", FrequencyUnit::Per_min);
   pe->GetEngineTracker()->GetDataRequestManager().CreatePhysiologyDataRequest("MeanArterialPressure", PressureUnit::mmHg);
   pe->GetEngineTracker()->GetDataRequestManager().CreatePhysiologyDataRequest("SystolicArterialPressure", PressureUnit::mmHg);
@@ -267,6 +268,8 @@ void HowToEngineUse()
   pe->GetLogger()->Info(std::stringstream() << "Lactate Concentration : " << pe->GetSubstanceManager().GetSubstance("Lactate")->GetBloodConcentration(MassPerVolumeUnit::mg_Per_dL) << MassPerVolumeUnit::mg_Per_dL);
   pe->GetLogger()->Info(std::stringstream() << "Core Body Temperature : " << pe->GetEnergySystem()->GetCoreTemperature(TemperatureUnit::C) << TemperatureUnit::C);
 
+  // Here is how we can pull data from the engine using a data request
+  double hr = pe->GetEngineTracker()->GetValue(hrDR);
 
   // Save the state of the engine
   pe->SerializeToFile("./test_results/howto/HowToEngineUse-FinalState.json");

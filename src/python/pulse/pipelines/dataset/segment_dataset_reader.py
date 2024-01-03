@@ -103,7 +103,7 @@ def process_sheet(sheet: Worksheet, output_dir: Path, results_dir: Path) -> bool
                     seg.set_segment_id(int(r[h2c["segment"]]))
             if "segment" in h2c and int(r[h2c["segment"]]) != seg.get_segment_id():
                 _pulse_logger.warning(f'Ignoring change in segment ID without new header. Found {r[h2c["segment"]]} under segment {seg.get_segment_id()}')
-            seg.set_notes("\n".join([seg.get_notes(), r[h2c["notes"]] if "notes" in h2c and isinstance(r[h2c["notes"]], str) else ""]).strip())
+            seg.set_notes("\n".join([seg.get_notes(), r[h2c["narrative"]] if "narrative" in h2c and isinstance(r[h2c["narrative"]], str) else ""]).strip())
 
         elif stage == Stage.DataRequests:
             # Header row
@@ -148,7 +148,7 @@ def process_sheet(sheet: Worksheet, output_dir: Path, results_dir: Path) -> bool
             if "segment" in h2c and int(r[h2c["segment"]]) != seg.get_segment_id():
                 _pulse_logger.warning(f'Ignoring change in segment ID without new header. Found {r[h2c["segment"]]} under segment {seg.get_segment_id()}')
             # Append notes to existing segment notes, joined with new lines
-            seg.set_notes("\n".join([seg.get_notes(), r[h2c["notes"]] if "notes" in h2c and isinstance(r[h2c["notes"]], str) else ""]).strip())
+            seg.set_notes("\n".join([seg.get_notes(), r[h2c["narrative"]] if "narrative" in h2c and isinstance(r[h2c["narrative"]], str) else ""]).strip())
             # Append any actions to this segment
             if "actions" in h2c and isinstance(r[h2c["actions"]], str):
                 seg.get_actions().append(r[h2c["actions"]])
@@ -203,8 +203,8 @@ def process_sheet(sheet: Worksheet, output_dir: Path, results_dir: Path) -> bool
                 else:
                     raise ValueError(f"Unable to identify comparison type: {type_str}")
 
-                if "notes" in h2c:
-                    val_tgt.set_notes(r[h2c["notes"]] if isinstance(r[h2c["notes"]], str) else "")
+                if "narrative" in h2c:
+                    val_tgt.set_notes(r[h2c["narrative"]] if isinstance(r[h2c["narrative"]], str) else "")
 
                 seg.add_validation_target(val_tgt)
         else:

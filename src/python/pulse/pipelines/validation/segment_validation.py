@@ -44,11 +44,14 @@ def validate(targets_filename: Path, segments_filename: Path, table_dir: Path) -
         md_filename = table_dir / f"Segment{seg_id}ValidationTable.md"
         with open(md_filename, "w") as md_file:
             _pulse_logger.info(f"Writing {md_filename}")
+            lines = list()
             if target.has_notes():
-                table_name = table_dir.as_posix()
-                table_name = table_name[table_name.rindex('/') + 1:]
-                md_file.writelines(
-                    f"<center>\n<i>@tabledef {{{table_name}Segment{seg_id}}}. {target.get_notes().rstrip()}</i>\n</center>\n\n")
+                lines.append(target.get_notes().rstrip())
+                lines.append("\n\n")
+            table_name = table_dir.as_posix()
+            table_name = table_name[table_name.rindex('/') + 1:]
+            lines.append(f"<center>\n<i>@tabledef {{{table_name}Segment{seg_id}}}. Data request validation results for Segment {seg_id}.</i>\n</center>\n\n")
+            md_file.writelines(lines)
             table(md_file, table_data, fields, headers, align)
 
 

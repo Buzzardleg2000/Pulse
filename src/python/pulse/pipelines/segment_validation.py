@@ -76,7 +76,7 @@ def segment_validation_pipeline(xls_file: Path, exec_opt: eExecOpt, use_test_res
         _pulse_logger.error(f"Results directory ({validate_dir}) does not exist. Aborting")
         return
 
-    sheets = gen_scenarios_and_targets(xls_file, scenario_dir, test_results_dir, exec_opt == eExecOpt.MarkdownOnly)
+    sce_ids = gen_scenarios_and_targets(xls_file, scenario_dir, test_results_dir, exec_opt == eExecOpt.MarkdownOnly)
     if exec_opt is eExecOpt.GenerateOnly:
         return
 
@@ -91,10 +91,10 @@ def segment_validation_pipeline(xls_file: Path, exec_opt: eExecOpt, use_test_res
         base_md = Path(get_root_dir()) / "docs" / "Validation" / f"{xls_basename}.md"
     if base_md.is_file():
         md_files.append(base_md)
-    for sheet in sheets:
-        md_file = Path(xls_dir / f"{xls_basename}-{sheet}.md")
+    for sce_id in sce_ids:
+        md_file = Path(xls_dir / f"{xls_basename}-{sce_id}.md")
         if not md_file.is_file():
-            md_file = Path(get_root_dir()) / "docs" / "Validation" / f"{sheet}.md"
+            md_file = Path(get_root_dir()) / "docs" / "Validation" / f"{sce_id}.md"
             if not md_file.is_file():
                 md_file = None
         if md_file is not None:

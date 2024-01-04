@@ -24,17 +24,18 @@ def gen_scenarios_and_targets(xls_file: Path, output_dir: Path, results_dir: Pat
 
     # Iterate through each sheet in the file, generating a scenario for each
     workbook = load_workbook(filename=xls_file, data_only=True)
+    scenario_ids = list()
     if not name_only:
         for s in workbook.sheetnames:
             if s == "Notes":
                 continue
-            if not process_sheet(workbook[s], output_dir, results_dir):
+            if not process_sheet(workbook[s], output_dir, results_dir, scenario_ids):
                 _pulse_logger.error(f"Unable to read {s} sheet")
-    return workbook.sheetnames
+    return scenario_ids
 
 
 # Read xlsx sheet and generate corresponding scenario file and validation target files
-def process_sheet(sheet: Worksheet, output_dir: Path, results_dir: Path) -> bool:
+def process_sheet(sheet: Worksheet, output_dir: Path, results_dir: Path, scenario_ids: List) -> bool:
     class Stage(Enum):
         IDScenario = 0
         InitialSegment = 1
@@ -59,6 +60,7 @@ def process_sheet(sheet: Worksheet, output_dir: Path, results_dir: Path) -> bool
 
         return header_to_col
 
+    scenario_id = sheet.title
     for row_num, r in enumerate(sheet.iter_rows(min_row=1, values_only=True)):
         # Scenario name and description
         if stage == Stage.IDScenario:
@@ -69,6 +71,8 @@ def process_sheet(sheet: Worksheet, output_dir: Path, results_dir: Path) -> bool
 
             if "scenario name" in h2c:
                 scenario.set_name(r[h2c["scenario name"]])
+            if "scenario identifier" in h2c:
+                scenario_id = r[h2c["scenario identifier"]] if r[h2c["scenario identifier"]] else scenario_id
             if "patient file" in h2c and isinstance(r[h2c["patient file"]], str):
                 scenario.get_patient_configuration().set_patient_file(r[h2c["patient file"]].strip())
             if "state file" in h2c and isinstance(r[h2c["state file"]], str):
@@ -215,21 +219,35 @@ def process_sheet(sheet: Worksheet, output_dir: Path, results_dir: Path) -> bool
 
     scenario.get_data_request_manager().set_data_requests(drs)
     full_results_dir = str(results_dir) + '/'
-    full_results_filename = results_dir / (scenario.get_name() + f"Results.csv")
+    full_results_filename = results_dir / f"{scenario_id}Results.csv"
     # Provide a directory to create a csv file with Results, but log files without
-    scenario.get_data_request_manager().set_results_filename(full_results_dir)
+    scenario.get_data_request_manager().set_results_filename(full_results_filename.as_posix())
 
     output_dir.mkdir(parents=True, exist_ok=True)
     # Write out scenario
-    filename = output_dir / (scenario.get_name() + ".json")
+    filename = output_dir / f"{scenario_id}.json"
     _pulse_logger.info(f"Writing {filename}")
     with open(filename, "w") as f:
         f.write(write_scenario(scenario, segments, conditions, full_results_filename))
 
+    # Write out scenario introduction
+    filename = output_dir / f"{scenario_id}-Introduction.md"
+    intro_lines = [
+        f"## {scenario.get_name()}\n\n",
+        f"### Description\n\n",
+        scenario.get_description(),
+        "\n"
+    ]
+    _pulse_logger.info(f"Writing {filename}")
+    with open(filename, "w") as f:
+        f.writelines(intro_lines)
+
     # Write out validation target file
-    filename = output_dir / (scenario.get_name() + "-ValidationTargets.json")
+    filename = output_dir / f"{scenario_id}-ValidationTargets.json"
     _pulse_logger.info(f"Writing {filename}")
     serialize_segment_validation_segment_list_to_file(segments, filename)
+
+    scenario_ids.append(scenario_id)
 
     return True
 

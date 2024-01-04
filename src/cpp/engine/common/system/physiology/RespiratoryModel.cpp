@@ -3934,7 +3934,7 @@ namespace pulse
       double recruitedFraction = (alveoliVolume_L - cptResidualVolume_L + 0.01) / (alveoliVolumeBaseline_L - cptResidualVolume_L);
       recruitedFraction = LIMIT(recruitedFraction, 0.0, 1.0);
 
-      recruitmentScalingFactor = GeneralMath::ExponentialDecayFunction(10, 0.1, 1.0, 1.0 - recruitedFraction);
+      recruitmentScalingFactor = GeneralMath::ExponentialDecayFunction(10, 0.15, 1.0, 1.0 - recruitedFraction);
 
       //------------------------------------------------------------------------------------------------------
       //ARDS
@@ -3951,7 +3951,7 @@ namespace pulse
           severity = m_data.GetConditions().GetAcuteRespiratoryDistressSyndrome().GetSeverity(cmpt).GetValue();
         }
 
-        damageScalingFactor = MIN(damageScalingFactor, GeneralMath::ExponentialDecayFunction(10, 0.1, 1.0, severity));
+        damageScalingFactor = MIN(damageScalingFactor, GeneralMath::ExponentialDecayFunction(10, 0.15, 1.0, severity));
       }
 
       //------------------------------------------------------------------------------------------------------
@@ -3969,7 +3969,7 @@ namespace pulse
           severity = m_data.GetConditions().GetPneumonia().GetSeverity(cmpt).GetValue();
         }
 
-        damageScalingFactor = MIN(damageScalingFactor, GeneralMath::ExponentialDecayFunction(10, 0.1, 1.0, severity));
+        damageScalingFactor = MIN(damageScalingFactor, GeneralMath::ExponentialDecayFunction(10, 0.15, 1.0, severity));
       }
 
       //------------------------------------------------------------------------------------------------------
@@ -3978,12 +3978,12 @@ namespace pulse
       {
         double severity = m_data.GetConditions().GetPulmonaryFibrosis().GetSeverity().GetValue();
 
-        damageScalingFactor = MIN(damageScalingFactor, GeneralMath::ExponentialDecayFunction(10, 0.1, 1.0, severity));
+        damageScalingFactor = MIN(damageScalingFactor, GeneralMath::ExponentialDecayFunction(10, 0.15, 1.0, severity));
       }
 
       //------------------------------------------------------------------------------------------------------
       //Combine effects
-      totalScalingFactor = recruitmentScalingFactor * 0.9 + damageScalingFactor * 0.1; //Factors must sum to 1.0
+      totalScalingFactor = MIN(recruitmentScalingFactor, damageScalingFactor);
 
       //------------------------------------------------------------------------------------------------------
       //Obstructive - does not includes recruitment effects

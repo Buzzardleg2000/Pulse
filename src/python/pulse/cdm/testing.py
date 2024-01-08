@@ -217,11 +217,17 @@ class SETestReport:
                 self.name = file_name
                 self.file_name = file_name + ".json"
 
-    def get_errors(self):
+    def get_num_errors(self):
         errors = 0
         for suite in self.test_suites:
             errors += suite.get_num_errors()
         return errors
+
+    def get_num_warnings(self):
+        warnings = 0
+        for suite in self.test_suites:
+            warnings += suite.get_num_warnings()
+        return warnings
 
     def create_test_suite(self):
         ts = SETestSuite()

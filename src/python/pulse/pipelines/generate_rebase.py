@@ -85,7 +85,8 @@ def gen_rebase_config(test_cache: Dict[Path, Dict[str, str]]) -> None:
     :param test_cache: Cache of test names and definitions per config file
     """
     # Find failures for each config/report pair
-    failures = list()
+    errors = list()
+    warnings = list()
     results_str = "ResultsReport"
     for config, tests in test_cache.items():
         _pulse_logger.info("Looking for failures in : " + str(config))
@@ -95,31 +96,44 @@ def gen_rebase_config(test_cache: Dict[Path, Dict[str, str]]) -> None:
             continue
 
         test_report = SETestReport()
-        serialize_test_report_from_file(test_report_path, test_report)
+        serialize_test_report_from_file(str(test_report_path), test_report)
 
-        if test_report.get_errors() > 0:
+        if test_report.get_num_errors() > 0 or test_report.get_num_warnings() > 0:
             test_suites = test_report.get_test_suites()
             for ts in test_suites:
-                if ts.get_num_errors() > 0:
+                if ts.get_num_errors() > 0 or ts.get_num_warnings() > 0:
                     if ts.get_name() in tests:  # Unit test or assessment test
-                        failures.append(f"{ts.get_name()} = {tests[ts.get_name()].lstrip()}")
-                        _pulse_logger.info(f"Found unit/assessment test error : {ts.get_name()}")
+                        if ts.get_num_errors() > 0:
+                            errors.append(f"{ts.get_name()} = {tests[ts.get_name()].lstrip()}")
+                            _pulse_logger.info(f"Found unit/assessment test error : {ts.get_name()}")
+                        elif ts.get_num_warnings() > 0:
+                            warnings.append(f"{ts.get_name()} = {tests[ts.get_name()].lstrip()}")
+                            _pulse_logger.info(f"Found unit/assessment test warning : {ts.get_name()}")
                     elif ts.get_name().endswith(results_str):  # Scenario test
                         json_sce = f"{ts.get_name()[:-len(results_str)]}.json"
                         for t_key, t_val in tests.items():
                             # We don't have the entire path from just the test report
                             # So we need to loop the config and find this test and add what's there
                             if t_key.endswith(json_sce):
-                                _pulse_logger.info("Found scenario test error : " + t_key)
-                                failures.append(f"{t_key} = {t_val.lstrip()}")
+                                if ts.get_num_errors() > 0:
+                                    _pulse_logger.info("Found scenario test error : " + t_key)
+                                    errors.append(f"{t_key} = {t_val.lstrip()}")
+                                elif ts.get_num_warnings():
+                                    _pulse_logger.info("Found scenario test warning : " + t_key)
+                                    warnings.append(f"{t_key} = {t_val.lstrip()}")
                     else:
                         _pulse_logger.error("Found unsupported error")
 
-    # Write out failures to error config
+    # Write out warnings and errors to a config
+    out_file = Path("./test_results/warnings.config")
+    with open(out_file, "w") as f:
+        f.writelines(warnings)
+    _pulse_logger.info("Warnings written to : " + str(out_file))
+
     out_file = Path("./test_results/errors.config")
     with open(out_file, "w") as f:
-        f.writelines(failures)
-    _pulse_logger.info("Failures written to : " + str(out_file))
+        f.writelines(errors)
+    _pulse_logger.info("Errors written to : " + str(out_file))
 
 
 if __name__ == "__main__":

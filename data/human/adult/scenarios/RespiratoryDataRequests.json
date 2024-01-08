@@ -5,7 +5,6 @@
     { "DecimalFormat": { "Precision": 4 }, "Category": "Physiology", "PropertyName": "AlveolarDeadSpace",                          "Unit": "mL"        },
     { "DecimalFormat": { "Precision": 4 }, "Category": "Physiology", "PropertyName": "AnatomicDeadSpace",                          "Unit": "mL"        },
     { "DecimalFormat": { "Precision": 4 }, "Category": "Physiology", "PropertyName": "ChestWallCompliance",                        "Unit": "L/cmH2O"   },
-    { "DecimalFormat": { "Precision": 4 }, "Category": "Physiology", "PropertyName": "EndTidalCarbonDioxidePressure",              "Unit": "mmHg"      },
     { "DecimalFormat": { "Precision": 4 }, "Category": "Physiology", "PropertyName": "EndTidalOxygenPressure",                     "Unit": "mmHg"      },
     { "DecimalFormat": { "Precision": 4 }, "Category": "Physiology", "PropertyName": "ExpiratoryFlow",                             "Unit": "L/s"       },
     { "DecimalFormat": { "Precision": 4 }, "Category": "Physiology", "PropertyName": "ExpiratoryPulmonaryResistance",              "Unit": "cmH2O s/L" },

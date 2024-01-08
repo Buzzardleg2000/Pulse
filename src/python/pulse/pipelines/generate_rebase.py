@@ -71,6 +71,9 @@ def gen_test_cache(configs: List[Path]) -> Dict[Path, Dict[str, str]]:
             else:
                 out[config][test_key] = test_value    # Single line test definition
 
+        if len(out[config]) == 0:
+            _pulse_logger.warning(f"{config} has no tests, make sure it has at least 1 group")
+
     return out
 
 
@@ -85,6 +88,7 @@ def gen_rebase_config(test_cache: Dict[Path, Dict[str, str]]) -> None:
     failures = list()
     results_str = "ResultsReport"
     for config, tests in test_cache.items():
+        _pulse_logger.info("Looking for failures in : " + str(config))
         test_report_path = Path("./test_results/") / f"{config.stem}Report.json"
         if not test_report_path.is_file():
             _pulse_logger.warning(f"Could not find {test_report_path}")
@@ -99,16 +103,23 @@ def gen_rebase_config(test_cache: Dict[Path, Dict[str, str]]) -> None:
                 if ts.get_num_errors() > 0:
                     if ts.get_name() in tests:  # Unit test or assessment test
                         failures.append(f"{ts.get_name()} = {tests[ts.get_name()].lstrip()}")
+                        _pulse_logger.info(f"Found unit/assessment test error : {ts.get_name()}")
                     elif ts.get_name().endswith(results_str):  # Scenario test
                         json_sce = f"{ts.get_name()[:-len(results_str)]}.json"
                         for t_key, t_val in tests.items():
                             # We don't have the entire path from just the test report
+                            # So we need to loop the config and find this test and add what's there
                             if t_key.endswith(json_sce):
+                                _pulse_logger.info("Found scenario test error : " + t_key)
                                 failures.append(f"{t_key} = {t_val.lstrip()}")
+                    else:
+                        _pulse_logger.error("Found unsupported error")
 
-        # Write out failures to error config
-        with open(Path("./test_results/errors.config"), "w") as f:
-            f.writelines(failures)
+    # Write out failures to error config
+    out_file = Path("./test_results/errors.config")
+    with open(out_file, "w") as f:
+        f.writelines(failures)
+    _pulse_logger.info("Failures written to : " + str(out_file))
 
 
 if __name__ == "__main__":

@@ -601,9 +601,14 @@ class SEPlotSource():
 
         # Ensure log file exists
         if not self._log_file.is_file():
-            _pulse_logger.error(f"Could not find corresponding log file: {self._csv_data}")
-            return False
+            # Results files ending in Results don't usually match logs but double check
+            idx = self._csv_data.rfind("Results.csv")
+            if idx != -1:
+                self._log_file = Path(self._csv_data[:idx] + "Results.log")
 
+            if not self._log_file.is_file():
+                _pulse_logger.error(f"Could not find corresponding log file: {self._csv_data}")
+                return False
         self._actions_events = parse_actions(self._log_file)
         self._actions_events.extend(parse_events(self._log_file))
 

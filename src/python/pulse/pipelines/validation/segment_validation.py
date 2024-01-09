@@ -44,11 +44,14 @@ def validate(targets_filename: Path, segments_filename: Path, table_dir: Path) -
         md_filename = table_dir / f"Segment{seg_id}ValidationTable.md"
         with open(md_filename, "w") as md_file:
             _pulse_logger.info(f"Writing {md_filename}")
+            lines = list()
             if target.has_notes():
-                table_name = table_dir.as_posix()
-                table_name = table_name[table_name.rindex('/') + 1:]
-                md_file.writelines(
-                    f"<center>\n<i>@tabledef {{{table_name}Segment{seg_id}}}. {target.get_notes().rstrip()}</i>\n</center>\n\n")
+                lines.append(target.get_notes().rstrip())
+                lines.append("\n\n")
+            table_name = table_dir.as_posix()
+            table_name = table_name[table_name.rindex('/') + 1:]
+            lines.append(f"<center>\n<i>@tabledef {{{table_name}Segment{seg_id}}}. Data request validation results for Segment {seg_id}.</i>\n</center>\n\n")
+            md_file.writelines(lines)
             table(md_file, table_data, fields, headers, align)
 
 
@@ -65,8 +68,11 @@ def evaluate(seg_id: int, tgt: SESegmentValidationTarget, results: SEDataRequest
 
     result = results.get_segment(seg_id)
     if result is None:
-        raise Exception("Could not find result for segment " + str(seg_id))
-    engine_val = result.values[results.get_header_index(header)]
+        raise ValueError(f"Could not find result for segment {seg_id}")
+    header_idx = results.get_header_index(header)
+    if header_idx is None:
+        raise ValueError(f"Could not find results for {header} in segment {seg_id}")
+    engine_val = result.values[header_idx]
 
     # Convert to validation unit if needed
     paren_idx = header.find("(")

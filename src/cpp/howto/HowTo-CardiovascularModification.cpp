@@ -10,6 +10,7 @@
 #include "cdm/patient/actions/SECardiovascularMechanicsModification.h"
 #include "cdm/system/physiology/SECardiovascularMechanicsModifiers.h"
 #include "cdm/system/physiology/SECardiovascularSystem.h"
+#include "cdm/system/physiology/SENervousSystem.h"
 #include "cdm/properties/SEScalarFrequency.h"
 #include "cdm/properties/SEScalarPressure.h"
 #include "cdm/properties/SEScalarPressurePerVolume.h"
@@ -19,6 +20,8 @@
 #include "cdm/properties/SEScalarVolume.h"
 #include "cdm/properties/SEScalarVolumePerPressure.h"
 #include "cdm/properties/SEScalarVolumePerTime.h"
+
+#include <iomanip>
 
 //--------------------------------------------------------------------------------------------------
 /// \brief
@@ -75,4 +78,99 @@ void HowToCardiovascularMechanicsModification()
     AdvanceAndTrackTime_s(10, *pe);
     pe->GetEngineTracker()->LogRequestedValues();
   }
+}
+
+//--------------------------------------------------------------------------------------------------
+/// \brief
+/// Create table of cardiovascular modifier combinations
+///
+/// \details
+/// Refer to the SECardiovascularMechanicsModifiers class
+//--------------------------------------------------------------------------------------------------
+void HowToCardiovascularMechanicsModificationAnalysis()
+{
+  // Create a Pulse Engine and load the standard patient
+  std::unique_ptr<PhysiologyEngine> pe = CreatePulseEngine();
+  pe->GetLogger()->SetLogFile("./test_results/howto/HowTo_CardiovascularMechanicsModification.cpp.log");
+  pe->GetLogger()->Info("HowTo_CardiovascularMechanicsModification");
+
+  // With this engine, you do not initialize it, its already ready to go at construction time
+
+  std::stringstream results;
+
+  SECardiovascularMechanicsModification config;
+  SECardiovascularMechanicsModifiers& mechanics = config.GetModifiers();
+
+  std::vector<double> multiplierList = { 0.5, 1.0, 1.5 };
+
+  // Header for the table
+  results << std::left
+    << std::setw(30) << "HeartRateMultiplier"
+    << std::setw(30) << "StrokeVolumeMultiplier"
+    << std::setw(30) << "ArterialComplianceMultiplier"
+    << std::setw(30) << "ArterialResistanceMultiplier"
+    << std::setw(30) << "SystemicResistanceMultiplier"
+    << std::setw(30) << "SystemicComplianceMultiplier"
+    << std::setw(30) << "HeartRate(bpm)"
+    << std::setw(30) << "StrokeVolume(mL)"
+    << std::setw(30) << "CardiacOutput(L/min)"
+    << std::setw(30) << "DiastolicPressure(mmHg)"
+    << std::setw(30) << "SystolicPressure(mmHg)"
+    << std::setw(30) << "MeanArterialPressure(mmHg)"
+    << std::setw(30) << "PulsePressure(mmHg)"
+    << std::setw(30) << "BaroreceptorHeartRateScale"
+    << std::setw(30) << "ChemoreceptorHeartRateScale"
+    << "\n";
+
+  // Loop through all combinations
+  for (double HeartRateMultiplier : multiplierList) {
+    for (double StrokeVolumeMultiplier : multiplierList) {
+      for (double ArterialComplianceMultiplier : multiplierList) {
+        for (double ArterialResistanceMultiplier : multiplierList) {
+          for (double SystemicResistanceMultiplier : multiplierList) {
+            for (double SystemicComplianceMultiplier : multiplierList) {
+              mechanics.GetHeartRateMultiplier().SetValue(HeartRateMultiplier);
+              mechanics.GetStrokeVolumeMultiplier().SetValue(StrokeVolumeMultiplier);
+              mechanics.GetArterialComplianceMultiplier().SetValue(ArterialComplianceMultiplier);
+              mechanics.GetArterialResistanceMultiplier().SetValue(ArterialResistanceMultiplier);
+              mechanics.GetSystemicResistanceMultiplier().SetValue(SystemicResistanceMultiplier);
+              mechanics.GetSystemicComplianceMultiplier().SetValue(SystemicComplianceMultiplier);
+
+              // Load the state to start fresh each run
+              if (!pe->SerializeFromFile("./states/StandardMale@0s.json"))// Select patient
+              {
+                pe->GetLogger()->Error("Could not load state, check the error");
+                return;
+              }
+
+              pe->ProcessAction(config);
+              AdvanceAndTrackTime_s(10, *pe);
+
+              // Log the combination
+              results << std::left
+                << std::setw(30) << HeartRateMultiplier
+                << std::setw(30) << StrokeVolumeMultiplier
+                << std::setw(30) << ArterialComplianceMultiplier
+                << std::setw(30) << ArterialResistanceMultiplier
+                << std::setw(30) << SystemicResistanceMultiplier
+                << std::setw(30) << SystemicComplianceMultiplier
+                << std::setw(30) << pe->GetCardiovascularSystem()->GetHeartRate(FrequencyUnit::Per_min)
+                << std::setw(30) << pe->GetCardiovascularSystem()->GetHeartStrokeVolume(VolumeUnit::mL)
+                << std::setw(30) << pe->GetCardiovascularSystem()->GetCardiacOutput(VolumePerTimeUnit::L_Per_min)
+                << std::setw(30) << pe->GetCardiovascularSystem()->GetDiastolicArterialPressure(PressureUnit::mmHg)
+                << std::setw(30) << pe->GetCardiovascularSystem()->GetSystolicArterialPressure(PressureUnit::mmHg)
+                << std::setw(30) << pe->GetCardiovascularSystem()->GetMeanArterialPressure(PressureUnit::mmHg)
+                << std::setw(30) << pe->GetCardiovascularSystem()->GetPulsePressure(PressureUnit::mmHg)
+                << std::setw(30) << pe->GetNervousSystem()->GetBaroreceptorHeartRateScale()
+                << std::setw(30) << pe->GetNervousSystem()->GetChemoreceptorHeartRateScale()
+                << "\n";
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Output the results
+  std::cout << results.str();
 }

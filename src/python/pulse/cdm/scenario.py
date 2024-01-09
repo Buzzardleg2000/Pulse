@@ -107,8 +107,8 @@ class SEScenarioExec:
     __slots__ = ["_log_to_console", "_data_root_directory", "_output_root_directory", "_organize_output_directory",
                  "_auto_serialize_after_actions", "_auto_serialize_period_s", "_time_stamp_serialized_states",
                  "_engine_configuration_content", "_engine_configuration_filename", "_scenario_content", "_scenario_filename",
-                 "_scenario_directory", "_scenario_log_filename", "_scenario_log_directory","_data_request_files_search",
-                 "_content_format", "_thread_count"]
+                 "_scenario_directory", "_scenario_exec_list_filename", "_scenario_log_filename", "_scenario_log_directory",
+                 "_data_request_files_search", "_content_format", "_thread_count"]
 
     def __init__(self):
         self.clear()
@@ -129,6 +129,7 @@ class SEScenarioExec:
         self._scenario_content = ""
         self._scenario_filename = ""
         self._scenario_directory = ""
+        self._scenario_exec_list_filename = ""
         self._scenario_log_filename = ""
         self._scenario_log_directory = ""
 
@@ -190,6 +191,7 @@ class SEScenarioExec:
         self._scenario_content = s
         self._scenario_filename = ""
         self._scenario_directory = ""
+        self._scenario_exec_list_filename = ""
         self._scenario_log_filename = ""
         self._scenario_log_directory = ""
 
@@ -199,6 +201,7 @@ class SEScenarioExec:
         self._scenario_content = ""
         self._scenario_filename = s
         self._scenario_directory = ""
+        self._scenario_exec_list_filename = ""
         self._scenario_log_filename = ""
         self._scenario_log_directory = ""
 
@@ -208,6 +211,17 @@ class SEScenarioExec:
         self._scenario_content = ""
         self._scenario_filename = ""
         self._scenario_directory = s
+        self._scenario_exec_list_filename = ""
+        self._scenario_log_filename = ""
+        self._scenario_log_directory = ""
+
+    def get_scenario_exec_list_filename(self) -> str:
+        return self._scenario_exec_list_filename
+    def set_scenario_exec_list_filename(self, s: str) -> None:
+        self._scenario_content = ""
+        self._scenario_filename = ""
+        self._scenario_directory = ""
+        self._scenario_exec_list_filename = s
         self._scenario_log_filename = ""
         self._scenario_log_directory = ""
 
@@ -217,6 +231,7 @@ class SEScenarioExec:
         self._scenario_content = ""
         self._scenario_filename = ""
         self._scenario_directory = ""
+        self._scenario_exec_list_filename = ""
         self._scenario_log_filename = s
         self._scenario_log_directory = ""
 
@@ -226,6 +241,7 @@ class SEScenarioExec:
         self._scenario_content = ""
         self._scenario_filename = ""
         self._scenario_directory = ""
+        self._scenario_exec_list_filename = ""
         self._scenario_log_filename = ""
         self._scenario_log_directory = s
 

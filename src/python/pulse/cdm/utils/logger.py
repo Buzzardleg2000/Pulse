@@ -207,9 +207,9 @@ def parse_actions(log_file: str, omit: List[str] = []):
                 elif patient_action in action_data:
                     action_name = list(action_data[patient_action].keys())[0]
                 elif enviro_action in action_data:
-                    action_name = list(action_data[patient_action].keys())[0]
+                    action_name = list(action_data[enviro_action].keys())[0]
                 elif equip_action in action_data:
-                    action_name = list(action_data[patient_action].keys())[0]
+                    action_name = list(action_data[equip_action].keys())[0]
                 else:
                     _pulse_logger.warning(f"Unable to determine action name: {action_text}")
                     action_name = action_data.keys()[0]

@@ -11,6 +11,8 @@ from enum import Enum
 from pathlib import Path
 
 from pulse.cdm.engine import eSwitch
+from pulse.cdm.scenario import SEScenarioExecStatus
+from pulse.cdm.io.scenario import serialize_scenario_exec_status_list_to_file
 from pulse.cdm.validation import SESegmentValidationPipelineConfig
 from pulse.cdm.io.validation import serialize_segment_validation_pipeline_config_from_file
 from pulse.cdm.utils.markdown import process_file
@@ -74,7 +76,7 @@ def segment_validation_pipeline(xls_file: Path, exec_opt: eExecOpt, use_test_res
         _pulse_logger.error(f"Results directory ({validate_dir}) does not exist. Aborting")
         return
 
-    sheets = gen_scenarios_and_targets(xls_file, scenario_dir, test_results_dir, exec_opt == eExecOpt.MarkdownOnly)
+    sce_ids = gen_scenarios_and_targets(xls_file, scenario_dir, test_results_dir, exec_opt == eExecOpt.MarkdownOnly)
     if exec_opt is eExecOpt.GenerateOnly:
         return
 
@@ -84,11 +86,15 @@ def segment_validation_pipeline(xls_file: Path, exec_opt: eExecOpt, use_test_res
     # It is assumed the json and md file names are the same, just different extension
 
     md_files = []
-    sheets.insert(0, xls_basename)
-    for sheet in sheets:
-        md_file = Path(xls_dir / (xls_basename + "-" + sheet + ".md"))
+    base_md = Path(xls_dir / f"{xls_basename}.md")
+    if not base_md.is_file():
+        base_md = Path(get_root_dir()) / "docs" / "Validation" / f"{xls_basename}.md"
+    if base_md.is_file():
+        md_files.append(base_md)
+    for sce_id in sce_ids:
+        md_file = Path(xls_dir / f"{xls_basename}-{sce_id}.md")
         if not md_file.is_file():
-            md_file = Path(get_root_dir()) / "docs" / "Validation" / (sheet + ".md")
+            md_file = Path(get_root_dir()) / "docs" / "Validation" / f"{sce_id}.md"
             if not md_file.is_file():
                 md_file = None
         if md_file is not None:
@@ -99,9 +105,9 @@ def segment_validation_pipeline(xls_file: Path, exec_opt: eExecOpt, use_test_res
         _pulse_logger.error(f"Could not find md files, at least one should be in:")
         _pulse_logger.error(f"The same dir as the xlsx, or in your source/docs/Validation directory")
         sys.exit(1)
-    plots_file = Path(xls_dir / (xls_basename + ".json"))
+    plots_file = Path(xls_dir / f"{xls_basename}.json")
     if not plots_file.is_file():
-        plots_file = Path(get_root_dir()) / "docs" / "Validation" / (xls_basename + ".json")
+        plots_file = Path(get_root_dir()) / "docs" / "Validation" / f"{xls_basename}.json"
     if not plots_file.is_file():
         plots_file = None
     # Is there a custom bib file
@@ -114,22 +120,38 @@ def segment_validation_pipeline(xls_file: Path, exec_opt: eExecOpt, use_test_res
         for image in images:
             ext = [".jpg", ".png"]
             if image.endswith(tuple(ext)):
-                image_dir = Path("./docs/html/Images/"+xls_basename)
+                image_dir = Path(f"./docs/html/Images/{xls_basename}")
                 image_dir.mkdir(parents=True, exist_ok=True)
                 shutil.copy(image, str(image_dir))
 
     # Run scenarios if we are running full pipeline
     if exec_opt is eExecOpt.Full:
+        sce_exec = PulseScenarioExec()
+        sce_exec.set_log_to_console(eSwitch.Off)
+
         # Get list of all scenarios
-        scenarios = [item.name for item in scenario_dir.glob("*")
-                     if not item.is_dir() and "-ValidationTargets.json" not in item.name]
+        scenarios = [
+            item.name for item in scenario_dir.glob("*")
+            if not item.is_dir() and "-ValidationTargets.json" not in item.name and \
+                "-ExecStatus.json" not in item.name
+        ]
+
+        # Create exec statuses for each scenario
+        sce_list = []
         for scenario in scenarios:
             scenario_file = scenario_dir / scenario
-            sce_exec = PulseScenarioExec()
-            sce_exec.set_log_to_console(eSwitch.On)
-            sce_exec.set_scenario_filename(scenario_file.as_posix())
-            if not sce_exec.execute_scenario():
-                _pulse_logger.warning(f"Scenario {scenario} was not successfully run.")
+
+            sce_status = SEScenarioExecStatus()
+            sce_status.set_scenario_filename(scenario_file.as_posix())
+            sce_list.append(sce_status)
+
+        # Save statuses to file to send over to C++ for parallel execution
+        sce_exec_list_file = scenario_dir / f"{xls_basename}-ExecStatus.json"
+        serialize_scenario_exec_status_list_to_file(sce_list, sce_exec_list_file)
+        sce_exec.set_scenario_exec_list_filename(sce_exec_list_file.as_posix())
+        _pulse_logger.info("Executing scenarios")
+        if not sce_exec.execute_scenario():
+            _pulse_logger.warning(f"Scenarios not successfully run. Check {sce_exec_list_file} for details")
 
     plots = None
     if plots_file is not None:

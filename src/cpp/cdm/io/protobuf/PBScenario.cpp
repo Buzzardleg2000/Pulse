@@ -167,6 +167,11 @@ void PBScenario::Serialize(const CDM_BIND::ScenarioExecData& src, SEScenarioExec
     dst.SetScenarioDirectory(src.scenariodirectory());
     break;
   }
+  case CDM_BIND::ScenarioExecData::ScenarioCase::kScenarioExecListFilename:
+  {
+    dst.SetScenarioExecListFilename(src.scenarioexeclistfilename());
+    break;
+  }
   case CDM_BIND::ScenarioExecData::ScenarioCase::kScenarioLogFilename:
   {
     dst.SetScenarioLogFilename(src.scenariologfilename());

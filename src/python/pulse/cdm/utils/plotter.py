@@ -656,7 +656,7 @@ def create_plot(plot_sources: [SEPlotSource],
         color = ""
         for y_header in y_headers:
             if y_header not in df.columns:
-                _pulse_logger.error(f"{y_header} not found in data")
+                _pulse_logger.error(f"{y_header} not found in {ps.get_csv_data()}")
                 return None
             line_lbl = ""
             if ps.has_label():

@@ -5,6 +5,7 @@ import re
 import json
 import logging
 from enum import Enum
+from json import JSONDecodeError
 from typing import List, NamedTuple, Set
 
 from pulse.cdm.engine import SEAction
@@ -195,7 +196,12 @@ def parse_actions(log_file: str, omit: List[str] = []):
                     action_text = ''.join([action_text, line])
 
                 # Attempt to determine action name
-                action_data = json.loads(action_text)
+                try:
+                    action_data = json.loads(action_text)
+                except JSONDecodeError:
+                    _pulse_logger.error("Could not parse actions from " + str(log_file))
+                    return actions
+
                 if adv_time in action_data:
                     action_name = adv_time
                 elif adv_stable in action_data:

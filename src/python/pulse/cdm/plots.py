@@ -124,8 +124,8 @@ class eYBoundsMode(Enum):
     MinMax = 1
 class SEPlotConfig():
     __slots__ = [ "_disabled", "_fill_area", "_font_size", "_gridlines", "_image_properties",
-                  "_legend_font_size", "_legend_mode", "_log_axis", "_omit_actions_with",
-                  "_omit_events_with", "_output_filename", "_output_path_override",
+                  "_legend_font_size", "_legend_mode", "_log_axis", "_allow_actions_with", "_allow_events_with",
+                  "_omit_actions_with", "_omit_events_with", "_output_filename", "_output_path_override",
                   "_percent_of_baseline_mode", "_plot_actions", "_plot_events",
                   "_sci_limits", "_tick_style", "_title", "_x_label", "_x_bounds", "_y_label",
                   "_y_bounds", "_y2_label", "_y2_bounds", "_y_bounds_mode"]
@@ -138,15 +138,17 @@ class SEPlotConfig():
     def __repr__(self) -> str:
         return f'SEPlotConfig({self._disabled}, {self._fill_area}, {self._font_size}, {self._gridlines}, ' \
             f'{self._image_properties}, {self._legend_font_size}, {self._legend_mode}, {self._log_axis}, ' \
-            f'{self._omit_actions_with}, {self._omit_events_with}, {self._output_path_override}, ' \
-            f'{self._percent_of_baseline_mode}, {self._plot_actions}, {self._plot_events}, {self._sci_limits}, ' \
-            f'{self._tick_style}, {self._y_bounds_mode})'
+            f'{self._allow_actions_with}, {self._allow_events_with}, {self._omit_actions_with}, ' \
+            f'{self._omit_events_with}, {self._output_path_override}, {self._percent_of_baseline_mode}, ' \
+            f'{self._plot_actions}, {self._plot_events}, {self._sci_limits}, {self._tick_style}, ' \
+            f'{self._y_bounds_mode})'
 
     def __str__(self) -> str:
         return f'SEPlotConfig:\n\tDisabled: {self._disabled}\n\tFill Area: {self._fill_area}\n\tFont Size: ' \
             f'{self._font_size}\n\tGridlines: {self._gridlines}\n\tImage Properties: {self._image_properties}\n\t' \
             f'Legend Font Size: {self._legend_font_size}\n\tLegend Mode: {self._legend_mode}\n\tLog Axis: '\
-            f'{self._log_axis}\n\tOmit Actions With: {self._omit_actions_with}\n\tOmit Events With: ' \
+            f'{self._log_axis}\n\tAllow Actions With: {self._allow_actions_with}\n\tAllow Events With: ' \
+            f'{self._allow_events_with}\n\tOmit Actions With: {self._omit_actions_with}\n\tOmit Events With: ' \
             f'{self._omit_events_with}\n\tOutput Path Override: {self._output_path_override}\n\t' \
             f'Percent of Baseline Mode: {self._percent_of_baseline_mode}\n\tPlot Actions: {self._plot_actions}\n\t' \
             f'Plot Events: {self._plot_events}\n\tSci Limits: {self._sci_limits}\n\tTick Style: {self._tick_style}\n\t' \
@@ -161,6 +163,8 @@ class SEPlotConfig():
         self._legend_font_size = None
         self._legend_mode = None
         self._log_axis = None
+        self._allow_actions_with = None
+        self._allow_events_with = None
         self._omit_actions_with = None
         self._omit_events_with = None
         self._output_path_override = None
@@ -198,10 +202,14 @@ class SEPlotConfig():
             self._legend_mode = eLegendMode.AllLegends
         if self._log_axis is None:
             self._log_axis = False
+        if self._allow_actions_with is None:
+            self._allow_actions_with = list()
+        if self._allow_events_with is None:
+            self._allow_events_with = list()
         if self._omit_actions_with is None:
-            self._omit_actions_with = []
+            self._omit_actions_with = list()
         if self._omit_events_with is None:
-            self._omit_events_with = []
+            self._omit_events_with = list()
         if self._output_path_override is None:
             self._output_path_override = Path("./verification/Plots/")
         if self._percent_of_baseline_mode is None:
@@ -225,7 +233,8 @@ class SEPlotConfig():
 
     def set_values(self, disabled: Optional[bool]=None, fill_area: Optional[bool]=None, font_size: Optional[int]=None,
         gridlines: Optional[bool]=None, image_properties: Optional[SEImageProperties]=None, legend_font_size: Optional[int]=None,
-        legend_mode: Optional[eLegendMode]=None, log_axis: Optional[bool]=None, omit_actions_with: Optional[List[str]]=None,
+        legend_mode: Optional[eLegendMode]=None, log_axis: Optional[bool]=None, allow_actions_with: Optional[List[str]]=None,
+        allow_events_with: Optional[List[str]]=None, omit_actions_with: Optional[List[str]]=None,
         omit_events_with: Optional[List[str]]=None, output_path_override: Optional[Union[str, Path]]=None,
         percent_of_baseline_mode: Optional[ePercentageOfBaselineMode]=None, plot_actions: Optional[bool]=None,
         plot_events: Optional[bool]=None, sci_limits: Optional[Tuple[int, int]]=None, tick_style: Optional[eTickStyle]=None,
@@ -247,6 +256,10 @@ class SEPlotConfig():
             self._legend_mode = legend_mode
         if log_axis is not None:
             self._log_axis = log_axis
+        if allow_actions_with is not None:
+            self._allow_actions_with = list(allow_actions_with)
+        if allow_events_with is not None:
+            self._allow_events_with = list(allow_events_with)
         if omit_actions_with is not None:
             self._omit_actions_with = list(omit_actions_with)
         if omit_events_with is not None:
@@ -284,6 +297,10 @@ class SEPlotConfig():
             self._legend_mode = src._legend_mode
         if src._log_axis is not None:
             self._log_axis = src._log_axis
+        if src._allow_actions_with is not None:
+            self._allow_actions_with = src._allow_actions_with
+        if src._allow_events_with is not None:
+            self._allow_events_with = src._allow_events_with
         if src._omit_actions_with is not None:
             self._omit_actions_with = src._omit_actions_with
         if src._omit_events_with is not None:
@@ -393,16 +410,38 @@ class SEPlotConfig():
     def invalidate_log_axis_setting(self) -> None:
         self._log_axis = None
 
+    def get_allow_actions_with(self) -> List[str]:
+        return self._allow_actions_with
+    def add_allow_actions_with(self, string: str) -> None:
+        if self._allow_actions_with is None:
+            self._allow_actions_with = list()
+        self._allow_actions_with.append(string)
+    def has_allow_actions_with(self) -> bool:
+        return self._allow_actions_with is not None and len(self._allow_actions_with) > 0
+    def invalidate_allow_actions_with(self) -> None:
+        self._allow_actions_with = list()
+
+    def get_allow_events_with(self) -> List[str]:
+        return self._allow_events_with
+    def add_allow_events_with(self, string: str) -> None:
+        if self._allow_events_with is None:
+            self._allow_events_with = list()
+        self._allow_events_with.append(string)
+    def has_allow_events_with(self) -> bool:
+        return self._allow_events_with is not None and len(self._allow_events_with) > 0
+    def invalidate_allow_events_with(self) -> None:
+        self._allow_events_with = list()
+
     def get_omit_actions_with(self) -> List[str]:
         return self._omit_actions_with
     def add_omit_actions_with(self, string: str) -> None:
         if self._omit_actions_with is None:
-            self._omit_actions_with = []
+            self._omit_actions_with = list()
         self._omit_actions_with.append(string)
     def has_omit_actions_with(self) -> bool:
-        return len(self._omit_actions_with) > 0
+        return self._omit_actions_with is not None and len(self._omit_actions_with) > 0
     def invalidate_omit_actions_with(self) -> None:
-        self._omit_actions_with = []
+        self._omit_actions_with = list()
 
     def get_omit_events_with(self) -> List[str]:
         return self._omit_events_with
@@ -411,9 +450,9 @@ class SEPlotConfig():
             self._omit_events_with = []
         self._omit_events_with.append(string)
     def has_omit_events_with(self) -> bool:
-        return len(self._omit_events_with) > 0
+        return self._omit_events_with is not None and len(self._omit_events_with) > 0
     def invalidate_omit_events_with(self) -> None:
-        self._omit_events_with = []
+        self._omit_events_with = list()
 
     def get_output_filename(self) -> Union[str, None]:
         return self._output_filename
@@ -616,9 +655,14 @@ class SEPlotSource():
 
         return True
     def get_actions_events(self, plot_actions: bool=True, plot_events: bool=True,
-            omit_actions_with: List[str]=None, omit_events_with: List[str]=None,
+            allow_actions_with: Optional[List[str]]=None, allow_events_with: Optional[List[str]]=None,
+            omit_actions_with: Optional[List[str]]=None, omit_events_with: Optional[List[str]]=None,
             count_limit: int=None
     ) -> List[LogActionEvent]:
+        if allow_actions_with is None:
+            allow_actions_with = list()
+        if allow_events_with is None:
+            allow_events_with = list()
         if omit_actions_with is None:
             omit_actions_with = list()
         if omit_events_with is None:
@@ -628,18 +672,35 @@ class SEPlotSource():
         ae_counts = {eActionEventCategory.ACTION: {}, eActionEventCategory.EVENT: {}}
         for ae in self._actions_events:
             if plot_actions and ae.category == eActionEventCategory.ACTION:
-                keep = True
+                if allow_actions_with:
+                    keep = False
+                    for o in allow_actions_with:
+                        if o in ae.text:
+                            keep = True
+                            break
+                else:
+                    keep = True
+
                 for o in omit_actions_with:
                     if o in ae.text:
                         keep = False
                         break
+
                 if keep:
                     filtered.append(ae)
                     if ae.name not in ae_counts[ae.category]:
                         ae_counts[ae.category][ae.name] = 0
                     ae_counts[ae.category][ae.name] += 1
             elif plot_events and ae.category == eActionEventCategory.EVENT:
-                keep = True
+                if allow_events_with:
+                    keep = False
+                    for o in allow_events_with:
+                        if o in ae.text:
+                            keep = True
+                            break
+                else:
+                    keep = True
+
                 for o in omit_events_with:
                     if o in ae.text:
                         keep = False

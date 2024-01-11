@@ -33,6 +33,9 @@ if __name__ == "__main__":
         generate_data_request("Patient", "ResidualVolume", "mL", 1),
         generate_data_request("Patient", "TotalLungCapacity", "mL", 1),
         generate_data_request("Patient", "VitalCapacity", "mL", 1),
+
+        generate_data_request("Physiology", "ArterialPressure", "mmHg", 1),
+        generate_data_request("Physiology", "RespiratoryMusclePressure", "cmH20", 4),
     ]
     logging.info(f"Writing validation\\requests\\Patient.json")
     serialize_data_request_list_to_file(patient_drs, Path("./validation/requests/Patient.json"))

@@ -131,7 +131,7 @@ def segment_validation_pipeline(xls_file: Path, exec_opt: eExecOpt, use_test_res
 
         # Get list of all scenarios
         scenarios = [
-            item.name for item in scenario_dir.glob("*")
+            item.name for item in scenario_dir.glob("*.json")
             if not item.is_dir() and "-ValidationTargets.json" not in item.name and \
                 "-ExecStatus.json" not in item.name
         ]

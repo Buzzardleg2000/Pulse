@@ -127,7 +127,7 @@ def segment_validation_pipeline(xls_file: Path, exec_opt: eExecOpt, use_test_res
     # Run scenarios if we are running full pipeline
     if exec_opt is eExecOpt.Full:
         sce_exec = PulseScenarioExec()
-        sce_exec.set_log_to_console(eSwitch.Off)
+        sce_exec.set_log_to_console(eSwitch.On)
 
         # Get list of all scenarios
         scenarios = [
@@ -152,6 +152,8 @@ def segment_validation_pipeline(xls_file: Path, exec_opt: eExecOpt, use_test_res
         _pulse_logger.info("Executing scenarios")
         if not sce_exec.execute_scenario():
             _pulse_logger.warning(f"Scenarios not successfully run. Check {sce_exec_list_file} for details")
+        else:
+            _pulse_logger.info("Completed executing scenarios")
 
     plots = None
     if plots_file is not None:

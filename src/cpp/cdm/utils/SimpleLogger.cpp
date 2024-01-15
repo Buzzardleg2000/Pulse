@@ -52,7 +52,7 @@ public:
     }
 
     if (_log_to_console)
-      std::cout << _str_requested_level << " " << fmtMsg << "\n";
+      std::cout << _str_requested_level << " " << fmtMsg << std::endl;
     if (_log_to_file)
       _file << _str_requested_level << " " << fmtMsg << std::endl;
   }

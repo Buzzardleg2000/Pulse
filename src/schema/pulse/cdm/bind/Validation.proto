@@ -50,9 +50,22 @@ message SegmentValidationSegmentListData
 {
   repeated SegmentValidationSegmentData                 SegmentValidationSegment        = 1;
 }
+message SegmentValidationSegmentTableData
+{
+  string                                                TableName                       = 1;
+  string                                                ScenarioName                    = 2;
+  int32                                                 Segment                         = 3;
+  repeated string                                       DataRequestFile                 = 4;
+  repeated string                                       Header                          = 5;  /** May need to consider a mapping from headers to references **/
+}
+message SegmentValidationSegmentTableListData
+{
+  repeated SegmentValidationSegmentTableData            Table                           = 1;
+}
 message SegmentValidationPipelineConfigurationData
 {
   PlotterListData                                       Plots                           = 1;
+  SegmentValidationSegmentTableListData                 Tables                          = 2;
 }
 
 message TimeSeriesValidationTargetData

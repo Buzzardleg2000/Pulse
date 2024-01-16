@@ -105,11 +105,11 @@ def segment_validation_pipeline(xls_file: Path, exec_opt: eExecOpt, use_test_res
         _pulse_logger.error(f"Could not find md files, at least one should be in:")
         _pulse_logger.error(f"The same dir as the xlsx, or in your source/docs/Validation directory")
         sys.exit(1)
-    plots_file = Path(xls_dir / f"{xls_basename}.json")
-    if not plots_file.is_file():
-        plots_file = Path(get_root_dir()) / "docs" / "Validation" / f"{xls_basename}.json"
-    if not plots_file.is_file():
-        plots_file = None
+    config_file = Path(xls_dir / f"{xls_basename}.json")
+    if not config_file.is_file():
+        config_file = Path(get_root_dir()) / "docs" / "Validation" / f"{xls_basename}.json"
+    if not config_file.is_file():
+        config_file = None
     # Is there a custom bib file
     bib_file = Path(xls_dir / "Sources.bib")
     if bib_file.is_file():
@@ -155,10 +155,10 @@ def segment_validation_pipeline(xls_file: Path, exec_opt: eExecOpt, use_test_res
         else:
             _pulse_logger.info("Completed executing scenarios")
 
-    plots = None
-    if plots_file is not None:
-        plots = SESegmentValidationPipelineConfig()
-        serialize_segment_validation_pipeline_config_from_file(plots_file, plots)
+    config = None
+    if config_file is not None:
+        config = SESegmentValidationPipelineConfig()
+        serialize_segment_validation_pipeline_config_from_file(config_file, config)
 
     # Carry out validation on each scenario
     targets = [item.name for item in scenario_dir.glob("*")
@@ -174,10 +174,15 @@ def segment_validation_pipeline(xls_file: Path, exec_opt: eExecOpt, use_test_res
         table_dir.mkdir(parents=True, exist_ok=True)
         validate(abs_targets_filename, abs_segments_filename, table_dir=table_dir)
 
-    if plots is not None:
+    if config is not None:
+        for table in config.get_tables():
+            table.write_table(
+                validate_dir=validate_dir,
+                out_dir=Path("./validation/tables") / xls_basename / table.get_scenario_name()
+            )
         if use_test_results:
-            plot_with_test_results(plots.get_plotters())
-        create_plots(plots.get_plotters())
+            plot_with_test_results(config.get_plotters())
+        create_plots(config.get_plotters())
 
     # Run doxygen preprocessor
     for md_file in md_files:

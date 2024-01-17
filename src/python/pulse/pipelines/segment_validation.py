@@ -176,10 +176,12 @@ def segment_validation_pipeline(xls_file: Path, exec_opt: eExecOpt, use_test_res
 
     if config is not None:
         for table in config.get_tables():
-            table.write_table(
+            if not table.write_table(
                 validate_dir=validate_dir,
+                in_dir=xls_dir,
                 out_dir=Path("./validation/tables") / xls_basename / table.get_scenario_name()
-            )
+            ):
+                _pulse_logger.error(f"Could not write {table.get_scenario_name()}/{table.get_table_name()}")
         if use_test_results:
             plot_with_test_results(config.get_plotters())
         create_plots(config.get_plotters())

@@ -295,16 +295,18 @@ class SESegmentValidationSegmentTable:
     def invalidate_data_request_files(self) -> None:
         self._dr_files = None
 
-    def _process_results(self, segments_filename: Path) -> List[List[Any]]:
+    def _process_results(self, segments_filename: Path, in_dir: Path) -> Optional[List[List[Any]]]:
         results = serialize_data_requested_result_from_file(segments_filename)
         result = results.get_segment(self.get_segment())
         if result is None:
-            raise ValueError(f"Could not find result for segment {self.get_segment()}")
+            _pulse_logger.error(f"Could not find result for segment {self.get_segment()}")
+            return None
 
         def _get_engine_value(dr_header: str, precision: int=3) -> List[str]:
             header_idx = results.get_header_index(dr_header)
             if header_idx is None:
-                raise ValueError(f"Could not find results for {dr_header} in segment {self.get_segment()}")
+                _pulse_logger.error(f"Could not find results for {dr_header} in segment {self.get_segment()}")
+                return None
             return [
                 dr_header,
                 f"{result.values[header_idx]:.{precision}G}" if result.values[header_idx] != "NaN" else "NaN"
@@ -314,12 +316,17 @@ class SESegmentValidationSegmentTable:
         for header in self.get_headers():
             table_data.append(_get_engine_value(header))
 
+        alt_locations = [in_dir, Path(get_scenario_dir())]
         for dr_file in self.get_data_request_files():
             dr_path = Path(dr_file)
             if not dr_path.is_file():
-                dr_path = Path(get_scenario_dir()) / dr_file
-            if not dr_path.is_file():
-                raise ValueError(f"Could not find data request file: {dr_file}")
+                for dir in alt_locations:
+                    dr_path = dir / dr_file
+                    if dr_path.is_file():
+                        break
+                else:
+                    _pulse_logger.error(f"Could not find data request file: {dr_file}")
+                    return None
             drs = list()
             serialize_data_request_list_from_file(dr_path, drs)
             for dr in drs:
@@ -327,14 +334,17 @@ class SESegmentValidationSegmentTable:
 
         return table_data
 
-    def write_table(self, validate_dir: Path, out_dir: Path) -> None:
+    def write_table(self, validate_dir: Path, in_dir: Path, out_dir: Path) -> bool:
         if not self.has_scenario_name():
-            raise ValueError("Can't write segment table without scenario specified")
+            _pulse_logger.error("Can't write segment table without scenario specified")
+            return False
         if not self.has_segment():
-            raise ValueError("Can't write segment table without segment specified")
+            _pulse_logger.error("Can't write segment table without segment specified")
+            return False
         segments_file = validate_dir / f"{self.get_scenario_name()}Results-Segments.json"
         if not segments_file.is_file():
-            raise ValueError(f"Could not find segments file: {segments_file}")
+            _pulse_logger.error(f"Could not find segments file: {segments_file}")
+            return False
 
         if not self.has_table_name():
             t_name = f"SegmentTable{self.get_segment()}"
@@ -344,7 +354,9 @@ class SESegmentValidationSegmentTable:
         table_headers = ["Property Name", "Engine Value"]
         fields = list(range(len(table_headers)))
         align = [('<', '<')] * len(table_headers)
-        table_data = self._process_results(segments_file)
+        table_data = self._process_results(segments_file, in_dir)
+        if table_data is None:
+            return False
 
         md_filename = out_dir / f"{self.get_table_name()}.md"
         with open(md_filename, "w") as md_file:
@@ -354,6 +366,8 @@ class SESegmentValidationSegmentTable:
             ]
             md_file.writelines(lines)
             table(md_file, table_data, fields, table_headers, align)
+
+        return True
 
 
 class SESegmentValidationPipelineConfig:

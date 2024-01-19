@@ -90,17 +90,17 @@ int main(int argc, char* argv[])
       //hawbTest.BrainInjuryTest(hawbDir);
 
       //Sepsis Tests
-      hawbTest.MildInfectionMildProgressionSepsisTest(hawbDir);
-      hawbTest.MildInfectionModerateProgressionSepsisTest(hawbDir);
-      hawbTest.MildInfectionSevereProgressionSepsisTest(hawbDir);
-      hawbTest.ModerateInfectionMildProgressionSepsisTest(hawbDir);
-      hawbTest.ModerateInfectionModerateProgressionSepsisTest(hawbDir);
-      hawbTest.ModerateInfectionSevereProgressionSepsisTest(hawbDir);
-      hawbTest.SevereInfectionMildProgressionSepsisTest(hawbDir);
-      hawbTest.SevereInfectionModerateProgressionSepsisTest(hawbDir);
-      hawbTest.SevereInfectionSevereProgressionSepsisTest(hawbDir);
+      //hawbTest.MildInfectionMildProgressionSepsisTest(hawbDir);
+      //hawbTest.MildInfectionModerateProgressionSepsisTest(hawbDir);
+      //hawbTest.MildInfectionSevereProgressionSepsisTest(hawbDir);
+      //hawbTest.ModerateInfectionMildProgressionSepsisTest(hawbDir);
+      //hawbTest.ModerateInfectionModerateProgressionSepsisTest(hawbDir);
+      //hawbTest.ModerateInfectionSevereProgressionSepsisTest(hawbDir);
+      //hawbTest.SevereInfectionMildProgressionSepsisTest(hawbDir);
+      //hawbTest.SevereInfectionModerateProgressionSepsisTest(hawbDir);
+      //hawbTest.SevereInfectionSevereProgressionSepsisTest(hawbDir);
       hawbTest.AsepticTest(hawbDir);
-      hawbTest.MaximumSepsisTest(hawbDir);
+      //hawbTest.MaximumSepsisTest(hawbDir);
 
       //Acid Base Tests
       //hawbTest.AcidBaseMathTest(hawbDir);

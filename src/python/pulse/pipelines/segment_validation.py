@@ -149,6 +149,7 @@ def segment_validation_pipeline(xls_file: Path, exec_opt: eExecOpt, use_test_res
         sce_exec_list_file = scenario_dir / f"{xls_basename}-ExecStatus.json"
         serialize_scenario_exec_status_list_to_file(sce_list, sce_exec_list_file)
         sce_exec.set_scenario_exec_list_filename(sce_exec_list_file.as_posix())
+        sce_exec.set_log_to_console(eSwitch.On)
         _pulse_logger.info("Executing scenarios")
         if not sce_exec.execute_scenario():
             _pulse_logger.warning(f"Scenarios not successfully run. Check {sce_exec_list_file} for details")

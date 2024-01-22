@@ -9,11 +9,11 @@ from pathlib import Path
 from typing import Dict, List, Optional
 
 import PyPulse
-from pulse.cdm.engine import SETimeSeriesValidationTarget, SEPatientTimeSeriesValidation
+from pulse.cdm.validation import SETimeSeriesValidationTarget, SEPatientTimeSeriesValidation
 from pulse.cdm.utils.csv_utils import read_csv_into_df
 from pulse.cdm.utils.markdown import table
 from pulse.cdm.utils.math_utils import generate_percentage_span, percent_tolerance
-from pulse.cdm.io.engine import serialize_patient_time_series_validation_to_file
+from pulse.cdm.io.validation import serialize_patient_time_series_validation_to_file
 
 
 _pulse_logger = logging.getLogger('pulse')

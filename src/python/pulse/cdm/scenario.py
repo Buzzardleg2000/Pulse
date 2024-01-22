@@ -107,8 +107,8 @@ class SEScenarioExec:
     __slots__ = ["_log_to_console", "_data_root_directory", "_output_root_directory", "_organize_output_directory",
                  "_auto_serialize_after_actions", "_auto_serialize_period_s", "_time_stamp_serialized_states",
                  "_engine_configuration_content", "_engine_configuration_filename", "_scenario_content", "_scenario_filename",
-                 "_scenario_directory", "_scenario_log_filename", "_scenario_log_directory","_data_request_files_search",
-                 "_content_format", "_thread_count"]
+                 "_scenario_directory", "_scenario_exec_list_filename", "_scenario_log_filename", "_scenario_log_directory",
+                 "_data_request_files_search", "_content_format", "_thread_count"]
 
     def __init__(self):
         self.clear()
@@ -129,6 +129,7 @@ class SEScenarioExec:
         self._scenario_content = ""
         self._scenario_filename = ""
         self._scenario_directory = ""
+        self._scenario_exec_list_filename = ""
         self._scenario_log_filename = ""
         self._scenario_log_directory = ""
 
@@ -190,6 +191,7 @@ class SEScenarioExec:
         self._scenario_content = s
         self._scenario_filename = ""
         self._scenario_directory = ""
+        self._scenario_exec_list_filename = ""
         self._scenario_log_filename = ""
         self._scenario_log_directory = ""
 
@@ -199,6 +201,7 @@ class SEScenarioExec:
         self._scenario_content = ""
         self._scenario_filename = s
         self._scenario_directory = ""
+        self._scenario_exec_list_filename = ""
         self._scenario_log_filename = ""
         self._scenario_log_directory = ""
 
@@ -208,6 +211,17 @@ class SEScenarioExec:
         self._scenario_content = ""
         self._scenario_filename = ""
         self._scenario_directory = s
+        self._scenario_exec_list_filename = ""
+        self._scenario_log_filename = ""
+        self._scenario_log_directory = ""
+
+    def get_scenario_exec_list_filename(self) -> str:
+        return self._scenario_exec_list_filename
+    def set_scenario_exec_list_filename(self, s: str) -> None:
+        self._scenario_content = ""
+        self._scenario_filename = ""
+        self._scenario_directory = ""
+        self._scenario_exec_list_filename = s
         self._scenario_log_filename = ""
         self._scenario_log_directory = ""
 
@@ -217,6 +231,7 @@ class SEScenarioExec:
         self._scenario_content = ""
         self._scenario_filename = ""
         self._scenario_directory = ""
+        self._scenario_exec_list_filename = ""
         self._scenario_log_filename = s
         self._scenario_log_directory = ""
 
@@ -226,6 +241,7 @@ class SEScenarioExec:
         self._scenario_content = ""
         self._scenario_filename = ""
         self._scenario_directory = ""
+        self._scenario_exec_list_filename = ""
         self._scenario_log_filename = ""
         self._scenario_log_directory = s
 
@@ -498,7 +514,7 @@ class SEReportModule(metaclass=abc.ABCMeta):
     def handle_event(self, change: SEEventChange) -> None:
         """ Process given event change """
 
-    def handle_action(self, action: str) -> None:
+    def handle_action(self, action: str, action_time: SEScalarTime) -> None:
         """ Process action """
 
     @abc.abstractmethod
@@ -594,7 +610,7 @@ class SEScenarioReport(SEScenarioLog):
         super()._parse_events(lines)
 
         events_out = list()
-        for time_s, event in self._events:
+        for time, event in self._events:
             # Determine event name and active status
             # Note: using re.match here instead of re.search because we expect the match at index 0
             match = re.match(r'\[Event\s*(?P<event>\D*)(?P<active>\d)\]', event, re.IGNORECASE)
@@ -602,11 +618,11 @@ class SEScenarioReport(SEScenarioLog):
                 _pulse_logger.warning(f"Could not identify if event is active, ignoring: {event}")
                 continue
             events_out.append((
-                time_s,
+                time,
                 SEEventChange(
                     event=eEvent[match["event"].strip()],
                     active=bool(int(match["active"])),
-                    sim_time_s=time_s
+                    sim_time_s=time.get_value(TimeUnit.s)
                 )
             ))
 
@@ -712,8 +728,8 @@ class SEScenarioReport(SEScenarioLog):
 
             # Send event changes to each module
             for next_event_idx, event_info in enumerate(self._events[event_idx:]):
-                event_time_s, change = event_info
-                if event_time_s.get_value(TimeUnit.s) == time_s:  # TODO: Floating point errors?
+                event_time, change = event_info
+                if event_time.get_value(TimeUnit.s) == time_s:  # TODO: Floating point errors?
                     for module in self._timestep_modules:
                         module.handle_event(change)
                     for module in self._observation_modules:
@@ -724,14 +740,14 @@ class SEScenarioReport(SEScenarioLog):
 
             # Send action changes to each module
             for next_action_idx, action_info in enumerate(self._actions[action_idx:]):
-                action_time_s, action = action_info
-                if action_time_s.get_value(TimeUnit.s) == time_s:  # TODO: Floating point errors?
+                action_time, action = action_info
+                if action_time.get_value(TimeUnit.s) == time_s:  # TODO: Floating point errors?
                     for module in self._timestep_modules:
-                        module.handle_action(action)
+                        module.handle_action(action=action, action_time=action_time)
                     for module in self._observation_modules:
-                        module.handle_action(action)
+                        module.handle_action(action=action, action_time=action_time)
                     if self._death_check_module is not None:
-                        self._death_check_module.handle_action(action)
+                        self._death_check_module.handle_action(action=action, action_time=action_time)
                     action_idx = action_idx + 1
 
             # Send data to each module for processing
@@ -742,7 +758,7 @@ class SEScenarioReport(SEScenarioLog):
                 if self._death_check_module is not None:
                     self._death_check_module(data_slice=data_slice, slice_idx=idx)
             except StopIteration:  # Death indication: stop iterating, do one last observation
-                observations.append(_generate_observation())
+                # observations.append(_generate_observation())
                 break
 
             # If this is an observation time, update those modules

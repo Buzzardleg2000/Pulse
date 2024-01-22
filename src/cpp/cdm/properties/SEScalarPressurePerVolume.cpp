@@ -29,3 +29,5 @@ const PressurePerVolumeUnit& PressurePerVolumeUnit::GetCompoundUnit(const std::s
     return cmH2O_Per_L;
   throw CommonDataModelException(unit + " is not a valid PressurePerVolume unit");
 }
+
+template class SEScalarQuantity<PressurePerVolumeUnit>;

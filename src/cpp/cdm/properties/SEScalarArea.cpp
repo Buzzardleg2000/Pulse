@@ -24,3 +24,5 @@ const AreaUnit& AreaUnit::GetCompoundUnit(const std::string& unit)
     return m2;
   throw CommonDataModelException(unit + " is not a valid  Area unit");
 }
+
+template class SEScalarQuantity<AreaUnit>;

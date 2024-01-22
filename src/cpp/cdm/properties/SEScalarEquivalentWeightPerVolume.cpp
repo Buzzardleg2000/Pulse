@@ -34,3 +34,5 @@ const EquivalentWeightPerVolumeUnit& EquivalentWeightPerVolumeUnit::GetCompoundU
     return mEq_Per_mL;
   throw CommonDataModelException(unit + " is not a valid EquivalentWeightPerVolume unit");
 }
+
+template class SEScalarQuantity<EquivalentWeightPerVolumeUnit>;

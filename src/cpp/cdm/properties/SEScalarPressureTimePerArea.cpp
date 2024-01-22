@@ -24,3 +24,5 @@ const PressureTimePerAreaUnit& PressureTimePerAreaUnit::GetCompoundUnit(const st
     return cmH2O_Per_mL_m2;
   throw CommonDataModelException(unit + " is not a valid PressureTimePerArea unit");
 }
+
+template class SEScalarQuantity<PressureTimePerAreaUnit>;

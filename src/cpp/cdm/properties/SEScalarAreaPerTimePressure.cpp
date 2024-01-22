@@ -34,3 +34,5 @@ const AreaPerTimePressureUnit& AreaPerTimePressureUnit::GetCompoundUnit(const st
     return cm2_Per_min_mmHg;
   throw CommonDataModelException(unit + " is not a valid  AreaPerTimePressure unit");
 }
+
+template class SEScalarQuantity<AreaPerTimePressureUnit>;

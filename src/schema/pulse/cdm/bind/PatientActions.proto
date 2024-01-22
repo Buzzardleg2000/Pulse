@@ -24,34 +24,36 @@ message AnyPatientActionData
     AsthmaAttackData                                   AsthmaAttack                                   = 6;
     BrainInjuryData                                    BrainInjury                                    = 7;
     BronchoconstrictionData                            Bronchoconstriction                            = 8;
-    ChestCompressionData                               ChestCompression                               = 9;
-    ChestCompressionAutomatedData                      ChestCompressionAutomated                      = 10;
-    ChestCompressionInstantaneousData                  ChestCompressionInstantaneous                  = 11;
-    ChestOcclusiveDressingData                         ChestOcclusiveDressing                         = 12;
-    ChronicObstructivePulmonaryDiseaseExacerbationData ChronicObstructivePulmonaryDiseaseExacerbation = 13;
-    ConsciousRespirationData                           ConsciousRespiration                           = 14;
-    ConsumeNutrientsData                               ConsumeNutrients                               = 15;
-    DyspneaData                                        Dyspnea                                        = 16;
-    ExerciseData                                       Exercise                                       = 17;
-    HemorrhageData                                     Hemorrhage                                     = 18;
-    HemothoraxData                                     Hemothorax                                     = 19;
-    ImpairedAlveolarExchangeExacerbationData           ImpairedAlveolarExchangeExacerbation           = 20;
-    IntubationData                                     Intubation                                     = 21;
-    MechanicalVentilationData                          MechanicalVentilation                          = 22;
-    NeedleDecompressionData                            NeedleDecompression                            = 23;
-    PericardialEffusionData                            PericardialEffusion                            = 24;
-    PneumoniaExacerbationData                          PneumoniaExacerbation                          = 25;
-    PulmonaryShuntExacerbationData                     PulmonaryShuntExacerbation                     = 26;
-    RespiratoryFatigueData                             RespiratoryFatigue                             = 27;
-    RespiratoryMechanicsConfigurationData              RespiratoryMechanicsConfiguration              = 28;
-    SepsisExacerbationData                             SepsisExacerbation                             = 29;
-    SubstanceBolusData                                 SubstanceBolus                                 = 30;
-    SubstanceCompoundInfusionData                      SubstanceCompoundInfusion                      = 31;
-    SubstanceInfusionData                              SubstanceInfusion                              = 32;
-    SupplementalOxygenData                             SupplementalOxygen                             = 33;
-    TensionPneumothoraxData                            TensionPneumothorax                            = 34;
-    TubeThoracostomyData                               TubeThoracostomy                               = 35;
-    UrinateData                                        Urinate                                        = 36;
+    CardiovascularMechanicsModificationData            CardiovascularMechanicsModification            = 9;
+    ChestCompressionData                               ChestCompression                               = 10;
+    ChestCompressionAutomatedData                      ChestCompressionAutomated                      = 11;
+    ChestCompressionInstantaneousData                  ChestCompressionInstantaneous                  = 12;
+    ChestOcclusiveDressingData                         ChestOcclusiveDressing                         = 13;
+    ChronicObstructivePulmonaryDiseaseExacerbationData ChronicObstructivePulmonaryDiseaseExacerbation = 14;
+    ConsciousRespirationData                           ConsciousRespiration                           = 15;
+    ConsumeNutrientsData                               ConsumeNutrients                               = 16;
+    DyspneaData                                        Dyspnea                                        = 17;
+    ExerciseData                                       Exercise                                       = 18;
+    HemorrhageData                                     Hemorrhage                                     = 19;
+    HemothoraxData                                     Hemothorax                                     = 20;
+    ImpairedAlveolarExchangeExacerbationData           ImpairedAlveolarExchangeExacerbation           = 21;
+    IntubationData                                     Intubation                                     = 22;
+    MechanicalVentilationData                          MechanicalVentilation                          = 23;
+    NeedleDecompressionData                            NeedleDecompression                            = 24;
+    PericardialEffusionData                            PericardialEffusion                            = 25;
+    PneumoniaExacerbationData                          PneumoniaExacerbation                          = 26;
+    PulmonaryShuntExacerbationData                     PulmonaryShuntExacerbation                     = 27;
+    RespiratoryFatigueData                             RespiratoryFatigue                             = 28;
+    RespiratoryMechanicsConfigurationData              RespiratoryMechanicsConfiguration              = 29;
+    RespiratoryMechanicsModificationData               RespiratoryMechanicsModification               = 30;
+    SepsisExacerbationData                             SepsisExacerbation                             = 31;
+    SubstanceBolusData                                 SubstanceBolus                                 = 32;
+    SubstanceCompoundInfusionData                      SubstanceCompoundInfusion                      = 33;
+    SubstanceInfusionData                              SubstanceInfusion                              = 34;
+    SupplementalOxygenData                             SupplementalOxygen                             = 35;
+    TensionPneumothoraxData                            TensionPneumothorax                            = 36;
+    TubeThoracostomyData                               TubeThoracostomy                               = 37;
+    UrinateData                                        Urinate                                        = 38;
   }
 }
 
@@ -123,6 +125,18 @@ message BronchoconstrictionData
 {
   PatientActionData                         PatientAction                   = 1;
   Scalar0To1Data                            Severity                        = 2;/**<<@brief Scale of affect, 0 being none, 1 being the highest possible. */
+}
+
+/** @brief Modify the %Cardiovascular mechanics. */
+message CardiovascularMechanicsModificationData
+{
+  PatientActionData                         PatientAction                   = 1;
+  oneof Option
+  {
+    CardiovascularMechanicsModifiersData    Modifiers                       = 2;/**<< @brief A CardiovascularMechanicsModification object with properties to set in the system object. */
+    string                                  ModifiersFile                   = 3;/**<< @brief File containing a RespiratoryMechanics object with properties to set in the system object. */
+  }
+  bool                                      Incremental                     = 4;/**<< @brief When off (Default) the engine will Restabilize a new homeostasis state. Use true if you are incrementally driving modification with very small modifiers and the engine will not stabilize.*/
 }
 
 /** @brief A single CPR compression to the chest cavity in order to pump blood through the heart. */
@@ -410,6 +424,18 @@ message RespiratoryMechanicsConfigurationData
   }
   eAppliedRespiratoryCycle                  AppliedCycle                    = 4;/**<< @brief When to apply these mechanics in the respiratory cycle. */
   eMergeType                                MergeType                       = 5;/**<< @brief How to apply provided configuration to internal data model. */
+}
+
+/** @brief Modify the %Respiratory mechanics. */
+message RespiratoryMechanicsModificationData
+{
+  PatientActionData                         PatientAction                   = 1;
+  oneof Option
+  {
+    RespiratoryMechanicsModifiersData       Modifiers                       = 2;/**<< @brief A RespiratoryMechanicsModification object with properties to set in the system object. */
+    string                                  ModifiersFile                   = 3;/**<< @brief File containing a RespiratoryMechanics object with properties to set in the system object. */
+  }
+  bool                                      Incremental                     = 4;/**<< @brief When off (Default) the engine will Restabilize a new homeostasis state. Use true if you are incrementally driving modification with very small modifiers and the engine will not stabilize.*/
 }
 
 /** @brief A potentially life-threatening condition caused by the body's response to an infection. */

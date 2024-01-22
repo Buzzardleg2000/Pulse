@@ -80,7 +80,7 @@ public class SERespiratorySystem extends SEPhysiologySystem implements SESystem
   protected SEScalarPressure              transthoracicPressure;
   protected SEScalar                      ventilationPerfusionRatio;
   
-  protected SERespiratoryMechanics        respiratoryMechanics;
+  protected SERespiratoryMechanics        mechanics;
 
 
   public SERespiratorySystem()
@@ -146,7 +146,7 @@ public class SERespiratorySystem extends SEPhysiologySystem implements SESystem
     transthoracicPressure = null;
     ventilationPerfusionRatio = null;
     
-    respiratoryMechanics = null;
+    mechanics = null;
   }
 
   @Override
@@ -273,8 +273,8 @@ public class SERespiratorySystem extends SEPhysiologySystem implements SESystem
     if (ventilationPerfusionRatio != null)
       ventilationPerfusionRatio.invalidate();
     
-    if(respiratoryMechanics != null)
-      respiratoryMechanics.clear();
+    if(mechanics != null)
+      mechanics.clear();
   }
 
   public static void load(RespiratorySystemData src, SERespiratorySystem dst)
@@ -400,8 +400,8 @@ public class SERespiratorySystem extends SEPhysiologySystem implements SESystem
     if (src.hasVentilationPerfusionRatio())
       SEScalar.load(src.getVentilationPerfusionRatio(),dst.getVentilationPerfusionRatio());
     
-    if(src.hasRespiratoryMechanics())
-      SERespiratoryMechanics.load(src.getRespiratoryMechanics(), dst.getRespiratoryMechanics());
+    if(src.hasMechanics())
+      SERespiratoryMechanics.load(src.getMechanics(), dst.getMechanics());
   }
 
   public static RespiratorySystemData unload(SERespiratorySystem src)
@@ -534,8 +534,8 @@ public class SERespiratorySystem extends SEPhysiologySystem implements SESystem
     if (src.hasVentilationPerfusionRatio())
       dst.setVentilationPerfusionRatio(SEScalar.unload(src.getVentilationPerfusionRatio()));
     
-    if (src.hasRespiratoryMechanics())
-      dst.setRespiratoryMechanics(SERespiratoryMechanics.unload(src.getRespiratoryMechanics()));
+    if (src.hasMechanics())
+      dst.setMechanics(SERespiratoryMechanics.unload(src.getMechanics()));
   }
   
 
@@ -1202,14 +1202,14 @@ public class SERespiratorySystem extends SEPhysiologySystem implements SESystem
     return ventilationPerfusionRatio;
   }
   
-  public boolean hasRespiratoryMechanics()
+  public boolean hasMechanics()
   {
-    return respiratoryMechanics == null ? false : true;
+    return mechanics == null ? false : true;
   }
-  public SERespiratoryMechanics getRespiratoryMechanics()
+  public SERespiratoryMechanics getMechanics()
   {
-    if (respiratoryMechanics == null)
-      respiratoryMechanics = new SERespiratoryMechanics();
-    return respiratoryMechanics;
+    if (mechanics == null)
+      mechanics = new SERespiratoryMechanics();
+    return mechanics;
   }
 }

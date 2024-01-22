@@ -74,7 +74,7 @@ namespace pulse
     NonRebreatherMask,
     SimpleMask
   };
-  extern const std::string& eAirwayMode_Name(eAirwayMode m);
+  extern PULSE_DECL const std::string& eAirwayMode_Name(eAirwayMode m);
 
   class PULSE_DECL Data : public Loggable
   {

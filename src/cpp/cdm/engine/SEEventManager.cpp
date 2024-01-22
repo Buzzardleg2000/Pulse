@@ -146,6 +146,9 @@ void SEEventManager::SetEvent(eEvent type, bool active, const SEScalarTime& time
       case eEvent::RenalHypoperfusion:
         m_ss << " Patient has Renal Hypoperfusion";
         break;
+      case eEvent::Stabilization:
+        m_ss << " Engine is stabilizing";
+        break;
       case eEvent::SevereHyperoxemia:
         m_ss << " The patient is in a state of moderate hyperoxemia";
         break;
@@ -294,6 +297,9 @@ void SEEventManager::SetEvent(eEvent type, bool active, const SEScalarTime& time
         break;
       case eEvent::RenalHypoperfusion:
         m_ss << " Patient no longer has Renal Hypoperfusion";
+        break;
+      case eEvent::Stabilization:
+        m_ss << " Engine completed stabilizing";
         break;
       case eEvent::SevereHyperoxemia:
         m_ss << " The patient is no longer in a state of severe hyperoxemia";

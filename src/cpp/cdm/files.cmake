@@ -7,6 +7,7 @@ set(CDM_H_FILES
   cdm/PhysiologyEngineThunk.h
   cdm/PhysiologyEnginePool.h
   cdm/blackbox/SEBlackBox.h
+  cdm/blackbox/SEBlackBox.hxx
   cdm/blackbox/SEBlackBoxManager.h
   cdm/blackbox/electrical/SEElectricalBlackBox.h
   cdm/blackbox/fluid/SEFluidBlackBox.h
@@ -14,10 +15,14 @@ set(CDM_H_FILES
   cdm/blackbox/fluid/SELiquidBlackBox.h
   cdm/blackbox/thermal/SEThermalBlackBox.h
   cdm/circuit/SECircuit.h
-  cdm/circuit/SECircuitCalculator.h
+  cdm/circuit/SECircuit.hxx
+  cdm/circuit/SECircuitCalculator.h  
   cdm/circuit/SECircuitManager.h
+  cdm/circuit/SECircuitManager.hxx
   cdm/circuit/SECircuitNode.h
+  cdm/circuit/SECircuitNode.hxx
   cdm/circuit/SECircuitPath.h
+  cdm/circuit/SECircuitPath.hxx
   cdm/circuit/electrical/SEElectricalCircuit.h
   cdm/circuit/electrical/SEElectricalCircuitCalculator.h
   cdm/circuit/electrical/SEElectricalCircuitNode.h
@@ -32,14 +37,19 @@ set(CDM_H_FILES
   cdm/circuit/thermal/SEThermalCircuitPath.h
   cdm/compartment/SECompartment.h
   cdm/compartment/SECompartmentGraph.h
+  cdm/compartment/SECompartmentGraph.hxx
   cdm/compartment/SECompartmentLink.h
   cdm/compartment/SECompartmentManager.h
   cdm/compartment/SECompartmentNodes.h
+  cdm/compartment/SECompartmentNodes.hxx
   cdm/compartment/SECompartmentTransportGraph.h
+  cdm/compartment/SECompartmentTransportGraph.hxx
   cdm/compartment/electrical/SEElectricalCompartment.h
   cdm/compartment/electrical/SEElectricalCompartmentLink.h
-  cdm/compartment/fluid/SEFluidCompartment.h
+  cdm/compartment/fluid/SEFluidCompartment.h  
+  cdm/compartment/fluid/SEFluidCompartment.hxx
   cdm/compartment/fluid/SEFluidCompartmentLink.h
+  cdm/compartment/fluid/SEFluidCompartmentLink.hxx
   cdm/compartment/fluid/SEGasCompartment.h
   cdm/compartment/fluid/SEGasCompartmentGraph.h
   cdm/compartment/fluid/SEGasCompartmentLink.h
@@ -121,6 +131,7 @@ set(CDM_H_FILES
   cdm/patient/actions/SEAsthmaAttack.h
   cdm/patient/actions/SEBrainInjury.h
   cdm/patient/actions/SEBronchoconstriction.h
+  cdm/patient/actions/SECardiovascularMechanicsModification.h
   cdm/patient/actions/SEChestCompression.h
   cdm/patient/actions/SEChestCompressionAutomated.h
   cdm/patient/actions/SEChestCompressionInstantaneous.h
@@ -147,6 +158,7 @@ set(CDM_H_FILES
   cdm/patient/actions/SEPulmonaryShuntExacerbation.h
   cdm/patient/actions/SERespiratoryFatigue.h
   cdm/patient/actions/SERespiratoryMechanicsConfiguration.h
+  cdm/patient/actions/SERespiratoryMechanicsModification.h
   cdm/patient/actions/SESepsisExacerbation.h
   cdm/patient/actions/SESubstanceAdministration.h
   cdm/patient/actions/SESubstanceBolus.h
@@ -195,6 +207,7 @@ set(CDM_H_FILES
   cdm/properties/SESegmentParabolic.h
   cdm/properties/SESegmentSigmoidal.h
   cdm/properties/SEScalar.h
+  cdm/properties/SEScalar.hxx
   cdm/properties/SEScalar0To1.h
   cdm/properties/SEScalarAmount.h
   cdm/properties/SEScalarAmountPerMass.h
@@ -246,6 +259,7 @@ set(CDM_H_FILES
   cdm/properties/SEScalarPressureTimeSquaredPerVolume.h
   cdm/properties/SEScalarTemperature.h
   cdm/properties/SEScalarTime.h
+  cdm/properties/SEScalarUnsigned.h
   cdm/properties/SEScalarVolume.h
   cdm/properties/SEScalarVolumePerPressure.h
   cdm/properties/SEScalarVolumePerTime.h
@@ -325,6 +339,7 @@ set(CDM_H_FILES
   cdm/system/equipment/mechanical_ventilator/actions/SEMechanicalVentilatorVolumeControl.h
   cdm/system/physiology/SEBloodChemistrySystem.h
   cdm/system/physiology/SECardiovascularSystem.h
+  cdm/system/physiology/SECardiovascularMechanicsModifiers.h
   cdm/system/physiology/SEDrugSystem.h
   cdm/system/physiology/SEEndocrineSystem.h
   cdm/system/physiology/SEEnergySystem.h
@@ -335,6 +350,7 @@ set(CDM_H_FILES
   cdm/system/physiology/SEPupillaryResponse.h
   cdm/system/physiology/SERenalSystem.h
   cdm/system/physiology/SERespiratoryMechanics.h
+  cdm/system/physiology/SERespiratoryMechanicsModifiers.h
   cdm/system/physiology/SERespiratorySystem.h
   cdm/system/physiology/SETissueSystem.h
   cdm/utils/ConfigParser.h
@@ -372,18 +388,14 @@ set(CDM_H_FILES
 set(CDM_CPP_FILES
   cdm/PhysiologyEngineThunk.cpp
   cdm/PhysiologyEnginePool.cpp
-  cdm/blackbox/SEBlackBox.cpp
   cdm/blackbox/SEBlackBoxManager.cpp
   cdm/blackbox/electrical/SEElectricalBlackBox.cpp
   cdm/blackbox/fluid/SEFluidBlackBox.cpp
   cdm/blackbox/fluid/SEGasBlackBox.cpp
   cdm/blackbox/fluid/SELiquidBlackBox.cpp
   cdm/blackbox/thermal/SEThermalBlackBox.cpp
-  cdm/circuit/SECircuit.cpp
   cdm/circuit/SECircuitCalculator.cpp
   cdm/circuit/SECircuitManager.cpp
-  cdm/circuit/SECircuitNode.cpp
-  cdm/circuit/SECircuitPath.cpp
   cdm/circuit/electrical/SEElectricalCircuit.cpp
   cdm/circuit/electrical/SEElectricalCircuitCalculator.cpp
   cdm/circuit/electrical/SEElectricalCircuitNode.cpp
@@ -397,15 +409,10 @@ set(CDM_CPP_FILES
   cdm/circuit/thermal/SEThermalCircuitNode.cpp
   cdm/circuit/thermal/SEThermalCircuitPath.cpp
   cdm/compartment/SECompartment.cpp
-  cdm/compartment/SECompartmentGraph.cpp
   cdm/compartment/SECompartmentLink.cpp
   cdm/compartment/SECompartmentManager.cpp
-  cdm/compartment/SECompartmentNodes.cpp
-  cdm/compartment/SECompartmentTransportGraph.cpp
   cdm/compartment/electrical/SEElectricalCompartment.cpp
   cdm/compartment/electrical/SEElectricalCompartmentLink.cpp
-  cdm/compartment/fluid/SEFluidCompartment.cpp
-  cdm/compartment/fluid/SEFluidCompartmentLink.cpp
   cdm/compartment/fluid/SEGasCompartment.cpp
   cdm/compartment/fluid/SEGasCompartmentGraph.cpp
   cdm/compartment/fluid/SEGasCompartmentLink.cpp
@@ -499,6 +506,7 @@ set(CDM_CPP_FILES
   cdm/patient/actions/SEAsthmaAttack.cpp
   cdm/patient/actions/SEBrainInjury.cpp
   cdm/patient/actions/SEBronchoconstriction.cpp
+  cdm/patient/actions/SECardiovascularMechanicsModification.cpp
   cdm/patient/actions/SEChestCompression.cpp
   cdm/patient/actions/SEChestCompressionAutomated.cpp
   cdm/patient/actions/SEChestCompressionInstantaneous.cpp
@@ -525,6 +533,7 @@ set(CDM_CPP_FILES
   cdm/patient/actions/SEPulmonaryShuntExacerbation.cpp
   cdm/patient/actions/SERespiratoryFatigue.cpp
   cdm/patient/actions/SERespiratoryMechanicsConfiguration.cpp
+  cdm/patient/actions/SERespiratoryMechanicsModification.cpp
   cdm/patient/actions/SESepsisExacerbation.cpp
   cdm/patient/actions/SESubstanceAdministration.cpp
   cdm/patient/actions/SESubstanceBolus.cpp
@@ -624,6 +633,7 @@ set(CDM_CPP_FILES
   cdm/properties/SEScalarPressureTimeSquaredPerVolume.cpp
   cdm/properties/SEScalarTemperature.cpp
   cdm/properties/SEScalarTime.cpp
+  cdm/properties/SEScalarUnsigned.cpp
   cdm/properties/SEScalarVolume.cpp
   cdm/properties/SEScalarVolumePerPressure.cpp
   cdm/properties/SEScalarVolumePerTime.cpp
@@ -703,6 +713,7 @@ set(CDM_CPP_FILES
   cdm/system/equipment/mechanical_ventilator/actions/SEMechanicalVentilatorPressureControl.cpp
   cdm/system/equipment/mechanical_ventilator/actions/SEMechanicalVentilatorVolumeControl.cpp
   cdm/system/physiology/SEBloodChemistrySystem.cpp
+  cdm/system/physiology/SECardiovascularMechanicsModifiers.cpp
   cdm/system/physiology/SECardiovascularSystem.cpp
   cdm/system/physiology/SEDrugSystem.cpp
   cdm/system/physiology/SEEndocrineSystem.cpp
@@ -714,6 +725,7 @@ set(CDM_CPP_FILES
   cdm/system/physiology/SEPupillaryResponse.cpp
   cdm/system/physiology/SERenalSystem.cpp
   cdm/system/physiology/SERespiratoryMechanics.cpp
+  cdm/system/physiology/SERespiratoryMechanicsModifiers.cpp
   cdm/system/physiology/SERespiratorySystem.cpp
   cdm/system/physiology/SETissueSystem.cpp
   cdm/utils/ConfigParser.cpp
@@ -729,6 +741,7 @@ set(CDM_CPP_FILES
   cdm/utils/base64.cpp
   cdm/utils/testing/SETestCase.cpp
   cdm/utils/testing/SETestErrorStatistics.cpp
+  cdm/utils/testing/SETestManager.cpp
   cdm/utils/testing/SETestReport.cpp
   cdm/utils/testing/SETestSuite.cpp
   cdm/utils/unitconversion/CompoundUnit.cpp

@@ -34,3 +34,5 @@ const EnergyUnit& EnergyUnit::GetCompoundUnit(const std::string& unit)
     return kcal;
   throw CommonDataModelException(unit + " is not a valid Energy unit");
 }
+
+template class SEScalarQuantity<EnergyUnit>;

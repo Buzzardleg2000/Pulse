@@ -84,3 +84,5 @@ const MassPerVolumeUnit& MassPerVolumeUnit::GetCompoundUnit(const std::string& u
     return kg_Per_L;
   throw CommonDataModelException(unit + " is not a valid MassPerVolume unit");
 }
+
+template class SEScalarQuantity<MassPerVolumeUnit>;

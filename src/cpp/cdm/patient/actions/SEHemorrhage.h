@@ -25,11 +25,11 @@ enum class eHemorrhage_Compartment
   Spleen = 15,
   VenaCava = 16
 };
-extern const std::string& eHemorrhage_Compartment_Name(eHemorrhage_Compartment c);
-extern eHemorrhage_Compartment eHemorrhage_Compartment_Parse(const std::string& s);
+extern CDM_DECL const std::string& eHemorrhage_Compartment_Name(eHemorrhage_Compartment c);
+extern CDM_DECL eHemorrhage_Compartment eHemorrhage_Compartment_Parse(const std::string& s);
 
 enum class eHemorrhage_Type { External = 0, Internal };
-extern const std::string& eHemorrhage_Type_Name(eHemorrhage_Type t);
+extern CDM_DECL const std::string& eHemorrhage_Type_Name(eHemorrhage_Type t);
 
 class CDM_DECL SEHemorrhage : public SEPatientAction
 {

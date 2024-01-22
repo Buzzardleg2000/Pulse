@@ -39,7 +39,6 @@ def serialize_test_suite_from_bind(src: TestSuiteData, dst: SETestSuite):
     dst.clear()
     dst.set_name(src.Name)
     dst.set_performed(src.Performed)
-    dst.set_num_tests(src.Tests)
 
     for r in src.Requirement:
         dst.add_requirement(r)
@@ -73,7 +72,7 @@ def serialize_test_suite_to_bind(src: SETestSuite, dst: TestSuiteData):
 def serialize_test_case_from_bind(src: TestCaseData, dst: SETestCase):
     dst.clear()
     dst.set_name(src.Name)
-    serialize_scalar_time_from_bind(src.Duration, dst.get_duration())
+    #serialize_scalar_time_from_bind(src.Duration, dst.get_duration())
     for f in src.Failure:
         dst.add_failure(f)
     for w in src.Warning:

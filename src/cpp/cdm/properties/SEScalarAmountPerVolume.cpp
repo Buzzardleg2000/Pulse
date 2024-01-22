@@ -54,3 +54,5 @@ const AmountPerVolumeUnit& AmountPerVolumeUnit::GetCompoundUnit(const std::strin
     return ct_Per_uL;
   throw CommonDataModelException(unit + " is not a valid AmountPerVolume unit");
 }
+
+template class SEScalarQuantity<AmountPerVolumeUnit>;

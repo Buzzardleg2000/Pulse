@@ -9,6 +9,7 @@ add_executable_ex(HowToDriver
   HowTo-BagValveMask.cpp
   HowTo-BolusDrug.cpp
   HowTo-BrainInjury.cpp
+  HowTo-CardiovascularModification.cpp
   HowTo-CombatMultitrauma.cpp
   HowTo-ConsumeNutrients.cpp
   HowTo-COPD.cpp
@@ -28,6 +29,7 @@ add_executable_ex(HowToDriver
   HowTo-PulmonaryFibrosis.cpp
   HowTo-PulseEnginePool.cpp
   HowTo-RespiratoryMechanics.cpp
+  HowTo-RespiratoryModification.cpp
   HowTo-RunScenario.cpp
   HowTo-RunThreaded.cpp
   HowTo-RunThreaded.h

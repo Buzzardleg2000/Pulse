@@ -6,7 +6,7 @@
 
 // Keep enums in sync with appropriate schema/cdm/ActionEnums.proto file !!
 enum class eSerialization_Mode { Save = 0, Load };
-extern const std::string& eSerialization_Mode_Name(eSerialization_Mode m);
+extern CDM_DECL const std::string& eSerialization_Mode_Name(eSerialization_Mode m);
 
 class CDM_DECL SESerializeState : public SEAction
 {

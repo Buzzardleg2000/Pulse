@@ -3,7 +3,9 @@
   "Description": "Inject standard patient with Prednisone.",
   "PatientConfiguration": { "PatientFile": "StandardMale.json" },
   "DataRequestFile": [
-    "StandardDataRequests.json"
+    "StandardDataRequests.json",
+    "DrugDataRequests.json",
+    "NervousDataRequests.json"
   ],
   "DataRequestManager": {
     "DataRequest":

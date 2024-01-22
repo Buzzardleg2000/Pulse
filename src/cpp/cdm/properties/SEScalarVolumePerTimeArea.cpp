@@ -29,3 +29,5 @@ const VolumePerTimeAreaUnit& VolumePerTimeAreaUnit::GetCompoundUnit(const std::s
     return L_Per_min_m2;
   throw CommonDataModelException(unit + " is not a valid VolumePerTimeArea unit");
 }
+
+template class SEScalarQuantity<VolumePerTimeAreaUnit>;

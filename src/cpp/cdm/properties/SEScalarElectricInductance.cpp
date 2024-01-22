@@ -19,3 +19,5 @@ const ElectricInductanceUnit& ElectricInductanceUnit::GetCompoundUnit(const std:
     return H;
   throw CommonDataModelException(unit + " is not a valid ElectricInductance unit");
 }
+
+template class SEScalarQuantity<ElectricInductanceUnit>;

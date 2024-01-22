@@ -17,4 +17,4 @@ enum class eSubstanceAdministration_Route {
   Intramuscular,
   Subcutaneous
 };
-extern const std::string& eSubstanceAdministration_Route_Name(eSubstanceAdministration_Route m);
+extern CDM_DECL const std::string& eSubstanceAdministration_Route_Name(eSubstanceAdministration_Route m);

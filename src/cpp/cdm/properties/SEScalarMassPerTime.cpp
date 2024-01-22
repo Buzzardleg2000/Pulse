@@ -54,3 +54,5 @@ const MassPerTimeUnit& MassPerTimeUnit::GetCompoundUnit(const std::string& unit)
     return ug_Per_min;
   throw CommonDataModelException(unit + " is not a valid MassPerTime unit");
 }
+
+template class SEScalarQuantity<MassPerTimeUnit>;

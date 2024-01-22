@@ -24,3 +24,5 @@ const ElectricPotentialUnit& ElectricPotentialUnit::GetCompoundUnit(const std::s
     return mV;
   throw CommonDataModelException(unit + " is not a valid ElectricPotential unit");
 }
+
+template class SEScalarQuantity<ElectricPotentialUnit>;

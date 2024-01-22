@@ -17,7 +17,7 @@ enum class eECMO_CannulationLocation { NullCannulationLocation=0,
                                        LeftFemoralVein,
                                        RightSubclavianVein,
                                        LeftSubclavianVein };
-extern const std::string& eECMO_CannulationLocation_Name(eECMO_CannulationLocation m);
+extern CDM_DECL const std::string& eECMO_CannulationLocation_Name(eECMO_CannulationLocation m);
 
 class CDM_DECL SEECMOSettings : public Loggable
 {

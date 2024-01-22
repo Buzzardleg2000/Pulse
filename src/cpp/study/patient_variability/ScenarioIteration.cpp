@@ -78,6 +78,8 @@ namespace pulse::study::patient_variability
     m_ScenarioStatus.Clear();
     m_ScenarioStatus.SetScenarioFilename(m_ScenarioDirectory+m_Name+".json");
     m_ScenarioList.push_back(m_ScenarioStatus);
+
+    Info("Writing scenario " + m_ScenarioStatus.GetScenarioFilename());
     return SerializeToFile(m_ScenarioStatus.GetScenarioFilename());
   }
 

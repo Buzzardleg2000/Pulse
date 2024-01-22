@@ -3,6 +3,7 @@
 
 #include "cdm/CommonDefs.h"
 #include "cdm/system/physiology/SERespiratorySystem.h"
+#include "cdm/system/physiology/SERespiratoryMechanics.h"
 #include "cdm/properties/SEScalarArea.h"
 #include "cdm/properties/SEScalarEnergy.h"
 #include "cdm/properties/SEScalarVolumePerPressure.h"
@@ -15,6 +16,28 @@
 #include "cdm/properties/SEScalarVolume.h"
 #include "cdm/properties/SEScalarVolumePerPressure.h"
 #include "cdm/properties/SEScalarVolumePerTime.h"
+
+const std::string& eLungCompartment_Name(eLungCompartment cmpt)
+{
+  switch (cmpt)
+  {
+  case eLungCompartment::LeftLung:
+    return "LeftLung";
+  case eLungCompartment::RightLung:
+    return "RightLung";
+  case eLungCompartment::LeftSuperiorLobe:
+    return "LeftSuperiorLobe";
+  case eLungCompartment::LeftInferiorLobe:
+    return "LeftInferiorLobe";
+  case eLungCompartment::RightSuperiorLobe:
+    return "RightSuperiorLobe";
+  case eLungCompartment::RightMiddleLobe:
+    return "RightMiddleLobe";
+  case eLungCompartment::RightInferiorLobe:
+    return "RightInferiorLobe";
+  }
+  return "Unknown Lung Compartment";
+}
 
 SERespiratorySystem::SERespiratorySystem(Logger* logger) : SESystem(logger)
 {
@@ -79,7 +102,7 @@ SERespiratorySystem::SERespiratorySystem(Logger* logger) : SESystem(logger)
   m_TransthoracicPressure = nullptr;
   m_VentilationPerfusionRatio = nullptr;
 
-  m_RespiratoryMechanics = nullptr;
+  m_Mechanics = nullptr;
 }
 
 SERespiratorySystem::~SERespiratorySystem()
@@ -145,7 +168,7 @@ SERespiratorySystem::~SERespiratorySystem()
   SAFE_DELETE(m_TransthoracicPressure);
   SAFE_DELETE(m_VentilationPerfusionRatio);
 
-  SAFE_DELETE(m_RespiratoryMechanics);
+  SAFE_DELETE(m_Mechanics);
 }
 
 void SERespiratorySystem::Clear()
@@ -213,8 +236,8 @@ void SERespiratorySystem::Clear()
   INVALIDATE_PROPERTY(m_TransthoracicPressure);
   INVALIDATE_PROPERTY(m_VentilationPerfusionRatio);
 
-  if (m_RespiratoryMechanics != nullptr)
-    m_RespiratoryMechanics->Clear();
+  if (m_Mechanics != nullptr)
+    m_Mechanics->Clear();
 }
 
 const SEScalar* SERespiratorySystem::GetScalar(const std::string& name)
@@ -340,8 +363,8 @@ const SEScalar* SERespiratorySystem::GetScalar(const std::string& name)
   if (name.compare("VentilationPerfusionRatio") == 0)
     return &GetVentilationPerfusionRatio();
 
-  if (m_RespiratoryMechanics != nullptr)
-    return m_RespiratoryMechanics->GetScalar(name);
+  if (m_Mechanics != nullptr)
+    return m_Mechanics->GetScalar(name);
 
   return nullptr;
 }
@@ -1365,23 +1388,23 @@ double SERespiratorySystem::GetVentilationPerfusionRatio() const
   return m_VentilationPerfusionRatio->GetValue();
 }
 
-bool SERespiratorySystem::HasActiveRespiratoryMechanics() const
+bool SERespiratorySystem::HasActiveMechanics() const
 {
-  return m_RespiratoryMechanics != nullptr && m_RespiratoryMechanics->GetActive() == eSwitch::On;
+  return m_Mechanics != nullptr && m_Mechanics->GetActive() == eSwitch::On;
 }
-bool SERespiratorySystem::HasRespiratoryMechanics() const
+bool SERespiratorySystem::HasMechanics() const
 {
-  return m_RespiratoryMechanics != nullptr;
+  return m_Mechanics != nullptr;
 }
-SERespiratoryMechanics& SERespiratorySystem::GetRespiratoryMechanics()
+SERespiratoryMechanics& SERespiratorySystem::GetMechanics()
 {
-  if (m_RespiratoryMechanics == nullptr)
-    m_RespiratoryMechanics = new SERespiratoryMechanics(GetLogger());
-  return *m_RespiratoryMechanics;
+  if (m_Mechanics == nullptr)
+    m_Mechanics = new SERespiratoryMechanics(GetLogger());
+  return *m_Mechanics;
 }
-const SERespiratoryMechanics* SERespiratorySystem::GetRespiratoryMechanics() const
+const SERespiratoryMechanics* SERespiratorySystem::GetMechanics() const
 {
-  return m_RespiratoryMechanics;
+  return m_Mechanics;
 }
 
 SEScalar0To1* GetSeverity(LungImpairmentMap& map, eLungCompartment c)

@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include "cdm/CommonDefs.h"
+
 #define PULSE_DECL CDM_DECL
 
 #define PULSE_BIND pulse::engine::bind

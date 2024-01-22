@@ -23,17 +23,19 @@ SEMechanicalVentilator::SEMechanicalVentilator(Logger* logger) : SEEquipment(log
   m_EndTidalOxygenFraction = nullptr;
   m_EndTidalOxygenPressure = nullptr;
   m_ExpiratoryFlow = nullptr;
+  m_ExpiratoryResistance = nullptr;
   m_ExpiratoryTidalVolume = nullptr;
   m_InspiratoryExpiratoryRatio = nullptr;
   m_InspiratoryFlow = nullptr;
+  m_InspiratoryResistance = nullptr;
   m_InspiratoryTidalVolume = nullptr;
   m_IntrinsicPositiveEndExpiredPressure = nullptr;
   m_LeakFraction = nullptr;
   m_MeanAirwayPressure = nullptr;
+  m_PeakExpiratoryFlow = nullptr;
   m_PeakInspiratoryPressure = nullptr;
   m_PlateauPressure = nullptr;
   m_PositiveEndExpiratoryPressure = nullptr;
-  m_PulmonaryResistance = nullptr;
   m_RespirationRate = nullptr;
   m_StaticPulmonaryCompliance = nullptr;
   m_TidalVolume = nullptr;
@@ -53,17 +55,19 @@ SEMechanicalVentilator::~SEMechanicalVentilator()
   SAFE_DELETE(m_EndTidalOxygenFraction);
   SAFE_DELETE(m_EndTidalOxygenPressure);
   SAFE_DELETE(m_ExpiratoryFlow);
+  SAFE_DELETE(m_ExpiratoryResistance);
   SAFE_DELETE(m_ExpiratoryTidalVolume);
   SAFE_DELETE(m_InspiratoryExpiratoryRatio);
   SAFE_DELETE(m_InspiratoryFlow);
+  SAFE_DELETE(m_InspiratoryResistance);
   SAFE_DELETE(m_InspiratoryTidalVolume);
   SAFE_DELETE(m_IntrinsicPositiveEndExpiredPressure);
   SAFE_DELETE(m_LeakFraction);
   SAFE_DELETE(m_MeanAirwayPressure);
+  SAFE_DELETE(m_PeakExpiratoryFlow);
   SAFE_DELETE(m_PeakInspiratoryPressure);
   SAFE_DELETE(m_PlateauPressure);
   SAFE_DELETE(m_PositiveEndExpiratoryPressure);
-  SAFE_DELETE(m_PulmonaryResistance);
   SAFE_DELETE(m_RespirationRate);
   SAFE_DELETE(m_StaticPulmonaryCompliance);
   SAFE_DELETE(m_TidalVolume);
@@ -85,17 +89,19 @@ void SEMechanicalVentilator::Clear()
   INVALIDATE_PROPERTY(m_EndTidalOxygenFraction);
   INVALIDATE_PROPERTY(m_EndTidalOxygenPressure);
   INVALIDATE_PROPERTY(m_ExpiratoryFlow);
+  INVALIDATE_PROPERTY(m_ExpiratoryResistance);
   INVALIDATE_PROPERTY(m_ExpiratoryTidalVolume);
   INVALIDATE_PROPERTY(m_InspiratoryExpiratoryRatio);
   INVALIDATE_PROPERTY(m_InspiratoryFlow);
+  INVALIDATE_PROPERTY(m_InspiratoryResistance);
   INVALIDATE_PROPERTY(m_InspiratoryTidalVolume);
   INVALIDATE_PROPERTY(m_IntrinsicPositiveEndExpiredPressure);
   INVALIDATE_PROPERTY(m_LeakFraction);
   INVALIDATE_PROPERTY(m_MeanAirwayPressure);
+  INVALIDATE_PROPERTY(m_PeakExpiratoryFlow);
   INVALIDATE_PROPERTY(m_PeakInspiratoryPressure);
   INVALIDATE_PROPERTY(m_PlateauPressure);
   INVALIDATE_PROPERTY(m_PositiveEndExpiratoryPressure);
-  INVALIDATE_PROPERTY(m_PulmonaryResistance);
   INVALIDATE_PROPERTY(m_RespirationRate);
   INVALIDATE_PROPERTY(m_StaticPulmonaryCompliance);
   INVALIDATE_PROPERTY(m_TidalVolume);
@@ -117,17 +123,19 @@ void SEMechanicalVentilator::TurnOff()
   ZERO_SCALAR(m_EndTidalOxygenFraction);
   ZERO_UNIT_SCALAR(m_EndTidalOxygenPressure);
   ZERO_UNIT_SCALAR(m_ExpiratoryFlow);
+  ZERO_UNIT_SCALAR(m_ExpiratoryResistance);
   ZERO_UNIT_SCALAR(m_ExpiratoryTidalVolume);
   ZERO_SCALAR(m_InspiratoryExpiratoryRatio);
   ZERO_UNIT_SCALAR(m_InspiratoryFlow);
+  ZERO_UNIT_SCALAR(m_InspiratoryResistance);
   ZERO_UNIT_SCALAR(m_InspiratoryTidalVolume);
   ZERO_UNIT_SCALAR(m_IntrinsicPositiveEndExpiredPressure);
   ZERO_SCALAR(m_LeakFraction);
   ZERO_UNIT_SCALAR(m_MeanAirwayPressure);
+  ZERO_UNIT_SCALAR(m_PeakExpiratoryFlow);
   ZERO_UNIT_SCALAR(m_PeakInspiratoryPressure);
   ZERO_UNIT_SCALAR(m_PlateauPressure);
   ZERO_UNIT_SCALAR(m_PositiveEndExpiratoryPressure);
-  ZERO_UNIT_SCALAR(m_PulmonaryResistance);
   ZERO_UNIT_SCALAR(m_RespirationRate);
   ZERO_UNIT_SCALAR(m_StaticPulmonaryCompliance);
   ZERO_UNIT_SCALAR(m_TidalVolume);
@@ -160,12 +168,16 @@ const SEScalar* SEMechanicalVentilator::GetScalar(const std::string& name)
     return &GetEndTidalOxygenPressure();
   if (name.compare("ExpiratoryFlow") == 0)
     return &GetExpiratoryFlow();
+  if (name.compare("ExpiratoryResistance") == 0)
+    return &GetExpiratoryResistance();
   if (name.compare("ExpiratoryTidalVolume") == 0)
     return &GetExpiratoryTidalVolume();
   if (name.compare("InspiratoryExpiratoryRatio") == 0)
     return &GetInspiratoryExpiratoryRatio();
   if (name.compare("InspiratoryFlow") == 0)
     return &GetInspiratoryFlow();
+  if (name.compare("InspiratoryResistance") == 0)
+    return &GetInspiratoryResistance();
   if (name.compare("InspiratoryTidalVolume") == 0)
     return &GetInspiratoryTidalVolume();
   if (name.compare("IntrinsicPositiveEndExpiredPressure") == 0)
@@ -174,14 +186,14 @@ const SEScalar* SEMechanicalVentilator::GetScalar(const std::string& name)
     return &GetLeakFraction();
   if (name.compare("MeanAirwayPressure") == 0)
     return &GetMeanAirwayPressure();
+  if (name.compare("PeakExpiratoryFlow") == 0)
+    return &GetPeakExpiratoryFlow();
   if (name.compare("PeakInspiratoryPressure") == 0)
     return &GetPeakInspiratoryPressure();
   if (name.compare("PlateauPressure") == 0)
     return &GetPlateauPressure();
   if (name.compare("PositiveEndExpiratoryPressure") == 0)
     return &GetPositiveEndExpiratoryPressure();
-  if (name.compare("PulmonaryResistance") == 0)
-    return &GetPulmonaryResistance();
   if (name.compare("RespirationRate") == 0)
     return &GetRespirationRate();
   if (name.compare("StaticPulmonaryCompliance") == 0)
@@ -324,6 +336,23 @@ double SEMechanicalVentilator::GetExpiratoryFlow(const VolumePerTimeUnit& unit) 
   return m_ExpiratoryFlow->GetValue(unit);
 }
 
+bool SEMechanicalVentilator::HasExpiratoryResistance() const
+{
+  return m_ExpiratoryResistance == nullptr ? false : m_ExpiratoryResistance->IsValid();
+}
+SEScalarPressureTimePerVolume& SEMechanicalVentilator::GetExpiratoryResistance()
+{
+  if (m_ExpiratoryResistance == nullptr)
+    m_ExpiratoryResistance = new SEScalarPressureTimePerVolume();
+  return *m_ExpiratoryResistance;
+}
+double SEMechanicalVentilator::GetExpiratoryResistance(const PressureTimePerVolumeUnit& unit) const
+{
+  if (m_ExpiratoryResistance == nullptr)
+    return SEScalar::dNaN();
+  return m_ExpiratoryResistance->GetValue(unit);
+}
+
 bool SEMechanicalVentilator::HasExpiratoryTidalVolume() const
 {
   return m_ExpiratoryTidalVolume == nullptr ? false : m_ExpiratoryTidalVolume->IsValid();
@@ -373,6 +402,23 @@ double SEMechanicalVentilator::GetInspiratoryFlow(const VolumePerTimeUnit& unit)
   if (m_InspiratoryFlow == nullptr)
     return SEScalar::dNaN();
   return m_InspiratoryFlow->GetValue(unit);
+}
+
+bool SEMechanicalVentilator::HasInspiratoryResistance() const
+{
+  return m_InspiratoryResistance == nullptr ? false : m_InspiratoryResistance->IsValid();
+}
+SEScalarPressureTimePerVolume& SEMechanicalVentilator::GetInspiratoryResistance()
+{
+  if (m_InspiratoryResistance == nullptr)
+    m_InspiratoryResistance = new SEScalarPressureTimePerVolume();
+  return *m_InspiratoryResistance;
+}
+double SEMechanicalVentilator::GetInspiratoryResistance(const PressureTimePerVolumeUnit& unit) const
+{
+  if (m_InspiratoryResistance == nullptr)
+    return SEScalar::dNaN();
+  return m_InspiratoryResistance->GetValue(unit);
 }
 
 bool SEMechanicalVentilator::HasInspiratoryTidalVolume() const
@@ -443,6 +489,23 @@ double SEMechanicalVentilator::GetMeanAirwayPressure(const PressureUnit& unit) c
   return m_MeanAirwayPressure->GetValue(unit);
 }
 
+bool SEMechanicalVentilator::HasPeakExpiratoryFlow() const
+{
+  return m_PeakExpiratoryFlow == nullptr ? false : m_PeakExpiratoryFlow->IsValid();
+}
+SEScalarVolumePerTime& SEMechanicalVentilator::GetPeakExpiratoryFlow()
+{
+  if (m_PeakExpiratoryFlow == nullptr)
+    m_PeakExpiratoryFlow = new SEScalarVolumePerTime();
+  return *m_PeakExpiratoryFlow;
+}
+double SEMechanicalVentilator::GetPeakExpiratoryFlow(const VolumePerTimeUnit& unit) const
+{
+  if (m_PeakExpiratoryFlow == nullptr)
+    return SEScalar::dNaN();
+  return m_PeakExpiratoryFlow->GetValue(unit);
+}
+
 bool SEMechanicalVentilator::HasPeakInspiratoryPressure() const
 {
   return m_PeakInspiratoryPressure == nullptr ? false : m_PeakInspiratoryPressure->IsValid();
@@ -492,23 +555,6 @@ double SEMechanicalVentilator::GetPositiveEndExpiratoryPressure(const PressureUn
   if (m_PositiveEndExpiratoryPressure == nullptr)
     return SEScalar::dNaN();
   return m_PositiveEndExpiratoryPressure->GetValue(unit);
-}
-
-bool SEMechanicalVentilator::HasPulmonaryResistance() const
-{
-  return m_PulmonaryResistance == nullptr ? false : m_PulmonaryResistance->IsValid();
-}
-SEScalarPressureTimePerVolume& SEMechanicalVentilator::GetPulmonaryResistance()
-{
-  if (m_PulmonaryResistance == nullptr)
-    m_PulmonaryResistance = new SEScalarPressureTimePerVolume();
-  return *m_PulmonaryResistance;
-}
-double SEMechanicalVentilator::GetPulmonaryResistance(const PressureTimePerVolumeUnit& unit) const
-{
-  if (m_PulmonaryResistance == nullptr)
-    return SEScalar::dNaN();
-  return m_PulmonaryResistance->GetValue(unit);
 }
 
 bool SEMechanicalVentilator::HasRespirationRate() const

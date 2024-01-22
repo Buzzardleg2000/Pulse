@@ -4,6 +4,7 @@
 #pragma once
 #include "cdm/blackbox/SEBlackBox.h"
 #include "cdm/circuit/electrical/SEElectricalCircuitPath.h"
+#include "cdm/compartment/electrical/SEElectricalCompartment.h"
 #include "cdm/compartment/electrical/SEElectricalCompartmentLink.h"
 
 class CDM_DECL SEElectricalBlackBox : public SEBlackBox<ELECTRICAL_BLACK_BOX>

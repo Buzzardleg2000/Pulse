@@ -102,6 +102,7 @@ SECardiovascularSystem::~SECardiovascularSystem()
   SAFE_DELETE(m_TotalHemorrhageRate);
   SAFE_DELETE(m_TotalHemorrhagedVolume);
   SAFE_DELETE(m_TotalPulmonaryPerfusion);
+
 }
 
 void SECardiovascularSystem::Clear()
@@ -228,6 +229,7 @@ const SEScalar* SECardiovascularSystem::GetScalar(const std::string& name)
     return &GetTotalHemorrhagedVolume();
   if (name.compare("TotalPulmonaryPerfusion") == 0)
     return &GetTotalPulmonaryPerfusion();
+
   return nullptr;
 }
 

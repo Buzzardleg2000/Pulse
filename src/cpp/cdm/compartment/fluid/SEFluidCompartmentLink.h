@@ -59,3 +59,5 @@ protected:
   VertexType&             m_TargetVertex;
   SEFluidCircuitPath*     m_Path;
 };
+
+#include "cdm/compartment/fluid/SEFluidCompartmentLink.hxx"

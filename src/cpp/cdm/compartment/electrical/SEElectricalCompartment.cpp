@@ -5,7 +5,6 @@
 #include "cdm/compartment/electrical/SEElectricalCompartment.h"
 #include "cdm/compartment/electrical/SEElectricalCompartmentLink.h"
 #include "cdm/circuit/electrical/SEElectricalCircuitNode.h"
-#include "cdm/circuit/SECircuitManager.h"
 #include "cdm/properties/SEScalarElectricCurrent.h"
 #include "cdm/properties/SEScalarElectricCharge.h"
 #include "cdm/properties/SEScalarElectricPotential.h"

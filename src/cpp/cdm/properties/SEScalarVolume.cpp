@@ -39,3 +39,5 @@ const VolumeUnit& VolumeUnit::GetCompoundUnit(const std::string& unit)
     return uL;
   throw CommonDataModelException(unit + " is not a valid Volume unit");
 }
+
+template class SEScalarQuantity<VolumeUnit>;

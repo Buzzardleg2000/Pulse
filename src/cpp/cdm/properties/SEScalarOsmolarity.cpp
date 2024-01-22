@@ -24,3 +24,5 @@ const OsmolarityUnit& OsmolarityUnit::GetCompoundUnit(const std::string& unit)
     return mOsm_Per_L;
   throw CommonDataModelException(unit + " is not a valid Osmolarity unit");
 }
+
+template class SEScalarQuantity<OsmolarityUnit>;

@@ -34,3 +34,5 @@ const HeatConductanceUnit& HeatConductanceUnit::GetCompoundUnit(const std::strin
     return kcal_Per_C_s;
   throw CommonDataModelException(unit + " is not a valid HeatConductance unit");
 }
+
+template class SEScalarQuantity<HeatConductanceUnit>;

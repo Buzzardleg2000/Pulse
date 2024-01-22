@@ -2,40 +2,51 @@
    See accompanying NOTICE file for details.*/
 
 #include "cdm/CommonDefs.h"
-
-#include "ParameterIteration.h"
+#include "study/patient_variability/ParameterIteration.h"
 
 namespace pulse::study::patient_variability
 {
-  ParameterIteration::ParameterIteration()
+  template <typename T>
+  ParameterIteration<T>::ParameterIteration()
   {
     m_SliceIdx = 0;
   }
 
-  void ParameterIteration::SetMinMaxStep(double min, double max, double stepSize)
+  template <typename T>
+  std::vector<double> ParameterIteration<T>::SetMinMaxStep(double min, double max, double stepSize)
   {
-    m_Values.clear();
+    std::vector<double> v;
     int idx;
     if (min == max)
-      m_Values.push_back(max);
+      v.push_back(max);
     else
     {
       int n = (int)((max - min) / stepSize);
       for (idx = 0; idx <= n; ++idx)
       {
-        m_Values.push_back(min + stepSize * idx);
+        v.push_back(min + stepSize * idx);
       }
-      //if (includeUpper && m_Values[n] != m_UpperLimit)
-      //  m_Values.push_back(m_UpperLimit);
     }
+
+    return v;
   }
 
-
-  void ParameterIteration::SetValues(std::initializer_list<double> values, int sliceIdx)
+  template <typename T>
+  void ParameterIteration<T>::SetValues(const std::vector<T>& values, int sliceIdx)
   {
     m_Values.clear();
-    for (double v : values)
+    for (T v : values)
       m_Values.push_back(v);
     m_SliceIdx = sliceIdx;
   }
+
+  template <typename T>
+  void ParameterIteration<T>::SetValues(std::initializer_list<T> values, int sliceIdx)
+  {
+    std::vector<T> v(values);
+    this->SetValues(v, sliceIdx);
+  }
+
+  template class ParameterIteration<size_t>;
+  template class ParameterIteration<double>;
 }

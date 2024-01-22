@@ -34,3 +34,5 @@ const HeatResistanceAreaUnit& HeatResistanceAreaUnit::GetCompoundUnit(const std:
     return tog;
   throw CommonDataModelException(unit + " is not a valid HeatResistanceArea unit");
 }
+
+template class SEScalarQuantity<HeatResistanceAreaUnit>;

@@ -14,7 +14,7 @@ int main()
 
   //HowToSandbox();
 
-  //HowToEngineUse();
+  HowToEngineUse();
   //HowToCreateAPatient();
   //HowToSerialize();
   //HowToPulseEnginePool();
@@ -27,6 +27,7 @@ int main()
   //HowToBagValveMask();
   //HowToBolusDrug();
   //HowToBrainInjury();
+  //HowToCardiovascularMechanicsModification();
   //HowToCombatMultitrauma();
   //HowToConsumeNutrients();
   //HowToCOPD();
@@ -35,7 +36,9 @@ int main()
   //HowToECMO();
   //HowToEnvironmentChange();
   //HowToExercise();
-  //HowToHemorrhage();  HowToExpandedVasculature();
+  //HowToHemorrhage();
+  //HowToIsoShuntAnalysis();
+  //HowToExpandedVasculature();
   //HowToHemorrhage();
   //HowToHemothorax();
   //HowToPneumonia();
@@ -43,6 +46,7 @@ int main()
   //HowToMechanicalVentilator();
   //HowToPulmonaryFibrosis();
   //HowToRespiratoryMechanics();
+  //HowToRespiratoryMechanicsModification();
   HowToSepsis();
   //HowToSmoke();
   //HowToTensionPneumothorax();

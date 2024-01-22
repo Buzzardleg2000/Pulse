@@ -19,3 +19,5 @@ const HeatCapacitancePerAmountUnit& HeatCapacitancePerAmountUnit::GetCompoundUni
     return J_Per_K_mol;
   throw CommonDataModelException(unit + " is not a valid HeatCapacitancePerAmount unit");
 }
+
+template class SEScalarQuantity<HeatCapacitancePerAmountUnit>;

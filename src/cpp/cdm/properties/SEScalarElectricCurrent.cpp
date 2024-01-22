@@ -19,3 +19,5 @@ const ElectricCurrentUnit& ElectricCurrentUnit::GetCompoundUnit(const std::strin
     return A;
   throw CommonDataModelException(unit + " is not a valid ElectricCurrent unit");
 }
+
+template class SEScalarQuantity<ElectricCurrentUnit>;

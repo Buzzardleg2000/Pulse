@@ -37,12 +37,14 @@ protected:
   static void ControllerLoop(const std::string copy,
                              std::mutex* m,
                              std::vector<SEScenarioExecStatus>* s,
+                             size_t* completed,
                              const std::string fn,
                              Logger* logger);
 
   std::vector<std::thread>           m_Threads;
   std::mutex                         m_Mutex;
   std::vector<SEScenarioExecStatus>  m_Statuses;
+  size_t                             m_Completed;
 
   eModelType m_ModelType = eModelType::HumanAdultWholeBody;
 };

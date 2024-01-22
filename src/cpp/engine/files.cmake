@@ -161,6 +161,7 @@ set(ENGINE_TEST_CPP_FILES
   engine/human_adult/whole_body/test/CardiovascularCircuit.cpp
   engine/human_adult/whole_body/test/ConditionsTest.cpp
   engine/human_adult/whole_body/test/EngineTest.cpp
+  engine/human_adult/whole_body/test/EngineTest.h
   engine/human_adult/whole_body/test/FourCompartmentTest.cpp
   engine/human_adult/whole_body/test/ImmuneTests.cpp
   engine/human_adult/whole_body/test/MechanicalVentilatorCircuit.cpp

@@ -96,7 +96,7 @@ namespace pulse
       dydt[2] = dDdt(N_star, D, C_A);
       dydt[3] = dC_Adt(N_star, D, C_A);
       // Todo: remove progression acceleration.
-      return 60 * dydt;
+      return dydt;
     }
 
     double  m_h=0;
@@ -110,7 +110,7 @@ namespace pulse
     const double m_k_mp = 0.01;
     const double m_s_m = 0.005;
     const double m_miu_m = 0.002;
-    const double m_P_inf = 2e7;
+    const double m_P_inf = 20;
     const double m_k_pn = 1.8;
     const double m_k_np = 0.1;
     const double m_k_nn = 0.01;
@@ -211,7 +211,7 @@ namespace pulse
       if (sepsis.HasProgressionSeverity())
       {
         // TODO Do we need to do some maths here to compute a rate from our 0 to 1 scale
-        PathogenGrowthRate = sepsis.GetProgressionSeverity().GetValue();
+          PathogenGrowthRate = 0;// sepsis.GetProgressionSeverity().GetValue();
       }
       else
       {
@@ -226,7 +226,9 @@ namespace pulse
           if (m_InitialPathogenCount != sepsis.GetInfectionSeverity().GetValue() && m_InitialPathogenCount >= 0)
             Warning("Changing sepsis infection severity can produce unreliable results.");
 
-          m_InitialPathogenCount = sepsis.GetInfectionSeverity().GetValue() * 1.0;
+          double severity = sepsis.GetInfectionSeverity().GetValue();
+
+          m_InitialPathogenCount = 0; //exp(severity);
           // TODO Do we need to do some maths here to compute a count from our 0 to 1 scale?
           m_PathogenCount = m_InitialPathogenCount;
         }

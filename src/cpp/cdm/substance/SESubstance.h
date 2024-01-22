@@ -9,7 +9,7 @@ class SESubstancePharmacodynamics;
 
 // Keep enums in sync with appropriate schema/cdm/SubstanceEnums.proto file !!
 enum class eSubstance_State { NullState = 0, Solid, Liquid, Gas, Molecular };
-extern const std::string& eSubstance_State_Name(eSubstance_State m);
+extern CDM_DECL const std::string& eSubstance_State_Name(eSubstance_State m);
 
 class CDM_DECL SESubstance : public Loggable
 {

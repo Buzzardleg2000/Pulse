@@ -237,6 +237,7 @@ namespace pulse::study::patient_variability
     GetDataRequestManager().SetResultsFilename(m_ResultsDirectory+m_Name+".csv");
     m_Serialize.SetFilename(m_StateDirectory+name+".pbb");
     m_PatientStates[name] = m_Serialize.GetFilename();
+
     WriteScenario();
   }
 

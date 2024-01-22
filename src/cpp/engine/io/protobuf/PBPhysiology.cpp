@@ -478,6 +478,7 @@ namespace pulse
     dst.m_PeakExpiratoryPressure_cmH2O = src.peakexpiratorypressure_cmh2o();
     dst.m_PreviousTargetAlveolarVentilation_L_Per_min = src.previoustargetalveolarventilation_l_per_min();
     dst.m_VentilationFrequency_Per_min = src.ventilationfrequency_per_min();
+    dst.m_VentilationPeriod_s = src.ventilationperiod_s();
     dst.m_VentilationToTidalVolumeSlope = src.ventilationtotidalvolumeslope();
     PBProperty::Load(src.arterialo2runningaverage_mmhg(), *dst.m_ArterialO2RunningAverage_mmHg);
     PBProperty::Load(src.arterialco2runningaverage_mmhg(), *dst.m_ArterialCO2RunningAverage_mmHg);
@@ -543,6 +544,7 @@ namespace pulse
     dst.set_peakexpiratorypressure_cmh2o(src.m_PeakExpiratoryPressure_cmH2O);
     dst.set_previoustargetalveolarventilation_l_per_min(src.m_PreviousTargetAlveolarVentilation_L_Per_min);
     dst.set_ventilationfrequency_per_min(src.m_VentilationFrequency_Per_min);
+    dst.set_ventilationperiod_s(src.m_VentilationPeriod_s);
     dst.set_ventilationtotidalvolumeslope(src.m_VentilationToTidalVolumeSlope);
     dst.set_allocated_arterialo2runningaverage_mmhg(PBProperty::Unload(*src.m_ArterialO2RunningAverage_mmHg));
     dst.set_allocated_arterialco2runningaverage_mmhg(PBProperty::Unload(*src.m_ArterialCO2RunningAverage_mmHg));

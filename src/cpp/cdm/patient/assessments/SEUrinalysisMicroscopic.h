@@ -10,7 +10,7 @@ enum class eUrinalysis_MicroscopicObservationType {
   LowPowerField,
   HighPowerField
 };
-extern const std::string& eUrinalysis_MicroscopicObservationType_Name(eUrinalysis_MicroscopicObservationType m);
+extern CDM_DECL const std::string& eUrinalysis_MicroscopicObservationType_Name(eUrinalysis_MicroscopicObservationType m);
 
 // Keep enums in sync with appropriate schema/cdm/PatienAssessmentEnums.proto file !!
 enum class eUrinalysis_MicroscopicObservationAmount {
@@ -19,7 +19,7 @@ enum class eUrinalysis_MicroscopicObservationAmount {
   Moderate,
   Many
 };
-extern const std::string& eUrinalysis_MicroscopicObservationAmount_Name(eUrinalysis_MicroscopicObservationAmount m);
+extern CDM_DECL const std::string& eUrinalysis_MicroscopicObservationAmount_Name(eUrinalysis_MicroscopicObservationAmount m);
 
 
 class CDM_DECL SEUrinalysisMicroscopic : public Loggable

@@ -12,10 +12,19 @@
 #include "cdm/patient/actions/SEHemorrhage.h"
 #include "cdm/patient/actions/SENeedleDecompression.h"
 #include "cdm/patient/actions/SESubstanceCompoundInfusion.h"
+#include "cdm/patient/actions/SEBrainInjury.h"
 #include "cdm/patient/actions/SETensionPneumothorax.h"
 
 namespace pulse::study::patient_variability
 {
+  enum class eHemorrhageWound
+  {
+    LeftLegLaceration = 0,
+    RightArmLaceration,
+    InternalLiver,
+    _LOC_COUNT
+  };
+
   class TCCCIteration : public ActionIteration
   {
   public:
@@ -27,26 +36,32 @@ namespace pulse::study::patient_variability
     bool PerformInterventions() const { return m_PerformInterventions; }
     void PerformInterventions(bool p) { m_PerformInterventions = p; }
 
-    ParameterIteration& GetAirwayObstructionSeverity() { return m_AirwayObstructionSeverity; }
-    const ParameterIteration& GetAirwayObstructionSeverity() const { return m_AirwayObstructionSeverity; }
+    ParameterIteration<double>& GetAirwayObstructionSeverity() { return m_AirwayObstructionSeverity; }
+    const ParameterIteration<double>& GetAirwayObstructionSeverity() const { return m_AirwayObstructionSeverity; }
 
-    ParameterIteration& GetHemorrhageSeverity() { return m_HemorrhageSeverity; }
-    const ParameterIteration& GetHemorrhageSeverity() const { return m_HemorrhageSeverity; }
+    ParameterIteration<double>& GetHemorrhageSeverity() { return m_HemorrhageSeverity; }
+    const ParameterIteration<double>& GetHemorrhageSeverity() const { return m_HemorrhageSeverity; }
 
-    ParameterIteration& GetTensionPneumothoraxSeverity() { return m_TensionPneumothoraxSeverity; }
-    const ParameterIteration& GetTensionPneumothoraxSeverity() const { return m_TensionPneumothoraxSeverity; }
+    ParameterIteration<size_t>& GetHemorrhageWound() { return m_HemorrhageWound; }
+    const ParameterIteration<size_t>& GetHemorrhageWound() const { return m_HemorrhageWound; }
 
-    ParameterIteration& GetInsultDuration_s() { return m_InsultDuration_s; }
-    const ParameterIteration& GetInsultDuration_s() const { return m_InsultDuration_s; }
+    ParameterIteration<double>& GetTBISeverity() { return m_TBISeverity; }
+    const ParameterIteration<double>& GetTBISeverity() const { return m_TBISeverity; }
 
-    ParameterIteration& GetSalineAvailable() { return m_SalineAvailable; }
-    const ParameterIteration& GetSalineAvailable() const { return m_SalineAvailable; }
+    ParameterIteration<double>& GetTensionPneumothoraxSeverity() { return m_TensionPneumothoraxSeverity; }
+    const ParameterIteration<double>& GetTensionPneumothoraxSeverity() const { return m_TensionPneumothoraxSeverity; }
 
-    ParameterIteration& GetNeedleAvailable() { return m_NeedleAvailable; }
-    const ParameterIteration& GetNeedleAvailable() const { return m_NeedleAvailable; }
+    ParameterIteration<double>& GetInsultDuration_s() { return m_InsultDuration_s; }
+    const ParameterIteration<double>& GetInsultDuration_s() const { return m_InsultDuration_s; }
 
-    ParameterIteration& GetChestWrapAvailable() { return m_ChestWrapAvailable; }
-    const ParameterIteration& GetChestWrapAvailable() const { return m_ChestWrapAvailable; }
+    ParameterIteration<double>& GetSalineAvailable() { return m_SalineAvailable; }
+    const ParameterIteration<double>& GetSalineAvailable() const { return m_SalineAvailable; }
+
+    ParameterIteration<double>& GetNeedleAvailable() { return m_NeedleAvailable; }
+    const ParameterIteration<double>& GetNeedleAvailable() const { return m_NeedleAvailable; }
+
+    ParameterIteration<double>& GetChestWrapAvailable() { return m_ChestWrapAvailable; }
+    const ParameterIteration<double>& GetChestWrapAvailable() const { return m_ChestWrapAvailable; }
 
   protected:
     void FixUp() override;
@@ -54,22 +69,27 @@ namespace pulse::study::patient_variability
     void GenerateCombinationActionSets(std::pair<std::string, std::string>) override;
     void GenerateScenario(double AirwayObstructionSeverity,
                           double HemorrhageSeverity,
+                          size_t HemorrhageLocation,
+                          double TBISeverity,
                           double TensionPneumothoraxSeverity,
                           double InsultDuration_s,
                           const std::string& PatientName);
 
-    // Statefull
+    // Stateful
     bool                  m_PerformInterventions;
-    ParameterIteration    m_AirwayObstructionSeverity;
-    ParameterIteration    m_HemorrhageSeverity;
-    ParameterIteration    m_TensionPneumothoraxSeverity;
-    ParameterIteration    m_InsultDuration_s;
-    ParameterIteration    m_SalineAvailable;
-    ParameterIteration    m_NeedleAvailable;
-    ParameterIteration    m_ChestWrapAvailable;
+    ParameterIteration<double>    m_AirwayObstructionSeverity;
+    ParameterIteration<double>    m_HemorrhageSeverity;
+    ParameterIteration<size_t>    m_HemorrhageWound;
+    ParameterIteration<double>    m_TBISeverity;
+    ParameterIteration<double>    m_TensionPneumothoraxSeverity;
+    ParameterIteration<double>    m_InsultDuration_s;
+    ParameterIteration<double>    m_SalineAvailable;
+    ParameterIteration<double>    m_NeedleAvailable;
+    ParameterIteration<double>    m_ChestWrapAvailable;
     // Stateless
     SEAdvanceTime         m_Adv2Insult;
     SEAirwayObstruction   m_AirwayObstruction;
+    SEBrainInjury         m_BrainInjury;
     SEHemorrhage          m_Hemorrhage;
     SETensionPneumothorax m_TensionPneumothorax;
     SEAdvanceTime         m_Adv2Intervention;

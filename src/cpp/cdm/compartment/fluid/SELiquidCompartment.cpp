@@ -189,3 +189,5 @@ SELiquidSubstanceQuantity& SELiquidCompartment::CreateSubstanceQuantity(SESubsta
   }
   return *subQ;
 }
+
+template class SEFluidCompartment<SELiquidCompartmentLink, SELiquidTransportVertex, SELiquidTransportSubstance, SELiquidSubstanceQuantity>;

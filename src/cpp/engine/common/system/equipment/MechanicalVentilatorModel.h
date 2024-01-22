@@ -83,6 +83,7 @@ namespace pulse
     bool                  m_Initializing;
 
     double                m_PositiveEndExpiratoryPressure_cmH2O;
+    double                m_PeakExpiratoryFlow_L_Per_s;
     double                m_EndTidalCarbonDioxideFraction;
     double                m_EndTidalCarbonDioxidePressure_cmH2O;
     double                m_EndTidalOxygenFraction;

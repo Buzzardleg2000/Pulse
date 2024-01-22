@@ -6,11 +6,21 @@ if(NOT Pulse_PYTHON_API)
 endif()
 find_package(pybind11 CONFIG REQUIRED)
 
+set(_pypulse_dependencies MultiplexVentilationEngine)
+set(_study_support_cpp pybind/MultiplexVentilation.cpp)
+if(${PROJECT_NAME}_AS_SHARED)
+  message(WARNING "Python API will not include study classes since Pulse is a shared library")
+  # Since Protobuf bind files are not exported from the dll and used directly in study classes
+  set(_pypulse_dependencies Pulse)
+  set(_study_support_cpp)
+endif()
+
 pybind11_add_module(PyPulse
   pybind/PyPulse.cpp
   pybind/PulseEngines.cpp
-  pybind/MultiplexVentilation.cpp)
-
+  ${_study_support_cpp}
+  )
+target_compile_definitions(PyPulse PRIVATE EXCLUDE_STUDIES)
 target_include_directories(PyPulse PUBLIC ${CMAKE_SOURCE_DIR}/src/cpp)
 target_include_directories(PyPulse PRIVATE ${pybind11_INCLUDE_DIRS} ${DST_ROOT}/cpp)
 
@@ -19,7 +29,7 @@ if(APPLE)
 endif()
 
 target_link_libraries(PyPulse
-                      PUBLIC MultiplexVentilationEngine pybind11::module
+                      PUBLIC ${_pypulse_dependencies} pybind11::module
 )
 
 set_target_properties(PyPulse PROPERTIES

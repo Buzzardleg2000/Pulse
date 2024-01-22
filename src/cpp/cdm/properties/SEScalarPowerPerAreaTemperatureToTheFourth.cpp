@@ -19,3 +19,5 @@ const PowerPerAreaTemperatureToTheFourthUnit& PowerPerAreaTemperatureToTheFourth
     return W_Per_m2_K4;
   throw CommonDataModelException(unit + " is not a valid PowerPerAreaTemperatureToTheFourth unit");
 }
+
+template class SEScalarQuantity<PowerPerAreaTemperatureToTheFourthUnit>;

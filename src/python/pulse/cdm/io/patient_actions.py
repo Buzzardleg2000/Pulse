@@ -20,7 +20,7 @@ def serialize_patient_action_from_bind(src: PatientActionData, dst: SEPatientAct
 def serialize_acute_respiratory_distress_syndrome_exacerbation_to_bind(src: SEAcuteRespiratoryDistressSyndromeExacerbation,
                                                                        dst: AcuteRespiratoryDistressSyndromeExacerbationData):
     serialize_patient_action_to_bind(src, dst.PatientAction)
-    for c,s in src._severities.items():
+    for c,s in src.get_severities().items():
         i = dst.Severity.add()
         i.Compartment = c.value
         serialize_scalar_0to1_to_bind(s, i.Severity)
@@ -96,6 +96,19 @@ def serialize_bronchoconstriction_to_bind(src: SEBronchoconstriction, dst: Bronc
 def serialize_bronchoconstriction_from_bind(src: BronchoconstrictionData, dst: SEBronchoconstriction):
     serialize_patient_action_from_bind(src.PatientAction, dst)
     raise Exception("serialize_patient_action_from_bind not implemented")
+
+#################################################################
+
+def serialize_cardiovascular_mechanics_modification_to_bind(src:SECardiovascularMechanicsModification, dst: CardiovascularMechanicsModificationData):
+    serialize_patient_action_to_bind(src, dst.PatientAction)
+    if src.has_modifiers_file():
+        dst.ModifiersFile = src.get_modifiers_file()
+    elif src.has_modifiers():
+        serialize_cardiovascular_mechanics_modifiers_to_bind(src.get_modifiers(), dst.Modifiers)
+    dst.Incremental = src.get_incremental()
+def serialize_cardiovascular_mechanics_modification_from_bind(src: CardiovascularMechanicsModificationData, dst: SECardiovascularMechanicsModification):
+    serialize_patient_action_from_bind(src.PatientAction, dst)
+    raise Exception("serialize_cardiovascular_mechanics_modification_from_bind not implemented")
 
 #################################################################
 
@@ -256,8 +269,10 @@ def serialize_consume_nutrients_from_bind(src: ConsumeNutrientsData, dst: Consum
 
 def serialize_dsypnea_to_bind(src: SEDyspnea, dst: DyspneaData):
     serialize_patient_action_to_bind(src, dst.PatientAction)
-    if src.has_severity():
-        serialize_scalar_0to1_to_bind(src.get_severity(), dst.Severity)
+    if src.has_respiration_rate_severity():
+        serialize_scalar_0to1_to_bind(src.get_respiration_rate_severity(), dst.RespirationRateSeverity)
+    if src.has_tidal_volume_severity():
+        serialize_scalar_0to1_to_bind(src.get_tidal_volume_severity(), dst.TidalVolumeSeverity)
 
 def serialize_dsypnea_from_bind(src:DyspneaData, dst: SEDyspnea):
     serialize_patient_action_from_bind(dst.PatientAction, src)
@@ -409,7 +424,33 @@ def serialize_respiratory_mechanics_configuration_to_bind(src:SERespiratoryMecha
         serialize_respiratory_mechanics_to_bind(src.get_settings(), dst.Settings)
 def serialize_respiratory_mechanics_configuration_from_bind(src: RespiratoryMechanicsConfigurationData, dst: SERespiratoryMechanicsConfiguration):
     serialize_patient_action_from_bind(src.PatientAction, dst)
-    raise Exception("serialize_patient_action_from_bind not implemented")
+    raise Exception("serialize_respiratory_mechanics_configuration_from_bind not implemented")
+
+#################################################################
+
+def serialize_respiratory_mechanics_modification_to_bind(src:SERespiratoryMechanicsModification, dst: RespiratoryMechanicsModificationData):
+    serialize_patient_action_to_bind(src, dst.PatientAction)
+    if src.has_modifiers_file():
+        dst.ModifiersFile = src.get_modifiers_file()
+    elif src.has_modifiers():
+        serialize_respiratory_mechanics_modifiers_to_bind(src.get_modifiers(), dst.Modifiers)
+    dst.Incremental = src.get_incremental()
+def serialize_respiratory_mechanics_modification_from_bind(src: RespiratoryMechanicsModificationData, dst: SERespiratoryMechanicsModification):
+    serialize_patient_action_from_bind(src.PatientAction, dst)
+    raise Exception("serialize_respiratory_mechanics_modification_from_bind not implemented")
+
+#################################################################
+
+def serialize_sepsis_exacerbation_to_bind(src: SESepsisExacerbation, dst:SepsisExacerbationData):
+    serialize_patient_action_to_bind(src, dst.PatientAction)
+    if src.has_infection_severity():
+        serialize_scalar_0to1_to_bind(src.get_infection_severity(), dst.InfectionSeverity)
+    if src.has_progression_severity():
+        serialize_scalar_0to1_to_bind(src.get_progression_severity(), dst.ProgressionSeverity)
+
+def serialize_sepsis_from_bind(src: SepsisExacerbationData, dst: SESepsisExacerbation):
+    serialize_patient_action_from_bind(src.PatientAction, dst)
+    raise Exception("serialize_sepsis_exacerbation_from_bind not implemented")
 
 #################################################################
 

@@ -29,3 +29,5 @@ const FrequencyUnit& FrequencyUnit::GetCompoundUnit(const std::string& unit)
     return Hz;
   throw CommonDataModelException(unit + " is not a valid Frequency unit");
 }
+
+template class SEScalarQuantity<FrequencyUnit>;

@@ -1258,6 +1258,7 @@ namespace pulse
     gCardiovascular.AddCompartment(vSplanchnic);
     gCardiovascular.AddCompartment(vSpleen);
     gCardiovascular.AddCompartment(vVenaCava);
+    gCardiovascular.AddCompartment(vAbdominalCavity);
     gCardiovascular.AddLink(vVenaCavaToRightHeart);
     gCardiovascular.AddLink(vRightHeartToLeftPulmonaryArteries);
     gCardiovascular.AddLink(vLeftPulmonaryArteriesToCapillaries);

@@ -1,4 +1,4 @@
-add_library_ex(PatientVariabilityEngine
+add_library_ex(PatientVariabilityEngine STATIC
   H_FILES
     ActionIteration.h
     ParameterIteration.h

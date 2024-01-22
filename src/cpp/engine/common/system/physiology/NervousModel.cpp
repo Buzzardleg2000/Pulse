@@ -134,10 +134,12 @@ namespace pulse
   {
     if (m_data.GetState() == EngineState::AtInitialStableState)
     {
+      Info("Activating Chemoreceptors");
       m_ChemoreceptorFeedback = m_data.GetConfiguration().GetChemoreceptorFeedback(); // The set-points (Baselines) get reset at the end of each stabilization period.
     }
     else if (m_data.GetState() == EngineState::AtSecondaryStableState)
     {
+      Info("Activating Baroreceptors");
       m_BaroreceptorFeedback = m_data.GetConfiguration().GetBaroreceptorFeedback();
     }
     // Set-baselines at the end of each stabilization period.

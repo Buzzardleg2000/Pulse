@@ -29,3 +29,5 @@ const PressureTimePerVolumeAreaUnit& PressureTimePerVolumeAreaUnit::GetCompoundU
     return dyn_s_Per_cm5_m2;
   throw CommonDataModelException(unit + " is not a valid PressureTimePerVolumeArea unit");
 }
+
+template class SEScalarQuantity<PressureTimePerVolumeAreaUnit>;

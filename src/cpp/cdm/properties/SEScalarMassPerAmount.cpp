@@ -69,3 +69,5 @@ const MassPerAmountUnit& MassPerAmountUnit::GetCompoundUnit(const std::string& u
     return pg_Per_ct;
   throw CommonDataModelException(unit + " is not a valid MassPerAmount unit");
 }
+
+template class SEScalarQuantity<MassPerAmountUnit>;

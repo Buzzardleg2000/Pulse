@@ -19,3 +19,5 @@ const ElectricResistanceUnit& ElectricResistanceUnit::GetCompoundUnit(const std:
     return Ohm;
   throw CommonDataModelException(unit + " is not a valid ElectricResistance unit");
 }
+
+template class SEScalarQuantity<ElectricResistanceUnit>;

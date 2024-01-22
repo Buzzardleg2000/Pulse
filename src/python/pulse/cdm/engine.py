@@ -91,11 +91,12 @@ class eEvent(Enum):
     RespiratoryAlkalosis = 38
     SevereHyperoxemia = 39
     SevereHypocapnia = 40
-    StartOfCardiacCycle = 41
-    StartOfExhale = 42
-    StartOfInhale = 43
-    Tachycardia = 44
-    Tachypnea = 45
+    Stabilization = 41
+    StartOfCardiacCycle = 42
+    StartOfExhale = 43
+    StartOfInhale = 44
+    Tachycardia = 45
+    Tachypnea = 46
 
     # Equipment
     AnesthesiaMachineOxygenBottleOneExhausted = 1000

@@ -24,3 +24,5 @@ const VolumePerTimePressureAreaUnit& VolumePerTimePressureAreaUnit::GetCompoundU
     return mL_Per_s_mmHg_m2;  
   throw CommonDataModelException(unit + " is not a valid VolumePerTimePressureArea unit");
 }
+
+template class SEScalarQuantity<VolumePerTimePressureAreaUnit>;

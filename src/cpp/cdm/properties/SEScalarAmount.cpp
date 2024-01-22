@@ -24,3 +24,5 @@ const AmountUnit& AmountUnit::GetCompoundUnit(const std::string& unit)
     return pmol;
   throw CommonDataModelException(unit + " is not a valid Amount unit");
 }
+
+template class SEScalarQuantity<AmountUnit>;

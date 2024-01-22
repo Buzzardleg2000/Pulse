@@ -2,12 +2,13 @@
    See accompanying NOTICE file for details.*/
 
 #pragma once
+#include "pulsetests_export.h"
 #include "cdm/utils/testing/SETestManager.h"
 #include "engine/human_adult/ventilation_mechanics/Engine.h"
 
 namespace pulse { namespace human_adult_ventilation_mechanics
 {
-  class PULSE_DECL EngineTest : public SETestManager
+  class PULSETESTS_EXPORT EngineTest : public SETestManager
   {
   public:
     EngineTest(Logger* logger = nullptr);

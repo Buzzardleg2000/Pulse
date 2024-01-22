@@ -20,6 +20,7 @@ POP_PROTO_WARNINGS
 #include "cdm/patient/actions/SEAsthmaAttack.h"
 #include "cdm/patient/actions/SEBrainInjury.h"
 #include "cdm/patient/actions/SEBronchoconstriction.h"
+#include "cdm/patient/actions/SECardiovascularMechanicsModification.h"
 #include "cdm/patient/actions/SEChestCompression.h"
 #include "cdm/patient/actions/SEChestCompressionAutomated.h"
 #include "cdm/patient/actions/SEChestCompressionInstantaneous.h"
@@ -45,6 +46,7 @@ POP_PROTO_WARNINGS
 #include "cdm/patient/actions/SESepsisExacerbation.h"
 #include "cdm/patient/actions/SERespiratoryFatigue.h"
 #include "cdm/patient/actions/SERespiratoryMechanicsConfiguration.h"
+#include "cdm/patient/actions/SERespiratoryMechanicsModification.h"
 #include "cdm/patient/actions/SESubstanceBolus.h"
 #include "cdm/patient/actions/SESubstanceInfusion.h"
 #include "cdm/patient/actions/SESubstanceCompoundInfusion.h"
@@ -285,6 +287,43 @@ void PBPatientAction::Copy(const SEBronchoconstriction& src, SEBronchoconstricti
 {
   dst.Clear();
   CDM_BIND::BronchoconstrictionData data;
+  PBPatientAction::Serialize(src, data);
+  PBPatientAction::Serialize(data, dst);
+}
+
+void PBPatientAction::Load(const CDM_BIND::CardiovascularMechanicsModificationData& src, SECardiovascularMechanicsModification& dst)
+{
+  dst.Clear();
+  PBPatientAction::Serialize(src, dst);
+}
+void PBPatientAction::Serialize(const CDM_BIND::CardiovascularMechanicsModificationData& src, SECardiovascularMechanicsModification& dst)
+{
+  PBPatientAction::Serialize(src.patientaction(), dst);
+  if (!src.modifiersfile().empty())
+    dst.SetModifiersFile(src.modifiersfile());
+  else if (src.has_modifiers())
+    PBPhysiology::Load(src.modifiers(), dst.GetModifiers());
+  dst.SetIncremental(src.incremental());
+}
+CDM_BIND::CardiovascularMechanicsModificationData* PBPatientAction::Unload(const SECardiovascularMechanicsModification& src)
+{
+  CDM_BIND::CardiovascularMechanicsModificationData* dst = new CDM_BIND::CardiovascularMechanicsModificationData();
+  PBPatientAction::Serialize(src, *dst);
+  return dst;
+}
+void PBPatientAction::Serialize(const SECardiovascularMechanicsModification& src, CDM_BIND::CardiovascularMechanicsModificationData& dst)
+{
+  PBPatientAction::Serialize(src, *dst.mutable_patientaction());
+  if (src.HasModifiersFile())
+    dst.set_modifiersfile(src.m_ModifiersFile);
+  else if (src.HasModifiers())
+    dst.set_allocated_modifiers(PBPhysiology::Unload(*src.m_Modifiers));
+  dst.set_incremental(src.GetIncremental());
+}
+void PBPatientAction::Copy(const SECardiovascularMechanicsModification& src, SECardiovascularMechanicsModification& dst)
+{
+  dst.Clear();
+  CDM_BIND::CardiovascularMechanicsModificationData data;
   PBPatientAction::Serialize(src, data);
   PBPatientAction::Serialize(data, dst);
 }
@@ -1253,6 +1292,43 @@ void PBPatientAction::Copy(const SERespiratoryMechanicsConfiguration& src, SERes
   PBPatientAction::Serialize(data, dst);
 }
 
+void PBPatientAction::Load(const CDM_BIND::RespiratoryMechanicsModificationData& src, SERespiratoryMechanicsModification& dst)
+{
+  dst.Clear();
+  PBPatientAction::Serialize(src, dst);
+}
+void PBPatientAction::Serialize(const CDM_BIND::RespiratoryMechanicsModificationData& src, SERespiratoryMechanicsModification& dst)
+{
+  PBPatientAction::Serialize(src.patientaction(), dst);
+  if (!src.modifiersfile().empty())
+    dst.SetModifiersFile(src.modifiersfile());
+  else if (src.has_modifiers())
+    PBPhysiology::Load(src.modifiers(), dst.GetModifiers());
+  dst.SetIncremental(src.incremental());
+}
+CDM_BIND::RespiratoryMechanicsModificationData* PBPatientAction::Unload(const SERespiratoryMechanicsModification& src)
+{
+  CDM_BIND::RespiratoryMechanicsModificationData* dst = new CDM_BIND::RespiratoryMechanicsModificationData();
+  PBPatientAction::Serialize(src, *dst);
+  return dst;
+}
+void PBPatientAction::Serialize(const SERespiratoryMechanicsModification& src, CDM_BIND::RespiratoryMechanicsModificationData& dst)
+{
+  PBPatientAction::Serialize(src, *dst.mutable_patientaction());
+  if (src.HasModifiersFile())
+    dst.set_modifiersfile(src.m_ModifiersFile);
+  else if (src.HasModifiers())
+    dst.set_allocated_modifiers(PBPhysiology::Unload(*src.m_Modifiers));
+  dst.set_incremental(src.GetIncremental());
+}
+void PBPatientAction::Copy(const SERespiratoryMechanicsModification& src, SERespiratoryMechanicsModification& dst)
+{
+  dst.Clear();
+  CDM_BIND::RespiratoryMechanicsModificationData data;
+  PBPatientAction::Serialize(src, data);
+  PBPatientAction::Serialize(data, dst);
+}
+
 void PBPatientAction::Load(const CDM_BIND::SepsisExacerbationData& src, SESepsisExacerbation& dst)
 {
   dst.Clear();
@@ -1626,6 +1702,12 @@ SEPatientAction* PBPatientAction::Load(const CDM_BIND::AnyPatientActionData& any
     PBPatientAction::Load(any.bronchoconstriction(), *a);
     return a;
   }
+  case CDM_BIND::AnyPatientActionData::ActionCase::kCardiovascularMechanicsModification:
+  {
+    SECardiovascularMechanicsModification* a = new SECardiovascularMechanicsModification();
+    PBPatientAction::Load(any.cardiovascularmechanicsmodification(), *a);
+    return a;
+  }
   case CDM_BIND::AnyPatientActionData::ActionCase::kChestCompression:
   {
     SEChestCompression* a = new SEChestCompression();
@@ -1744,6 +1826,12 @@ SEPatientAction* PBPatientAction::Load(const CDM_BIND::AnyPatientActionData& any
   {
     SERespiratoryMechanicsConfiguration* a = new SERespiratoryMechanicsConfiguration();
     PBPatientAction::Load(any.respiratorymechanicsconfiguration(), *a);
+    return a;
+  }
+  case CDM_BIND::AnyPatientActionData::ActionCase::kRespiratoryMechanicsModification:
+  {
+    SERespiratoryMechanicsModification* a = new SERespiratoryMechanicsModification();
+    PBPatientAction::Load(any.respiratorymechanicsmodification(), *a);
     return a;
   }
   case CDM_BIND::AnyPatientActionData::ActionCase::kSepsisExacerbation:
@@ -1872,6 +1960,12 @@ CDM_BIND::AnyPatientActionData* PBPatientAction::Unload(const SEPatientAction& a
     any->set_allocated_bronchoconstriction(PBPatientAction::Unload(*b));
     return any;
   }
+  const SECardiovascularMechanicsModification* cmm = dynamic_cast<const SECardiovascularMechanicsModification*>(&action);
+  if (cmm != nullptr)
+  {
+    any->set_allocated_cardiovascularmechanicsmodification(PBPatientAction::Unload(*cmm));
+    return any;
+  }
   const SEChestCompression* cc = dynamic_cast<const SEChestCompression*>(&action);
   if (cc != nullptr)
   {
@@ -1990,6 +2084,18 @@ CDM_BIND::AnyPatientActionData* PBPatientAction::Unload(const SEPatientAction& a
   if (rmc != nullptr)
   {
     any->set_allocated_respiratorymechanicsconfiguration(PBPatientAction::Unload(*rmc));
+    return any;
+  }
+  const SERespiratoryMechanicsModification* rmm = dynamic_cast<const SERespiratoryMechanicsModification*>(&action);
+  if (rmm != nullptr)
+  {
+    any->set_allocated_respiratorymechanicsmodification(PBPatientAction::Unload(*rmm));
+    return any;
+  }
+  const SESupplementalOxygen* sO2 = dynamic_cast<const SESupplementalOxygen*>(&action);
+  if (sO2 != nullptr)
+  {
+    any->set_allocated_supplementaloxygen(PBPatientAction::Unload(*sO2));
     return any;
   }
   const SESepsisExacerbation* se = dynamic_cast<const SESepsisExacerbation*>(&action);

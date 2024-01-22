@@ -4,6 +4,7 @@
 #include <jni.h>
 #include <memory>
 #include <iostream>
+#include "PulseEngine.h"
 #include "PulseEngineThunk.h"
 
 class LoggerForwardJNI : public LoggerForward

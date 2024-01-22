@@ -107,6 +107,8 @@ def serialize_scenario_exec_to_bind(src: SEScenarioExec, dst: ScenarioExecData) 
         dst.ScenarioFilename = src.get_scenario_filename()
     elif src.get_scenario_directory():
         dst.ScenarioDirectory = src.get_scenario_directory()
+    elif src.get_scenario_exec_list_filename():
+        dst.ScenarioExecListFilename = src.get_scenario_exec_list_filename()
     elif src.get_scenario_log_filename():
         dst.ScenarioLogFilename = src.get_scenario_log_filename()
     elif src.get_scenario_log_directory():

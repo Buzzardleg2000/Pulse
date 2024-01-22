@@ -10,7 +10,7 @@ class SESubstanceConcentration;
 
 // Keep enums in sync with appropriate schema/cdm/EnvironmentEnums.proto file !!
 enum class eSurroundingType { NullSurrounding = 0, Air, Water };
-extern const std::string& eSurroundingType_Name(eSurroundingType m);
+extern CDM_DECL const std::string& eSurroundingType_Name(eSurroundingType m);
 
 class CDM_DECL SEEnvironmentalConditions : public Loggable
 {

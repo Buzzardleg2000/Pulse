@@ -7,7 +7,7 @@
 enum class eElectroCardioGram_WaveformType { Sinus = 0, 
                                              VentricularFibrillation,
                                              VentricularTachycardia };
-extern const std::string& eElectroCardioGram_WaveformType_Name(eElectroCardioGram_WaveformType m);
+extern CDM_DECL const std::string& eElectroCardioGram_WaveformType_Name(eElectroCardioGram_WaveformType m);
 
 // Keep enums in sync with appropriate schema/cdm/CompartmentEnums.proto file !!
 enum class eElectroCardioGram_WaveformLead { NullLead = 0,
@@ -23,7 +23,7 @@ enum class eElectroCardioGram_WaveformLead { NullLead = 0,
                                              Lead10,
                                              Lead11,
                                              Lead12 };
-extern const std::string& eElectroCardioGram_WaveformLead_Name(eElectroCardioGram_WaveformLead m);
+extern CDM_DECL const std::string& eElectroCardioGram_WaveformLead_Name(eElectroCardioGram_WaveformLead m);
 
 
 class CDM_DECL SEElectroCardioGramWaveform : public Loggable

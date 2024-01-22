@@ -44,3 +44,5 @@ const LengthUnit& LengthUnit::GetCompoundUnit(const std::string& unit)
     return ft;
   throw CommonDataModelException(unit + " is not a valid Length unit");
 }
+
+template class SEScalarQuantity<LengthUnit>;

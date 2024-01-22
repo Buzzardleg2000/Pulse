@@ -1,8 +1,8 @@
 /* Distributed under the Apache License, Version 2.0.
    See accompanying NOTICE file for details.*/
 
-#include "PulseEngineThunk.h"
-#include "PulseEnginePool.h"
+#include "engine/PulseEngineThunk.h"
+#include "engine/PulseEnginePool.h"
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl_bind.h>
@@ -20,6 +20,7 @@ void PulseEngineBind(py::module &m)
     .def("serialize_from_string", &PulseEngineThunk::SerializeFromString)
     .def("serialize_to_string", &PulseEngineThunk::SerializeToString)
     .def("initialize_engine", &PulseEngineThunk::InitializeEngine)
+    .def("set_configuration_override", & PulseEngineThunk::SetConfigurationOverride)
     .def("get_initial_patient", &PulseEngineThunk::GetInitialPatient)
     .def("log_to_console", &PulseEngineThunk::LogToConsole)
     .def("keep_log_messages", &PulseEngineThunk::KeepLogMessages)

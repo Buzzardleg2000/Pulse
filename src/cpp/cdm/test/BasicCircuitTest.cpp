@@ -4498,7 +4498,7 @@ void CommonDataModelTest::BasicCircuitTest(const std::string& outputDirectory)
   double timeStep_s = 1.0/165.0;
   double currentTime_s = 0.0;
   DataTrack trk1;
-  SEFluidCircuitCalculator fluidCalculator(m_Logger);
+  SEFluidCircuitCalculator fluidCalculator(DefaultFluidCircuitCalculatorUnits, m_Logger);
  
 
   //Test Circuit
@@ -4573,7 +4573,7 @@ void CommonDataModelTest::MultiphysicsElectricalCircuitTest(const std::string& o
   m_Logger = new Logger(outputDirectory + "/MultiphysicsCircuit.log");
   double timeStep_s = 1.0 / 50.0;
   DataTrack dataTrack;
-  SEElectricalCircuitCalculator electricalCalculator(m_Logger);
+  SEElectricalCircuitCalculator electricalCalculator(DefaultElectricalCircuitCalculatorUnits, m_Logger);
 
   //Create circuit
   SEElectricalCircuit* electricalCircuit = &m_Circuits->CreateElectricalCircuit("Electrical");
@@ -4642,7 +4642,7 @@ void CommonDataModelTest::MultiphysicsFluidCircuitTest(const std::string& output
   m_Logger = new Logger(outputDirectory + "/MultiphysicsCircuit.log");
   double timeStep_s = 1.0 / 50.0;
   DataTrack dataTrack;
-  SEFluidCircuitCalculator fluidCalculator(m_Logger);
+  SEFluidCircuitCalculator fluidCalculator(DefaultFluidCircuitCalculatorUnits, m_Logger);
 
   //Create circuit
   SEFluidCircuit* fluidCircuit = &m_Circuits->CreateFluidCircuit("Fluid");
@@ -4711,7 +4711,7 @@ void CommonDataModelTest::MultiphysicsThermalCircuitTest(const std::string& outp
   m_Logger = new Logger(outputDirectory + "/MultiphysicsCircuit.log");
   double timeStep_s = 1.0 / 50.0;
   DataTrack dataTrack;
-  SEThermalCircuitCalculator thermalCalculator(m_Logger);
+  SEThermalCircuitCalculator thermalCalculator(DefaultThermalCircuitCalculatorUnits, m_Logger);
 
   //Create circuit
   SEThermalCircuit* thermalCircuit = &m_Circuits->CreateThermalCircuit("Thermal");
@@ -5449,7 +5449,7 @@ void CommonDataModelTest::RunTest(const std::string& outputDirectory, const std:
   double timeStep_s = 1.0 / 165.0;
   double currentTime_s = 0.0;
   DataTrack trk1;
-  SEFluidCircuitCalculator fluidCalculator(m_Logger);
+  SEFluidCircuitCalculator fluidCalculator(DefaultFluidCircuitCalculatorUnits, m_Logger);
   SEFluidCircuit* fluidCircuit = m_Circuits->GetFluidCircuit("Fluid");
 
   //Set up the circuit

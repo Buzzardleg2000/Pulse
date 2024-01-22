@@ -5,7 +5,7 @@
 
 // Keep enums in sync with appropriate schema/cdm/MechanicalVentilatorActions.proto file !!
 enum class eMechanicalVentilator_VolumeControlMode { AssistedControl = 0, ContinuousMandatoryVentilation };
-extern const std::string& eMechanicalVentilator_VolumeControlMode_Name(eMechanicalVentilator_VolumeControlMode m);
+extern CDM_DECL const std::string& eMechanicalVentilator_VolumeControlMode_Name(eMechanicalVentilator_VolumeControlMode m);
 
 class CDM_DECL SEMechanicalVentilatorVolumeControl : public SEMechanicalVentilatorMode
 {

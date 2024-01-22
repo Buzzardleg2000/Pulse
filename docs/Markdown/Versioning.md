@@ -15,7 +15,7 @@ Our version number sematic is Major.Minor.Patch-ReleaseStage, where :
 
 - Software Architecture Improvements
   - Combined DataModelBindings, CommonDataModel and PulseEngine into a single Pulse library
-    - Plan is to provide an option to build a shared Pulse library rather than a static one
+    - This single library can be built as a shared/dynamic library or a static (default) library
   - Implement system/patient validation framework in Python
     - Provides access to more discrete modules in our validation pipeline for more versatile use
   - Initial architecture for automated validation
@@ -28,6 +28,12 @@ Our version number sematic is Major.Minor.Patch-ReleaseStage, where :
     - Information for every executed scenario is then updated in the provided file:
       - The locations of the: scenario file and its generated log file, and csv file
       - Various error states if encountered: Unable to initialize and why, if there were any other errors encountered
+  - Post processing pipeline
+    - Written in python, allows us to process a log and csv file generated from a scenario and pull out (and even generate new) data into a more machine learning friendly format
+      - Unstructure Text Module looks at map of vitals to a string vector and randomly takes strings based on the vitals values to create an unstructured description of the simulation at that time. The strings and bounds are read in from a spreadsheet
+  - Testing Utils
+    - Add a run.cmake option to generate a config of all the failures for a quick and easy rebase (once they have been reviewed and approved of course)
+    - Remove action vertical lines in our verification plots of actions that occur many many times. These actions are usually testing sensor driven inputs and make data interpretation difficult.
 
 - Physiology Model Improvements
   - Dyspnea
@@ -35,7 +41,15 @@ Our version number sematic is Major.Minor.Patch-ReleaseStage, where :
     - This allows users to define breathing impairments with more precision
     - **Note** any previous scenarios using Dyspnea severity should apply that value to the Tidal Volume severity
   - Mechanical Ventilator Model
-    - Ventilation will immediately stop at limits.
+    - Ventilation will immediately stop at limits
+  - Respiratory Model
+    - Improved handling of lung recruitment based on acinar ventilation for showing the pulmonary shunt changes due to increased ventilator PEEP
+  - Modifier Actions (SECardiovascularMechanicsModification, SERespiratoryMechanicsModification)
+    - We now provide 2 new actions to modify the respiratory and cardiovascular model parameters
+    - For example, you can provide a multipliers to modify the heart rate, respiration rate, systemic vascular and pulmonary resistances
+    - This provides the end user more low level control to fine tune the physiology to their specific needs
+  - The application of drug pharmacodynamics changes to the cardiovascular system now include pulse pressure as well as mean arterial pressure
+    - Acute stress is more inline with validation data
 ---
 
 ## Pulse v4.2.0 (October 2023)

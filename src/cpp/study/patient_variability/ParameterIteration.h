@@ -5,6 +5,7 @@
 
 namespace pulse::study::patient_variability
 {
+  template <typename T>
   class ParameterIteration
   {
   public:
@@ -13,16 +14,18 @@ namespace pulse::study::patient_variability
 
     bool Empty() const { return m_Values.size() == 0; }
     void SetSliceIndex(size_t idx) { m_SliceIdx = idx; }
-    void SetMinMaxStep(double min, double max, double step);
-    void SetValues(std::initializer_list<double> values, int sliceIdx = 0);
+    void SetValues(const std::vector<T>& values, int sliceIdx = 0);
+    void SetValues(std::initializer_list<T> values, int sliceIdx = 0);
 
-    double GetSlice() const { return m_Values[m_SliceIdx]; }
+    static std::vector<double> SetMinMaxStep(double min, double max, double step);
+
+    T GetSlice() const { return m_Values[m_SliceIdx]; }
     bool HasValues() const { return m_Values.size() > 0; }
-    std::vector<double>& GetValues() { return m_Values; }
-    const std::vector<double>& GetValues() const { return m_Values; }
+    std::vector<T>& GetValues() { return m_Values; }
+    const std::vector<T>& GetValues() const { return m_Values; }
 
   protected:
-    size_t              m_SliceIdx;
-    std::vector<double> m_Values;
+    size_t          m_SliceIdx;
+    std::vector<T>  m_Values;
   };
 }

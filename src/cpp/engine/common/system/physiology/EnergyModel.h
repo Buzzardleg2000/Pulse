@@ -46,7 +46,7 @@ namespace pulse
 
     // Preprocess Methods
     void CalculateMetabolicHeatGeneration();
-    void CalculateSweatRate();
+    void Perspiration();
     void UpdateHeatResistance();
     // Actions/Conditions
     void Exercise();
@@ -69,6 +69,7 @@ namespace pulse
 
     // Stateless member variable (Set in SetUp())
     // Cmpts,Substance, and nodes
+    SELiquidCompartment*        m_SkinExtracellular;
     SELiquidSubstanceQuantity*  m_AortaHCO3;
     //Nodes
     SEThermalCircuitNode*       m_coreNode;

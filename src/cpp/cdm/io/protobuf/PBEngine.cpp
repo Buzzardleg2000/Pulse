@@ -31,6 +31,7 @@ POP_PROTO_WARNINGS
 #include "cdm/patient/conditions/SEChronicRenalStenosis.h"
 #include "cdm/patient/conditions/SEChronicVentricularSystolicDysfunction.h"
 #include "cdm/patient/conditions/SEConsumeMeal.h"
+#include "cdm/patient/conditions/SEDehydration.h"
 #include "cdm/patient/conditions/SEImpairedAlveolarExchange.h"
 #include "cdm/patient/conditions/SEPneumonia.h"
 #include "cdm/patient/conditions/SEPulmonaryShunt.h"
@@ -197,6 +198,8 @@ void PBEngine::Serialize(const SEConditionManager& src, CDM_BIND::ConditionListD
     dst.mutable_anycondition()->AddAllocated(PBCondition::Unload(*src.m_ImpairedAlveolarExchange));
   if (src.HasChronicPericardialEffusion())
     dst.mutable_anycondition()->AddAllocated(PBCondition::Unload(*src.m_PericardialEffusion));
+  if (src.HasDehydration())
+    dst.mutable_anycondition()->AddAllocated(PBCondition::Unload(*src.m_Dehydration));
   if (src.HasPneumonia())
     dst.mutable_anycondition()->AddAllocated(PBCondition::Unload(*src.m_Pneumonia));
   if (src.HasPulmonaryFibrosis())

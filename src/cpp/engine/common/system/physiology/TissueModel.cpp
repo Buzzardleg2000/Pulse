@@ -11,6 +11,7 @@
    // Conditions
 #include "cdm/engine/SEConditionManager.h"
 #include "cdm/patient/conditions/SEConsumeMeal.h"
+#include "cdm/patient/conditions/SEDehydration.h"
 // Actions
 #include "cdm/engine/SEActionManager.h"
 #include "cdm/engine/SEPatientActionCollection.h"
@@ -148,6 +149,11 @@ namespace pulse
     GetOxygenConsumptionRate().SetValue(250.0, VolumePerTimeUnit::mL_Per_min);
     GetCarbonDioxideProductionRate().SetValue(200.0, VolumePerTimeUnit::mL_Per_min);
     GetRespiratoryExchangeRatio().SetValue(0.8);
+
+    GetExtracellularFluidVolume().SetValue(0.0, VolumeUnit::mL);
+    GetIntracellularFluidVolume().SetValue(0.0, VolumeUnit::mL);
+    GetExtravascularFluidVolume().SetValue(0.0, VolumeUnit::mL);
+    GetTotalFluidVolume().SetValue(0.0, VolumeUnit::mL);
   }
 
   //--------------------------------------------------------------------------------------------------
@@ -284,7 +290,7 @@ namespace pulse
   void TissueModel::AtSteadyState()
   {
     if (m_data.GetState() == EngineState::AtInitialStableState)
-    {// Apply our conditions    
+    {// Apply our conditions
       if (m_data.GetConditions().HasConsumeMeal())
       {
         SEScalarMass mass;
@@ -316,6 +322,8 @@ namespace pulse
         Info(m_ss);
 #endif
       }
+
+      Dehydration();
     }
     for (SETissueCompartment* tissue : m_ConsumptionProdutionTissues)
     {
@@ -1191,9 +1199,8 @@ namespace pulse
   //--------------------------------------------------------------------------------------------------
   void TissueModel::CalculateVitals()
   {
-    // Hydration Status
-    double ecVol_mL = 0.;
-    double icvol_mL = 0.;
+    double extracellularFluidVolume_mL = 0.0;
+    double intracellularFluidVolume_mL = 0.0;
     double currentFluidMass_kg = 0.0;
     SETissueCompartment* tissue;
     SELiquidCompartment* vascular;
@@ -1204,24 +1211,53 @@ namespace pulse
       currentFluidMass_kg += vascular->GetVolume(VolumeUnit::mL) * m_data.GetBloodChemistry().GetBloodDensity(MassPerVolumeUnit::kg_Per_mL);
       currentFluidMass_kg += tissue->GetIntracellular().GetVolume(VolumeUnit::mL) * m_data.GetConfiguration().GetWaterDensity(MassPerVolumeUnit::kg_Per_mL);
       currentFluidMass_kg += tissue->GetExtracellular().GetVolume(VolumeUnit::mL) * m_data.GetConfiguration().GetWaterDensity(MassPerVolumeUnit::kg_Per_mL);
-      ecVol_mL += tissue->GetExtracellular().GetVolume(VolumeUnit::mL);
-      icvol_mL += tissue->GetIntracellular().GetVolume(VolumeUnit::mL);
+      extracellularFluidVolume_mL += tissue->GetExtracellular().GetVolume(VolumeUnit::mL);
+      intracellularFluidVolume_mL += tissue->GetIntracellular().GetVolume(VolumeUnit::mL);
     }
-    if ((m_RestingFluidMass_kg - currentFluidMass_kg) / m_RestingPatientMass_kg > 0.03)
-    {
-      m_data.GetEvents().SetEvent(eEvent::Dehydration, true, m_data.GetSimulationTime()); /// \cite who2005dehydration
-    }
-    else if ((m_RestingFluidMass_kg - currentFluidMass_kg) / m_RestingPatientMass_kg < 0.02)
-    {
-      m_data.GetEvents().SetEvent(eEvent::Dehydration, false, m_data.GetSimulationTime());
-    }
-    
-    // Total Volumes
-    GetExtracellularFluidVolume().SetValue(ecVol_mL, VolumeUnit::mL);
-    GetIntracellularFluidVolume().SetValue(icvol_mL, VolumeUnit::mL);
-    GetExtravascularFluidVolume().SetValue(ecVol_mL + icvol_mL, VolumeUnit::mL);
-    //m_data.GetDataTrack().Probe("TotalFluid_mL", ecVol_mL + icvol_mL + m_data.GetCardiovascular().GetBloodVolume(VolumeUnit::mL));
 
+    // Total Volumes
+    double totalFluidVolume_mL = extracellularFluidVolume_mL + intracellularFluidVolume_mL + m_data.GetCardiovascular().GetBloodVolume(VolumeUnit::mL);
+    double previousTotalVolume_mL = GetTotalFluidVolume(VolumeUnit::mL);
+    GetExtracellularFluidVolume().SetValue(extracellularFluidVolume_mL, VolumeUnit::mL);
+    GetIntracellularFluidVolume().SetValue(intracellularFluidVolume_mL, VolumeUnit::mL);
+    GetExtravascularFluidVolume().SetValue(extracellularFluidVolume_mL + intracellularFluidVolume_mL, VolumeUnit::mL);
+    GetTotalFluidVolume().SetValue(totalFluidVolume_mL, VolumeUnit::mL);
+
+    //Patient weight decrease due to fluid mass lost from all sources
+    double fluidLoss_mL = totalFluidVolume_mL - previousTotalVolume_mL;
+    if (previousTotalVolume_mL == 0.0)
+    {
+      //Initialize
+      fluidLoss_mL = 0.0;
+    }
+    double patientMassLost_kg = fluidLoss_mL * m_data.GetConfiguration().GetWaterDensity(MassPerVolumeUnit::kg_Per_mL);
+    m_data.GetCurrentPatient().GetWeight().IncrementValue(-patientMassLost_kg, MassUnit::kg);
+
+    // Hydration Status
+    if ((m_RestingFluidMass_kg - currentFluidMass_kg) / m_RestingPatientMass_kg > 0.10)
+    {
+      m_data.GetEvents().SetEvent(eEvent::MildDehydration, false, m_data.GetSimulationTime());
+      m_data.GetEvents().SetEvent(eEvent::ModerateDehydration, false, m_data.GetSimulationTime());
+      m_data.GetEvents().SetEvent(eEvent::SevereDehydration, true, m_data.GetSimulationTime());
+    }
+    else if ((m_RestingFluidMass_kg - currentFluidMass_kg) / m_RestingPatientMass_kg > 0.05)
+    {
+      m_data.GetEvents().SetEvent(eEvent::MildDehydration, false, m_data.GetSimulationTime());
+      m_data.GetEvents().SetEvent(eEvent::ModerateDehydration, true, m_data.GetSimulationTime());
+      m_data.GetEvents().SetEvent(eEvent::SevereDehydration, false, m_data.GetSimulationTime());
+    }
+    else if ((m_RestingFluidMass_kg - currentFluidMass_kg) / m_RestingPatientMass_kg > 0.03)
+    {
+      m_data.GetEvents().SetEvent(eEvent::MildDehydration, true, m_data.GetSimulationTime());
+      m_data.GetEvents().SetEvent(eEvent::ModerateDehydration, false, m_data.GetSimulationTime());
+      m_data.GetEvents().SetEvent(eEvent::SevereDehydration, false, m_data.GetSimulationTime());
+    }
+    else
+    {
+      m_data.GetEvents().SetEvent(eEvent::MildDehydration, false, m_data.GetSimulationTime());
+      m_data.GetEvents().SetEvent(eEvent::ModerateDehydration, false, m_data.GetSimulationTime());
+      m_data.GetEvents().SetEvent(eEvent::SevereDehydration, false, m_data.GetSimulationTime());
+    }
 
     // Fasciculations (due to calcium deficiency) - Currently inactive for model improvement
     // The leading causes of fasciculation include magnesium deficiency, succinylcholine, nerve agents, and ALS.
@@ -1693,4 +1729,57 @@ namespace pulse
 
     return amountIncrement_g;
   } // End ActiveMassTransport
+
+  //--------------------------------------------------------------------------------------------------
+  /// \brief
+  /// jbw
+  ///
+  /// \details
+  /// jbw
+  //--------------------------------------------------------------------------------------------------
+  void TissueModel::Dehydration()
+  {
+    if (!m_data.GetConditions().HasDehydration())
+    {
+      return;
+    }
+
+    double severity = m_data.GetConditions().GetDehydration().GetSeverity().GetValue();
+
+    double initialBodyWeight_kg = m_data.GetInitialPatient().GetWeight(MassUnit::kg);
+    double bodyWeightReductionFraction = (13.614 * (severity * severity) + 0.3094 * severity) / 100.0; //Best fit curve
+    double liquidReduction_mL = (1.0 / m_data.GetConfiguration().GetWaterDensity(MassPerVolumeUnit::kg_Per_mL)) * (initialBodyWeight_kg * bodyWeightReductionFraction);
+    double totalFluidVolume_mL = GetTotalFluidVolume(VolumeUnit::mL);
+    double volumeReductionMultiplier = (totalFluidVolume_mL - liquidReduction_mL) / totalFluidVolume_mL;
+
+    SETissueCompartment* tissue;
+    SELiquidCompartment* vascular;
+    for (auto tissueVascular : m_TissueToVascular)
+    {
+      tissue = tissueVascular.first;
+      vascular = tissueVascular.second;
+
+      for (auto n : vascular->GetNodeMapping().GetNodes())
+      {
+        if (n->HasNextVolume())
+        {
+          n->GetNextVolume().SetValue(n->GetNextVolume(VolumeUnit::mL) * volumeReductionMultiplier, VolumeUnit::mL);
+        }
+      }
+      for (auto n : tissue->GetIntracellular().GetNodeMapping().GetNodes())
+      {
+        if (n->HasNextVolume())
+        {
+          n->GetNextVolume().SetValue(n->GetNextVolume(VolumeUnit::mL) * volumeReductionMultiplier, VolumeUnit::mL);
+        }
+      }
+      for (auto n : tissue->GetExtracellular().GetNodeMapping().GetNodes())
+      {
+        if (n->HasNextVolume())
+        {
+          n->GetNextVolume().SetValue(n->GetNextVolume(VolumeUnit::mL) * volumeReductionMultiplier, VolumeUnit::mL);
+        }
+      }
+    }
+  }
 END_NAMESPACE

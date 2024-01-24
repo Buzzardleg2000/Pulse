@@ -423,9 +423,10 @@ message TissueSystemData
 {
   ScalarVolumePerTimeData              CarbonDioxideProductionRate                    = 1;/**<< @brief The carbon dioxide generated on the tissue level from aerobic metabolism*/
   ScalarVolumeData                     ExtracellularFluidVolume                       = 2;/**<< @brief Volume of fluid outside of cells AND outside of the blood vessels*/
-  ScalarVolumeData                     ExtravascularFluidVolume                       = 3;/**<< @brief Total fluid volume outside of the blood vessels. */
+  ScalarVolumeData                     ExtravascularFluidVolume                       = 3;/**<< @brief Total fluid volume outside of the blood vessels.*/
   ScalarData                           IntracellularFluidPH                           = 4;/**<< @brief The acidity or alkalinity of the extravascular intercellular fluid.*/
-  ScalarVolumeData                     IntracellularFluidVolume                       = 5;/**<< @brief Volume of fluid in the cells outside of the blood vessels. */  
+  ScalarVolumeData                     IntracellularFluidVolume                       = 5;/**<< @brief Volume of fluid in the cells outside of the blood vessels.*/
   ScalarVolumePerTimeData              OxygenConsumptionRate                          = 6; /**<< @brief The oxygen consumed on the tissue level from aerobic metabolism*/
-  ScalarData                           RespiratoryExchangeRatio                       = 7; /**<< @brief The true ratio of carbon dioxide produced to oxygen consumed */   
+  ScalarData                           RespiratoryExchangeRatio                       = 7; /**<< @brief The true ratio of carbon dioxide produced to oxygen consumed*/
+  ScalarVolumeData                     TotalFluidVolume                               = 8; /**<< @brief Sum of extravascular and intravascular/blood volumes.*/
 }

@@ -1,11 +1,21 @@
 # Distributed under the Apache License, Version 2.0.
 # See accompanying NOTICE file for details.
 
+import logging
 import numpy as np
 from enum import Enum
-from typing import Dict, List, Optional
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
 from pulse.cdm.patient import SEPatient
+from pulse.cdm.plots import SEPlotter
+from pulse.cdm.utils.file_utils import get_scenario_dir
+from pulse.cdm.utils.markdown import table
+from pulse.cdm.io.engine import serialize_data_request_list_from_file, serialize_data_requested_result_from_file
+
+
+_pulse_logger = logging.getLogger('pulse')
+
 
 class SEValidationTarget:
     __slots__ = ["_header", "_reference", "_notes", "_table_formatting",
@@ -235,16 +245,145 @@ class SESegmentValidationSegment:
     def invalidate_actions(self) -> None:
         self._actions = []
 
-class SESegmentValidationPipelineConfig:
-    __slots__ = ["_plotters"]
+class SESegmentValidationSegmentTable:
+    __slots__ = ["_table_name", "_scenario_name", "_segment", "_headers", "_dr_files"]
+
     def __init__(self):
         self.clear()
 
     def clear(self) -> None:
-        self._plotters = []
+        self._table_name = None
+        self._scenario_name = None
+        self._segment = None
+        self._headers = list()
+        self._dr_files = list()
 
-    def get_plotters(self) -> []:
+    def has_table_name(self) -> bool:
+        return self._table_name is not None and len(self._table_name) > 0
+    def get_table_name(self) -> Optional[str]:
+        return self._table_name
+    def set_table_name(self, name: str) -> None:
+        self._table_name = name
+    def invalidate_table_name(self) -> None:
+        self._table_name = None
+
+    def has_scenario_name(self) -> bool:
+        return self._scenario_name is not None and len(self._scenario_name) > 0
+    def get_scenario_name(self) -> Optional[str]:
+        return self._scenario_name
+    def set_scenario_name(self, name: str) -> None:
+        self._scenario_name = name
+    def invalidate_scenario_name(self) -> None:
+        self._scenario_name = None
+
+    def has_segment(self) -> bool:
+        return self._segment is not None
+    def get_segment(self) -> Optional[int]:
+        return self._segment
+    def set_segment(self, segment: int) -> None:
+        self._segment = segment
+    def invalidate_segment(self) -> None:
+        self._segment = None
+
+    def get_headers(self) -> List[str]:
+        return self._headers
+    def invalidate_headers(self) -> None:
+        self._headers = None
+
+    def get_data_request_files(self) -> List[str]:
+        return self._dr_files
+    def invalidate_data_request_files(self) -> None:
+        self._dr_files = None
+
+    def _process_results(self, segments_filename: Path, in_dir: Path) -> Optional[List[List[Any]]]:
+        results = serialize_data_requested_result_from_file(segments_filename)
+        result = results.get_segment(self.get_segment())
+        if result is None:
+            _pulse_logger.error(f"Could not find result for segment {self.get_segment()}")
+            return None
+
+        def _get_engine_value(dr_header: str, precision: int=3) -> List[str]:
+            header_idx = results.get_header_index(dr_header)
+            if header_idx is None:
+                _pulse_logger.error(f"Could not find results for {dr_header} in segment {self.get_segment()}")
+                return None
+            return [
+                dr_header,
+                f"{result.values[header_idx]:.{precision}G}" if result.values[header_idx] != "NaN" else "NaN"
+            ]
+
+        table_data = list()
+        for header in self.get_headers():
+            table_data.append(_get_engine_value(header))
+
+        alt_locations = [in_dir, Path(get_scenario_dir())]
+        for dr_file in self.get_data_request_files():
+            dr_path = Path(dr_file)
+            if not dr_path.is_file():
+                for dir in alt_locations:
+                    dr_path = dir / dr_file
+                    if dr_path.is_file():
+                        break
+                else:
+                    _pulse_logger.error(f"Could not find data request file: {dr_file}")
+                    return None
+            drs = list()
+            serialize_data_request_list_from_file(dr_path, drs)
+            for dr in drs:
+                table_data.append(_get_engine_value(str(dr), dr.get_precision()))
+
+        return table_data
+
+    def write_table(self, validate_dir: Path, in_dir: Path, out_dir: Path) -> bool:
+        if not self.has_scenario_name():
+            _pulse_logger.error("Can't write segment table without scenario specified")
+            return False
+        if not self.has_segment():
+            _pulse_logger.error("Can't write segment table without segment specified")
+            return False
+        segments_file = validate_dir / f"{self.get_scenario_name()}Results-Segments.json"
+        if not segments_file.is_file():
+            _pulse_logger.error(f"Could not find segments file: {segments_file}")
+            return False
+
+        if not self.has_table_name():
+            t_name = f"SegmentTable{self.get_segment()}"
+            _pulse_logger.warning(f"Found table with no name, saving as: {t_name}")
+            self.set_table_name(t_name)
+
+        table_headers = ["Property Name", "Engine Value"]
+        fields = list(range(len(table_headers)))
+        align = [('<', '<')] * len(table_headers)
+        table_data = self._process_results(segments_file, in_dir)
+        if table_data is None:
+            return False
+
+        md_filename = out_dir / f"{self.get_table_name()}.md"
+        with open(md_filename, "w") as md_file:
+            _pulse_logger.info(f"Writing {md_filename}")
+            lines = [
+                f"<center>\n<i>@tabledef {{{self.get_table_name()}}}. Data requests for Segment {self.get_segment()}.</i>\n</center>\n\n"
+            ]
+            md_file.writelines(lines)
+            table(md_file, table_data, fields, table_headers, align)
+
+        return True
+
+
+class SESegmentValidationPipelineConfig:
+    __slots__ = ["_plotters", "_tables"]
+    def __init__(self):
+        self.clear()
+
+    def clear(self) -> None:
+        self._plotters = list()
+        self._tables = list()
+
+    def get_plotters(self) -> List[SEPlotter]:
         return self._plotters
+
+    def get_tables(self) -> List[SESegmentValidationSegmentTable]:
+        return self._tables
 
 
 class SETimeSeriesValidationTarget(SEValidationTarget):
@@ -349,4 +488,3 @@ class SEPatientTimeSeriesValidation:
         return self._patient
     def invalidate_patient(self) -> None:
         self._patient = None
-

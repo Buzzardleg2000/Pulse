@@ -2,12 +2,13 @@
 # See accompanying NOTICE file for details.
 
 from pulse.cdm.validation import SEValidationTarget, \
-                             SESegmentValidationPipelineConfig, \
+                             SESegmentValidationPipelineConfig, SESegmentValidationSegmentTable, \
                              SESegmentValidationTarget, SESegmentValidationSegment, \
                              SETimeSeriesValidationTarget, SEPatientTimeSeriesValidation
 from pulse.cdm.io.patient import serialize_patient_from_bind, serialize_patient_to_bind
 from pulse.cdm.bind.Validation_pb2 import ValidationTargetData, \
-                                      SegmentValidationTargetData, SegmentValidationSegmentData,\
+                                      SegmentValidationTargetData, SegmentValidationSegmentData, \
+                                      SegmentValidationSegmentTableData, SegmentValidationSegmentTableListData, \
                                       SegmentValidationSegmentListData, SegmentValidationPipelineConfigurationData, \
                                       TimeSeriesValidationTargetData, TimeSeriesValidationTargetListData, \
                                       PatientTimeSeriesValidationData, PatientTimeSeriesValidationListData
@@ -96,6 +97,58 @@ def serialize_segment_validation_segment_from_bind(src: SegmentValidationSegment
 
     return dst
 
+def serialize_segment_validation_segment_table_to_bind(
+    src: SESegmentValidationSegmentTable,
+    dst: SegmentValidationSegmentTableData
+) -> None:
+    if src.has_table_name():
+        dst.TableName = src.get_table_name()
+    if src.has_scenario_name():
+        dst.ScenarioName = src.get_scenario_name()
+    if src.has_segment():
+        dst.Segment = src.get_segment()
+    dst.Header.extend(src.get_headers())
+    dst.DataRequestFile.extend(src.get_data_request_files())
+def serialize_segment_validation_segment_table_from_bind(
+    src: SegmentValidationSegmentTableData,
+    dst: SESegmentValidationSegmentTable
+) -> None:
+    dst.set_table_name(src.TableName)
+    dst.set_scenario_name(src.ScenarioName)
+    dst.set_segment(src.Segment)
+    headers = dst.get_headers()
+    for h in src.Header:
+        headers.append(h)
+    dr_files = dst.get_data_request_files()
+    for f in src.DataRequestFile:
+        dr_files.append(f)
+def serialize_segment_validation_segment_table_to_string(
+    src: SESegmentValidationSegmentTable,
+    fmt: eSerializationFormat
+) -> str:
+    dst = SegmentValidationSegmentTableData()
+    serialize_segment_validation_segment_table_to_bind(src, dst)
+    return json_format.MessageToJson(dst, True, True)
+def serialize_segment_validation_segment_table_from_string(
+    string: str,
+    dst: SESegmentValidationSegmentTable,
+    fmt: eSerializationFormat
+) -> None:
+    src = SegmentValidationSegmentTableData()
+    json_format.Parse(string, src)
+    serialize_segment_validation_segment_table_from_bind(src, dst)
+def serialize_segment_validation_segment_table_to_file(src: SESegmentValidationSegmentTable, filename: str) -> None:
+    string = serialize_segment_validation_segment_table_to_string(src, eSerializationFormat.JSON)
+    with open(filename, "w") as file:
+        file.write(string)
+def serialize_segment_validation_segment_table_from_file(
+    filename: str,
+    dst: SESegmentValidationSegmentTable
+) -> None:
+    with open(filename) as f:
+        string = f.read()
+    serialize_segment_validation_segment_table_from_string(string, dst, eSerializationFormat.JSON)
+
 def serialize_segment_validation_segment_list_to_bind(src: List[SESegmentValidationSegment], dst: SegmentValidationSegmentListData):
     for segment in src:
         serialize_segment_validation_segment_to_bind(segment, dst.SegmentValidationSegment.add())
@@ -105,7 +158,6 @@ def serialize_segment_validation_segment_list_from_bind(src: SegmentValidationSe
         dst.append(serialize_segment_validation_segment_from_bind(segmentData))
 
     return dst
-
 def serialize_segment_validation_segment_list_to_string(src: List[SESegmentValidationSegment], fmt: eSerializationFormat):
     dst = SegmentValidationSegmentListData()
     serialize_segment_validation_segment_list_to_bind(src, dst)
@@ -124,6 +176,47 @@ def serialize_segment_validation_segment_list_from_file(filename: str):
         string = f.read()
     return serialize_segment_validation_segment_list_from_string(string, eSerializationFormat.JSON)
 
+def serialize_segment_validation_segment_table_list_to_bind(
+    src: List[SESegmentValidationSegmentTable],
+    dst: SegmentValidationSegmentTableListData
+) -> None:
+    for table in src:
+        serialize_segment_validation_segment_table_to_bind(table, dst.Table.add())
+def serialize_segment_validation_segment_table_list_from_bind(
+    src: SegmentValidationSegmentTableData,
+    dst: List[SESegmentValidationSegmentTable]
+) -> None:
+    for tableData in src.Table:
+        table = SESegmentValidationSegmentTable()
+        serialize_segment_validation_segment_table_from_bind(tableData, table)
+        dst.append(table)
+def serialize_segment_validation_segment_table_list_to_string(
+    src: List[SESegmentValidationSegmentTable],
+    fmt: eSerializationFormat
+) -> str:
+    dst = SegmentValidationSegmentTableListData()
+    serialize_segment_validation_segment_table_list_to_bind(src, dst)
+    return json_format.MessageToJson(dst, True, True)
+def serialize_segment_validation_segment_table_list_to_file(src: List[SESegmentValidationSegmentTable], filename: str) -> None:
+    string = serialize_segment_validation_segment_table_list_to_string(src, eSerializationFormat.JSON)
+    with open(filename, "w") as file:
+        file.write(string)
+def serialize_segment_validation_segment_table_list_from_string(
+    string: str,
+    dst: List[SESegmentValidationSegmentTable],
+    fmt: eSerializationFormat
+) -> None:
+    src = SegmentValidationSegmentTableListData()
+    json_format.Parse(string, src)
+    serialize_segment_validation_segment_table_list_from_bind(src, dst)
+def serialize_segment_validation_segment_table_list_from_file(
+    filename: str,
+    dst: List[SESegmentValidationSegmentTable]
+) -> None:
+    with open(filename) as f:
+        string = f.read()
+    serialize_segment_validation_segment_table_list_from_string(string, dst, eSerializationFormat.JSON)
+
 def serialize_segment_validation_pipeline_config_from_file(filename: str, dst: SESegmentValidationPipelineConfig):
     with open(filename) as f:
         string = f.read()
@@ -136,6 +229,7 @@ def serialize_segment_validation_pipeline_config_from_bind(src: SegmentValidatio
     dst.clear()
 
     serialize_plotter_list_from_bind(src.Plots, dst.get_plotters())
+    serialize_segment_validation_segment_table_list_from_bind(src.Tables, dst.get_tables())
 
 def serialize_time_series_validation_target_to_bind(
     src: SETimeSeriesValidationTarget,

@@ -233,6 +233,8 @@ def csv_plotter(csv: Path, benchmark: bool = False):
             ae = ps.get_actions_events(
                 plot_actions=config.get_plot_actions(),
                 plot_events=config.get_plot_events(),
+                allow_actions_with=config.get_allow_actions_with(),
+                allow_events_with=config.get_allow_events_with(),
                 omit_actions_with=config.get_omit_actions_with(),
                 omit_events_with=config.get_omit_events_with(),
                 count_limit=20
@@ -367,6 +369,8 @@ def compare_plotter(plotter: SEComparePlotter, benchmark: bool = False):
             ae = computed_source.get_actions_events(
                 plot_actions=config.get_plot_actions(),
                 plot_events=config.get_plot_events(),
+                allow_actions_with=config.get_allow_actions_with(),
+                allow_events_with=config.get_allow_events_with(),
                 omit_actions_with=config.get_omit_actions_with(),
                 omit_events_with=config.get_omit_events_with(),
                 count_limit=20
@@ -777,6 +781,8 @@ def create_plot(plot_sources: [SEPlotSource],
         for ae in ps.get_actions_events(
             plot_actions=plot_config.get_plot_actions(),
             plot_events=plot_config.get_plot_events(),
+            allow_actions_with=plot_config.get_allow_actions_with(),
+            allow_events_with=plot_config.get_allow_events_with(),
             omit_actions_with=plot_config.get_omit_actions_with(),
             omit_events_with=plot_config.get_omit_events_with(),
             count_limit=20

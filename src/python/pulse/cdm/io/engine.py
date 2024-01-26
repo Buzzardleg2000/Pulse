@@ -482,11 +482,29 @@ def serialize_data_request_list_to_file(src: [SEDataRequest], filename: str):
     file = open(filename, "w")
     file.write(string)
     file.close()
+def serialize_data_request_list_from_bind(src: DataRequestListData, dst: List[SEDataRequest]) -> None:
+    for dr_data in src.DataRequest:
+        dst.append(serialize_data_request_from_bind(dr_data))
+def serialize_data_request_list_from_string(
+    string: str,
+    dst: List[SEDataRequest],
+    fmt: eSerializationFormat
+) -> None:
+    src = DataRequestListData()
+    json_format.Parse(string, src)
+    serialize_data_request_list_from_bind(src, dst)
+def serialize_data_request_list_from_file(
+    filename: str,
+    dst: List[SEDataRequest]
+) -> None:
+    with open(filename) as f:
+        string = f.read()
+    serialize_data_request_list_from_string(string, dst, eSerializationFormat.JSON)
 
 def serialize_data_request_manager_from_file(filename: str, dst: SEDataRequestManager):
     with open(filename) as f:
         string = f.read()
-    return serialize_data_request_manager_from_string(string, dst, eSerializationFormat.JSON)
+    serialize_data_request_manager_from_string(string, dst, eSerializationFormat.JSON)
 def serialize_data_request_manager_to_file(src: SEDataRequestManager, filename: str):
     string = serialize_data_request_manager_to_string(src, eSerializationFormat.JSON)
     file = open(filename, "w")

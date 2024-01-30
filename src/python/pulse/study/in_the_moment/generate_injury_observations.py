@@ -17,437 +17,76 @@ from pulse.cdm.scalars import TimeUnit, FrequencyUnit, SEScalarFrequency, SEScal
 from pulse.cdm.scenario import SEScenarioExecStatus, SEScenarioReport, \
                                SEObservationReportModule, SETimestepReportModule
 from pulse.cdm.utils.logger import break_camel_case, get_severity_str
-from pulse.study.in_the_moment.tccc_unstructured_text import TCCCUnstructuredText
 from pulse.cdm.io.scenario import serialize_scenario_exec_status_list_from_file
 
 
 _pulse_logger = logging.getLogger('pulse')
 
 
-class VitalsObservationModule(SEObservationReportModule):
+class AVPU(str, Enum):
+    Alert = "Alert"
+    Voice = "Voice"
+    Pain = "Pain"
+    Unresponsive = "Unresponsive"
+
+
+class TriageTag(str, Enum):
+    Black = "Black"
+    Red = "Red"
+    Yellow = "Yellow"
+    Green = "Green"
+
+
+
+class ITMObservationModule(SEObservationReportModule):
     """
     Reports requested vitals at the observation timestep.
     """
 
-    __slots__ = ("_vitals")
-
-    def __init__(self, vitals: Optional[Dict[str, str]]):
-        """
-        :param vitals: Mapping of desired vital headers to their display name in the report.
-        """
-        super().__init__()
-        self._headers = vitals.keys() if vitals is not None else list()
-        self._vitals = vitals if vitals is not None else dict()
-
-    def update(self, data_slice: NamedTuple, slice_idx: Dict[str, int]) -> Iterable[Tuple[Hashable, Any]]:
-        """
-        Returns requested vitals.
-        """
-        vitals_out = list()
-        for vital, display_vital in self._vitals.items():
-            vitals_out.append((display_vital, data_slice[slice_idx[vital]]))
-        return vitals_out
-
-
-class SigleSupplementObservationModule(SEObservationReportModule):
-    """
-    Approximates capilary refill time (CRT), skin touch, and pulse palpability from vitals.
-    Based on https://www.jmir.org/2023//e44042/
-    """
-    SAP_mmHg = "SystolicArterialPressure(mmHg)"
-    RR_Per_min = "RespirationRate(1/min)"
-    CORE_TEMP_C = "CoreTemperature(degC)"
+    __slots__ = ("_active_events", "_active_injuries",
+                 # Pulse physiology data
+                 "_hr_bpm", "_rr_bpm", "_map_mmHg", "_sbp_mmHg", "_dbp_mmHg", "_spO2", "_ppi",
+                 "_core_temp_C", "_skin_temp_C", "_brainO2pp",
+                 # Function of pulse physiology data and/or action(s)
+                 "_airway_maneuverable", "_ambulatory", "_avpu", "_conscious",
+                 "_crt_s", "_gcs", "_healthy_capillary_refill",
+                 "_radial_pulse_present", "_skin_touch", "_skin_color"
+                 )
 
     def __init__(self):
         super().__init__()
-        self._headers = [
-            self.SAP_mmHg,
-            self.RR_Per_min,
-            self.CORE_TEMP_C
-        ]
 
-    def update(self, data_slice: NamedTuple, slice_idx: Dict[str, int]) -> Iterable[Tuple[Hashable, Any]]:
-        """
-        Estimate patient properties from vitals.
-        """
-        sbp_mmHg = data_slice[slice_idx[self.SAP_mmHg]]
-        rr_Per_min = data_slice[slice_idx[self.RR_Per_min]]
-        core_temp_C = data_slice[slice_idx[self.CORE_TEMP_C]]
+        self._headers = \
+            [
+                "HeartRate(1/min)", "RespirationRate(1/min)", "MeanArterialPressure(mmHg)",
+                "SystolicArterialPressure(mmHg)", "DiastolicArterialPressure(mmHg)", "OxygenSaturation",
+                "PeripheralPerfusionIndex", "CoreTemperature(degC)", "SkinTemperature(degC)",
+                "BrainVasculature-Oxygen-PartialPressure(mmHg)"
+            ]
+        self._hr_bpm = None
+        self._rr_bpm = None
+        self._map_mmHg = None
+        self._sbp_mmHg = None
+        self._dbp_mmHg = None
+        self._spO2 = None
+        self._ppi = None
+        self._core_temp_C = None
+        self._skin_temp_C = None
+        self._brainO2pp = None
 
-        skin_color = "normal"
-        if rr_Per_min > 0 and rr_Per_min <= 9:
-            skin_color = "cyanotic"
-        elif rr_Per_min == 0:
-            skin_color = "grey"
-
-        # TODO: Use skin temp directly?
-        skin_touch = "hot"
-        if core_temp_C >= 35 and core_temp_C < 39:
-            skin_touch = "normal"
-        elif core_temp_C >= 32 and core_temp_C < 35:
-            skin_touch = "cold/pale"
-        elif core_temp_C < 32:
-            skin_touch = "cold"
-
-        crt_s = 1
-        radial_pulse_palpability = True
-        if sbp_mmHg >= 80 and sbp_mmHg <= 100:
-            crt_s = 2
-            radial_pulse_palpability = True
-        elif sbp_mmHg >= 60 and sbp_mmHg < 80:
-            crt_s = 3
-            radial_pulse_palpability = False
-        elif sbp_mmHg < 60:
-            # This was a random value between 4-10 in the original paper
-            # Set to 7 for deterministic behavior
-            # Global seeding prevents randomness of unstructured text
-            crt_s = 7
-            radial_pulse_palpability = False
-
-        return [
-            ("SkinColor", skin_color),
-            ("SkinTouch", skin_touch),
-            ("CRT_s", crt_s),
-            ("RadialPulsePalpability", radial_pulse_palpability)
-        ]
-
-
-class GCSObservationModule(SEObservationReportModule):
-    """
-    Approximates GCS score from BrainInjury severity.
-    """
-    __slots__ = ("_gcs", "_command_responsiveness", "_conscious")
-
-    def __init__(self):
-        super().__init__()
-        self._gcs = 15
-        self._command_responsiveness = True
-        self._conscious = True
-
-    def handle_action(self, action: str, action_time: SEScalarTime) -> None:
-        """
-        Estimate GCS from BrainInjury actions received.
-        """
-        # Load into dict direct from JSON because we can't serialize actions from bind
-        action_data = json.loads(action)
-
-        PATIENT_ACTION = "PatientAction"
-        if PATIENT_ACTION in action_data:
-            action_name = list(action_data[PATIENT_ACTION].keys())[0]
-            if action_name != "BrainInjury":
-                return
-
-            action_severity = 0
-            if "Severity" in action_data[PATIENT_ACTION][action_name]:
-                action_severity = action_data[PATIENT_ACTION][action_name]["Severity"]["Scalar0To1"]["Value"]
-
-            if action_severity == 0:
-                self._gcs = 15
-                self._command_responsiveness = True
-                self._conscious = True
-            elif action_severity <= 0.1:
-                self._gcs = 14
-                self._command_responsiveness = True
-                self._conscious = True
-            elif action_severity <= 0.2:
-                self._gcs = 14
-                self._command_responsiveness = True
-                self._conscious = True
-            elif action_severity <= 0.3:
-                self._gcs = 13
-                self._command_responsiveness = True
-                self._conscious = True
-            elif action_severity <= 0.4:
-                self._gcs = 12
-                self._command_responsiveness = True
-                self._conscious = True
-            elif action_severity <= 0.5:
-                self._gcs = 10
-                self._command_responsiveness = False
-                self._conscious = True
-            elif action_severity <= 0.6:
-                self._gcs = 9
-                self._command_responsiveness = False
-                self._conscious = True
-            elif action_severity <= 0.7:
-                self._gcs = 8
-                self._command_responsiveness = False
-                self._conscious = True
-            elif action_severity <= 0.8:
-                self._gcs = 6
-                self._command_responsiveness = False
-                self._conscious = False
-            elif action_severity <= 0.9:
-                self._gcs = 4
-                self._command_responsiveness = False
-                self._conscious = False
-            else:
-                self._gcs = 3
-                self._command_responsiveness = False
-                self._conscious = False
-
-
-class WalkAbilityObservationModule(GCSObservationModule):
-    """
-    Attempts to determine if the patient would have the ability to walk based on
-    applied actions and approximated GCS.
-    """
-    __slots__ = ("_walk_ability",
-                 "_hemorrhage_type",
-                 "_airway_maneuverable")
-
-    def __init__(self):
-        super().__init__()
-        self._walk_ability = True
-        self._hemorrhage_type = None
         self._airway_maneuverable = True
+        self._ambulatory = True
+        self._avpu = AVPU.Alert
+        self._conscious = True
+        self._crt_s = 1
+        self._gcs = 15
+        self._healthy_capillary_refill = True
+        self._radial_pulse_present = True
+        self._skin_touch = None
+        self._skin_color = None
 
-    def handle_action(self, action: str, action_time: SEScalarTime) -> None:
-        super().handle_action(action=action, action_time=action_time)
-
-        # Load into dict direct from JSON because we can't serialize actions from bind
-        action_data = json.loads(action)
-
-        PATIENT_ACTION = "PatientAction"
-        action_name = None
-        action_severity = 0
-        if PATIENT_ACTION in action_data:
-            action_name = list(action_data[PATIENT_ACTION].keys())[0]
-
-            if "Severity" in action_data[PATIENT_ACTION][action_name]:
-                action_severity = action_data[PATIENT_ACTION][action_name]["Severity"]["Scalar0To1"]["Value"]
-
-        if self._gcs <= 10:
-            self._walk_ability = False
-
-        if action_name == "Hemorrhage":
-            if action_severity <= 0.29:
-                self._hemorrhage_type = "mild"
-            elif action_severity <= 0.59:
-                self._hemorrhage_type = "moderate"
-            else:
-                self._hemorrhage_type = "severe"
-            if action_severity >= 0.49:
-                self._walk_ability = False
-
-        if action_name == "AirwayObstruction":
-            if action_severity >= 0.59:
-                self._walk_ability = False
-                if action_severity >= 0.89:
-                    self._airway_maneuverable = False
-
-        if action_name == "TensionPneumothorax":
-            if action_severity > 0.59:
-                self._walk_ability = False
-
-
-class STARTObservationModule(WalkAbilityObservationModule):
-    """
-    Computes tag color indicated by the START algorithm at the observation timestep.
-    """
-    HR_bpm = "HeartRate(1/min)"
-    RR_bpm = "RespirationRate(1/min)"
-    PPI = "PeripheralPerfusionIndex"
-    SBP_mmHg = "SystolicArterialPressure(mmHg)"
-    SPO2 = "OxygenSaturation"
-    TV_mL = "TidalVolume(mL)"
-    #BRAIN_VASC_O2PP_mmHg = "BrainVasculature-Oxygen-PartialPressure(mmHg)"
-
-    def __init__(self):
-        super().__init__()
-        self._headers = [
-            self.HR_bpm,
-            self.RR_bpm,
-            self.PPI,
-            self.SBP_mmHg,
-            self.SPO2,
-            self.TV_mL
-        ]
-
-    def update(self, data_slice: NamedTuple, slice_idx: Dict[str, int]) -> Iterable[Tuple[Hashable, Any]]:
-        """
-        Computes START Triage category.
-        """
-        triage_category = Enum(
-            "TriageCategory",
-            names={
-                "EXPECTANT": "Black",
-                "IMMEDIATE": "Red",
-                "DELAYED": "Yellow",
-                "MINOR": "Green"},
-            type=str
-        )
-        results = [("GCS", self._gcs)]
-
-
-        if self._walk_ability:
-            results.append(("START", triage_category.MINOR))
-            results.append(("Description", "Patient is able to walk to the designated safety area."))
-            return results
-
-        rr = data_slice[slice_idx[self.RR_bpm]]
-        hr = data_slice[slice_idx[self.HR_bpm]]
-        sbp = data_slice[slice_idx[self.SBP_mmHg]]
-        # spO2 = data_slice[slice_idx[self.SPO2]]
-        # tv = data_slice[slice_idx[self.TV_mL]]
-
-        description = ""
-        triage_status = None
-
-        if sbp < 85.1:
-            self._conscious = False;
-        if self._conscious:
-            description = "The patient is conscious. "
-        else:
-            description = "The patient is unconscious. "
-
-        if rr < 12:
-            if rr <= 3:
-                if self._airway_maneuverable:
-                    description += "Patient was not breathing. "
-                    description += "By repositioning the airway, the patient is now breathing again. "
-                    triage_status = triage_category.IMMEDIATE if triage_status is None else triage_status
-                else:
-                    description += "Patient is not breathing. Repositioning the airway did not help. "
-                    triage_status = triage_category.EXPECTANT if triage_status is None else triage_status
-            else:
-                description += "Patient in breathing slowly. "
-        elif rr >= 30:
-            description += "Patient is breathing too fast, respiration rate looks greater than 30. "
-            triage_status = triage_category.IMMEDIATE if triage_status is None else triage_status
-        elif 18 >= rr >= 12:
-            description += "Patient is breathing normally. "
-        else:
-            description += "Patient is breathing fast, respiration rate looks be less than 30. "
-
-        if self._hemorrhage_type is not None:
-            description += f"Patient has a {self._hemorrhage_type} hemorrhage. "
-            description += "You have used a tourniquet to stop the bleeding. "
-
-        if sbp < 85.1:
-            triage_status = triage_category.IMMEDIATE if triage_status is None else triage_status
-            description += "No radial pulse can be detected on the patient. "
-        else:
-            if hr > 100:
-                description += "Patient pulse is abnormally high. "
-            elif hr < 60:
-                description += "Patient pulse is abnormally slow. "
-            else:
-                description += "Patient pulse is within the normal range. "
-
-
-        # PPI is serving as a replacement for capillary refill time (CRT)
-        if data_slice[slice_idx[self.PPI]] < 0.003:
-            triage_status = triage_category.IMMEDIATE if triage_status is None else triage_status
-            description += "Capillary refill time is more than 3 seconds. "
-
-
-        if self._conscious and self._command_responsiveness:
-            triage_status = triage_category.DELAYED if triage_status is None else triage_status
-            description += "The patient is able to follow basic commands."
-        else:
-            triage_status = triage_category.IMMEDIATE if triage_status is None else triage_status
-            description += "The patient is not able to follow basic commands."
-
-        results.append(("Description", description))
-        results.append(("START", triage_status))
-        return results
-
-
-class BCDTriageSieveObservationModule(WalkAbilityObservationModule):
-    """
-    Computes tag color indicated by the BCD Triage Sieve at the observation timestep.
-    See https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8257989/ supplement
-    """
-    __slots__ = ("_catastrophic_hemorrhage")
-
-    RR_Per_min = "RespirationRate(1/min)"
-    HR_Per_min = "HeartRate(1/min)"
-
-    def __init__(self):
-        super().__init__()
-        self._headers = [
-            self.RR_Per_min,
-            self.HR_Per_min
-        ]
-        self._catastrophic_hemorrhage = False
-
-    def handle_action(self, action: str, action_time: SEScalarTime) -> None:
-        super().handle_action(action=action, action_time=action_time)
-
-        # Load into dict direct from JSON because we can't serialize actions from bind
-        action_data = json.loads(action)
-
-        PATIENT_ACTION = "PatientAction"
-        action_name = None
-        action_severity = 0
-        if PATIENT_ACTION in action_data:
-            action_name = list(action_data[PATIENT_ACTION].keys())[0]
-            if action_name != "Hemorrhage":
-                return
-
-            if "Severity" in action_data[PATIENT_ACTION][action_name]:
-                action_severity = action_data[PATIENT_ACTION][action_name]["Severity"]["Scalar0To1"]["Value"]
-
-            # TODO: Is this the right severity? Consider blood loss/flow rate?
-            if action_severity > 0.5:
-                # Only include if visible upon examination
-                # External is default value so it may not be in the json
-                if (
-                    "Type" not in action_data[PATIENT_ACTION][action_name] or \
-                    action_data[PATIENT_ACTION][action_name]["Type"] == "External"
-                ):
-                    self._catastrophic_hemorrhage = True
-
-    def update(self, data_slice: NamedTuple, slice_idx: Dict[str, int]) -> Iterable[Tuple[Hashable, Any]]:
-        """
-        Computes BCD Sieve Triage category.
-        """
-        triage_category = Enum(
-            "TriageCategory",
-            names={
-                "DEAD": "Black",
-                "T1": "Red",
-                "T2": "Yellow",
-                "T3": "Green"},
-            type=str
-        )
-
-        triage_status = None
-        if self._catastrophic_hemorrhage:  #TODO: What determines a catastrophic hemorrhage?
-            triage_status = triage_category.T1
-        elif self._walk_ability:
-            triage_status = triage_category.T3
-        elif data_slice[slice_idx[self.RR_Per_min]] == 0:  # Breathing?
-            triage_status = triage_category.DEAD
-        elif self._gcs <= 8:  # Responds to voice?
-            triage_status = triage_category.T1
-        elif (  # Abnormal breathing rate
-            data_slice[slice_idx[self.RR_Per_min]] < 12 or \
-            data_slice[slice_idx[self.RR_Per_min]] > 23
-        ):
-            triage_status = triage_category.T1
-        elif data_slice[slice_idx[self.HR_Per_min]] > 100:
-            triage_status = triage_category.T1
-        else:
-            triage_status = triage_category.T2
-
-        return [
-            ("GCS", self._gcs),
-            ("walk_ability", self._walk_ability),
-            ("BCD", triage_status)
-        ]
-
-
-class ClinicalAbnormalityObservationModule(SEObservationReportModule):
-    """
-    Reports active clinical abnormalities at the observation timestep.
-    """
-    __slots__ = ("_active_events")
-
-    def __init__(self):
-        super().__init__()
         self._active_events = list()
+        self._active_injuries = dict()
 
     def handle_event(self, change: SEEventChange) -> None:
         """
@@ -461,96 +100,449 @@ class ClinicalAbnormalityObservationModule(SEObservationReportModule):
             else:
                 _pulse_logger.warning(f"Could not find corresponding active abnormality: {change.event.name}")
 
-    def update(self, data_slice: NamedTuple, slice_idx: Dict[str, int]) -> Iterable[Tuple[Hashable, Any]]:
-        """
-        Return list of active events.
-        """
-        return [("Abnormality", self._active_events[:])]  # Need to return a copy of list so it doesn't keep updating
-
-
-
-class TCCCActionsObservationModule(SEObservationReportModule):
-    """
-    Reports insults and interventions applied from the beginning of the
-    scenario until this observation timestep.
-    """
-
-    __slots__ = ("_insults", "_interventions", "_max_hemorrhage")
-
-    def __init__(self):
-        super().__init__()
-        self._insults = list()
-        self._interventions = list()
-        self._max_hemorrhage = -1
-
-
     def handle_action(self, action: str, action_time: SEScalarTime) -> None:
-        """
-        Determine if action is insult or intervention.
-        """
+        super().handle_action(action=action, action_time=action_time)
+
         # Load into dict direct from JSON because we can't serialize actions from bind
         action_data = json.loads(action)
 
-        # TCCC handles a restricted set of actions:
-        # Hemorrhage, AirwayObstruction, TensionPneumothorax, NeedleDecompression, ChestOcclusiveDressing
-        # Certain actions with 0 severity are being treated as interventions (such as hemorrhage -> tourniquet)
-        PATIENT_ACTION = "PatientAction"
-        if PATIENT_ACTION in action_data:
-            action_name = list(action_data[PATIENT_ACTION].keys())[0]
-
-            severity_str = ""
-            severity = 0
-            insult = False
-            if "Severity" in action_data[PATIENT_ACTION][action_name]:
-                insult = True
-                severity = action_data[PATIENT_ACTION][action_name]["Severity"]["Scalar0To1"]["Value"]
-
-                # Add side and type to pneumothorax actions
-                if action_name.endswith("Pneumothorax"):
-                    action_name = f'{action_data[PATIENT_ACTION][action_name]["Side"]}' \
-                                    f'{action_data[PATIENT_ACTION][action_name]["Type"]}' \
-                                    f'{action_name}'
-
-                if severity == 0:  # Severity 0 indicates intervention
-                    insult = False
-                    if action_name == "Hemorrhage":
-                        action_name = "Tourniquet"
-                    elif action_name == "AirwayObstruction":
-                        action_name = "SecuredAirway"
-                    elif action_name.endswith("Pneumothorax"):
-                        action_name = f"{action_name}WasCorrected"
-                    else:
-                        _pulse_logger.warning(f"Ignoring zero-severity action: {action_data}")
-                        return
-                else:  # Insult
-                    severity_str = get_severity_str(severity)
-
-            action_out = f"{severity_str} {break_camel_case(action_name)}".strip()
-
-            if "Hemorrhage" in action_name:  # Only adding max severity hemorrhage
-                if severity > self._max_hemorrhage:
-                    self._max_hemorrhage = severity
-            elif insult:
-                self._insults.append(action_out)
-            else:
-                self._interventions.append(action_out)
+        action_type = "PatientAction"
+        if action_type in action_data:
+            action_name = list(action_data[action_type].keys())[0]
         else:
-            raise ValueError(f"Unsupported action: {action_data}")
+            return  # We are only working with patient actions
 
+        severity = 0
+        if "Severity" in action_data[action_type][action_name]:
+            insult = True
+            severity = action_data[action_type][action_name]["Severity"]["Scalar0To1"]["Value"]
+
+        # Action specific logic
+
+        if action_name == "BrainInjury":
+            if severity == 0:
+                self._gcs = 15
+                self._conscious = True
+                self._avpu = AVPU.Alert
+            elif severity <= 0.1:
+                self._gcs = 14
+                self._conscious = True
+                self._avpu = AVPU.Alert
+            elif severity <= 0.2:
+                self._gcs = 14
+                self._conscious = True
+                self._avpu = AVPU.Alert
+            elif severity <= 0.3:
+                self._gcs = 13
+                self._conscious = True
+                self._avpu = AVPU.Alert
+            elif severity <= 0.4:
+                self._gcs = 12
+                self._conscious = True
+                self._avpu = AVPU.Voice
+            elif severity <= 0.5:
+                self._gcs = 10
+                self._conscious = True
+                self._avpu = AVPU.Voice
+            elif severity <= 0.6:
+                self._gcs = 9
+                self._conscious = True
+                self._avpu = AVPU.Voice
+            elif severity <= 0.7:
+                self._gcs = 8
+                self._conscious = False
+                self._avpu = AVPU.Pain
+            elif severity <= 0.8:
+                self._gcs = 6
+                self._conscious = False
+                self._avpu = AVPU.Pain
+            elif severity <= 0.9:
+                self._gcs = 4
+                self._conscious = False
+                self._avpu = AVPU.Unresponsive
+            else:
+                self._gcs = 3
+                self._conscious = False
+                self._avpu = AVPU.Unresponsive
+            self._active_injuries[break_camel_case(action_name).strip()] = severity
+
+        elif action_name == "Hemorrhage":
+            action_description = f'{action_data[action_type][action_name]["Compartment"]}' \
+                                 f'{action_data[action_type][action_name]["Type"]}' \
+                                 f'{action_name}'
+            self._active_injuries[break_camel_case(action_description).strip()] = severity
+
+        elif action_name == "AirwayObstruction":
+            if severity >= 0.89:
+                self._airway_maneuverable = False
+            self._active_injuries[break_camel_case(action_name).strip()] = severity
+
+        if action_name == "TensionPneumothorax":
+            action_description = f'{action_data[action_type][action_name]["Side"]}' \
+                                 f'{action_data[action_type][action_name]["Type"]}' \
+                                 f'{action_name}'
+            self._active_injuries[break_camel_case(action_description).strip()] = severity
+
+        # Test for ambulatory conditions
+        if self._gcs <= 10:
+            self._ambulatory = False
+        if severity > 0.59:
+            self._ambulatory = False
 
     def update(self, data_slice: NamedTuple, slice_idx: Dict[str, int]) -> Iterable[Tuple[Hashable, Any]]:
-        """
-        Return insults and interventions that have occured up to this point.
-        """
-        # Add max severity hemorrhage, if one exists (want only one hemorrhage in results)
-        insults = self._insults[:]
-        if self._max_hemorrhage > 0:
-            insults.append(f"{get_severity_str( self._max_hemorrhage)} Hemorrhage")
+        observations = list()
 
-        return [
-            ("Insults", insults),
-            ("Interventions", self._interventions[:])  # Need to return a copy of list so it doesn't keep updating
-        ]
+        pulse_data = dict()
+        # Pulse data we are interested in
+        self._hr_bpm = data_slice[slice_idx[self._headers[0]]]
+        self._rr_bpm = data_slice[slice_idx[self._headers[1]]]
+        self._map_mmHg = data_slice[slice_idx[self._headers[2]]]
+        self._sbp_mmHg = data_slice[slice_idx[self._headers[3]]]
+        self._dbp_mmHg = data_slice[slice_idx[self._headers[4]]]
+        self._spO2 = data_slice[slice_idx[self._headers[5]]]
+        self._ppi = data_slice[slice_idx[self._headers[6]]]
+        self._core_temp_C = data_slice[slice_idx[self._headers[7]]]
+        self._skin_temp_C = data_slice[slice_idx[self._headers[8]]]
+        self._brainO2pp = data_slice[slice_idx[self._headers[9]]]
+        pulse_data["HR_bpm"] = self._hr_bpm
+        pulse_data["RR_bpm"] = self._rr_bpm
+        pulse_data["MAP_mmmHg"] = self._map_mmHg
+        pulse_data["SBP_mmHg"] = self._sbp_mmHg
+        pulse_data["DBP_mmHg"] = self._dbp_mmHg
+        pulse_data["SpO2"] = self._spO2
+        pulse_data["PPI"] = self._ppi
+        pulse_data["CoreTemp_C"] = self._core_temp_C
+        pulse_data["SkinTemp_C"] = self._skin_temp_C
+        pulse_data["BO2PP_mmHg"] = self._brainO2pp
+        pulse_data["Events"] = self._active_events[:]  # Return a copy of list
+        actions = list()
+        for key, value in self._active_injuries.items():
+            actions.append(f"{key} {value}")
+        pulse_data["Actions"] = actions
+        observations.append(("Pulse", pulse_data))
+
+        # Via Kyle
+        if self._brainO2pp < 29:
+            self._ambulatory = False
+            self._avpu = AVPU.Unresponsive
+            self._conscious = False
+
+        triage_data = dict()
+        # Calculate Triage Data Using Sigle (https://pubmed.ncbi.nlm.nih.gov/37318826/)
+        self._skin_color = "normal"
+        if 0 < self._rr_bpm <= 9:
+            self._skin_color = "cyanotic"
+        elif self._rr_bpm == 0:
+            self._skin_color = "grey"
+
+        # TODO: Use skin temp directly?
+        self._skin_touch = "hot"
+        if 35 <= self._core_temp_C < 39:
+            self._skin_touch = "normal"
+        elif 32 <= self._core_temp_C < 35:
+            self._skin_touch = "cold/pale"
+        elif self._core_temp_C < 32:
+            self._skin_touch = "cold"
+
+        self._crt_s = 1
+        if 80 < self._sbp_mmHg <= 100:
+            self._crt_s = 2
+            self._radial_pulse_present = True
+            self._healthy_capillary_refill = True
+        elif 60 <= self._sbp_mmHg <= 80:
+            self._crt_s = 3
+            self._radial_pulse_present = False
+            self._healthy_capillary_refill = False
+        elif self._sbp_mmHg < 60:
+            # This was a random value between 4-10 in the original paper
+            # Set to 7 for deterministic behavior
+            # Global seeding prevents randomness of unstructured text
+            self._crt_s = 7
+            self._radial_pulse_present = False
+            self._healthy_capillary_refill = False
+        # End Sigle
+
+        """
+        We could also use Naylor (https://academic.oup.com/milmed/article/185/11-12/e1903/5880630)
+        if self._sbp_mmHg < 85.1:
+            self._radial_pulse_present = False
+        if self._ppi < 0.003:
+            self._healthy_capillary_refill = False
+        """
+
+        triage_data["Ambulatory"] = self._ambulatory
+        triage_data["AVPU"] = self._avpu
+        triage_data["Conscious"] = self._conscious
+        triage_data["GCS"] = self._gcs
+        triage_data["CRT_s"] = self._crt_s
+        triage_data["SkinColor"] = self._skin_color
+        triage_data["SkinTouch"] = self._skin_touch
+        triage_data["RadialPulsePresent"] = self._radial_pulse_present
+        triage_data["HealthyCapillaryRefillTime"] = self._healthy_capillary_refill
+        triage_data["START"] = self._start_triage()
+        triage_data["BCD"] = self._bcd_triage()
+        observations.append(("Triage", triage_data))
+
+        observations.append(("Vitals", self._itm_vital_level_elements()))
+        observations.append(("Injuries", self._itm_injury_level_elements()))
+
+        return observations
+
+    def _max_severity(self):
+        max_severity = 0
+        for action, severity in self._active_injuries.items():
+            if severity > max_severity:
+                max_severity = severity
+        return max_severity
+
+    def _max_hemorrhage(self):
+        max_severity = 0
+        for action, severity in self._active_injuries.items():
+            if "Hemorrhage" in action and severity > max_severity:
+                max_severity = severity
+        return max_severity
+
+    def _bcd_triage(self) -> dict:
+        """
+        Computes BCD Sieve Triage category.
+        """
+
+        triage_status = None
+        if self._max_hemorrhage() >= 0.6:  # TODO: What determines a catastrophic hemorrhage?
+            triage_status = TriageTag.Red
+        elif self._ambulatory:
+            triage_status = TriageTag.Green
+        elif self._rr_bpm == 0:  # Breathing?
+            triage_status = TriageTag.Black
+        elif self._gcs <= 8:  # Responds to voice?
+            triage_status = TriageTag.Red
+        elif (  # Abnormal breathing rate
+            self._rr_bpm < 12 or
+            self._rr_bpm > 23
+        ):
+            triage_status = TriageTag.Red
+        elif self._hr_bpm > 100:
+            triage_status = TriageTag.Red
+        else:
+            triage_status = TriageTag.Yellow
+
+        return {"Tag": triage_status}
+
+    def _start_triage(self) -> Iterable[Tuple[Hashable, Any]]:
+        """
+        Computes START Triage category.
+        """
+        observations = dict()
+
+        if self._ambulatory:
+            observations["Tag"] = TriageTag.Green
+            observations["Description"] = "Patient is able to walk to the designated safety area."
+            return observations
+
+        description = ""
+        triage_status = None
+
+        if self._conscious:
+            description = "The patient is conscious. "
+        else:
+            description = "The patient is unconscious. "
+
+        if self._rr_bpm < 12:
+            if self._rr_bpm <= 3:
+                if self._airway_maneuverable:
+                    description += "Patient was not breathing. "
+                    description += "By repositioning the airway, the patient is now breathing again. "
+                    triage_status = TriageTag.Red if triage_status is None else triage_status
+                else:
+                    observations["Tag"] = TriageTag.Black
+                    observations["Description"] = \
+                        "Patient is not breathing. Repositioning the airway did not help."
+                    return observations
+            else:
+                description += "Patient in breathing slowly. "
+        elif self._rr_bpm >= 30:
+            description += "Patient is breathing too fast, respiration rate looks greater than 30. "
+            triage_status = TriageTag.Red if triage_status is None else triage_status
+        elif 18 >= self._rr_bpm >= 12:
+            description += "Patient is breathing normally. "
+        else:
+            description += "Patient is breathing fast, respiration rate looks be less than 30. "
+
+        # TODO how to handle this...
+        # if self._hemorrhage_type is not None:
+        #    description += f"Patient has a {self._hemorrhage_type} hemorrhage. "
+        #    description += "You have used a tourniquet to stop the bleeding. "
+
+        if self._sbp_mmHg < 85.1:
+            triage_status = TriageTag.Red if triage_status is None else triage_status
+            description += "No radial pulse can be detected on the patient. "
+        else:
+            if self._hr_bpm > 100:
+                description += "Patient pulse is abnormally high. "
+            elif self._hr_bpm < 60:
+                description += "Patient pulse is abnormally slow. "
+            else:
+                description += "Patient pulse is within the normal range. "
+
+        # PPI is serving as a replacement for capillary refill time (CRT)
+        if self._ppi < 0.003:
+            triage_status = TriageTag.Red if triage_status is None else triage_status
+            description += "Capillary refill time is more than 3 seconds. "
+
+        if self._conscious and (self._avpu == AVPU.Alert or self._avpu == AVPU.Voice):
+            triage_status = TriageTag.Yellow if triage_status is None else triage_status
+            description += "The patient is able to follow basic commands."
+        else:
+            triage_status = TriageTag.Red if triage_status is None else triage_status
+            description += "The patient is not able to follow basic commands."
+
+        observations["Tag"] = triage_status
+        observations["Description"] = description
+        return observations
+
+    def _salt_triage(self) -> dict:
+        pass
+
+    def _pulse_triage(self) -> dict:
+        pass
+
+    def _itm_vital_level_elements(self) -> dict:
+        elements = dict()
+        elements["conscious"] = self._conscious
+        elements["avpu"] = self._avpu
+        elements["ambulatory"] = self._ambulatory
+
+        max_injury_severity = 0
+        if (not self._conscious) or (self._avpu == AVPU.Pain) or (self._avpu == AVPU.Unresponsive):
+            elements["mental_status"] = "UNRESPONSIVE"
+        elif max_injury_severity < 0.2:
+            elements["mental_status"] = "CALM"
+        elif 0.2 >= max_injury_severity < 0.4:
+            elements["mental_status"] = "UPSET"
+        elif 0.4 >= max_injury_severity < 0.6:
+            elements["mental_status"] = "CONFUSED"
+        elif 0.6 >= max_injury_severity < 0.8:
+            elements["mental_status"] = "AGONY"
+        else:
+            elements["mental_status"] = "SHOCK"
+
+        if self._rr_bpm == 0:
+            elements["breathing"] = "NONE"
+        elif self._rr_bpm < 12:
+            elements["breathing"] = "RESTRICTED"
+        elif 12 >= self._hr_bpm <= 20:
+            elements["breathing"] = "NORMAL"
+        elif self._hr_bpm > 20:
+            elements["breathing"] = "FAST"
+
+        if not self._radial_pulse_present:
+            elements["heart_rate"] = "NONE"
+        elif self._hr_bpm < 60:
+            elements["heart_rate"] = "RESTRICTED"
+        elif 60 >= self._hr_bpm <= 100:
+            elements["heart_rate"] = "NORMAL"
+        elif self._hr_bpm > 100:
+            elements["heart_rate"] = "FAST"
+
+        elements["Spo2"] = int(self._spO2*100)
+        return elements
+
+    def _itm_injury_level_elements(self) -> list:
+        injuries = list()
+        for action, severity in self._active_injuries.items():
+            injury = dict()
+            if "Airway" in action:
+                # TODO maybe Shrapnel or Laceration
+                # TODO Suggest support for Penetrating
+
+                if severity <= 0.2:
+                    injury["name"] = "Shrapnel"
+                    injury["location"] = "face"
+                    injury["severity"] = "minor"
+                    injury["status"] = "visible"
+                elif severity <= 0.4:
+                    injury["name"] = "Shrapnel"
+                    injury["location"] = "face"
+                    injury["severity"] = "moderate"
+                    injury["status"] = "visible"
+                elif severity <= 0.6:
+                    injury["name"] = "Shrapnel"
+                    injury["location"] = "neck"
+                    injury["severity"] = "substantial"
+                    injury["status"] = "visible"
+                elif severity <= 0.8:
+                    injury["name"] = "Shrapnel"
+                    injury["location"] = "neck"
+                    injury["severity"] = "major"
+                    injury["status"] = "visible"
+                else:
+                    injury["name"] = "Shrapnel"
+                    injury["location"] = "neck"
+                    injury["severity"] = "extreme"
+                    injury["status"] = "visible"
+
+            elif "Hemorrhage" in action:
+                # TODO Add more location information
+                if "Left Leg" in action:
+                    injury["location"] = "left thigh"
+                elif "Right Leg" in action:
+                    injury["location"] = "right thigh"
+                elif "Right Arm" in action:
+                    injury["location"] = "right bicep"
+                elif "Right Arm" in action:
+                    injury["location"] = "right bicep"
+
+                if severity <= 0.2:
+                    injury["name"] = "Laceration"
+                    injury["severity"] = "minor"
+                    injury["status"] = "discoverable"
+                elif severity <= 0.4:
+                    injury["name"] = "Laceration"
+                    injury["severity"] = "moderate"
+                    injury["status"] = "visible"
+                elif severity <= 0.6:
+                    injury["name"] = "Laceration"
+                    injury["severity"] = "substantial"
+                    injury["status"] = "visible"
+                elif severity <= 0.8:
+                    injury["name"] = "Laceration"
+                    injury["severity"] = "major"
+                    injury["status"] = "visible"
+                else:
+                    injury["name"] = "Laceration"
+                    injury["severity"] = "extreme"
+                    injury["status"] = "visible"
+
+            elif "Pneumothorax" in action:
+                if "Left" in action:
+                    injury["location"] = "left chest"
+                else:
+                    injury["location"] = "right chest"
+
+                if severity <= 0.2:
+                    injury["name"] = "Chest Collapse"
+                    injury["severity"] = "minor"
+                    injury["status"] = "hidden"
+                elif severity <= 0.4:
+                    injury["name"] = "Chest Collapse"
+                    injury["severity"] = "moderate"
+                    injury["status"] = "discoverable"
+                elif severity <= 0.6:
+                    injury["name"] = "Chest Collapse"
+                    injury["severity"] = "substantial"
+                    injury["status"] = "visible"
+                elif severity <= 0.8:
+                    injury["name"] = "Chest Collapse"
+                    injury["severity"] = "major"
+                    injury["status"] = "visible"
+                else:
+                    injury["name"] = "Chest Collapse"
+                    injury["severity"] = "extreme"
+                    injury["status"] = "visible"
+
+            injuries.append(injury)
+        return injuries
+
 
 
 class TCCCDeathCheckModule(SETimestepReportModule):
@@ -701,28 +693,10 @@ class ITMScenarioReport(SEScenarioReport):
             actions_filter.append(serialize)
 
         # Desired vitals and display names
-        vitals = {
-            "HeartRate(1/min)": "HR_bpm",
-            "RespirationRate(1/min)": "RR_bpm",
-            "OxygenSaturation": "SpO2",
-            "SystolicArterialPressure(mmHg)": "SBP_mmHg",
-            "DiastolicArterialPressure(mmHg)": "DBP_mmHg",
-            "CoreTemperature(degC)": "CoreTemp_C",
-            "SkinTemperature(degC)": "SkinTemp_C",
-            "PeripheralPerfusionIndex": "PPI",
-            "BrainVasculature-Oxygen-PartialPressure(mmHg)": "BO2PP_mmHg",
-        }
+
 
         # Report modules
-        observation_modules = [
-            VitalsObservationModule(vitals=vitals),
-            #SigleSupplementObservationModule(),
-            STARTObservationModule(),
-            #BCDTriageSieveObservationModule(),
-            ClinicalAbnormalityObservationModule(),
-            TCCCActionsObservationModule(),
-            #TCCCUnstructuredText(*unstructured_text_args, **unstructured_text_kwargs)
-        ]
+        observation_modules = [ITMObservationModule()]
         timestep_modules = None
         death_check_module = TCCCDeathCheckModule()
 
@@ -774,12 +748,6 @@ def generate_observations(injury_scenario: SEScenarioExecStatus) -> None:
         3,                                                   # observation frequency (min)
         None,                                                # actions filter
         None,                                                # events filter
-        Path("./tccc_corpus.json"),                          # unstructured text corpus file
-        Path("./tccc_elapsed_time.json"),                    # unstructured text elapsed time corpus file
-        reported_vitals=[                                    # unstructured text reported vitals
-            "RespirationRate(1/min)",
-            "HeartRate(1/min)"
-        ]
     )
     report.write(out_file)
 

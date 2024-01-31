@@ -82,6 +82,8 @@ namespace pulse
     SEThermalCircuit*           m_InternalTemperatureCircuit;
     SEThermalCircuit*           m_TemperatureCircuit;
     SEThermalCircuitCalculator* m_circuitCalculator;
+    //Substances
+    SESubstanceCompound*        m_Sweat;
   };
 END_NAMESPACE
 

@@ -53,6 +53,7 @@
 #include "cdm/properties/SEScalarTime.h"
 #include "cdm/properties/SEScalarVolumePerTimeMass.h"
 #include "cdm/properties/SERunningAverage.h"
+#include "substance/SESubstanceCompound.h"
 
 namespace pulse
 {
@@ -154,6 +155,8 @@ namespace pulse
     m_temperatureGroundToCorePath = m_InternalTemperatureCircuit->GetPath(pulse::InternalTemperaturePath::GroundToInternalCore);
     m_coreToSkinPath = m_InternalTemperatureCircuit->GetPath(pulse::InternalTemperaturePath::InternalCoreToInternalSkin);
     m_skinExtravascularToSweatingGroundPath = m_data.GetCircuits().GetActiveCardiovascularCircuit().GetPath(pulse::TissuePath::SkinSweating);
+    //Substances
+    m_Sweat = m_data.GetSubstances().GetCompound("Sweat");
   }
 
   //--------------------------------------------------------------------------------------------------
@@ -659,71 +662,16 @@ namespace pulse
     //double massLost_kg = sweatRate_kg_Per_s * m_data.GetTimeStep_s();
     //m_data.GetCurrentPatient().GetWeight().IncrementValue(-massLost_kg, MassUnit::kg);
 
-    if (m_data.GetState() > EngineState::AtInitialStableState)
+    //Remove substances that are lost through perspiration
+    double perspiredVolume_mL = sweatRate_mL_Per_s * m_data.GetTimeStep_s();
+    for (const SESubstanceConcentration* component : m_Sweat->GetComponents())
     {
-      /// jbw TODO: Replace using a compound definition of sweat, which will require conversion to concentrations
-
-      //Remove substances that are lost through perspiration.
-      //Dissolved in the water are trace amounts of minerals, lactic acid, and urea.
-      //Although the mineral content varies, some accepted concentrations are:
-      //Electrolytes
-      // - Sodium: 0.46-1.84 g/L (most abundant, higher levels with more intense exercise)
-      // - Chloride: 0.71-2.84 g/L (balances sodium concentration)
-      // - Potassium: 0.16-0.39 g/L (concentrations decreasing during prolonged exercise)
-      // - Magnesium: 0-0.036 g/L (trace amounts)
-      // - Calcium: 0-0.12 g/L (dropping significantly with increased sweat rate)
-      //Other solutes :
-      // - Lactate : 0-0.02 g/L (increases with exercise intensity and reflects muscle energy metabolism)
-      // - Urea : 0.002-0.01 g/L (waste product of protein breakdown, generally higher than in blood plasma)
-      // - Ammonia : 0.002-0.02 g/L (another waste product from protein breakdown, trace amounts rising with increased exercise intensity)
-
-      double perspiredVolume_mL = sweatRate_mL_Per_s * m_data.GetTimeStep_s();
-
-      double sodiumLost_g = 1.0 * perspiredVolume_mL / 1000.0;
-      double chlorideLost_g = 1.5 * perspiredVolume_mL / 1000.0;
-      double potassiumLost_g = 0.2 * perspiredVolume_mL / 1000.0;
-      double calciumLost_g = 0.02 * perspiredVolume_mL / 1000.0;
-      double lactateLost_g = 0.01 * perspiredVolume_mL / 1000.0;
-      double ureaLost_g = 0.003 * perspiredVolume_mL / 1000.0;
-
-      SELiquidSubstanceQuantity* sodiumQuantity = m_SkinExtracellular->GetSubstanceQuantity(m_data.GetSubstances().GetSodium());
-      SELiquidSubstanceQuantity* chlorideQuantity = m_SkinExtracellular->GetSubstanceQuantity(m_data.GetSubstances().GetChloride());
-      SELiquidSubstanceQuantity* potassiumQuantity = m_SkinExtracellular->GetSubstanceQuantity(m_data.GetSubstances().GetPotassium());
-      SELiquidSubstanceQuantity* calciumQuantity = m_SkinExtracellular->GetSubstanceQuantity(m_data.GetSubstances().GetCalcium());
-      SELiquidSubstanceQuantity* lactateQuantity = m_SkinExtracellular->GetSubstanceQuantity(m_data.GetSubstances().GetLactate());
-      SELiquidSubstanceQuantity* ureaQuantity = m_SkinExtracellular->GetSubstanceQuantity(m_data.GetSubstances().GetUrea());
-
-      if (sodiumQuantity->GetMass(MassUnit::g) >= sodiumLost_g)
-      {
-        sodiumQuantity->GetMass().IncrementValue(-sodiumLost_g, MassUnit::g);
-      }
-      if (chlorideQuantity->GetMass(MassUnit::g) >= chlorideLost_g)
-      {
-        chlorideQuantity->GetMass().IncrementValue(-chlorideLost_g, MassUnit::g);
-      }
-      if (potassiumQuantity->GetMass(MassUnit::g) >= potassiumLost_g)
-      {
-        potassiumQuantity->GetMass().IncrementValue(-potassiumLost_g, MassUnit::g);
-      }
-      if (calciumQuantity->GetMass(MassUnit::g) >= calciumLost_g)
-      {
-        calciumQuantity->GetMass().IncrementValue(-calciumLost_g, MassUnit::g);
-      }
-      if (lactateQuantity->GetMass(MassUnit::g) >= lactateLost_g)
-      {
-        lactateQuantity->GetMass().IncrementValue(-lactateLost_g, MassUnit::g);
-      }
-      if (ureaQuantity->GetMass(MassUnit::g) >= ureaLost_g)
-      {
-        ureaQuantity->GetMass().IncrementValue(-ureaLost_g, MassUnit::g);
-      }
-
-      sodiumQuantity->Balance(BalanceLiquidBy::Mass);
-      chlorideQuantity->Balance(BalanceLiquidBy::Mass);
-      potassiumQuantity->Balance(BalanceLiquidBy::Mass);
-      calciumQuantity->Balance(BalanceLiquidBy::Mass);
-      lactateQuantity->Balance(BalanceLiquidBy::Mass);
-      ureaQuantity->Balance(BalanceLiquidBy::Mass);
+      double concentration = component->GetConcentration(MassPerVolumeUnit::g_Per_L);
+      double massLost_g = concentration * perspiredVolume_mL / 1000.0;
+      SELiquidSubstanceQuantity* quantity = m_SkinExtracellular->GetSubstanceQuantity(component->GetSubstance());
+      massLost_g = MIN(quantity->GetMass(MassUnit::g), massLost_g);
+      quantity->GetMass().IncrementValue(-massLost_g, MassUnit::g);
+      quantity->Balance(BalanceLiquidBy::Mass);
     }
   }
 

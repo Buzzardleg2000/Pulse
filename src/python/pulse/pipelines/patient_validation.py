@@ -12,9 +12,11 @@ from pulse.pipelines.dataset.timeseries_dataset_reader import gen_patient_target
 from pulse.pipelines.validation.timeseries_validation import (
     validate, generate_validation_tables,
     gen_expected_str, gen_engine_val_str)
+from pulse.cdm.io.scenario import serialize_scenario_exec_status_list_from_file
 from pulse.cdm.io.validation import (
     serialize_patient_time_series_validation_to_file,
     serialize_patient_time_series_validation_list_to_file)
+
 
 _pulse_logger = logging.getLogger('pulse')
 
@@ -58,8 +60,9 @@ def timeseries_validation_pipeline(
 
 
 def bulk_timeseries_validation_pipeline(
-        filename_base_paths: List[Path],
         json_file: Path,
+        filename_base_paths: Optional[List[Path]] = None,
+        exec_status_file: Optional[Path] = None,
         table_dir: Optional[Union[Path, List[Optional[Path]]]] = None,
         serialize_per_file: bool = False
 ) -> list:
@@ -82,6 +85,27 @@ def bulk_timeseries_validation_pipeline(
     """
     all_tgts = list()
 
+    if not filename_base_paths and exec_status_file is None:
+        _pulse_logger.warning("No files to process for timeseries validation.")
+        return all_tgts
+
+    if exec_status_file is not None:
+        if filename_base_paths is None:
+            filename_base_paths = list()
+        statuses = list()
+        serialize_scenario_exec_status_list_from_file(exec_status_file, statuses)
+        for status in statuses:
+            if (
+                status.get_initialization_state() != eEngineInitializationState.Initialized or
+                status.get_scenario_execution_state() != eScenarioExecutionState.Complete
+            ):
+                _pulse_logger.warning(f"{status.get_scenario_filename()} results are incomplete. Skipping validation.")
+
+            filename_base_paths.append(Path(status.get_csv_filename()).with_suffix(""))
+
+        for category, value in SEScenarioExecStatus.summarize_exec_status_list(statuses).items():
+            _pulse_logger.info(f"{category} Runs: {value}")
+
     # If only one table dir provided, use the same table dir for every input file
     if not isinstance(table_dir, List):
         table_dirs = [table_dir] * len(filename_base_paths)
@@ -92,13 +116,13 @@ def bulk_timeseries_validation_pipeline(
         # Run the pipeline on each input file
         for filename_base, t_dir in zip(filename_base_paths, table_dirs):
             # Check if the csv file should have *Results
-            log_file = filename_base.parent / f"{filename_base.stem}.log"
-            csv_file = filename_base.parent / f"{filename_base.stem}.csv"
-            out_file = filename_base.parent / f"{filename_base.stem}.json" if serialize_per_file else None
+            log_file = filename_base.parent / f"{filename_base.name}.log"
+            csv_file = filename_base.parent / f"{filename_base.name}.csv"
+            out_file = filename_base.parent / f"{filename_base.name}.json" if serialize_per_file else None
             if not csv_file.exists():
-                csv_file = filename_base.parent / f"{filename_base.stem}Results.csv"
+                csv_file = filename_base.parent / f"{filename_base.name}Results.csv"
                 if not csv_file.exists():
-                    _pulse_logger.error(f'CSV file does not exist for {filename_base_paths}')
+                    _pulse_logger.error(f'CSV file does not exist for {filename_base}')
                     continue
             tgts = timeseries_validation_pipeline(
                 log_file=log_file,
@@ -142,6 +166,12 @@ if __name__ == "__main__":
              "E.g. path/to/file1 indicates path/to/file1.csv and path/to/file1.log should be processed."
     )
     parser.add_argument(
+        "-e", "--exec_status_file",
+        type=Path,
+        default=None,
+        help="Path to a scenario exec status file to process during this pipeline run."
+    )
+    parser.add_argument(
         "-o", "--output-file",
         type=Path,
         default=None,
@@ -171,6 +201,7 @@ if __name__ == "__main__":
 
         all_validation = bulk_timeseries_validation_pipeline(
             filename_base_paths=filename_base_paths,
+            exec_status_file=None,
             json_file=None,
             table_dir=Path("./test_results/tables"),
             serialize_per_file=False
@@ -218,16 +249,20 @@ if __name__ == "__main__":
             f.write("</html>\n");
             f.close()
     else:
-        json_file = opts.json_file
-        if len(opts.filename_base_paths) == 1 and json_file is None:
-            base_path = opts.filename_base_paths[0]
-            json_file = base_path.parent / f"{base_path.stem}ValidationTargets.json"
-        elif json_file is None:
-            _pulse_logger.error("You must provide an output file when multiple basenames are provided")
-            sys.exit(1)
+        json_file = opts.output_file
+        if json_file is None:
+            if opts.filename_base_paths and len(opts.filename_base_paths) == 1:
+                base_path = opts.filename_base_paths[0]
+                json_file = base_path.parent / f"{base_path.stem}ValidationTargets.json"
+            elif opts.exec_status_file is not None:
+                json_file = opts.exec_status_file.parent / f"{opts.exec_status_file.stem}ValidationTargets.json"
+            else:
+                _pulse_logger.error("You must provide an output file when multiple basenames are provided")
+                sys.exit(1)
 
         bulk_timeseries_validation_pipeline(
             filename_base_paths=opts.filename_base_paths,
+            exec_status_file=opts.exec_status_file,
             json_file=json_file,
             table_dir=opts.table_dir,
             serialize_per_file=opts.serialize_per_file

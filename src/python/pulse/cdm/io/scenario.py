@@ -5,7 +5,7 @@ from google.protobuf import json_format
 from typing import List
 
 from pulse.cdm.engine import eSerializationFormat
-from pulse.cdm.scenario import SEScenario, SEScenarioExec, SEScenarioExecStatus
+from pulse.cdm.scenario import SEScenario, SEScenarioExec, SEScenarioExecStatus, eScenarioExecutionState
 from pulse.cdm.bind.Scenario_pb2 import ScenarioData, ScenarioExecData, ScenarioExecStatusData, \
                                         ScenarioExecStatusListData
 from pulse.cdm.bind.Engine_pb2 import ActionListData
@@ -144,6 +144,7 @@ def serialize_scenario_exec_status_to_file(src: SEScenarioExecStatus, filename: 
 def serialize_scenario_exec_status_from_bind(src: ScenarioExecStatusData, dst: SEScenarioExecStatus) -> None:
     serialize_engine_initialization_status_from_bind(src.InitializationStatus, dst)
     dst.set_scenario_filename(src.ScenarioFilename)
+    dst.set_scenario_execution_state(eScenarioExecutionState(src.ScenarioExecutionState))
     dst.set_runtime_error(src.RuntimeError)
     dst.set_fatal_runtime_error(src.FatalRuntimeError)
     dst.set_final_simulation_time_s(src.FinalSimulationTime_s)

@@ -261,7 +261,6 @@ def serialize_time_series_validation_target_from_bind(
 ) -> None:
     dst.clear()
     serialize_validation_target_from_bind(src.ValidationTarget, dst)
-    dst.set_target_type(src.Type)
     dst.set_patient_specific_setting(src.PatientSpecific)
 
     if src.HasField("EqualToValue"):
@@ -349,7 +348,8 @@ def serialize_patient_time_series_validation_from_bind(
     serialize_patient_from_bind(src.Patient, dst.get_patient())
     tgt_map = dst.get_targets()
     for tgt_dest, tgts in src.TimeSeriesValidationTargetMap.items():
-        tgt_map[tgt_dest] = serialize_time_series_validation_target_list_from_bind(tgts)
+        tgt_map[tgt_dest] = list()
+        serialize_time_series_validation_target_list_from_bind(tgts, tgt_map[tgt_dest])
 def serialize_patient_time_series_validation_from_string(
     string: str,
     dst: SEPatientTimeSeriesValidation,

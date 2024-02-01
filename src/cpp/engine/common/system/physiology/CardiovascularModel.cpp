@@ -421,6 +421,9 @@ namespace pulse
     m_LeftHeartCompliancePath = m_CirculatoryCircuit->GetPath(pulse::CardiovascularPath::LeftHeart1ToLeftHeart3);
     m_LeftHeartToAorta = m_CirculatoryCircuit->GetPath(pulse::CardiovascularPath::LeftHeart1ToAorta2);
 
+    m_RightPulmonaryVenousReturnResistancePath = m_CirculatoryCircuit->GetPath(pulse::CardiovascularPath::RightPulmonaryVeins1ToRightIntermediatePulmonaryVeins1);
+    m_LeftPulmonaryVenousReturnResistancePath = m_CirculatoryCircuit->GetPath(pulse::CardiovascularPath::LeftPulmonaryVeins1ToLeftIntermediatePulmonaryVeins1);
+
     // Setup Default vs. Expanded Circuit Parameters
     if (m_data.GetConfiguration().UseExpandedVasculature() == eSwitch::On)
     {
@@ -3023,33 +3026,38 @@ namespace pulse
     if (!m_data.HasRespiratory())
       return;
 
-    double rightHeartResistance_mmHg_s_Per_mL = m_RightHeartResistancePath->GetNextResistance(PressureTimePerVolumeUnit::mmHg_s_Per_mL);
-
     //-----------------------------------------------------------------------------------------------------
 
-    //\\\todo Add this and test/tune
+    //Lung volume/pressure has a direct effect on cardiac output ///\cite verhoeff2017cardiopulmonary
+    //Decreased venous return occurs in disease states and with mechanical ventilation through an increased PEEP ///\cite luecke2005clinical
 
-    ////Lung volume/pressure has a direct effect on cardiac output ///\cite verhoeff2017cardiopulmonary
-    ////Decreased venous return occurs in disease states and with mechanical ventilation through an increased PEEP ///\cite luecke2005clinical
-    ////Get the current pleural cavity pressure (reletive to ambient)
-    //double baselineIntrapleuralPressure_cmH2O = -5.0; /// \cite Levitzky2013pulmonary
-    //double pleuralCavityPressureBaselineDiff_cmH2O = m_PleuralCavity->GetPressure(PressureUnit::cmH2O) - m_Ambient->GetPressure(PressureUnit::cmH2O) - baselineIntrapleuralPressure_cmH2O;
+    //Update pulmonary vascular resistance due to increased intrathoracic pressure as with positive pressure ventilation
+    //Get the current pleural cavity pressure (reletive to ambient)
+    double baselineIntrapleuralPressure_cmH2O = -5.0; /// \cite Levitzky2013pulmonary
+    double pleuralCavityPressureBaselineDiff_cmH2O = m_PleuralCavity->GetPressure(PressureUnit::cmH2O) - m_Ambient->GetPressure(PressureUnit::cmH2O) - baselineIntrapleuralPressure_cmH2O;
 
-    ////Increase resistance if it's above healthy PEEP
-    ////Healthy PEEP is always zero and pleural cavity pressure is negative during inhalation
-    //if (pleuralCavityPressureBaselineDiff_cmH2O > 0.0)
-    //{
-    //  double maxPressure_cmH2O = 5.0;
-    //  double maxResistanceMultiplier = 10.0;
-    //  pleuralCavityPressureBaselineDiff_cmH2O = MIN(pleuralCavityPressureBaselineDiff_cmH2O, maxPressure_cmH2O);
+    //Increase resistance if it's above healthy PEEP
+    //Healthy PEEP is always zero and pleural cavity pressure is negative during inhalation
+    if (pleuralCavityPressureBaselineDiff_cmH2O > 0.0)
+    {
+      double maxPressureDiff_cmH2O = 10.0;
+      double maxResistanceMultiplier = 20.0;
+      pleuralCavityPressureBaselineDiff_cmH2O = MIN(pleuralCavityPressureBaselineDiff_cmH2O, maxPressureDiff_cmH2O);
 
-    //  //Interpolate into a parabola to effect things much more at larger differences
-    //  //Interpolate into a parabola to effect things much more at larger differences
-    //  double factor = pleuralCavityPressureBaselineDiff_cmH2O / maxPressure_cmH2O;
-    //  double resistanceMultiplier = GeneralMath::ParbolicInterpolator(1.0, maxResistanceMultiplier, factor);
+      //Interpolate into a parabola to effect things much more at larger differences
+      double factor = pleuralCavityPressureBaselineDiff_cmH2O / maxPressureDiff_cmH2O;
+      double resistanceMultiplier = GeneralMath::ParbolicInterpolator(1.0, maxResistanceMultiplier, factor);
 
-    //  rightHeartResistance_mmHg_s_Per_mL *= resistanceMultiplier;
-    //}
+      //Use this resistance because it is after the shunt
+      double rightPulmonaryVenousReturnResistance_mmHg_s_Per_mL = m_RightPulmonaryVenousReturnResistancePath->GetNextResistance(PressureTimePerVolumeUnit::mmHg_s_Per_mL);
+      double leftPulmonaryVenousReturnResistance_mmHg_s_Per_mL = m_LeftPulmonaryVenousReturnResistancePath->GetNextResistance(PressureTimePerVolumeUnit::mmHg_s_Per_mL);
+
+      rightPulmonaryVenousReturnResistance_mmHg_s_Per_mL *= resistanceMultiplier;
+      leftPulmonaryVenousReturnResistance_mmHg_s_Per_mL *= resistanceMultiplier;
+
+      m_RightPulmonaryVenousReturnResistancePath->GetNextResistance().SetValue(rightPulmonaryVenousReturnResistance_mmHg_s_Per_mL, PressureTimePerVolumeUnit::mmHg_s_Per_mL);
+      m_LeftPulmonaryVenousReturnResistancePath->GetNextResistance().SetValue(leftPulmonaryVenousReturnResistance_mmHg_s_Per_mL, PressureTimePerVolumeUnit::mmHg_s_Per_mL);
+    }
 
     //-----------------------------------------------------------------------------------------------------
 
@@ -3066,9 +3074,8 @@ namespace pulse
     //double resistanceMultiplier = GeneralMath::ParbolicInterpolator(1.0, maxResistanceMultiplier, factor);
     double resistanceMultiplier = GeneralMath::LinearInterpolator(0.0, 1.0, 1.0, maxResistanceMultiplier, factor);
 
+    double rightHeartResistance_mmHg_s_Per_mL = m_RightHeartResistancePath->GetNextResistance(PressureTimePerVolumeUnit::mmHg_s_Per_mL);
     rightHeartResistance_mmHg_s_Per_mL *= resistanceMultiplier;
-
-    //-----------------------------------------------------------------------------------------------------
 
     //Dampen the change to prevent potential craziness
     //It will only change a fraction as much as it wants to each time step to ensure it's critically damped and doesn't overshoot
@@ -3077,11 +3084,6 @@ namespace pulse
     rightHeartResistance_mmHg_s_Per_mL = GeneralMath::Damper(rightHeartResistance_mmHg_s_Per_mL, previousRightHeartResistance_mmHg_s_Per_mL, dampenFraction_perSec, m_data.GetTimeStep_s());
 
     m_RightHeartResistancePath->GetNextResistance().SetValue(rightHeartResistance_mmHg_s_Per_mL, PressureTimePerVolumeUnit::mmHg_s_Per_mL);
-
-    //For tuning
-    //m_data.GetDataTrack().Probe("pleuralCavityPressureDiff_cmH2O", pleuralCavityPressureDiff_cmH2O);
-    //m_data.GetDataTrack().Probe("resistanceMultiplier", resistanceMultiplier);
-    //m_data.GetDataTrack().Probe("rightHeartResistance_mmHg_s_Per_mL", rightHeartResistance_mmHg_s_Per_mL);
   }
 
   //--------------------------------------------------------------------------------------------------

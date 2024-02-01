@@ -211,6 +211,9 @@ namespace pulse
     SEFluidCircuitPath*              m_LeftHeartToAorta;
     SEFluidCircuitPath*              m_LeftHeartCompliancePath;
 
+    SEFluidCircuitPath*              m_RightPulmonaryVenousReturnResistancePath;
+    SEFluidCircuitPath*              m_LeftPulmonaryVenousReturnResistancePath;
+
     SEFluidCircuitPath*              m_BrainResistanceUpstreamPath;
     SEFluidCircuitPath*              m_BrainResistanceDownstreamPath;
 

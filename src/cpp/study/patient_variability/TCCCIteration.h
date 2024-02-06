@@ -11,6 +11,7 @@
 #include "cdm/patient/actions/SEChestOcclusiveDressing.h"
 #include "cdm/patient/actions/SEHemorrhage.h"
 #include "cdm/patient/actions/SENeedleDecompression.h"
+#include "cdm/patient/actions/SEAcuteStress.h"
 #include "cdm/patient/actions/SESubstanceCompoundInfusion.h"
 #include "cdm/patient/actions/SEBrainInjury.h"
 #include "cdm/patient/actions/SETensionPneumothorax.h"
@@ -22,7 +23,16 @@ namespace pulse::study::patient_variability
     LeftLegLaceration = 0,
     RightArmLaceration,
     InternalLiver,
-    _LOC_COUNT
+    _COUNT
+  };
+
+  enum class eTensionPneumothoraxWound
+  {
+    LeftClosed = 0,
+    LeftOpen,
+    RightClosed,
+    RightOpen,
+    _COUNT
   };
 
   class TCCCIteration : public ActionIteration
@@ -45,11 +55,17 @@ namespace pulse::study::patient_variability
     ParameterIteration<size_t>& GetHemorrhageWound() { return m_HemorrhageWound; }
     const ParameterIteration<size_t>& GetHemorrhageWound() const { return m_HemorrhageWound; }
 
+    ParameterIteration<double>& GetStressSeverity() { return m_StressSeverity; }
+    const ParameterIteration<double>& GetStressSeverity() const { return m_StressSeverity; }
+
     ParameterIteration<double>& GetTBISeverity() { return m_TBISeverity; }
     const ParameterIteration<double>& GetTBISeverity() const { return m_TBISeverity; }
 
     ParameterIteration<double>& GetTensionPneumothoraxSeverity() { return m_TensionPneumothoraxSeverity; }
     const ParameterIteration<double>& GetTensionPneumothoraxSeverity() const { return m_TensionPneumothoraxSeverity; }
+
+    ParameterIteration<size_t>& GetTensionPneumothoraxWound() { return m_TensionPneumothoraxWound; }
+    const ParameterIteration<size_t>& GetTensionPneumothoraxWound() const { return m_TensionPneumothoraxWound; }
 
     ParameterIteration<double>& GetInsultDuration_s() { return m_InsultDuration_s; }
     const ParameterIteration<double>& GetInsultDuration_s() const { return m_InsultDuration_s; }
@@ -69,28 +85,36 @@ namespace pulse::study::patient_variability
     void GenerateCombinationActionSets(std::pair<std::string, std::string>) override;
     void GenerateScenario(double AirwayObstructionSeverity,
                           double HemorrhageSeverity,
-                          size_t HemorrhageLocation,
+                          size_t HemorrhageWound,
+                          double StressSeverity,
                           double TBISeverity,
                           double TensionPneumothoraxSeverity,
+                          size_t TensionPneumothoraxWound,
                           double InsultDuration_s,
                           const std::string& PatientName);
 
     // Stateful
-    bool                  m_PerformInterventions;
+    // Injuries
     ParameterIteration<double>    m_AirwayObstructionSeverity;
     ParameterIteration<double>    m_HemorrhageSeverity;
     ParameterIteration<size_t>    m_HemorrhageWound;
+    ParameterIteration<double>    m_StressSeverity;
     ParameterIteration<double>    m_TBISeverity;
     ParameterIteration<double>    m_TensionPneumothoraxSeverity;
+    ParameterIteration<size_t>    m_TensionPneumothoraxWound;
     ParameterIteration<double>    m_InsultDuration_s;
+    // Interventions
+    bool                          m_PerformInterventions;
     ParameterIteration<double>    m_SalineAvailable;
     ParameterIteration<double>    m_NeedleAvailable;
     ParameterIteration<double>    m_ChestWrapAvailable;
+
     // Stateless
     SEAdvanceTime         m_Adv2Insult;
     SEAirwayObstruction   m_AirwayObstruction;
     SEBrainInjury         m_BrainInjury;
     SEHemorrhage          m_Hemorrhage;
+    SEAcuteStress         m_Stress;
     SETensionPneumothorax m_TensionPneumothorax;
     SEAdvanceTime         m_Adv2Intervention;
     SEAdvanceTime         m_Adv2End;

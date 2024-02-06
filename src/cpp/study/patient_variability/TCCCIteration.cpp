@@ -74,7 +74,7 @@ namespace pulse::study::patient_variability
     if (m_HemorrhageSeverity.Empty())
       m_HemorrhageSeverity.SetValues({ 0 });
     if (m_HemorrhageWound.Empty())
-      for (size_t i = 0; i < (size_t)eHemorrhageWound::_LOC_COUNT; ++i)
+      for (size_t i = 0; i < (size_t)eHemorrhageWound::_COUNT; ++i)
         m_HemorrhageWound.GetValues().push_back(i);
     if (m_TensionPneumothoraxSeverity.Empty())
       m_TensionPneumothoraxSeverity.SetValues({ 0 });
@@ -101,7 +101,9 @@ namespace pulse::study::patient_variability
     opts.push_back(m_AirwayObstructionSeverity.GetValues().size()-1);
     opts.push_back(m_HemorrhageSeverity.GetValues().size()-1);
     opts.push_back(m_HemorrhageWound.GetValues().size()-1);
+    opts.push_back(m_StressSeverity.GetValues().size() - 1);
     opts.push_back(m_TensionPneumothoraxSeverity.GetValues().size()-1);
+    opts.push_back(m_TensionPneumothoraxWound.GetValues().size() - 1);
     opts.push_back(m_TBISeverity.GetValues().size() - 1);
     opts.push_back(m_InsultDuration_s.GetValues().size()-1);
     opts.push_back(m_SalineAvailable.GetValues().size()-1);
@@ -113,10 +115,12 @@ namespace pulse::study::patient_variability
 
     double AirwayObstructionSeverity = 0;
     double HemorrhageSeverity = 0;
+    size_t HemorrhageWound = 0;
+    double StressSeverity = 0;
     double TensionPneumothoraxSeverity = 0;
+    size_t TensionPneumothoraxWound = 0;
     double TBISeverity = 0;
     double InsultDuration_s = 0;
-    size_t HemorrhageWound = 0;
 
     SetDescription(patientFolderAndStateFilename.first);
     SetEngineStateFile(patientFolderAndStateFilename.second);
@@ -126,15 +130,18 @@ namespace pulse::study::patient_variability
       AirwayObstructionSeverity = m_AirwayObstructionSeverity.GetValues()[idxs[0]];
       HemorrhageSeverity = m_HemorrhageSeverity.GetValues()[idxs[1]];
       HemorrhageWound = m_HemorrhageWound.GetValues()[idxs[2]];
-      TensionPneumothoraxSeverity = m_TensionPneumothoraxSeverity.GetValues()[idxs[3]];
-      TBISeverity = m_TBISeverity.GetValues()[idxs[4]];
-      InsultDuration_s = m_InsultDuration_s.GetValues()[idxs[5]];
+      StressSeverity = m_StressSeverity.GetValues()[idxs[3]];
+      TensionPneumothoraxSeverity = m_TensionPneumothoraxSeverity.GetValues()[idxs[4]];
+      TensionPneumothoraxWound = m_TensionPneumothoraxWound.GetValues()[idxs[5]];
+      TBISeverity = m_TBISeverity.GetValues()[idxs[6]];
+      InsultDuration_s = m_InsultDuration_s.GetValues()[idxs[7]];
       if (AirwayObstructionSeverity > 0 ||
           HemorrhageSeverity > 0 ||
+          StressSeverity > 0 ||
           TensionPneumothoraxSeverity > 0)
       {
-        GenerateScenario(AirwayObstructionSeverity, HemorrhageSeverity, HemorrhageWound,
-          TBISeverity, TensionPneumothoraxSeverity, InsultDuration_s, patientFolderAndStateFilename.first);
+        GenerateScenario(AirwayObstructionSeverity, HemorrhageSeverity, HemorrhageWound, StressSeverity,
+          TBISeverity, TensionPneumothoraxSeverity, TensionPneumothoraxWound, InsultDuration_s, patientFolderAndStateFilename.first);
       }
       m_Actions.clear();
     }
@@ -143,8 +150,10 @@ namespace pulse::study::patient_variability
   void TCCCIteration::GenerateScenario(double AirwayObstructionSeverity,
                                        double HemorrhageSeverity,
                                        size_t HemorrhageWound,
+                                       double StressSeverity,
                                        double TBISeverity,
                                        double TensionPneumothoraxSeverity,
+                                       size_t TensionPneumothoraxWound,
                                        double InsultDuration_s,
                                        const std::string& PatientName)
   {
@@ -163,14 +172,36 @@ namespace pulse::study::patient_variability
       case eHemorrhageWound::InternalLiver:
         name += "IA_";
         break;
-      case eHemorrhageWound::_LOC_COUNT:
+      case eHemorrhageWound::_COUNT:
       default:
         name += "Undefined_";
         break;
       }
     }
+    name += "S" + pulse::cdm::to_string(StressSeverity) + "_";
     name += "TBI" + pulse::cdm::to_string(TBISeverity) + "_";
     name += "TP" +pulse::cdm::to_string(TensionPneumothoraxSeverity) + "_";
+    if (TensionPneumothoraxSeverity > 0)
+    {
+      switch ((eTensionPneumothoraxWound)TensionPneumothoraxWound) {
+      case eTensionPneumothoraxWound::LeftClosed:
+        name += "LC_";
+        break;
+      case eTensionPneumothoraxWound::LeftOpen:
+        name += "LO_";
+        break;
+      case eTensionPneumothoraxWound::RightClosed:
+        name += "RC_";
+        break;
+      case eTensionPneumothoraxWound::RightOpen:
+        name += "RO_";
+        break;
+      case eTensionPneumothoraxWound::_COUNT:
+      default:
+        name += "Undefined_";
+        break;
+      }
+    }
     name += "D"+pulse::cdm::to_string(InsultDuration_s)+"s";
     SetName(PatientName +"/"+name);
     if (m_ScenarioStates.find(m_Name) != m_ScenarioStates.end())
@@ -214,11 +245,16 @@ namespace pulse::study::patient_variability
           m_Hemorrhage.SetType(eHemorrhage_Type::Internal);
           m_Hemorrhage.SetCompartment(eHemorrhage_Compartment::Liver);
           break;
-        case eHemorrhageWound::_LOC_COUNT:
+        case eHemorrhageWound::_COUNT:
         default:
           break;
       }
       m_Actions.push_back(&m_Hemorrhage);
+    }
+    if (StressSeverity > 0)
+    {
+      m_Stress.GetSeverity().SetValue(StressSeverity);
+      m_Actions.push_back(&m_Stress);
     }
     if (TBISeverity > 0)
     {
@@ -228,6 +264,27 @@ namespace pulse::study::patient_variability
     if (TensionPneumothoraxSeverity > 0)
     {
       m_TensionPneumothorax.GetSeverity().SetValue(TensionPneumothoraxSeverity);
+      switch ((eTensionPneumothoraxWound)TensionPneumothoraxWound) {
+        case eTensionPneumothoraxWound::LeftClosed:
+          m_TensionPneumothorax.SetType(eGate::Closed);
+          m_TensionPneumothorax.SetSide(eSide::Left);
+          break;
+        case eTensionPneumothoraxWound::LeftOpen:
+          m_TensionPneumothorax.SetType(eGate::Open);
+          m_TensionPneumothorax.SetSide(eSide::Left);
+          break;
+        case eTensionPneumothoraxWound::RightClosed:
+          m_TensionPneumothorax.SetType(eGate::Closed);
+          m_TensionPneumothorax.SetSide(eSide::Right);
+          break;
+        case eTensionPneumothoraxWound::RightOpen:
+          m_TensionPneumothorax.SetType(eGate::Open);
+          m_TensionPneumothorax.SetSide(eSide::Right);
+          break;
+        case eTensionPneumothoraxWound::_COUNT:
+        default:
+          break;
+      }
       m_Actions.push_back(&m_TensionPneumothorax);
     }
 

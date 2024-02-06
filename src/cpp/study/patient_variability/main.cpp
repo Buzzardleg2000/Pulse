@@ -49,77 +49,135 @@ int main(int argc, char* argv[])
 
   if (mode == "validation" || mode == "hemorrhage" || mode == "itm")
   {
-    PatientIteration* male = new PatientIteration(logger);
-    male->SetIterationName("male");
-    male->SetScenarioExecListFilename(rootDir + "/scenarios/" + male->GetIterationName() + ".json");
-    male->SetStateDirectory(rootDir + "/states/" + male->GetIterationName());
-    male->SetResultsDirectory(rootDir + "/results/" + male->GetIterationName());
-    male->SetGenStyle(eGenStyle::Combo);
-    male->SetSex(ePatient_Sex::Male);
-    //male->GetAge_yr().SetValues({minAge_yr, maxAge_yr, stdAge_yr }, 2);
-    //male->GetHR_bpm().SetValues({minHR_bpm, maxHR_bpm, stdHR_bpm }, 2);
-    //male->GetMAP_mmHg().SetValues({ minMAP_mmHg, maxMAP_mmHg, stdMAP_mmHg }, 2);
-    //male->GetPP_mmHg().SetValues({ minPulsePressure_mmHg, maxPulsePressure_mmHg, stdPulsePressure_mmHg }, 2);
-    //male->GetRR_bpm().SetValues({ minRR_bpm, maxRR_bpm, stdRR_bpm }, 2);
-    //male->GetHeight_cm().SetValues({ minMaleHeight_cm, maxMaleHeight_cm, stdMaleHeight_cm }, 2);
-    //male->GetBMI().SetValues({ minBMI, maxBMI, stdMaleBMI }, 2);
-    //male->GetBFF().SetValues({ minMaleBFF, maxMaleBFF, stdMaleBFF }, 2);
-    iPatients.push_back(male);
-
-    PatientIteration* female = new PatientIteration(logger);
-    female->SetIterationName("female");
-    female->SetScenarioExecListFilename(rootDir + "/scenarios/" + female->GetIterationName() + ".json");
-    female->SetStateDirectory(rootDir + "/states/" + female->GetIterationName());
-    female->SetResultsDirectory(rootDir + "/results/" + female->GetIterationName());
-    female->SetGenStyle(eGenStyle::Combo);
-    female->SetSex(ePatient_Sex::Female);
-    //female->GetAge_yr().SetValues({ minAge_yr, maxAge_yr, stdAge_yr }, 2);
-    //female->GetHR_bpm().SetValues({ minHR_bpm, maxHR_bpm, stdHR_bpm }, 2);
-    //female->GetMAP_mmHg().SetValues({ minMAP_mmHg, maxMAP_mmHg, stdMAP_mmHg }, 2);
-    //female->GetPP_mmHg().SetValues({ minPulsePressure_mmHg, maxPulsePressure_mmHg, stdPulsePressure_mmHg }, 2);
-    //female->GetRR_bpm().SetValues({ minRR_bpm, maxRR_bpm, stdRR_bpm }, 2);
-    //female->GetHeight_cm().SetValues({ minFemaleHeight_cm, maxFemaleHeight_cm, stdFemaleHeight_cm }, 2);
-    //female->GetBMI().SetValues({ minBMI, maxBMI, stdFemaleBMI }, 2);
-    //female->GetBFF().SetValues({ minFemaleBFF, maxFemaleBFF, stdFemaleBFF }, 2);
-    iPatients.push_back(female);
-
     if (mode == "validation")
     {
+      PatientIteration* male = new PatientIteration(logger);
+      male->SetIterationName("male");
+      male->SetScenarioExecListFilename(rootDir + "/scenarios/" + male->GetIterationName() + ".json");
+      male->SetStateDirectory(rootDir + "/states/" + male->GetIterationName());
+      male->SetResultsDirectory(rootDir + "/results/" + male->GetIterationName());
+      male->SetGenStyle(eGenStyle::Combo);
+      male->SetSex(ePatient_Sex::Male);
+      male->GetAge_yr().SetValues({minAge_yr, maxAge_yr, stdAge_yr }, 2);
+      male->GetHR_bpm().SetValues({minHR_bpm, maxHR_bpm, stdHR_bpm }, 2);
+      male->GetMAP_mmHg().SetValues({ minMAP_mmHg, maxMAP_mmHg, stdMAP_mmHg }, 2);
+      male->GetPP_mmHg().SetValues({ minPulsePressure_mmHg, maxPulsePressure_mmHg, stdPulsePressure_mmHg }, 2);
+      male->GetRR_bpm().SetValues({ minRR_bpm, maxRR_bpm, stdRR_bpm }, 2);
+      male->GetHeight_cm().SetValues({ minMaleHeight_cm, maxMaleHeight_cm, stdMaleHeight_cm }, 2);
+      male->GetBMI().SetValues({ minBMI, maxBMI, stdMaleBMI }, 2);
+      male->GetBFF().SetValues({ minMaleBFF, maxMaleBFF, stdMaleBFF }, 2);
+      iPatients.push_back(male);
+
+      PatientIteration* female = new PatientIteration(logger);
+      female->SetIterationName("female");
+      female->SetScenarioExecListFilename(rootDir + "/scenarios/" + female->GetIterationName() + ".json");
+      female->SetStateDirectory(rootDir + "/states/" + female->GetIterationName());
+      female->SetResultsDirectory(rootDir + "/results/" + female->GetIterationName());
+      female->SetGenStyle(eGenStyle::Combo);
+      female->SetSex(ePatient_Sex::Female);
+      female->GetAge_yr().SetValues({ minAge_yr, maxAge_yr, stdAge_yr }, 2);
+      female->GetHR_bpm().SetValues({ minHR_bpm, maxHR_bpm, stdHR_bpm }, 2);
+      female->GetMAP_mmHg().SetValues({ minMAP_mmHg, maxMAP_mmHg, stdMAP_mmHg }, 2);
+      female->GetPP_mmHg().SetValues({ minPulsePressure_mmHg, maxPulsePressure_mmHg, stdPulsePressure_mmHg }, 2);
+      female->GetRR_bpm().SetValues({ minRR_bpm, maxRR_bpm, stdRR_bpm }, 2);
+      female->GetHeight_cm().SetValues({ minFemaleHeight_cm, maxFemaleHeight_cm, stdFemaleHeight_cm }, 2);
+      female->GetBMI().SetValues({ minBMI, maxBMI, stdFemaleBMI }, 2);
+      female->GetBFF().SetValues({ minFemaleBFF, maxFemaleBFF, stdFemaleBFF }, 2);
+      iPatients.push_back(female);
+
       ValidationIteration* vi = new ValidationIteration(logger);
       vi->SetMaxSimTime_min(2);
       iActions.push_back(vi);
     }
     else if (mode == "hemorrhage")
     {
+      PatientIteration* male = new PatientIteration(logger);
+      male->SetIterationName("male");
+      male->SetScenarioExecListFilename(rootDir + "/scenarios/" + male->GetIterationName() + ".json");
+      male->SetStateDirectory(rootDir + "/states/" + male->GetIterationName());
+      male->SetResultsDirectory(rootDir + "/results/" + male->GetIterationName());
+      male->SetGenStyle(eGenStyle::Combo);
+      male->SetSex(ePatient_Sex::Male);
+      //male->GetAge_yr().SetValues({minAge_yr, maxAge_yr, stdAge_yr }, 2);
+      //male->GetHR_bpm().SetValues({minHR_bpm, maxHR_bpm, stdHR_bpm }, 2);
+      //male->GetMAP_mmHg().SetValues({ minMAP_mmHg, maxMAP_mmHg, stdMAP_mmHg }, 2);
+      //male->GetPP_mmHg().SetValues({ minPulsePressure_mmHg, maxPulsePressure_mmHg, stdPulsePressure_mmHg }, 2);
+      //male->GetRR_bpm().SetValues({ minRR_bpm, maxRR_bpm, stdRR_bpm }, 2);
+      //male->GetHeight_cm().SetValues({ minMaleHeight_cm, maxMaleHeight_cm, stdMaleHeight_cm }, 2);
+      //male->GetBMI().SetValues({ minBMI, maxBMI, stdMaleBMI }, 2);
+      //male->GetBFF().SetValues({ minMaleBFF, maxMaleBFF, stdMaleBFF }, 2);
+      iPatients.push_back(male);
+
+      PatientIteration* female = new PatientIteration(logger);
+      female->SetIterationName("female");
+      female->SetScenarioExecListFilename(rootDir + "/scenarios/" + female->GetIterationName() + ".json");
+      female->SetStateDirectory(rootDir + "/states/" + female->GetIterationName());
+      female->SetResultsDirectory(rootDir + "/results/" + female->GetIterationName());
+      female->SetGenStyle(eGenStyle::Combo);
+      female->SetSex(ePatient_Sex::Female);
+      //female->GetAge_yr().SetValues({ minAge_yr, maxAge_yr, stdAge_yr }, 2);
+      //female->GetHR_bpm().SetValues({ minHR_bpm, maxHR_bpm, stdHR_bpm }, 2);
+      //female->GetMAP_mmHg().SetValues({ minMAP_mmHg, maxMAP_mmHg, stdMAP_mmHg }, 2);
+      //female->GetPP_mmHg().SetValues({ minPulsePressure_mmHg, maxPulsePressure_mmHg, stdPulsePressure_mmHg }, 2);
+      //female->GetRR_bpm().SetValues({ minRR_bpm, maxRR_bpm, stdRR_bpm }, 2);
+      //female->GetHeight_cm().SetValues({ minFemaleHeight_cm, maxFemaleHeight_cm, stdFemaleHeight_cm }, 2);
+      //female->GetBMI().SetValues({ minBMI, maxBMI, stdFemaleBMI }, 2);
+      //female->GetBFF().SetValues({ minFemaleBFF, maxFemaleBFF, stdFemaleBFF }, 2);
+      iPatients.push_back(female);
+
       TCCCIteration* tccc = new TCCCIteration(logger);
       tccc->SetBaselineDuration_s(15);
       tccc->SetMaxSimTime_min(60);
       tccc->PerformInterventions(false);
-      tccc->GetHemorrhageSeverity().SetValues(ParameterIteration<double>::SetMinMaxStep(0.0, 0.9, 0.1));
+      tccc->GetHemorrhageSeverity().SetMinMaxStep(0.0, 0.9, 0.1);
       std::vector<size_t> hemorrhageWounds;
-      for (size_t i = 0; i < (size_t)eHemorrhageWound::_LOC_COUNT; ++i)
+      for (size_t i = 0; i < (size_t)eHemorrhageWound::_COUNT; ++i)
         hemorrhageWounds.push_back(i);
       iActions.push_back(tccc);
     }
     else if (mode == "itm")
     {
+      PatientIteration* male = new PatientIteration(logger);
+      male->SetIterationName("male");
+      male->SetScenarioExecListFilename(rootDir + "/scenarios/" + male->GetIterationName() + ".json");
+      male->SetStateDirectory(rootDir + "/states/" + male->GetIterationName());
+      male->SetResultsDirectory(rootDir + "/results/" + male->GetIterationName());
+      male->SetGenStyle(eGenStyle::Combo);
+      male->SetSex(ePatient_Sex::Male);
+      iPatients.push_back(male);
+
+      PatientIteration* female = new PatientIteration(logger);
+      female->SetIterationName("female");
+      female->SetScenarioExecListFilename(rootDir + "/scenarios/" + female->GetIterationName() + ".json");
+      female->SetStateDirectory(rootDir + "/states/" + female->GetIterationName());
+      female->SetResultsDirectory(rootDir + "/results/" + female->GetIterationName());
+      female->SetGenStyle(eGenStyle::Combo);
+      female->SetSex(ePatient_Sex::Female);
+      iPatients.push_back(female);
+
       TCCCIteration* tccc = new TCCCIteration(logger);
       tccc->SetIterationName("tccc");
       tccc->SetBaselineDuration_s(15);
       tccc->SetMaxSimTime_min(60);
-      tccc->PerformInterventions(true);
-      tccc->GetAirwayObstructionSeverity().SetValues(ParameterIteration<double>::SetMinMaxStep(0., 0.9, 0.3));
-      tccc->GetHemorrhageSeverity().SetValues(ParameterIteration<double>::SetMinMaxStep(0., 0.9, 0.3));
+      tccc->PerformInterventions(false);
+      tccc->GetAirwayObstructionSeverity().SetMinMaxStep(0., 0.9, 0.3);
+      tccc->GetHemorrhageSeverity().SetMinMaxStep(0., 0.9, 0.3);
       std::vector<size_t> hemorrhageWounds;
-      //for(size_t i = 0; i < (size_t)eHemorrhageWound::_LOC_COUNT; ++i)
+      //for(size_t i = 0; i < (size_t)eHemorrhageWound::_COUNT; ++i)
       //  hemorrhageWounds.push_back(i);
       hemorrhageWounds.push_back((size_t)eHemorrhageWound::LeftLegLaceration);
       tccc->GetHemorrhageWound().SetValues(hemorrhageWounds);
-      tccc->GetTensionPneumothoraxSeverity().SetValues(ParameterIteration<double>::SetMinMaxStep(0., 0.9, 0.3));
-      tccc->GetTBISeverity().SetValues(ParameterIteration<double>::SetMinMaxStep(0., 0.9, 0.3));
+      tccc->GetStressSeverity().SetMinMaxStep(0., 0.9, 0.3);
+      tccc->GetTensionPneumothoraxSeverity().SetMinMaxStep(0., 0.9, 0.3);
+      std::vector<size_t> tensionPneumothoraxWounds;
+      //for(size_t i = 0; i < (size_t)eTensionPneumothoraxWound::_COUNT; ++i)
+      //  tensionPneumothoraxWounds.push_back(i);
+      tensionPneumothoraxWounds.push_back((size_t)eTensionPneumothoraxWound::LeftClosed);
+      tccc->GetTensionPneumothoraxWound().SetValues(tensionPneumothoraxWounds);
+      tccc->GetTBISeverity().SetMinMaxStep(0., 0.9, 0.3);
       // What is our equipment variability?
       // Let's assume we have everything in our bag
-      //tccc->GetInsultDuration_s().SetValues(ParameterIteration<double>::SetMinMaxStep(5. * 60, 40. * 60, 5. * 60));
+      //tccc->GetInsultDuration_s().SetValues(5. * 60, 40. * 60, 5. * 60));
       //tccc->GetSalineAvailable().SetValues({ 1 });
       //tccc->GetNeedleAvailable().SetValues({ 1 });
       //tccc->GetChestWrapAvailable().SetValues({ 1 });

@@ -4,9 +4,9 @@
 #pragma once
 
 #include "PulseScenario.h"
-#include "ParameterIteration.h"
 #include "cdm/engine/SESerializeState.h"
 #include "cdm/scenario/SEScenarioExec.h"
+#include "cdm/utils/ParameterIteration.h"
 
 namespace pulse::study::patient_variability
 {

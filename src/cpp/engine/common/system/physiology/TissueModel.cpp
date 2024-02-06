@@ -1801,14 +1801,36 @@ namespace pulse
     //These should all be nominally the same
     double vascularVolumeChangeMultiplier = 1.0 - vascularVolumeChangeFraction;
     double intracellularVolumeChangeMultiplier = 1.0 - intracellularVolumeChangeFraction;
-    double extracellularVolumeChangeMultiplier = 1.0 - extracellularVolumeChangeFraction;
+    //double extracellularVolumeChangeMultiplier = 1.0 - extracellularVolumeChangeFraction;
 
     //Update all active cardiovascular circuit node volumes - this includes intravascular and extracellular nodes (not intracellular)
     for (auto node : m_data.GetCircuits().GetActiveCardiovascularCircuit().GetNodes())
     {
       if (node->HasNextVolume())
       {
-        node->GetNextVolume().SetValue((vascularVolumeChangeMultiplier) * node->GetNextVolume(VolumeUnit::mL), VolumeUnit::mL);
+        node->GetNextVolume().SetValue(vascularVolumeChangeMultiplier * node->GetNextVolume(VolumeUnit::mL), VolumeUnit::mL);
+
+        //Handle manual node volume updates that occured during preprocessing by updating the pressure
+        auto paths = m_data.GetCircuits().GetActiveCardiovascularCircuit().GetConnectedPaths(*node);
+        for (unsigned int iter = 0; iter < paths->size(); iter++)
+        {
+          SEFluidCircuitPath* path = paths->at(iter);
+          SEFluidCircuitNode* nSrc = &path->GetSourceNode();
+
+          if (path->HasCompliance())
+          {
+            double nextVolume_mL = nSrc->GetNextVolume(VolumeUnit::mL);
+            double currentVolume_mL = nSrc->GetVolume(VolumeUnit::mL);
+
+            if (nextVolume_mL != currentVolume_mL)
+            {
+              double pressure_mmHg = nSrc->GetPressure(PressureUnit::mmHg);
+              pressure_mmHg += (nextVolume_mL - currentVolume_mL) / path->GetCompliance(VolumePerPressureUnit::mL_Per_mmHg);
+              nSrc->GetPressure().SetValue(pressure_mmHg, PressureUnit::mmHg);
+              break; //Sometimes there are more than one compliance connected, so just do the first one (probably connected to ground/reference)
+            }
+          }
+        }
       }
     }
 
@@ -1837,7 +1859,7 @@ namespace pulse
         massLost_g = MIN(quantity->GetMass(MassUnit::g), massLost_g);
         if (quantity->GetMass().IsReadOnly())
         {
-          //jbw - WTF?
+          //TODO: Why doesn't this work?
           //quantity->GetMass().SetReadOnly(false);
           //quantity->GetMass().IncrementValue(-massLost_g, MassUnit::g);
           //quantity->GetMass().SetReadOnly(true);

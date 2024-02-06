@@ -327,7 +327,6 @@ namespace pulse
     dst.m_LastMeanArterialPressure_mmHg = src.lastmeanarterialpressure_mmhg();
     dst.m_PreviousBloodVolume_mL = src.previousbloodvolume_ml();
     dst.m_PreviousHeartRhythm = (eHeartRhythm)src.previousheartrhythm();
-    dst.m_TotalSympatheticFraction = src.totalsympatheticfraction();
   }
   PULSE_BIND::NervousData* PBPhysiology::Unload(const NervousModel& src)
   {
@@ -348,7 +347,6 @@ namespace pulse
     dst.set_lastmeanarterialpressure_mmhg(src.m_LastMeanArterialPressure_mmHg);
     dst.set_previousbloodvolume_ml(src.m_PreviousBloodVolume_mL);
     dst.set_previousheartrhythm((CDM_BIND::eHeartRhythm)src.m_PreviousHeartRhythm);
-    dst.set_totalsympatheticfraction(src.m_TotalSympatheticFraction);
   }
 
   void PBPhysiology::Load(const PULSE_BIND::RenalData& src, RenalModel& dst)
@@ -548,6 +546,7 @@ namespace pulse
     dst.m_RestingBloodLipid_mg_Per_mL = src.restingbloodlipid_mg_per_ml();
     dst.m_RestingBloodInsulin_mg_Per_mL = src.restingbloodinsulin_mg_per_ml();
     dst.m_RestingFluidMass_kg = src.restingfluidmass_kg();
+    dst.m_PreviousFluidMass_kg = src.previousfluidmass_kg();
     for (auto sitr : src.cardiacarrestvascularflows_ml_per_min())
     {
       bool found = false;
@@ -578,6 +577,7 @@ namespace pulse
     dst.set_restingbloodlipid_mg_per_ml(src.m_RestingBloodLipid_mg_Per_mL);
     dst.set_restingbloodinsulin_mg_per_ml(src.m_RestingBloodInsulin_mg_Per_mL);
     dst.set_restingfluidmass_kg(src.m_RestingFluidMass_kg);
+    dst.set_previousfluidmass_kg(src.m_PreviousFluidMass_kg);
     for (auto ditr : src.m_CardiacArrestVascularFlows_ml_per_min)
       (*dst.mutable_cardiacarrestvascularflows_ml_per_min())[ditr.first->GetName()] = ditr.second;
   }

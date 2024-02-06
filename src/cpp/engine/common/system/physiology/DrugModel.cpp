@@ -333,7 +333,6 @@ namespace pulse
     double rate_mL_Per_s = 0;
     double totalRate_mL_Per_s = 0;
     double massIncrement_ug = 0;
-    double densityFluid_kg_Per_mL = 0.0;
 
     std::vector<const SESubstanceCompound*> emptyBags;
 

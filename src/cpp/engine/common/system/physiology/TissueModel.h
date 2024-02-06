@@ -81,7 +81,7 @@ namespace pulse
     double m_RestingBloodLipid_mg_Per_mL;
     double m_RestingBloodInsulin_mg_Per_mL;
     double m_RestingFluidMass_kg;
-    double m_PreviousFluidMass_kg; //jbw serialize
+    double m_PreviousFluidMass_kg;
     // Cache of flows to use to calculate consumption/production during cardiac arrest
     std::map<SELiquidCompartment*, double> m_CardiacArrestVascularFlows_ml_per_min;
 

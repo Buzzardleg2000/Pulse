@@ -281,6 +281,7 @@ class ITMObservationModule(SEObservationReportModule):
         triage_data["HealthyCapillaryRefillTime"] = self._healthy_capillary_refill
         triage_data["START"] = self._start_triage()
         triage_data["BCD"] = self._bcd_triage()
+        triage_data["WEBB"] = self._webb_triage()
         observations.append(("Triage", triage_data))
 
         observations.append(("Vitals", self._itm_vital_level_elements()))
@@ -403,8 +404,26 @@ class ITMObservationModule(SEObservationReportModule):
     def _salt_triage(self) -> dict:
         pass
 
-    def _pulse_triage(self) -> dict:
-        pass
+    def _webb_triage(self) -> dict:
+        triage_status = None
+        observations = dict()
+        if self._rr_bpm == 0:
+            triage_status = TriageTag.Black
+        elif self._rr_bpm > 30:
+            triage_status = TriageTag.Red
+        elif self._sbp_mmHg < 85.1:
+            triage_status = TriageTag.Red
+        elif self._ppi < 0.003:
+            triage_status = TriageTag.Red
+        elif self._brainO2pp < 19:
+            triage_status = TriageTag.Red
+        elif self._spO2 < 0.92:
+            triage_status = TriageTag.Yellow
+        else:
+            triage_status = TriageTag.Green
+
+        observations["Tag"] = triage_status
+        return observations
 
     def _itm_vital_level_elements(self) -> dict:
         elements = dict()

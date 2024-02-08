@@ -177,7 +177,7 @@ def serialize_chronic_obstructive_pulmonary_disease_exacerbation_to_bind(src: SE
     if src.has_bronchitis_severity():
         serialize_scalar_0to1_to_bind(src.get_bronchitis_severity(), dst.BronchitisSeverity)
     for c,s in src._emphysema_severities.items():
-        i = dst.Severity.add()
+        i = dst.EmphysemaSeverity.add()
         i.Compartment = c.value
         serialize_scalar_0to1_to_bind(s, i.Severity)
 def serialize_chronic_obstructive_pulmonary_disease_exacerbation_from_bind(src: ChronicObstructivePulmonaryDiseaseExacerbationData,

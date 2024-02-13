@@ -158,21 +158,21 @@ int main(int argc, char* argv[])
       tccc->SetBaselineDuration_s(15);
       tccc->SetMaxSimTime_min(60);
       tccc->PerformInterventions(false);
-      tccc->GetAirwayObstructionSeverity().SetMinMaxStep(0., 0.9, 0.3);
-      tccc->GetHemorrhageSeverity().SetMinMaxStep(0., 0.9, 0.3);
+      tccc->GetAirwayObstructionSeverity().SetMinMaxStep(0., 1.0, 0.2);
+      tccc->GetHemorrhageSeverity().SetMinMaxStep(0., 1.0, 0.2);
       std::vector<size_t> hemorrhageWounds;
       //for(size_t i = 0; i < (size_t)eHemorrhageWound::_COUNT; ++i)
       //  hemorrhageWounds.push_back(i);
       hemorrhageWounds.push_back((size_t)eHemorrhageWound::LeftLegLaceration);
       tccc->GetHemorrhageWound().SetValues(hemorrhageWounds);
-      tccc->GetStressSeverity().SetMinMaxStep(0., 0.9, 0.3);
-      tccc->GetTensionPneumothoraxSeverity().SetMinMaxStep(0., 0.9, 0.3);
+      tccc->GetStressSeverity().SetMinMaxStep(0., 1.0, 0.3);
+      tccc->GetTensionPneumothoraxSeverity().SetMinMaxStep(0., 1.0, 0.2);
       std::vector<size_t> tensionPneumothoraxWounds;
       //for(size_t i = 0; i < (size_t)eTensionPneumothoraxWound::_COUNT; ++i)
       //  tensionPneumothoraxWounds.push_back(i);
       tensionPneumothoraxWounds.push_back((size_t)eTensionPneumothoraxWound::LeftClosed);
       tccc->GetTensionPneumothoraxWound().SetValues(tensionPneumothoraxWounds);
-      tccc->GetTBISeverity().SetMinMaxStep(0., 0.9, 0.3);
+      tccc->GetTBISeverity().SetMinMaxStep(0., 1.0, 0.3);
       // What is our equipment variability?
       // Let's assume we have everything in our bag
       //tccc->GetInsultDuration_s().SetValues(5. * 60, 40. * 60, 5. * 60));

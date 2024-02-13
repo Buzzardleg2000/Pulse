@@ -90,24 +90,30 @@ def bulk_timeseries_validation_pipeline(
         _pulse_logger.warning("No files to process for timeseries validation.")
         return all_tgts
 
+    cnt = 0
+    num_files = len(filename_base_paths)
     # If only one table dir provided, use the same table dir for every input file
     if not isinstance(table_dir, List):
-        table_dirs = [table_dir] * len(filename_base_paths)
+        table_dirs = [table_dir] * num_files
     else:
         table_dirs = table_dir
 
     try:
         # Run the pipeline on each input file
         for filename_base, t_dir in zip(filename_base_paths, table_dirs):
-            # Check if the csv file should have *Results
+            cnt += 1
+
             log_file = filename_base.parent / f"{filename_base.name}.log"
             csv_file = filename_base.parent / f"{filename_base.name}.csv"
             sce_out_file = filename_base.parent / f"{filename_base.name}.json" if serialize_per_file else None
+            # Check if the csv file should have *Results
             if not csv_file.exists():
                 csv_file = filename_base.parent / f"{filename_base.name}Results.csv"
                 if not csv_file.exists():
-                    _pulse_logger.error(f'CSV file does not exist for {filename_base}')
+                    _pulse_logger.error(f'[{cnt}/{num_files}] CSV file does not exist for {filename_base}')
                     continue
+
+            _pulse_logger.info(f"[{cnt}/{num_files}] Validating : {csv_file}")
             tgts = timeseries_validation_pipeline(
                 log_file=log_file,
                 csv_file=csv_file,

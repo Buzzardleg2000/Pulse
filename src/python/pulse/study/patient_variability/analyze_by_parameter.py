@@ -113,7 +113,9 @@ class PatientVariabilityAnalysis(PatientVariabilityResults):
             for category, value in SEScenarioExecStatus.summarize_exec_status_list(_exec_status).items():
                 _pulse_logger.info(f"{category} Runs: {value}")
 
+        _pulse_logger.info(f"Loading {validation_results_file}...")
         self.open_validation_results(validation_results_file)
+        _pulse_logger.info(f"Done!")
         self._output_dir = output_directory
         self._output_dir.mkdir(exist_ok=True, parents=True)
 

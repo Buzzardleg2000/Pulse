@@ -33,7 +33,6 @@ def validate(
     :param output_file: (Optional) If provided, serialize
         results to this location.
     """
-    _pulse_logger.info(f"Validating {csv_filename}")
     df = read_csv_into_df(csv_filename)
 
     targets = patient_validation.get_targets()

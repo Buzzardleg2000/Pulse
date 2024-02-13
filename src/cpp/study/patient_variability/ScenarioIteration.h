@@ -43,6 +43,7 @@ namespace pulse::study::patient_variability
     virtual void SetStateDirectory(const std::string& d);
     virtual std::string GetStateDirectory() const { return m_StateDirectory; }
 
+    const std::vector<SEScenarioExecStatus>& GetStatus() const { return m_ScenarioList; }
   protected:
     virtual void FixUp() {};
     virtual bool WriteScenario();

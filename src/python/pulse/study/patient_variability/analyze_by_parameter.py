@@ -2,12 +2,13 @@
 # See accompanying NOTICE file for details.
 
 import logging
+import argparse
 import numpy as np
 import pandas as pd
-import plotly.offline as pyo
-import matplotlib.pyplot as plt
-import plotly.graph_objects as go
 from pathlib import Path
+import matplotlib.pyplot as plt
+import plotly.offline as pyo
+import plotly.graph_objects as go
 from typing import Dict, List, Tuple
 
 from pulse.cdm.patient import eSex
@@ -93,29 +94,28 @@ standard_values = {
 
 
 class PatientVariabilityAnalysis(PatientVariabilityResults):
-    __slots__ = ["_systems", "_exec_status", "_output_dir"]
+    __slots__ = ["_systems", "_output_dir"]
     pass_errors = [10.0, 30.0]  # Errors are in %, not fraction!!!
 
-    def __init__(self, dir: str):
-        super().__init__(dir)
+    def __init__(self):
+        super().__init__()
         self._systems = list()
-        self._exec_status = list()
-        self._output_dir = self._variability_dir / "analysis"
-        self._output_dir.mkdir(exist_ok=True, parents=True)
+        self._output_dir = None
 
-        # Load scenario exec file for scenario success summary
-        exec_status_file = self._variability_dir / "scenarios" / "Validation.json"
-        if not exec_status_file.is_file():
-            _pulse_logger.warning(f"Could not locate scenario exec status file: {exec_status_file}")
+    def process(self, scenario_exec_status_file: Path, validation_results_file: Path, output_directory: Path) -> None:
+        _exec_status = list()
+        if not scenario_exec_status_file.is_file():
+            _pulse_logger.warning(f"Could not locate scenario exec status file: {scenario_exec_status_file}")
         else:
-            serialize_scenario_exec_status_list_from_file(exec_status_file, self._exec_status)
-
-
-    def process(self) -> None:
+            serialize_scenario_exec_status_list_from_file(scenario_exec_status_file, _exec_status)
         # Output scenario exec summary
-        if self._exec_status:
-            for category, value in SEScenarioExecStatus.summarize_exec_status_list(self._exec_status).items():
+        if _exec_status:
+            for category, value in SEScenarioExecStatus.summarize_exec_status_list(_exec_status).items():
                 _pulse_logger.info(f"{category} Runs: {value}")
+
+        self.open_validation_results(validation_results_file)
+        self._output_dir = output_directory
+        self._output_dir.mkdir(exist_ok=True, parents=True)
 
         # Identify number of patients and systems in this dataset
         matches, results = analysis.everything_query()
@@ -194,7 +194,9 @@ class PatientVariabilityAnalysis(PatientVariabilityResults):
                 plt.title(f"{system} Pass Rate Per Parameter within {pass_error}%")
                 plt.tight_layout()
                 #plt.show()
-                plt.savefig(self._output_dir / f"Box_Plot_{pass_error}%_{system}.png")
+                plot_file = str(self._output_dir / f"Box_Plot_{pass_error}%_{system}.png")
+                _pulse_logger.info("Creating box plot: " + plot_file)
+                plt.savefig(plot_file)
                 plt.clf()
 
     def create_radar_charts(self) -> None:
@@ -241,8 +243,9 @@ class PatientVariabilityAnalysis(PatientVariabilityResults):
                     showlegend=True
                 )
             )
-
-            pyo.offline.plot(fig, filename=str(self._output_dir / f"RadarChart_{pass_error}%_.html"))
+            plot_file = str(self._output_dir / f"RadarChart_{pass_error}%_.html")
+            _pulse_logger.info("Creating radar chart: " + plot_file)
+            pyo.offline.plot(fig, filename=plot_file)
 
     def analyze_property_error(self, property_error: PropertyError) -> None:
         # We can dynamically add members to our property_error object
@@ -380,6 +383,30 @@ class PatientVariabilityAnalysis(PatientVariabilityResults):
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
 
-    # Note: Validation results currently expected at [dir]/results/Validation/results.json
-    analysis = PatientVariabilityAnalysis(dir=Path("./test_results/patient_variability/validation/"))
-    analysis.process()
+    mode = "validation"
+    # Option to validate/generate tables for either the baseline/verification csv or the test_results
+    parser = argparse.ArgumentParser(description="Process a validation targets file to generate plots")
+    parser.add_argument(
+        "-s", "--scenario_exec",
+        type=Path,
+        default=f"./test_results/patient_variability/{mode}/scenarios/Validation.json",
+        help="A scenario exec status list json file to analyze and create plots for."
+    )
+    parser.add_argument(
+        "-v", "--validation_results",
+        type=Path,
+        default=f"./test_results/patient_variability/{mode}/scenarios/ValidationTargets.json",
+        help="A validation targets list json file to analyze and create plots for."
+    )
+    parser.add_argument(
+        "-o", "--output-directory",
+        type=Path,
+        default=f"./test_results/patient_variability/{mode}/analysis",
+        help="Where to store validation analysis artifacts."
+    )
+    opts = parser.parse_args()
+
+    analysis = PatientVariabilityAnalysis()
+    analysis.process(scenario_exec_status_file=opts.scenario_exec,
+                     validation_results_file=opts.validation_results,
+                     output_directory=opts.output_directory)

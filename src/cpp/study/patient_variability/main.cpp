@@ -16,13 +16,14 @@ using namespace pulse::study::patient_variability;
 
 int main(int argc, char* argv[])
 {
-  bool clear                   = false;// TODO
-  bool generateOnly            = false;
+  bool clear = false;// TODO
+  bool generateOnly = false;
+  std::string combinedPatientStatusFile;
 
   std::vector<PatientIteration*> iPatients;
   std::vector<ActionIteration*>  iActions;
 
-  std::string mode="test";
+  std::string mode = "test";
   // Process arguments
   if (argc > 1)
   {
@@ -38,7 +39,7 @@ int main(int argc, char* argv[])
         generateOnly = true;
     }
   }
-  std::string rootDir = "./test_results/patient_variability/"+mode;
+  std::string rootDir = "./test_results/patient_variability/" + mode;
   if (clear)// Then we can delete the specific solo run results
     DeleteDirectory(rootDir);
   CreatePath(rootDir);
@@ -51,15 +52,16 @@ int main(int argc, char* argv[])
   {
     if (mode == "validation")
     {
-      PatientIteration* male = new PatientIteration(logger);
+      combinedPatientStatusFile = rootDir + "/scenarios/" + "Validation.json";
+      ValidationIteration* male = new ValidationIteration(logger);
       male->SetIterationName("male");
       male->SetScenarioExecListFilename(rootDir + "/scenarios/" + male->GetIterationName() + ".json");
       male->SetStateDirectory(rootDir + "/states/" + male->GetIterationName());
       male->SetResultsDirectory(rootDir + "/results/" + male->GetIterationName());
       male->SetGenStyle(eGenStyle::Combo);
       male->SetSex(ePatient_Sex::Male);
-      male->GetAge_yr().SetValues({minAge_yr, maxAge_yr, stdAge_yr }, 2);
-      male->GetHR_bpm().SetValues({minHR_bpm, maxHR_bpm, stdHR_bpm }, 2);
+      male->GetAge_yr().SetValues({ minAge_yr, maxAge_yr, stdAge_yr }, 2);
+      male->GetHR_bpm().SetValues({ minHR_bpm, maxHR_bpm, stdHR_bpm }, 2);
       male->GetMAP_mmHg().SetValues({ minMAP_mmHg, maxMAP_mmHg, stdMAP_mmHg }, 2);
       male->GetPP_mmHg().SetValues({ minPulsePressure_mmHg, maxPulsePressure_mmHg, stdPulsePressure_mmHg }, 2);
       male->GetRR_bpm().SetValues({ minRR_bpm, maxRR_bpm, stdRR_bpm }, 2);
@@ -68,7 +70,7 @@ int main(int argc, char* argv[])
       male->GetBFF().SetValues({ minMaleBFF, maxMaleBFF, stdMaleBFF }, 2);
       iPatients.push_back(male);
 
-      PatientIteration* female = new PatientIteration(logger);
+      ValidationIteration* female = new ValidationIteration(logger);
       female->SetIterationName("female");
       female->SetScenarioExecListFilename(rootDir + "/scenarios/" + female->GetIterationName() + ".json");
       female->SetStateDirectory(rootDir + "/states/" + female->GetIterationName());
@@ -84,10 +86,6 @@ int main(int argc, char* argv[])
       female->GetBMI().SetValues({ minBMI, maxBMI, stdFemaleBMI }, 2);
       female->GetBFF().SetValues({ minFemaleBFF, maxFemaleBFF, stdFemaleBFF }, 2);
       iPatients.push_back(female);
-
-      ValidationIteration* vi = new ValidationIteration(logger);
-      vi->SetMaxSimTime_min(2);
-      iActions.push_back(vi);
     }
     else if (mode == "hemorrhage")
     {
@@ -186,14 +184,16 @@ int main(int argc, char* argv[])
   }
   else
   {
-    PatientIteration* male = new PatientIteration(logger);
+    combinedPatientStatusFile = rootDir + "/scenarios/" + "Validation.json";
+
+    ValidationIteration* male = new ValidationIteration(logger);
     male->SetIterationName("default_male");
-    male->SetScenarioExecListFilename(rootDir + "/scenarios/" + male->GetIterationName()+".json");
+    male->SetScenarioExecListFilename(rootDir + "/scenarios/" + male->GetIterationName() + ".json");
     male->SetStateDirectory(rootDir + "/states/" + male->GetIterationName());
     male->SetResultsDirectory(rootDir + "/results/" + male->GetIterationName());
     iPatients.push_back(male);
 
-    PatientIteration* female = new PatientIteration(logger);
+    ValidationIteration* female = new ValidationIteration(logger);
     female->SetIterationName("default_female");
     female->SetGenStyle(eGenStyle::Combo);
     female->SetSex(ePatient_Sex::Female);
@@ -203,12 +203,6 @@ int main(int argc, char* argv[])
     iPatients.push_back(female);
 
     if (false)
-    {
-      ValidationIteration* vi = new ValidationIteration(logger);
-      vi->SetIterationName("validation");
-      iActions.push_back(vi);
-    }
-    if (true)
     {
       TCCCIteration* tccc = new TCCCIteration(logger);
       tccc->SetIterationName("tccc");
@@ -228,48 +222,64 @@ int main(int argc, char* argv[])
     }
   }
 
-  for (PatientIteration* pi : iPatients)
+  // Should Encapsulate this execution logic into a method
   {
-    if (!clear && FileExists(pi->GetScenarioExecListFilename()))
-      logger.Info("Using previously run scenario exec list file: " + pi->GetScenarioExecListFilename());
-    else
-      pi->GenerateScenarios();
-
-    // Note, not setting the output directory on the opts
-    // Our scenarios aleady have a relative (to the working dir) results csv location set,
-    // If you provide an output dir, that relative location will be concatenated to the csv relative location
-
-    if (!generateOnly)
+    for (PatientIteration* pi : iPatients)
     {
-      PulseScenarioExec opts(&logger);
-      opts.SetModelType(eModelType::HumanAdultWholeBody);
-      opts.LogToConsole(eSwitch::Off);
-      opts.SetScenarioExecListFilename(pi->GetScenarioExecListFilename());
-      opts.Execute();
+      if (!clear && FileExists(pi->GetScenarioExecListFilename()))
+        logger.Info("Using previously run scenario exec list file: " + pi->GetScenarioExecListFilename());
+      else
+        pi->GenerateScenarios();
+
+      // Note, not setting the output directory on the opts
+      // Our scenarios aleady have a relative (to the working dir) results csv location set,
+      // If you provide an output dir, that relative location will be concatenated to the csv relative location
+
+      if (!generateOnly)
+      {
+        PulseScenarioExec opts(&logger);
+        opts.SetModelType(eModelType::HumanAdultWholeBody);
+        opts.LogToConsole(eSwitch::Off);
+        opts.SetScenarioExecListFilename(pi->GetScenarioExecListFilename());
+        opts.Execute();
+      }
     }
-  }
-
-  for (ActionIteration* ai : iActions)
-  {
-    ai->SetScenarioExecListFilename(rootDir + "/scenarios/" + ai->GetIterationName() + ".json");
-    ai->SetStateDirectory(rootDir + "/states/" + ai->GetIterationName());
-    ai->SetResultsDirectory(rootDir + "/results/" + ai->GetIterationName());
-
-    if (!clear && FileExists(ai->GetScenarioExecListFilename()))
-      logger.Info("Using previously run scenario exec list file: " + ai->GetScenarioExecListFilename());
-    else
+    if (!combinedPatientStatusFile.empty())
     {
+      std::vector<SEScenarioExecStatus> allPatients;
       for (PatientIteration* pi : iPatients)
-        ai->GenerateScenarios(*pi);
+      {
+        std::vector<SEScenarioExecStatus> execStatus;
+        SEScenarioExecStatus::SerializeFromFile(pi->GetScenarioExecListFilename(), execStatus, &logger);
+        for (const SEScenarioExecStatus& s : execStatus)
+          allPatients.push_back(s);
+      }
+      SEScenarioExecStatus::SerializeToFile(allPatients, combinedPatientStatusFile, &logger);
+      logger.Info("Writing all patient status to file: " + combinedPatientStatusFile);
     }
 
-    if (!generateOnly)
+    for (ActionIteration* ai : iActions)
     {
-      PulseScenarioExec opts(&logger);
-      opts.SetModelType(eModelType::HumanAdultWholeBody);
-      opts.LogToConsole(eSwitch::Off);
-      opts.SetScenarioExecListFilename(ai->GetScenarioExecListFilename());
-      opts.Execute();
+      ai->SetScenarioExecListFilename(rootDir + "/scenarios/" + ai->GetIterationName() + ".json");
+      ai->SetStateDirectory(rootDir + "/states/" + ai->GetIterationName());
+      ai->SetResultsDirectory(rootDir + "/results/" + ai->GetIterationName());
+
+      if (!clear && FileExists(ai->GetScenarioExecListFilename()))
+        logger.Info("Using previously run scenario exec list file: " + ai->GetScenarioExecListFilename());
+      else
+      {
+        for (PatientIteration* pi : iPatients)
+          ai->GenerateScenarios(*pi);
+      }
+
+      if (!generateOnly)
+      {
+        PulseScenarioExec opts(&logger);
+        opts.SetModelType(eModelType::HumanAdultWholeBody);
+        opts.LogToConsole(eSwitch::Off);
+        opts.SetScenarioExecListFilename(ai->GetScenarioExecListFilename());
+        opts.Execute();
+      }
     }
   }
 

@@ -51,6 +51,50 @@ class Field(Enum):
     VitalCapacity_L = 29
 
 
+def _get_patient_values(patient: SEPatient):
+    patient_values = {
+        Field.Age_yr: patient.get_age().get_value(TimeUnit.yr),
+        Field.Weight_kg: patient.get_weight().get_value(MassUnit.kg),
+        Field.Height_cm: patient.get_height().get_value(LengthUnit.cm),
+        Field.BodyDensity_g_Per_cm3: patient.get_body_density().get_value(MassPerVolumeUnit.g_Per_cm3),
+        Field.BodyFatFraction: patient.get_body_fat_fraction().get_value(),
+        Field.BodyMassIndex: patient.get_body_mass_index().get_value(),
+        Field.LeanBodyMass_kg: patient.get_lean_body_mass().get_value(MassUnit.kg),
+        Field.IdealBodyWeight_kg: patient.get_ideal_body_weight().get_value(MassUnit.kg),
+        Field.AlveoliSurfaceArea_m2: patient.get_alveoli_surface_area().get_value(AreaUnit.m2),
+        Field.RightLungRatio: patient.get_right_lung_ratio().get_value(),
+        Field.SkinSurfaceArea_m2: patient.get_skin_surface_area().get_value(AreaUnit.m2),
+        Field.BasalMetabolicRate_kcal_Per_day: patient.get_basal_metabolic_rate().get_value(PowerUnit.kcal_Per_day),
+        Field.BloodVolumeBaseline_mL: patient.get_blood_volume_baseline().get_value(VolumeUnit.mL),
+        Field.DiastolicArterialPressureBaseline_mmHg: patient.get_diastolic_arterial_pressure_baseline().get_value(PressureUnit.mmHg),
+        Field.HeartRateBaseline_bpm: patient.get_heart_rate_baseline().get_value(FrequencyUnit.Per_min),
+        Field.MeanArterialPressureBaseline_mmHg: patient.get_mean_arterial_pressure_baseline().get_value(PressureUnit.mmHg),
+        Field.PulsePressureBaseline_mmHg: patient.get_pulse_pressure_baseline().get_value(PressureUnit.mmHg),
+        Field.RespirationRateBaseline_bpm: patient.get_respiration_rate_baseline().get_value(FrequencyUnit.Per_min),
+        Field.SystolicArterialPressureBaseline_mmHg: patient.get_systolic_arterial_pressure_baseline().get_value(PressureUnit.mmHg),
+        Field.TidalVolumeBaseline_L: patient.get_tidal_volume_baseline().get_value(VolumeUnit.L),
+        Field.HeartRateMaximum_bpm: patient.get_heart_rate_maximum().get_value(FrequencyUnit.Per_min),
+        Field.HeartRateMinimum_bpm: patient.get_heart_rate_minimum().get_value(FrequencyUnit.Per_min),
+        Field.ExpiratoryReserveVolume_L: patient.get_expiratory_reserve_volume().get_value(VolumeUnit.L),
+        Field.FunctionalResidualCapacity_L: patient.get_functional_residual_capacity().get_value(VolumeUnit.L),
+        Field.InspiratoryCapacity_L: patient.get_inspiratory_capacity().get_value(VolumeUnit.L),
+        Field.InspiratoryReserveVolume_L: patient.get_inspiratory_reserve_volume().get_value(VolumeUnit.L),
+        Field.ResidualVolume_L: patient.get_residual_volume().get_value(VolumeUnit.L),
+        Field.TotalLungCapacity_L: patient.get_total_lung_capacity().get_value(VolumeUnit.L),
+        Field.VitalCapacity_L: patient.get_vital_capacity().get_value(VolumeUnit.L)
+    }
+    return patient_values
+
+
+def _key_patient_values(patient_values: dict):
+    return (f"{patient_values[Field.Age_yr]}yr_"
+            f"{patient_values[Field.Height_cm]}cm_"
+            f"{patient_values[Field.BodyMassIndex]}_"
+            f"{patient_values[Field.BodyFatFraction]}_"
+            f"{patient_values[Field.HeartRateBaseline_bpm]}bpm_"
+            f"{patient_values[Field.RespirationRateBaseline_bpm]}bpm_"
+            f"{patient_values[Field.MeanArterialPressureBaseline_mmHg]}_mmHg")
+
 # Class attributes get added dynamically during analysis
 class PropertyError(object):
     def __init__(self):
@@ -85,45 +129,10 @@ class Condition:
 
         return ops[op](left, right)
 
-    def eval(self, patient: SEPatient) -> bool:
-        patient_value = None
-
-        patient_values = {
-            Field.Age_yr: patient.get_age().get_value(TimeUnit.yr),
-            Field.Weight_kg: patient.get_weight().get_value(MassUnit.kg),
-            Field.Height_cm: patient.get_height().get_value(LengthUnit.cm),
-            Field.BodyDensity_g_Per_cm3: patient.get_body_density().get_value(MassPerVolumeUnit.g_Per_cm3),
-            Field.BodyFatFraction: patient.get_body_fat_fraction().get_value(),
-            Field.BodyMassIndex: patient.get_body_mass_index().get_value(),
-            Field.LeanBodyMass_kg: patient.get_lean_body_mass().get_value(MassUnit.kg),
-            Field.IdealBodyWeight_kg: patient.get_ideal_body_weight().get_value(MassUnit.kg),
-            Field.AlveoliSurfaceArea_m2: patient.get_alveoli_surface_area().get_value(AreaUnit.m2),
-            Field.RightLungRatio: patient.get_right_lung_ratio().get_value(),
-            Field.SkinSurfaceArea_m2: patient.get_skin_surface_area().get_value(AreaUnit.m2),
-            Field.BasalMetabolicRate_kcal_Per_day: patient.get_basal_metabolic_rate().get_value(PowerUnit.kcal_Per_day),
-            Field.BloodVolumeBaseline_mL: patient.get_blood_volume_baseline().get_value(VolumeUnit.mL),
-            Field.DiastolicArterialPressureBaseline_mmHg: patient.get_diastolic_arterial_pressure_baseline().get_value(PressureUnit.mmHg),
-            Field.HeartRateBaseline_bpm: patient.get_heart_rate_baseline().get_value(FrequencyUnit.Per_min),
-            Field.MeanArterialPressureBaseline_mmHg: patient.get_mean_arterial_pressure_baseline().get_value(PressureUnit.mmHg),
-            Field.PulsePressureBaseline_mmHg: patient.get_pulse_pressure_baseline().get_value(PressureUnit.mmHg),
-            Field.RespirationRateBaseline_bpm: patient.get_respiration_rate_baseline().get_value(FrequencyUnit.Per_min),
-            Field.SystolicArterialPressureBaseline_mmHg: patient.get_systolic_arterial_pressure_baseline().get_value(PressureUnit.mmHg),
-            Field.TidalVolumeBaseline_L: patient.get_tidal_volume_baseline().get_value(VolumeUnit.L),
-            Field.HeartRateMaximum_bpm: patient.get_heart_rate_maximum().get_value(FrequencyUnit.Per_min),
-            Field.HeartRateMinimum_bpm: patient.get_heart_rate_minimum().get_value(FrequencyUnit.Per_min),
-            Field.ExpiratoryReserveVolume_L: patient.get_expiratory_reserve_volume().get_value(VolumeUnit.L),
-            Field.FunctionalResidualCapacity_L: patient.get_functional_residual_capacity().get_value(VolumeUnit.L),
-            Field.InspiratoryCapacity_L: patient.get_inspiratory_capacity().get_value(VolumeUnit.L),
-            Field.InspiratoryReserveVolume_L: patient.get_inspiratory_reserve_volume().get_value(VolumeUnit.L),
-            Field.ResidualVolume_L: patient.get_residual_volume().get_value(VolumeUnit.L),
-            Field.TotalLungCapacity_L: patient.get_total_lung_capacity().get_value(VolumeUnit.L),
-            Field.VitalCapacity_L: patient.get_vital_capacity().get_value(VolumeUnit.L)
-        }
-
+    def eval(self, patient_sex: eSex, patient_values: dict) -> bool:
         if self._field not in patient_values:
             _pulse_logger.error(f"Unknown field: {self._field}")
             return False
-
         return self._compare(patient_values[self._field], self._value, self._operator)
 
 
@@ -148,33 +157,30 @@ class Conditional:
     def add_conditional(self, conditional: "Conditional") -> None:
         self._conditions.append(conditional)
 
-    def eval(self, patient: SEPatient) -> bool:
-        if self._sex is not None and patient.get_sex() != self._sex:
+    def eval(self, patient_sex: eSex, patient_values: dict) -> bool:
+        if self._sex is not None and patient_sex != self._sex:
             return False
         if self._conditional_type is self.ConditionalType.AND:
             for condition in self._conditions:
-                if not condition.eval(patient):
+                if not condition.eval(patient_sex, patient_values):
                     return False
             return True
         elif self._conditional_type is self.ConditionalType.OR:
             for condition in self._conditions:
-                if condition.eval(patient):
+                if condition.eval(patient_sex, patient_values):
                     return True
             return False
 
         _pulse_logger.error(f"Unknown conditional type: {self._conditional_type}")
         return False
 
-
 class PatientVariabilityResults:
-    __slots__ = ["_variability_dir", "_validation_results"]
+    __slots__ = ["_validation_results"]
 
-    def __init__(self, dir: Path):
+    def __init__(self):
         self._validation_results = list()
-        self._variability_dir = dir
 
-        # Load up validation result set
-        validation_results_file = self._variability_dir / "results" / "Validation" / "results.json"
+    def open_validation_results(self, validation_results_file: Path):
         if not validation_results_file.is_file():
             raise ValueError(f"Can't locate validation results: {validation_results_file}")
         serialize_patient_time_series_validation_list_from_file(validation_results_file, self._validation_results)
@@ -219,10 +225,11 @@ class PatientVariabilityResults:
         patient_matches = list()
 
         for validation_result in self._validation_results:
-            for conditional in conditionals:
-                patient = validation_result.get_patient()
+            patient = validation_result.get_patient()
+            patient_values = _get_patient_values(patient)
 
-                if conditional.eval(patient):
+            for conditional in conditionals:
+                if conditional.eval(patient.get_sex(), patient_values):
                     patient_matches.append(patient.get_name())
 
                     # Pull out the system properties that are patient specific and their errors
@@ -236,6 +243,8 @@ class PatientVariabilityResults:
                                 if tgt.get_header() not in sys_results:
                                     sys_results[tgt.get_header()] = PropertyError()
                                 sys_results[tgt.get_header()].errors.append(tgt.get_error_value())
+                #else:
+                #    _pulse_logger.info("Not in query: " + _key_patient_values(patient_values))
 
         return patient_matches, collected_errors
 

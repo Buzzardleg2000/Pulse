@@ -129,10 +129,11 @@ int main(int argc, char* argv[])
       tccc->SetMaxSimTime_min(60);
       tccc->PerformInterventions(false);
       tccc->GetHemorrhageSeverity().SetMinMaxStep(0.1, 1.0, 0.1);
-      tccc->GetLeftHemothoraxSeverity().SetMinMaxStep(0.1, 1.0, 0.1);
       std::vector<size_t> hemorrhageWounds;
       for (size_t i = 0; i < (size_t)eHemorrhageWound::_COUNT; ++i)
         hemorrhageWounds.push_back(i);
+      tccc->GetHemorrhageWound().SetValues(hemorrhageWounds);
+      tccc->GetLeftHemothoraxSeverity().SetMinMaxStep(0.1, 1.0, 0.1);
       iActions.push_back(tccc);
     }
     else if (mode == "itm")

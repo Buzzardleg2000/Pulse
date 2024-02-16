@@ -4,9 +4,9 @@
 #pragma once
 
 #include "PulseScenario.h"
-#include "ParameterIteration.h"
 #include "cdm/engine/SESerializeState.h"
 #include "cdm/scenario/SEScenarioExec.h"
+#include "cdm/utils/ParameterIteration.h"
 
 namespace pulse::study::patient_variability
 {
@@ -43,6 +43,7 @@ namespace pulse::study::patient_variability
     virtual void SetStateDirectory(const std::string& d);
     virtual std::string GetStateDirectory() const { return m_StateDirectory; }
 
+    const std::vector<SEScenarioExecStatus>& GetStatus() const { return m_ScenarioList; }
   protected:
     virtual void FixUp() {};
     virtual bool WriteScenario();

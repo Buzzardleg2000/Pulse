@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Any, Dict, Hashable, Iterable, List, NamedTuple, Optional, Set, Tuple
 
 import PyPulse
-from pulse.cdm.engine import eEvent, eSerializationFormat, eSwitch, SEAction, \
+from pulse.cdm.engine import eEngineInitializationState, eEvent, eSerializationFormat, eSwitch, SEAction, \
                              SEDataRequestManager, SEEngineInitializationStatus, SEEventChange
 from pulse.cdm.patient import SEPatient, SEPatientConfiguration
 from pulse.cdm.scalars import SEScalarTime, TimeUnit, get_unit
@@ -272,6 +272,11 @@ class SEScenarioExecStatus(SEEngineInitializationStatus):
     def __init__(self):
         self.clear()
 
+    def __str__(self) -> str:
+        return f'SEScenarioExecStatus:\n\tScenario Filename: {self._scenario_filename}\n\tScenario Execution State: ' \
+            f'{self._scenario_execution_state}\n\tRuntime Error: {self._runtime_error}\n\tFatal Runtime Error: ' \
+            f'{self._fatal_runtime_error}\n\tFinal Simulation Time (s): {self._final_simulation_time_s}'
+
     def clear(self) -> None:
         super().clear()
         self._scenario_filename = ""
@@ -314,6 +319,39 @@ class SEScenarioExecStatus(SEEngineInitializationStatus):
         return self._final_simulation_time_s
     def set_final_simulation_time_s(self, t: float) -> None:
         self._final_simulation_time_s = t
+
+    @staticmethod
+    def summarize_exec_status_list(lst: List["SEScenarioExecStatus"]) -> Dict[str, int]:
+        # Count everything
+        summary = {
+            "Total": 0,
+            "Valid": 0,
+            "FailedState": 0,
+            "FailedSetup": 0,
+            "FailedStabilization": 0,
+            "RuntimeError": 0,
+            "FatalRuntimeError": 0
+        }
+        for status in lst:
+            if status.get_initialization_state() == eEngineInitializationState.FailedState:
+                summary["FailedState"] += 1
+            elif status.get_initialization_state() == eEngineInitializationState.FailedPatientSetup:
+                summary["FailedSetup"] += 1
+            elif status.get_initialization_state() == eEngineInitializationState.FailedStabilization:
+                summary["FailedStabilization"] += 1
+            elif status.get_scenario_execution_state() == eScenarioExecutionState.Complete and status.has_fatal_runtime_error():
+                summary["FatalRuntimeError"] += 1
+            elif status.get_scenario_execution_state() == eScenarioExecutionState.Complete and status.has_runtime_error():
+                summary["RuntimeError"] += 1
+            elif status.get_scenario_execution_state() == eScenarioExecutionState.Complete:
+                summary["Valid"] += 1
+            else:
+                continue
+
+            summary["Total"] += 1
+
+        return summary
+
 
 
 class SEScenarioLog:

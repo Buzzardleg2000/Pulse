@@ -3,12 +3,12 @@
 
 #pragma once
 
-#include "ActionIteration.h"
+#include "PatientIteration.h"
 #include "cdm/engine/SEAdvanceTime.h"
 
 namespace pulse::study::patient_variability
 {
-  class ValidationIteration : public ActionIteration
+  class ValidationIteration : public PatientIteration
   {
   public:
     ValidationIteration(Logger& logger);
@@ -17,9 +17,6 @@ namespace pulse::study::patient_variability
     void Clear() override;
 
   protected:
-    void GenerateScenarios(std::pair<std::string, std::string>);
-    void GenerateSlicedActionSets(std::pair<std::string, std::string>) override;
-    void GenerateCombinationActionSets(std::pair<std::string, std::string>) override;
 
     // Stateless
     SEAdvanceTime         m_Adv;

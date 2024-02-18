@@ -361,6 +361,7 @@ set(CDM_H_FILES
   cdm/utils/FileUtils.h
   cdm/utils/GeneralMath.h
   cdm/utils/Logger.h
+  cdm/utils/ParameterIteration.h
   cdm/utils/ScopedMutex.h
   cdm/utils/SmartEnum.h
   cdm/utils/TimingProfile.h
@@ -735,6 +736,7 @@ set(CDM_CPP_FILES
   cdm/utils/FileUtils.cpp
   cdm/utils/GeneralMath.cpp
   cdm/utils/Logger.cpp
+  cdm/utils/ParameterIteration.cpp
   cdm/utils/ScopedMutex.cpp
   cdm/utils/SimpleLogger.cpp
   cdm/utils/TimingProfile.cpp

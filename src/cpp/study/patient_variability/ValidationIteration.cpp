@@ -1,17 +1,17 @@
 /* Distributed under the Apache License, Version 2.0.
    See accompanying NOTICE file for details.*/
 
-#include "ValidationIteration.h"
-
 #include "cdm/CommonDefs.h"
 #include "cdm/engine/SEDataRequestManager.h"
 #include "cdm/properties/SEScalarMass.h"
 #include "cdm/properties/SEScalarTime.h"
 #include "cdm/utils/GeneralMath.h"
 
+#include "ValidationIteration.h"
+
 namespace pulse::study::patient_variability
 {
-  ValidationIteration::ValidationIteration(Logger& logger) : ActionIteration(logger)
+  ValidationIteration::ValidationIteration(Logger& logger) : PatientIteration(logger)
   {
     m_IterationName = "Validation";
     SetStateDirectory("");
@@ -47,25 +47,7 @@ namespace pulse::study::patient_variability
   void ValidationIteration::Clear()
   {
     m_Actions.clear();
-    ScenarioIteration::Clear();
+    PatientIteration::Clear();
   }
 
-  void ValidationIteration::GenerateSlicedActionSets(std::pair<std::string, std::string> patientFolderAndStateFilename)
-  {
-    GenerateScenarios(patientFolderAndStateFilename);
-  }
-
-  void ValidationIteration::GenerateCombinationActionSets(std::pair<std::string, std::string> patientFolderAndStateFilename)
-  {
-    GenerateScenarios(patientFolderAndStateFilename);
-  }
-
-  void ValidationIteration::GenerateScenarios(std::pair<std::string, std::string> patientFolderAndStateFilename)
-  {
-    SetName(patientFolderAndStateFilename.first);
-    SetDescription("Generate data for validation");
-    SetEngineStateFile(patientFolderAndStateFilename.second);
-    GetDataRequestManager().SetResultsFilename(m_ResultsDirectory+m_Name+".csv");
-    WriteScenario();
-  }
 }

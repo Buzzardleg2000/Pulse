@@ -43,6 +43,9 @@ bool PulseScenarioExec::Execute()
   std::string scenarioPath, scenarioFilename;
   if (!GetScenarioContent().empty())
   {
+    if (m_LogToConsole == eSwitch::NullSwitch)
+      m_LogToConsole = eSwitch::On;
+
     PulseScenario sce(GetLogger(), GetDataRootDirectory());
     if (!sce.SerializeFromString(GetScenarioContent(), GetContentFormat()))
       return false;
@@ -50,6 +53,9 @@ bool PulseScenarioExec::Execute()
   }
   else if (!GetScenarioFilename().empty())
   {
+    if (m_LogToConsole == eSwitch::NullSwitch)
+      m_LogToConsole = eSwitch::On;
+
     SEScenarioExecStatus status;
     PulseScenario sce(GetLogger(), GetDataRootDirectory());
     SplitPathFilename(GetScenarioFilename(), scenarioPath, scenarioFilename);
@@ -62,7 +68,8 @@ bool PulseScenarioExec::Execute()
   {
     TimingProfile profiler;
     profiler.Start("Total");
-    m_LogToConsole = eSwitch::Off;
+    if (m_LogToConsole == eSwitch::NullSwitch)
+      m_LogToConsole = eSwitch::Off;
 
     m_Statuses.clear();
     if (!GetScenarioExecListFilename().empty())
@@ -132,10 +139,15 @@ bool PulseScenarioExec::Execute()
   }
   else if (!GetScenarioLogFilename().empty())
   {
+    if (m_LogToConsole == eSwitch::NullSwitch)
+      m_LogToConsole = eSwitch::On;
     return ConvertLog();
   }
   else if (!GetScenarioLogDirectory().empty())
   {
+    if (m_LogToConsole == eSwitch::NullSwitch)
+      m_LogToConsole = eSwitch::Off;
+
     size_t numThreadsToUse = ComputeNumThreads();
     if (numThreadsToUse <= 0)
     {
@@ -273,7 +285,9 @@ void PulseScenarioExec::ControllerLoop(const std::string copy,
     PulseScenario sce(exec.GetDataRootDirectory());
     if (sce.SerializeFromFile(working.GetScenarioFilename()))
     {
+      sce.GetLogger()->AddConsolePrefix("["+sce.GetName()+"] ");
       //exec.Info("Executing " + working.GetScenarioFilename());
+      // Check to see if we want scenario's to log to the console or not
       exec.Execute(sce, &working);
     }
     else

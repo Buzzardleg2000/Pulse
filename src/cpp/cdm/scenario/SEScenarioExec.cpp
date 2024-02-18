@@ -35,7 +35,7 @@ SEScenarioExec::~SEScenarioExec()
 
 void SEScenarioExec::Clear()
 {
-  m_LogToConsole = eSwitch::On;
+  m_LogToConsole = eSwitch::NullSwitch;
 
   m_DataRootDirectory = ".";
   m_OutputRootDirectory = "";

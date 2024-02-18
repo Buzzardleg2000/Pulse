@@ -13,8 +13,8 @@ endif()
 
 define_external_dirs_ex(absl)
 add_external_project_ex(absl
-  URL https://github.com/abseil/abseil-cpp/archive/refs/tags/20230802.0.zip
-  URL_MD5 "3d4793b3d644fd184a2b9f57da1c4839"
+  URL https://github.com/abseil/abseil-cpp/archive/refs/tags/20240116.0.zip
+  URL_MD5 "1aac81d51689e902d9d88e6fb0992623"
   CMAKE_CACHE_ARGS
     -DBUILD_SHARED_LIBS:BOOL=OFF
     -DBUILD_TESTING:BOOL=OFF

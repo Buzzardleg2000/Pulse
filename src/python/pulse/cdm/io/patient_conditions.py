@@ -47,8 +47,8 @@ def serialize_chronic_obstructive_pulmonary_disease_to_bind(src: SEChronicObstru
     serialize_patient_condition_to_bind(src, dst.PatientCondition)
     if src.has_bronchitis_severity():
         serialize_scalar_0to1_to_bind(src.get_bronchitis_severity(), dst.BronchitisSeverity)
-    for c,s in src._emphysema_severities.items():
-        i = dst.Severity.add()
+    for c, s in src._emphysema_severities.items():
+        i = dst.EmphysemaSeverity.add()
         i.Compartment = c.value
         serialize_scalar_0to1_to_bind(s, i.Severity)
 

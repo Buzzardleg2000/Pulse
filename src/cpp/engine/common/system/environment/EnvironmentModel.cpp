@@ -671,24 +671,42 @@ namespace pulse
       //Calculate the source
       double dClothingResistance_rsi = GetEnvironmentalConditions().GetClothingResistance(HeatResistanceAreaUnit::rsi); //1 rsi = 1 m^2-K/W
       double dFactorOfReduction = 1.0 / (1.0 + 2.22 * dConvectiveTransferCoefficient_WPerM2_K * dClothingResistance_rsi);
-      double dMaxEvaporativePotential = dEvaporativeHeatTransferCoefficient_WPerM2_K * dFactorOfReduction * (m_dWaterVaporPressureAtSkin_Pa - m_dWaterVaporPressureInAmbientAir_Pa);
-      double dSurfaceArea_m2 = m_data.GetCurrentPatient().GetSkinSurfaceArea(AreaUnit::m2);
-      double dSweatRate_kgPers = 0.0;
-      if (m_data.GetEnergy().HasSweatRate())
-      {
-        dSweatRate_kgPers = m_data.GetEnergy().GetSweatRate(MassPerTimeUnit::kg_Per_s) / dSurfaceArea_m2;
-      }
-      double dSweatingControlMechanisms = dSweatRate_kgPers * m_dHeatOfVaporizationOfWater_J_Per_kg;
-      double dWettedPortion = 0.0;
-      if (dMaxEvaporativePotential != 0)
-      {
-        dWettedPortion = dSweatingControlMechanisms / dMaxEvaporativePotential;
-      }
-      double dDiffusionOfWater = (1.0 - dWettedPortion) * 0.06 * dMaxEvaporativePotential;
-      double EvaporativeHeatLossFromSkin_W = dSweatingControlMechanisms + dDiffusionOfWater;
 
-      //Set the source
-      m_EnvironmentSkinToGroundPath->GetNextHeatSource().SetValue(dSurfaceArea_m2 * EvaporativeHeatLossFromSkin_W, PowerUnit::W);
+      double dSurfaceArea_m2 = m_data.GetCurrentPatient().GetSkinSurfaceArea(AreaUnit::m2);
+
+      //Scale/dampen based on temperature gradient
+      //Should be 0 if the same tempeature
+      //Diffusion can't occur if the skin isn't warmer than the air
+      double airTemperature_C = m_ThermalEnvironment->GetTemperature().GetValue(TemperatureUnit::C);
+      double skinTemperature_C = m_SkinNode->GetTemperature().GetValue(TemperatureUnit::C);
+      double temperatureGradient = (skinTemperature_C - airTemperature_C) / airTemperature_C;
+      temperatureGradient *= 2.0; //Calibration factor
+      temperatureGradient = LIMIT(temperatureGradient, 0.0, 1.0);
+
+      double EvaporativeHeatLossFromSkin_W = 0.0;
+      if (temperatureGradient > 0.0)
+      {
+        double dMaxEvaporativePotential = dEvaporativeHeatTransferCoefficient_WPerM2_K * dFactorOfReduction * (m_dWaterVaporPressureAtSkin_Pa - m_dWaterVaporPressureInAmbientAir_Pa);
+
+        double dSweatRate_kgPers = 0.0;
+        if (m_data.GetEnergy().HasSweatRate())
+        {
+          dSweatRate_kgPers = m_data.GetEnergy().GetSweatRate(MassPerTimeUnit::kg_Per_s) / dSurfaceArea_m2;
+        }
+
+        double dSweatingControlMechanisms = dSweatRate_kgPers * m_dHeatOfVaporizationOfWater_J_Per_kg;
+        double dWettedPortion = 0.0;
+        if (dMaxEvaporativePotential != 0.0)
+        {
+          dWettedPortion = dSweatingControlMechanisms / dMaxEvaporativePotential;
+        }
+        double dDiffusionOfWater = (1.0 - dWettedPortion) * 0.06 * dMaxEvaporativePotential;
+        EvaporativeHeatLossFromSkin_W = dSweatingControlMechanisms + dDiffusionOfWater;
+        EvaporativeHeatLossFromSkin_W *= temperatureGradient;
+      }
+
+      double heatFlow_W = dSurfaceArea_m2 * EvaporativeHeatLossFromSkin_W;
+      m_EnvironmentSkinToGroundPath->GetNextHeatSource().SetValue(heatFlow_W, PowerUnit::W);
 
       //Set the total heat lost
       double dTotalHeatLoss_W = 0.0;

@@ -53,6 +53,7 @@ namespace pulse
     // These are both part of the consume meal condition.
     //void Dehydration(double time); // Need to revisit
     //void Starvation(double time); // Need to revisit
+    void Dehydration();
     // Used in Reset & Starvation
     void CalculateBasalMetabolicRate();
 
@@ -75,7 +76,8 @@ namespace pulse
     SEThermalCircuitNode*       m_coreNode;
     SEThermalCircuitNode*       m_skinNode;
     //Paths
-    SEThermalCircuitPath*       m_temperatureGroundToCorePath;
+    SEThermalCircuitPath*       m_groundToCorePath;
+    SEThermalCircuitPath*       m_coreToGroundPath;
     SEThermalCircuitPath*       m_coreToSkinPath;
     SEFluidCircuitPath*         m_skinExtravascularToSweatingGroundPath;
     //Circuits

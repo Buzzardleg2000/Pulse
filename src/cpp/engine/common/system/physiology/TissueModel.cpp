@@ -860,7 +860,30 @@ namespace pulse
       else if (vascular->HasInFlow() && totalFlowRate_mL_Per_min > 0)
         BloodFlowFraction = vascular->GetInFlow(VolumePerTimeUnit::mL_Per_min) / totalFlowRate_mL_Per_min;
 
-      LocalATPUseRate_mol_Per_s = BloodFlowFraction * ATPUseRate_mol_Per_s;
+      //Reduced blood volumes cause reduced tissue perfusion
+      double vasularBaselineVolume_mL = 0.0;
+      double vascularCurrentVolulme_mL = 0.0;
+      for (SEFluidCircuitNode* node : vascular->GetNodeMapping().GetNodes())
+      {
+        if (node->HasNextVolume() && node->HasVolumeBaseline())
+        {
+          vascularCurrentVolulme_mL += node->GetNextVolume(VolumeUnit::mL);
+          vasularBaselineVolume_mL += node->GetVolumeBaseline(VolumeUnit::mL);
+        }
+      }
+
+      double vascularVolumeMultiplier = 1.0;
+      if (vasularBaselineVolume_mL > 0.0)
+      {
+        double vascularVolumeFraction = MIN(vascularCurrentVolulme_mL / vasularBaselineVolume_mL, 1.0);
+        double bufferCuttoffFraction = 0.85;
+        if (vascularVolumeFraction < bufferCuttoffFraction) //Give it a little buffer
+        {
+          vascularVolumeMultiplier = GeneralMath::LinearInterpolator(0.0, bufferCuttoffFraction, 5.0, 1.0, vascularVolumeFraction);
+        }
+      }
+
+      LocalATPUseRate_mol_Per_s = BloodFlowFraction * ATPUseRate_mol_Per_s * vascularVolumeMultiplier;
       anaerobicWeight = MIN(1.0, tissueO2_mM / anaerobicThresholdConcentration_mM);
       /// \todo This is the reason for the decrease in O2 consumption and CO2 production with oxygen depletion. It looks like we are mixing models here. 
       // At a minimum, we know that CO2 production should not decrease at the same rate as O2 consumption during anaerobic metabolism.
@@ -1227,21 +1250,26 @@ namespace pulse
     m_data.GetCurrentPatient().GetWeight().IncrementValue(-patientMassLost_kg, MassUnit::kg);
 
     double restingPatientMass_kg = m_data.GetInitialPatient().GetWeight(MassUnit::kg);
+    double massLossFraction = (m_RestingFluidMass_kg - currentFluidMass_kg) / restingPatientMass_kg;
 
     // Hydration Status
-    if ((m_RestingFluidMass_kg - currentFluidMass_kg) / restingPatientMass_kg > 0.10)
+    // Give little buffers to prevent lots of flipping at inflection points
+    if (massLossFraction > 0.10 ||
+      (m_data.GetEvents().IsEventActive(eEvent::SevereDehydration) && massLossFraction > 0.095))
     {
       m_data.GetEvents().SetEvent(eEvent::MildDehydration, false, m_data.GetSimulationTime());
       m_data.GetEvents().SetEvent(eEvent::ModerateDehydration, false, m_data.GetSimulationTime());
       m_data.GetEvents().SetEvent(eEvent::SevereDehydration, true, m_data.GetSimulationTime());
     }
-    else if ((m_RestingFluidMass_kg - currentFluidMass_kg) / restingPatientMass_kg > 0.05)
+    else if (massLossFraction > 0.05 ||
+      (m_data.GetEvents().IsEventActive(eEvent::ModerateDehydration) && massLossFraction > 0.045))
     {
       m_data.GetEvents().SetEvent(eEvent::MildDehydration, false, m_data.GetSimulationTime());
       m_data.GetEvents().SetEvent(eEvent::ModerateDehydration, true, m_data.GetSimulationTime());
       m_data.GetEvents().SetEvent(eEvent::SevereDehydration, false, m_data.GetSimulationTime());
     }
-    else if ((m_RestingFluidMass_kg - currentFluidMass_kg) / restingPatientMass_kg > 0.03)
+    else if (massLossFraction > 0.03 ||
+      (m_data.GetEvents().IsEventActive(eEvent::MildDehydration) && massLossFraction > 0.025))
     {
       m_data.GetEvents().SetEvent(eEvent::MildDehydration, true, m_data.GetSimulationTime());
       m_data.GetEvents().SetEvent(eEvent::ModerateDehydration, false, m_data.GetSimulationTime());

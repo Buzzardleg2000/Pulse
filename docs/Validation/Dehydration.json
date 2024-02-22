@@ -1,0 +1,67 @@
+{
+  "Plots" :
+  {
+    "Plotter" :
+    [
+      {
+        "MonitorPlotter":
+        {
+          "Comment": "Dehydration Validation (Scenario 1) Monitors",
+          "PlotSource":
+          { "CSVData": "./test_results/scenarios/Dehydration/Scenario1Results.csv" },
+          "Vitals": true, "Ventilator": false, "OutputPrefix": "Scenario1-",
+          "DataRequestedFile": "./test_results/scenarios/Dehydration/Scenario1Results-Segments.json"
+        }
+      }
+      ,
+      {
+        "MonitorPlotter":
+        {
+          "Comment": "Dehydration Validation (Scenario 2) Monitors",
+          "PlotSource":
+          { "CSVData": "./test_results/scenarios/Dehydration/Scenario2Results.csv" },
+          "Vitals": true, "Ventilator": false, "OutputPrefix": "Scenario2-",
+          "DataRequestedFile": "./test_results/scenarios/Dehydration/Scenario2Results-Segments.json"
+        }
+      }
+      ,
+      {
+        "MonitorPlotter":
+        {
+          "Comment": "Dehydration Validation (Scenario 3) Monitors",
+          "PlotSource":
+          { "CSVData": "./test_results/scenarios/Dehydration/Scenario3Results.csv" },
+          "Vitals": true, "Ventilator": false, "OutputPrefix": "Scenario3-",
+          "DataRequestedFile": "./test_results/scenarios/Dehydration/Scenario3Results-Segments.json"
+        }
+      }
+    ]
+  },
+  "Tables" :
+  {
+    "Table" :
+    [
+      {
+        "TableName": "Segment1SegmentTable",
+        "ScenarioName": "Scenario1",
+        "Segment": 1,
+        "DataRequestFile": ["DehydrationDataRequests.json"],
+        "Header": []
+      },
+      {
+        "TableName": "Segment1SegmentTable",
+        "ScenarioName": "Scenario2",
+        "Segment": 1,
+        "DataRequestFile": ["DehydrationDataRequests.json"],
+        "Header": []
+      },
+      {
+        "TableName": "Segment1SegmentTable",
+        "ScenarioName": "Scenario3",
+        "Segment": 1,
+        "DataRequestFile": ["DehydrationDataRequests.json"],
+        "Header": []
+      }
+    ]
+  }
+}

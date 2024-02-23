@@ -92,14 +92,15 @@ def segment_validation_pipeline(xls_file: Path, exec_opt: eExecOpt, use_test_res
     if base_md.is_file():
         md_files.append(base_md)
     for sce_id in sce_ids:
-        md_file = Path(xls_dir / f"{xls_basename}-{sce_id}.md")
+        md_file = Path(get_root_dir()) / "docs" / "Validation" / f"{xls_basename}-{sce_id}.md"
         if not md_file.is_file():
             md_file = Path(get_root_dir()) / "docs" / "Validation" / f"{sce_id}.md"
             if not md_file.is_file():
-                md_file = None
+                md_file = Path(xls_dir / f"{xls_basename}-{sce_id}.md")
+                if not md_file.is_file():
+                    md_file = None
         if md_file is not None:
             md_files.append(md_file)
-
 
     if len(md_files) == 0:
         _pulse_logger.error(f"Could not find md files, at least one should be in:")

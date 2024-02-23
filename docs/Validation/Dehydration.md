@@ -1,6 +1,6 @@
-# CSTARS Validation
+# Dehydration Validation
 
-The following list contains the scenarios validated for the CSTARS program.
+The following list contains the scenarios validated for the dehydration model.
 
 @secreflist
   @refitem Scenario1 "Scenario 1: Mild Dehydration"

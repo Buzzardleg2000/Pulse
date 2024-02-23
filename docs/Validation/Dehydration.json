@@ -7,10 +7,14 @@
         "MonitorPlotter":
         {
           "Comment": "Dehydration Validation (Scenario 1) Monitors",
+          "PlotConfig":
+          {
+            "LegendMode": "NoLegends", "OutputPathOverride": "./docs/html/plots/Dehydration/"
+          },
           "PlotSource":
-          { "CSVData": "./test_results/scenarios/Dehydration/Scenario1Results.csv" },
+          { "CSVData": "$VERIFICATION_DIR/scenarios/Dehydration/Scenario1Results.csv" },
           "Vitals": true, "Ventilator": false, "OutputPrefix": "Scenario1-",
-          "DataRequestedFile": "./test_results/scenarios/Dehydration/Scenario1Results-Segments.json"
+          "DataRequestedFile": "$VERIFICATION_DIR/scenarios/Dehydration/Scenario1Results-Segments.json"
         }
       }
       ,
@@ -18,10 +22,14 @@
         "MonitorPlotter":
         {
           "Comment": "Dehydration Validation (Scenario 2) Monitors",
+          "PlotConfig":
+          {
+            "LegendMode": "NoLegends", "OutputPathOverride": "./docs/html/plots/Dehydration/"
+          },
           "PlotSource":
-          { "CSVData": "./test_results/scenarios/Dehydration/Scenario2Results.csv" },
+          { "CSVData": "$VERIFICATION_DIR/scenarios/Dehydration/Scenario2Results.csv" },
           "Vitals": true, "Ventilator": false, "OutputPrefix": "Scenario2-",
-          "DataRequestedFile": "./test_results/scenarios/Dehydration/Scenario2Results-Segments.json"
+          "DataRequestedFile": "$VERIFICATION_DIR/scenarios/Dehydration/Scenario2Results-Segments.json"
         }
       }
       ,
@@ -29,10 +37,14 @@
         "MonitorPlotter":
         {
           "Comment": "Dehydration Validation (Scenario 3) Monitors",
+          "PlotConfig":
+          {
+            "LegendMode": "NoLegends", "OutputPathOverride": "./docs/html/plots/Dehydration/"
+          },
           "PlotSource":
-          { "CSVData": "./test_results/scenarios/Dehydration/Scenario3Results.csv" },
+          { "CSVData": "$VERIFICATION_DIR/scenarios/Dehydration/Scenario3Results.csv" },
           "Vitals": true, "Ventilator": false, "OutputPrefix": "Scenario3-",
-          "DataRequestedFile": "./test_results/scenarios/Dehydration/Scenario3Results-Segments.json"
+          "DataRequestedFile": "$VERIFICATION_DIR/scenarios/Dehydration/Scenario3Results-Segments.json"
         }
       }
     ]

@@ -464,7 +464,7 @@ def serialize_data_request_from_bind(src: DataRequestData) -> SEDataRequest:
         substance=src.SubstanceName if src.SubstanceName else None,
         property=src.PropertyName if src.PropertyName else None,
         unit=get_unit(src.Unit),
-        precision=src.DecimalFormat.Precision if src.DecimalFormat.Precision else None,
+        precision=src.DecimalFormat.Precision,
         notation=eDecimalFormat_type(src.DecimalFormat.Type) if src.DecimalFormat.Type else None
     )
 

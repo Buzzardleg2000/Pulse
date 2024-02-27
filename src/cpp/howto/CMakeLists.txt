@@ -16,6 +16,7 @@ add_executable_ex(HowToDriver
   HowTo-COVID19Ventilated.cpp
   HowTo-CPR.cpp
   HowTo-CreateAPatient.cpp
+  HowTo-Dehydration.cpp
   HowTo-ECMO.cpp
   HowTo-EngineUse.cpp
   HowTo-EnvironmentChange.cpp
@@ -23,6 +24,7 @@ add_executable_ex(HowToDriver
   HowTo-ExpandedVasculature.cpp
   HowTo-Hemorrhage.cpp
   HowTo-Hemothorax.cpp
+  HowTo-IsoShuntAnalysis.cpp
   HowTo-Pneumonia.cpp
   HowTo-MechanicalVentilation.cpp
   HowTo-MechanicalVentilator.cpp

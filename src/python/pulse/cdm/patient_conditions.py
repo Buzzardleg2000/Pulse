@@ -5,6 +5,7 @@ from pulse.cdm.engine import SECondition
 from pulse.cdm.physiology import eLungCompartment
 from pulse.cdm.scalars import SEScalar0To1, SEScalarArea, SEScalarVolume
 
+
 class SEPatientCondition(SECondition):
     __slots__ = ["_active"]
     def __init__(self):
@@ -18,6 +19,7 @@ class SEPatientCondition(SECondition):
         self._active = active
     def get_name(self):
         return self.__repr__()
+
 
 class SEAcuteRespiratoryDistressSyndrome(SEPatientCondition):
     __slots__ = ["_severities"]
@@ -56,6 +58,7 @@ class SEAcuteRespiratoryDistressSyndrome(SEPatientCondition):
             out += ("\t{}  Severity: {}\n").format(c, s)
         return out
 
+
 class SEChronicAnemia(SEPatientCondition):
     __slots__ = ['_reduction_factor']
 
@@ -81,6 +84,7 @@ class SEChronicAnemia(SEPatientCondition):
         return ("Chronic Anemia\n"
                 "  Reduction Factor: {}").format(self._reduction_factor)
 
+
 class SEChronicHeartFailure(SEPatientCondition):
     __slots__ = []
 
@@ -88,6 +92,7 @@ class SEChronicHeartFailure(SEPatientCondition):
         super().__init__()
         print("No Functionality in this condition")
         pass
+
 
 class SEChronicObstructivePulmonaryDisease(SEPatientCondition):
     __slots__ = ["_bronchitis_severity", "_emphysema_severities"]
@@ -135,6 +140,7 @@ class SEChronicObstructivePulmonaryDisease(SEPatientCondition):
         for c, s in self._severities.items():
             out += ("\t{} Emphysema Severity: {}\n").format(c, s)
 
+
 class SEChronicPericardialEffusion(SEPatientCondition):
     __slots__ = ["_accumulated_volume"]
 
@@ -156,6 +162,7 @@ class SEChronicPericardialEffusion(SEPatientCondition):
     def __repr__(self):
         return ("Chronic Pericardial Effusion\n"
                 "  Accumulated Volume: {}").format(self._accumulated_volume)
+
 
 class SEChronicRenalStenosis(SEPatientCondition):
     __slots__ = ["_right_kidney_severity", "_left_kidney_severity"]
@@ -188,7 +195,6 @@ class SEChronicRenalStenosis(SEPatientCondition):
         return ("Chronic Renal Stenosis\n"
                 "  Right Kidney Severity: {}\n"
                 "  Left Kidney Severity: {}").format(self._right_kidney_severity, self._left_kidney_severity)
-
 class SEChronicVentricularSystolicDysfunction(SEPatientCondition):
     __slots__ = []
 
@@ -198,6 +204,29 @@ class SEChronicVentricularSystolicDysfunction(SEPatientCondition):
         return ("Chronic Ventricular Systolic Dysfunction\n")
     def is_valid(self):
         return True
+
+
+class SEDehydration(SEPatientCondition):
+    __slots__ = ["_severity"]
+
+    def __init__(self):
+        super().__init__()
+        self._severity = None
+    def clear(self):
+        if self._severity is not None:
+            self._severity.invalidate()
+    def is_valid(self):
+        return self.has_severity()
+    def has_severity(self):
+        return self._severity is not None
+    def get_severity(self):
+        if self._severity is None:
+            self._severity = SEScalar0To1()
+        return self._severity
+    def __repr__(self):
+        return ("Pulmonary Shunt\n"
+                "  Severity: {}\n").format(self._severity)
+
 
 class SEImpairedAlveolarExchange(SEPatientCondition):
     __slots__ = ["_impaired_surface_area", "_impaired_fraction", "_severity"]
@@ -319,6 +348,7 @@ class SEPulmonaryShunt(SEPatientCondition):
     def __repr__(self):
         return ("Pulmonary Shunt\n"
                 "  Severity: {}\n").format(self._severity)
+
 
 class SESepsis(SEPatientCondition):
     __slots__ = ["_severity"]

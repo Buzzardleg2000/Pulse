@@ -125,6 +125,11 @@ def serialize_condition_manager_to_bind(condition_manager: SEConditionManager, d
         serialize_chronic_ventricular_systolic_dysfunction_to_bind(condition_manager.get_chronic_ventricular_systolic_dysfunction(),
                                                                    any_condition.PatientCondition.ChronicVentricularSystolicDysfunction)
         dst.AnyCondition.append(any_condition)
+    if condition_manager.has_dehydration():
+        any_condition = AnyConditionData()
+        serialize_dehydration_to_bind(condition_manager.get_dehydration(),
+                                          any_condition.PatientCondition.Dehydration)
+        dst.AnyCondition.append(any_condition)
     if condition_manager.has_impaired_alveolar_exchange():
         any_condition = AnyConditionData()
         serialize_impaired_alveolar_exchange_to_bind(condition_manager.get_impaired_alveolar_exchange(),

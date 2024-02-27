@@ -258,7 +258,7 @@ from pulse.cdm.patient_conditions import *
 
 class SEConditionManager():
     __slots__ = ["_ards", "_anemia", "_copd", "_cvsd", "_impaired_alveolar_exchange",
-                 "_pericardial_effusion", "_pneumonia",
+                 "_dehydration", "_pericardial_effusion", "_pneumonia",
                  "_pulmonary_fibrosis", "_pulmonary_shunt", "_renal_stenosis", "_sepsis",
                  "_initial_environmental_conditions"]
 
@@ -270,6 +270,7 @@ class SEConditionManager():
         self._anemia = None
         self._copd = None
         self._cvsd = None
+        self._dehydration = None
         self._impaired_alveolar_exchange = None
         self._pericardial_effusion = None
         self._pneumonia = None
@@ -291,6 +292,8 @@ class SEConditionManager():
         if self.has_chronic_pericardial_effusion():
             return False
         if self.has_chronic_renal_stenosis():
+            return False
+        if self.has_dehydration():
             return False
         if self.has_impaired_alveolar_exchange():
             return False
@@ -361,6 +364,15 @@ class SEConditionManager():
     def remove_chronic_renal_stenosis(self):
         self._renal_stenosis = None
 
+    def has_dehydration(self):
+        return False if self._dehydration is None else self._dehydration.is_valid()
+    def get_dehydration(self):
+        if self._dehydration is None:
+            self._dehydration = SEDehydration()
+        return self._dehydration
+    def remove_dehydration(self):
+        self._dehydration = None
+
     def has_impaired_alveolar_exchange(self):
         return False if self._impaired_alveolar_exchange is None else self._impaired_alveolar_exchange.is_valid()
     def get_impaired_alveolar_exchange(self):
@@ -387,6 +399,7 @@ class SEConditionManager():
         return self._pulmonary_fibrosis
     def remove_pulmonary_fibrosis(self):
         self._pulmonary_fibrosis = None
+
     def has_pulmonary_shunt(self):
         return False if self._pulmonary_shunt is None else self._pulmonary_shunt.is_valid()
     def get_pulmonary_shunt(self):

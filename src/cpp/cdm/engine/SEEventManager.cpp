@@ -77,11 +77,17 @@ void SEEventManager::SetEvent(eEvent type, bool active, const SEScalarTime& time
       case eEvent::Hyperglycemia:
         m_ss << " Patient has Hyperglycemia";
         break;
+      case eEvent::Hypernatremia:
+        m_ss << " Patient has Hypernatremia";
+        break;
       case eEvent::Hyperthermia:
         m_ss << " Patient is Hyperthermic";
         break;
       case eEvent::Hypoglycemia:
         m_ss << " Patient has Hypoglycemia";
+        break;
+      case eEvent::Hyponatremia:
+        m_ss << " Patient has Hyponatremia";
         break;
       case eEvent::Hypothermia:
         m_ss << " Patient is Hypothermic";
@@ -235,11 +241,17 @@ void SEEventManager::SetEvent(eEvent type, bool active, const SEScalarTime& time
       case eEvent::Hyperglycemia:
         m_ss << " Patient no longer has Hyperglycemia";
         break;
+      case eEvent::Hypernatremia:
+        m_ss << " Patient no longer has Hypernatremia";
+        break;
       case eEvent::Hyperthermia:
         m_ss << " Patient is no longer has Hyperthermic";
         break;
       case eEvent::Hypoglycemia:
         m_ss << " Patient no longer has Hypoglycemia";
+        break;
+      case eEvent::Hyponatremia:
+        m_ss << " Patient no longer has Hyponatremia";
         break;
       case eEvent::Hypothermia:
         m_ss << " Patient is no longer has Hypothermic";

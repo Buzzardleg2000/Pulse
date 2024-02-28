@@ -1902,21 +1902,18 @@ namespace pulse
       for (const SESubstanceConcentration* component : m_data.GetSubstances().GetCompound("Sweat")->GetComponents())
       {
         double concentration_g_Per_L = component->GetConcentration(MassPerVolumeUnit::g_Per_L);
-        double massLost_g = concentration_g_Per_L * intracellularPerspiredVolume_mL / 1000.0;
-        SELiquidSubstanceQuantity* quantity = tissue->GetIntracellular().GetSubstanceQuantity(component->GetSubstance());
-        massLost_g = MIN(quantity->GetMass(MassUnit::g), massLost_g);
-        quantity->GetMass().IncrementValue(-massLost_g, MassUnit::g);
-        quantity->Balance(BalanceLiquidBy::Mass);
-      }
-
-      for (const SESubstanceConcentration* component : m_data.GetSubstances().GetCompound("Sweat")->GetComponents())
-      {
-        double concentration_g_Per_L = component->GetConcentration(MassPerVolumeUnit::g_Per_L);
-        double massLost_g = concentration_g_Per_L * extracellularPerspiredVolume_mL / 1000.0;
-        SELiquidSubstanceQuantity* quantity = tissue->GetExtracellular().GetSubstanceQuantity(component->GetSubstance());
-        massLost_g = MIN(quantity->GetMass(MassUnit::g), massLost_g);
-        quantity->GetMass().IncrementValue(-massLost_g, MassUnit::g);
-        quantity->Balance(BalanceLiquidBy::Mass);
+        // Intracellular
+        double intracellularMassLost_g = concentration_g_Per_L * intracellularPerspiredVolume_mL / 1000.0;
+        SELiquidSubstanceQuantity* intracellularQuantity = tissue->GetIntracellular().GetSubstanceQuantity(component->GetSubstance());
+        intracellularMassLost_g = MIN(intracellularQuantity->GetMass(MassUnit::g), intracellularMassLost_g);
+        intracellularQuantity->GetMass().IncrementValue(-intracellularMassLost_g, MassUnit::g);
+        intracellularQuantity->Balance(BalanceLiquidBy::Mass);
+        // Extracellular
+        double extracellularMassLost_g = concentration_g_Per_L * extracellularPerspiredVolume_mL / 1000.0;
+        SELiquidSubstanceQuantity* extracellularQuantity = tissue->GetExtracellular().GetSubstanceQuantity(component->GetSubstance());
+        extracellularMassLost_g = MIN(extracellularQuantity->GetMass(MassUnit::g), extracellularMassLost_g);
+        extracellularQuantity->GetMass().IncrementValue(-extracellularMassLost_g, MassUnit::g);
+        extracellularQuantity->Balance(BalanceLiquidBy::Mass);
       }
     }
   }

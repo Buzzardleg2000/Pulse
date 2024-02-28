@@ -242,7 +242,7 @@ namespace pulse
     shunt = MIN(shunt, 1.0);
     GetShuntFraction().SetValue(shunt);
 
-    CheckBloodGasLevels();
+    CheckBloodSubstanceLevels();
 
     // Total up all active substances
     double bloodMass_ug;
@@ -286,13 +286,14 @@ namespace pulse
 
   //--------------------------------------------------------------------------------------------------
   /// \brief
-  /// Checks the blood gas (oxygen, carbon dioxide) levels and sets events.
+  /// Checks the blood gas (oxygen, carbon dioxide) and other substance levels and sets events.
   ///
   /// \details
   /// Checks the oxygen and carbon dioxide levels in specific compartments of the body. 
-  /// Set events for hypercapnia, Hypoxia, and Brain and MyoCardium Oxygen Deficit based on the levels.
+  /// Set events for hypercapnia, Hypoxia, Brain, Oxygen Deficit, and MyoCardium Oxygen Deficit.
+  /// Also checks sodium levels and sets the hyponatremia and hypernatremia events.
   //--------------------------------------------------------------------------------------------------
-  void BloodChemistryModel::CheckBloodGasLevels()
+  void BloodChemistryModel::CheckBloodSubstanceLevels()
   {
     m_ArterialOxygen_mmHg->Sample(m_AortaO2->GetPartialPressure(PressureUnit::mmHg));
     m_ArterialCarbonDioxide_mmHg->Sample(m_AortaCO2->GetPartialPressure(PressureUnit::mmHg));
@@ -364,6 +365,30 @@ namespace pulse
         {
           m_data.GetEvents().SetEvent(eEvent::SevereHypocapnia, false, m_data.GetSimulationTime());
           m_data.GetEvents().SetEvent(eEvent::ModerateHypocapnia, false, m_data.GetSimulationTime());
+        }
+
+        // sodium check
+        double sodiumMolarity_mEq_Per_L = m_Aorta->GetSubstanceQuantity(m_data.GetSubstances().GetSodium())->GetMolarity(AmountPerVolumeUnit::mEq_Per_L);
+
+        // Give little buffers to prevent lots of flipping at inflection points
+        double buffer_mEq_Per_L = 1.0;
+
+        if (sodiumMolarity_mEq_Per_L < 135.0 || ///\cite rondon2017hyponatremia
+          (m_data.GetEvents().IsEventActive(eEvent::Hyponatremia) && sodiumMolarity_mEq_Per_L < 135.0 + buffer_mEq_Per_L))
+        {
+          m_data.GetEvents().SetEvent(eEvent::Hyponatremia, true, m_data.GetSimulationTime());
+          m_data.GetEvents().SetEvent(eEvent::Hypernatremia, false, m_data.GetSimulationTime());
+        }
+        else if (sodiumMolarity_mEq_Per_L > 145.0 || ///\cite Lewis2023Hypernatremia
+          (m_data.GetEvents().IsEventActive(eEvent::Hypernatremia) && sodiumMolarity_mEq_Per_L > 145.0 - buffer_mEq_Per_L))
+        {
+          m_data.GetEvents().SetEvent(eEvent::Hyponatremia, false, m_data.GetSimulationTime());
+          m_data.GetEvents().SetEvent(eEvent::Hypernatremia, true, m_data.GetSimulationTime());
+        }
+        else
+        {
+          m_data.GetEvents().SetEvent(eEvent::Hyponatremia, false, m_data.GetSimulationTime());
+          m_data.GetEvents().SetEvent(eEvent::Hypernatremia, false, m_data.GetSimulationTime());
         }
       }
 

@@ -1,6 +1,6 @@
 {
-  "Name":"SevereDehydration",
-  "Description":"Severely dehydrated patient from excessive sweating.",
+  "Name":"MildDehydration",
+  "Description":"Mildly dehydrated patient from excessive sweating.",
   "PatientConfiguration": {
     "PatientFile": "StandardMale.json",
     "Conditions": { "AnyCondition": [{
@@ -8,7 +8,7 @@
         "Dehydration": {
           "Severity": {
             "Scalar0To1": {
-              "Value": 0.9
+              "Value": 0.3
             }
           }
         }

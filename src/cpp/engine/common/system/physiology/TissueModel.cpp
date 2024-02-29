@@ -466,8 +466,11 @@ namespace pulse
             // Sodium is special. We need to diffuse for renal function.
             // We will not treat sodium any differently once diffusion functionality is fully implemented.
             if (sub == m_Sodium)
+            {
               MoveMassByInstantDiffusion(*vascular, extracellular, *sub);
-
+              vascular->GetSubstanceQuantity(*sub)->Balance(BalanceLiquidBy::Mass);
+              extracellular.GetSubstanceQuantity(*sub)->Balance(BalanceLiquidBy::Mass);
+            }
             continue;
           }
 

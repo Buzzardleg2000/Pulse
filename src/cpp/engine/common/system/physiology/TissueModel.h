@@ -99,6 +99,7 @@ namespace pulse
     SESubstance* m_Sodium;
     SESubstance* m_Calcium;
     SESubstance* m_Insulin;
+    SESubstanceCompound* m_Sweat;
 
     SEFluidCircuitNode* m_GutT1;
     SEFluidCircuitPath* m_GutT1ToGutT3;

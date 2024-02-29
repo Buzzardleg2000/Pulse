@@ -189,6 +189,8 @@ namespace pulse
     m_Insulin = &m_data.GetSubstances().GetInsulin();
     m_Tristearin = &m_data.GetSubstances().GetTristearin();
 
+    m_Sweat = m_data.GetSubstances().GetCompound("Sweat");
+
     m_GutT1 = m_data.GetCircuits().GetActiveCardiovascularCircuit().GetNode(pulse::TissueNode::GutT1);
     m_GutT1ToGutT3 = m_data.GetCircuits().GetActiveCardiovascularCircuit().GetPath(pulse::TissuePath::GutT1ToGutT3);
 
@@ -1767,9 +1769,7 @@ namespace pulse
   void TissueModel::Dehydration()
   {
     if (!m_data.GetConditions().HasDehydration())
-    {
       return;
-    }
 
     double severity = m_data.GetConditions().GetDehydration().GetSeverity().GetValue();
 
@@ -1870,22 +1870,22 @@ namespace pulse
       vascular = tissueVascular.second;
 
       //Update all intracellular compartment volumes (they have no circuit nodes)
-      tissue->GetIntracellular().GetVolume().SetValue((intracellularVolumeChangeMultiplier) *tissue->GetIntracellular().GetVolume(VolumeUnit::mL), VolumeUnit::mL);
+      tissue->GetIntracellular().GetVolume().SetValue((intracellularVolumeChangeMultiplier) * tissue->GetIntracellular().GetVolume(VolumeUnit::mL), VolumeUnit::mL);
 
       //--------------------------------------------------------------------
-
       //Remove substances that are lost through perspiration
       double vascularPerspiredVolume_mL = vascularVolumeChangeFraction * vascular->GetVolume(VolumeUnit::mL);
       double intracellularPerspiredVolume_mL = intracellularVolumeChangeFraction * tissue->GetIntracellular().GetVolume(VolumeUnit::mL);
       double extracellularPerspiredVolume_mL = extracellularVolumeChangeFraction * tissue->GetExtracellular().GetVolume(VolumeUnit::mL);
 
-      for (const SESubstanceConcentration* component : m_data.GetSubstances().GetCompound("Sweat")->GetComponents())
+      for (const SESubstanceConcentration* component : m_Sweat->GetComponents())
       {
         double concentration_g_Per_L = component->GetConcentration(MassPerVolumeUnit::g_Per_L);
-        double massLost_g = concentration_g_Per_L * vascularPerspiredVolume_mL / 1000.0;
-        SELiquidSubstanceQuantity* quantity = vascular->GetSubstanceQuantity(component->GetSubstance());
-        massLost_g = MIN(quantity->GetMass(MassUnit::g), massLost_g);
-        if (quantity->GetMass().IsReadOnly())
+        // Vasculature
+        double vascularMassLost_g = concentration_g_Per_L * vascularPerspiredVolume_mL / 1000.0;
+        SELiquidSubstanceQuantity* vascularQuantity = vascular->GetSubstanceQuantity(component->GetSubstance());
+        vascularMassLost_g = MIN(vascularQuantity->GetMass(MassUnit::g), vascularMassLost_g);
+        if (vascularQuantity->GetMass().IsReadOnly())
         {
           //TODO: Why doesn't this work?
           //quantity->GetMass().SetReadOnly(false);
@@ -1894,26 +1894,24 @@ namespace pulse
         }
         else
         {
-          quantity->GetMass().IncrementValue(-massLost_g, MassUnit::g);
+          vascularQuantity->GetMass().IncrementValue(-vascularMassLost_g, MassUnit::g);
         }
-        quantity->Balance(BalanceLiquidBy::Mass);
-      }
+        vascularQuantity->Balance(BalanceLiquidBy::Mass);
 
-      for (const SESubstanceConcentration* component : m_data.GetSubstances().GetCompound("Sweat")->GetComponents())
-      {
-        double concentration_g_Per_L = component->GetConcentration(MassPerVolumeUnit::g_Per_L);
         // Intracellular
         double intracellularMassLost_g = concentration_g_Per_L * intracellularPerspiredVolume_mL / 1000.0;
         SELiquidSubstanceQuantity* intracellularQuantity = tissue->GetIntracellular().GetSubstanceQuantity(component->GetSubstance());
         intracellularMassLost_g = MIN(intracellularQuantity->GetMass(MassUnit::g), intracellularMassLost_g);
         intracellularQuantity->GetMass().IncrementValue(-intracellularMassLost_g, MassUnit::g);
         intracellularQuantity->Balance(BalanceLiquidBy::Mass);
+
         // Extracellular
         double extracellularMassLost_g = concentration_g_Per_L * extracellularPerspiredVolume_mL / 1000.0;
         SELiquidSubstanceQuantity* extracellularQuantity = tissue->GetExtracellular().GetSubstanceQuantity(component->GetSubstance());
         extracellularMassLost_g = MIN(extracellularQuantity->GetMass(MassUnit::g), extracellularMassLost_g);
         extracellularQuantity->GetMass().IncrementValue(-extracellularMassLost_g, MassUnit::g);
         extracellularQuantity->Balance(BalanceLiquidBy::Mass);
+
       }
     }
   }

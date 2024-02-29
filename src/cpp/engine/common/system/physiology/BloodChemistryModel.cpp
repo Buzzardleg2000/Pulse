@@ -265,6 +265,34 @@ namespace pulse
     GetTotalProteinConcentration().SetValue(albuminConcentration_ug_Per_mL * 1.6, MassPerVolumeUnit::ug_Per_mL);
     // 1.6 comes from reading http://www.drkaslow.com/html/proteins_-_albumin-_globulins-_etc.html
     ComputeExposedModelParameters();
+
+    // Compute plasma osmolality and osmolarity by looking at the aorta
+    // Specific gravity is calculated by dividing the mass of all the substances in a fluid & the fluid itself by the weight of just the fluid
+    SEScalarMass substanceMass;
+    for (SELiquidSubstanceQuantity* subQ : m_Aorta->GetSubstanceQuantities())
+    {
+      if (subQ->HasMass())
+        substanceMass.Increment(subQ->GetMass());
+    }
+
+    // Increment water mass onto substance mass to get total mass:
+    SEScalar specificGravity;
+    if (!GeneralMath::CalculateSpecificGravity(substanceMass, m_Aorta->GetVolume(), specificGravity))
+      Error("Unable to calculate specific gravity of aorta substances");
+
+    // Osmolality is the osmotic pressure of sodium, glucose and urea over the weight of the fluid
+    GeneralMath::CalculateOsmolality(m_Aorta->GetSubstanceQuantity(m_data.GetSubstances().GetSodium())->GetMolarity(),
+      m_Aorta->GetSubstanceQuantity(m_data.GetSubstances().GetPotassium())->GetMolarity(),
+      m_Aorta->GetSubstanceQuantity(m_data.GetSubstances().GetGlucose())->GetMolarity(),
+      m_Aorta->GetSubstanceQuantity(m_data.GetSubstances().GetUrea())->GetMolarity(),
+      specificGravity,
+      GetPlasmaOsmolality());
+
+    GeneralMath::CalculateOsmolarity(m_Aorta->GetSubstanceQuantity(m_data.GetSubstances().GetSodium())->GetMolarity(),
+      m_Aorta->GetSubstanceQuantity(m_data.GetSubstances().GetPotassium())->GetMolarity(),
+      m_Aorta->GetSubstanceQuantity(m_data.GetSubstances().GetGlucose())->GetMolarity(),
+      m_Aorta->GetSubstanceQuantity(m_data.GetSubstances().GetUrea())->GetMolarity(), 
+      GetPlasmaOsmolarity());
   }
 
   //--------------------------------------------------------------------------------------------------

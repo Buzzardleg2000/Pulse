@@ -6,6 +6,21 @@
       {
         "MonitorPlotter":
         {
+          "Comment": "Dehydration Validation (Scenario 0) Monitors",
+          "PlotConfig":
+          {
+            "LegendMode": "NoLegends", "OutputPathOverride": "./docs/html/plots/Dehydration/"
+          },
+          "PlotSource":
+          { "CSVData": "$VERIFICATION_DIR/scenarios/Dehydration/Scenario0Results.csv" },
+          "Vitals": true, "Ventilator": false, "OutputPrefix": "Scenario0-",
+          "DataRequestedFile": "$VERIFICATION_DIR/scenarios/Dehydration/Scenario0Results-Segments.json"
+        }
+      }
+      ,
+      {
+        "MonitorPlotter":
+        {
           "Comment": "Dehydration Validation (Scenario 1) Monitors",
           "PlotConfig":
           {
@@ -55,23 +70,30 @@
     [
       {
         "TableName": "Segment1SegmentTable",
+        "ScenarioName": "Scenario0",
+        "Segment": 1,
+        "DataRequestFile": ["StandardDataRequests.json", "DehydrationDataRequests.json"],
+        "Header": []
+      },
+      {
+        "TableName": "Segment1SegmentTable",
         "ScenarioName": "Scenario1",
         "Segment": 1,
-        "DataRequestFile": ["DehydrationDataRequests.json"],
+        "DataRequestFile": ["StandardDataRequests.json", "DehydrationDataRequests.json"],
         "Header": []
       },
       {
         "TableName": "Segment1SegmentTable",
         "ScenarioName": "Scenario2",
         "Segment": 1,
-        "DataRequestFile": ["DehydrationDataRequests.json"],
+        "DataRequestFile": ["StandardDataRequests.json", "DehydrationDataRequests.json"],
         "Header": []
       },
       {
         "TableName": "Segment1SegmentTable",
         "ScenarioName": "Scenario3",
         "Segment": 1,
-        "DataRequestFile": ["DehydrationDataRequests.json"],
+        "DataRequestFile": ["StandardDataRequests.json", "DehydrationDataRequests.json"],
         "Header": []
       }
     ]

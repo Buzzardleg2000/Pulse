@@ -9,6 +9,10 @@
     { "DecimalFormat": { "Precision": 2 }, "Category": "Physiology", "PropertyName": "IntracellularFluidVolume", "Unit": "L"        },
     { "DecimalFormat": { "Precision": 2 }, "Category": "Physiology", "PropertyName": "SweatRate",                "Unit": "mg/min"   },
     { "DecimalFormat": { "Precision": 2 }, "Category": "Physiology", "PropertyName": "MeanSkinFlow",             "Unit": "L/min"    },
+    { "DecimalFormat": { "Precision": 3 }, "Category": "Physiology", "PropertyName": "PulsePressure",            "Unit": "mmHg"     },
+
+    { "DecimalFormat": { "Precision": 3 }, "Category": "Physiology", "PropertyName":"PlasmaOsmolality", "Unit":"mOsm/kg"  },
+    { "DecimalFormat": { "Precision": 3 }, "Category": "Physiology", "PropertyName":"PlasmaOsmolarity", "Unit":"mOsm/L"  },
 
     { "DecimalFormat": { "Precision": 3 }, "Category": "Physiology", "PropertyName":"UrineOsmolality", "Unit":"mOsm/kg"  },
     { "DecimalFormat": { "Precision": 3 }, "Category": "Physiology", "PropertyName":"UrineOsmolarity", "Unit":"mOsm/L"  },

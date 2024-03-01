@@ -333,8 +333,6 @@ namespace pulse
     double rate_mL_Per_s = 0;
     double totalRate_mL_Per_s = 0;
     double massIncrement_ug = 0;
-    double patientMass_kg = m_data.GetCurrentPatient().GetWeight(MassUnit::kg);
-    double densityFluid_kg_Per_mL = 0.0;
 
     std::vector<const SESubstanceCompound*> emptyBags;
 
@@ -369,12 +367,6 @@ namespace pulse
         subQ->GetMass().IncrementValue(massIncrement_ug, MassUnit::ug);
         subQ->Balance(BalanceLiquidBy::Mass);
       }
-
-      if (compound == m_Saline)
-        densityFluid_kg_Per_mL = m_data.GetConfiguration().GetWaterDensity(MassPerVolumeUnit::kg_Per_mL);
-      else if (compound == m_Blood)
-        densityFluid_kg_Per_mL = m_data.GetBloodChemistry().GetBloodDensity(MassPerVolumeUnit::kg_Per_mL);
-      patientMass_kg -= rate_mL_Per_s * densityFluid_kg_Per_mL * m_data.GetTimeStep_s();
     }
 
     for (const SESubstanceCompound* c : emptyBags)
@@ -383,7 +375,6 @@ namespace pulse
       m_data.GetActions().GetPatientActions().RemoveSubstanceCompoundInfusion(*c);
     }
 
-    m_data.GetCurrentPatient().GetWeight().SetValue(patientMass_kg, MassUnit::kg);
     m_IVToVenaCava->GetNextFlowSource().SetValue(totalRate_mL_Per_s, VolumePerTimeUnit::mL_Per_s);
   }
 

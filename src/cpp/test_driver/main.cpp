@@ -162,7 +162,6 @@ int main(int argc, char* argv[])
       //cdmTest.PolarizedCapacitorTest(cdmDir);
       //cdmTest.PreChargeComplianceZeroVolume(cdmDir);
       //cdmTest.PreChargeComplianceNonZeroVolume(cdmDir);
-      //cdmTest.ComplianceVolumeChange(cdmDir);
       //cdmTest.CircuitLockingTest(cdmDir);
       //cdmTest.ComplianceVolumeChange(cdmDir);
 

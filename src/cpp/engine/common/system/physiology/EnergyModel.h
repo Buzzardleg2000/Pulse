@@ -46,7 +46,7 @@ namespace pulse
 
     // Preprocess Methods
     void CalculateMetabolicHeatGeneration();
-    void CalculateSweatRate();
+    void Perspiration();
     void UpdateHeatResistance();
     // Actions/Conditions
     void Exercise();
@@ -69,18 +69,22 @@ namespace pulse
 
     // Stateless member variable (Set in SetUp())
     // Cmpts,Substance, and nodes
+    SELiquidCompartment*        m_SkinExtracellular;
     SELiquidSubstanceQuantity*  m_AortaHCO3;
     //Nodes
     SEThermalCircuitNode*       m_coreNode;
     SEThermalCircuitNode*       m_skinNode;
     //Paths
-    SEThermalCircuitPath*       m_temperatureGroundToCorePath;
+    SEThermalCircuitPath*       m_groundToCorePath;
+    SEThermalCircuitPath*       m_coreToGroundPath;
     SEThermalCircuitPath*       m_coreToSkinPath;
     SEFluidCircuitPath*         m_skinExtravascularToSweatingGroundPath;
     //Circuits
     SEThermalCircuit*           m_InternalTemperatureCircuit;
     SEThermalCircuit*           m_TemperatureCircuit;
     SEThermalCircuitCalculator* m_circuitCalculator;
+    //Substances
+    SESubstanceCompound*        m_Sweat;
   };
 END_NAMESPACE
 

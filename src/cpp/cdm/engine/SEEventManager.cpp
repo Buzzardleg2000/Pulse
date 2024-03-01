@@ -71,6 +71,9 @@ void SEEventManager::SetEvent(eEvent type, bool active, const SEScalarTime& time
       case eEvent::Fasciculation:
         m_ss << "Patient has Fasciculation";
         break;
+      case eEvent::Fatigue:
+        m_ss << "Patient has Fatigue";
+        break;
       case eEvent::FunctionalIncontinence:
         m_ss << " Patient has involuntarily emptied their bladder";
         break;
@@ -80,11 +83,17 @@ void SEEventManager::SetEvent(eEvent type, bool active, const SEScalarTime& time
       case eEvent::Hyperglycemia:
         m_ss << " Patient has Hyperglycemia";
         break;
+      case eEvent::Hypernatremia:
+        m_ss << " Patient has Hypernatremia";
+        break;
       case eEvent::Hyperthermia:
         m_ss << " Patient is Hyperthermic";
         break;
       case eEvent::Hypoglycemia:
         m_ss << " Patient has Hypoglycemia";
+        break;
+      case eEvent::Hyponatremia:
+        m_ss << " Patient has Hyponatremia";
         break;
       case eEvent::Hypothermia:
         m_ss << " Patient is Hypothermic";
@@ -92,14 +101,14 @@ void SEEventManager::SetEvent(eEvent type, bool active, const SEScalarTime& time
       case eEvent::Hypoxia:
         m_ss << " Patient has Hypoxia";
         break;
+      case eEvent::HypovolemicShock:
+        m_ss << " Patient is in Hypovolemic Shock";
+        break;
       case eEvent::IntracranialHypertension:
         m_ss << " Patient has Intracranial Hypertension";
         break;
       case eEvent::IntracranialHypotension:
         m_ss << " Patient has Intracranial Hypotension";
-        break;
-      case eEvent::HypovolemicShock:
-        m_ss << " Patient is in Hypovolemic Shock";
         break;
       case eEvent::IrreversibleState:
         m_ss << " Patient has entered irreversible state";
@@ -122,6 +131,9 @@ void SEEventManager::SetEvent(eEvent type, bool active, const SEScalarTime& time
       case eEvent::MetabolicAcidosis:
         m_ss << " The patient is in a state of metabolic acidosis";
         break;
+      case eEvent::MetabolicAlkalosis:
+        m_ss << " The patient is in a state of metabolic alkalosis";
+        break;
       case eEvent::MinimalHemothorax:
         m_ss << " Patient has Minimal Hemothorax";
         break;
@@ -130,9 +142,6 @@ void SEEventManager::SetEvent(eEvent type, bool active, const SEScalarTime& time
         break;
       case eEvent::ModerateHypocapnia:
         m_ss << " The patient is in a state of moderate hypocapnia";
-        break;
-      case eEvent::MetabolicAlkalosis:
-        m_ss << " The patient is in a state of metabolic alkalosis";
         break;
       case eEvent::MyocardiumOxygenDeficit:
         m_ss << " The patient's heart is not receiving enough oxygen";
@@ -146,8 +155,11 @@ void SEEventManager::SetEvent(eEvent type, bool active, const SEScalarTime& time
       case eEvent::RenalHypoperfusion:
         m_ss << " Patient has Renal Hypoperfusion";
         break;
-      case eEvent::Stabilization:
-        m_ss << " Engine is stabilizing";
+      case eEvent::RespiratoryAcidosis:
+        m_ss << " Patient has Respiratory Acidosis";
+        break;
+      case eEvent::RespiratoryAlkalosis:
+        m_ss << " Patient has Respiratory Alkalosis";
         break;
       case eEvent::SevereHyperoxemia:
         m_ss << " The patient is in a state of moderate hyperoxemia";
@@ -155,14 +167,14 @@ void SEEventManager::SetEvent(eEvent type, bool active, const SEScalarTime& time
       case eEvent::SevereHypocapnia:
         m_ss << " The patient is in a state of severe hypocapnia";
         break;
+      case eEvent::Stabilizing:
+        m_ss << " Engine is stabilizing";
+        break;
       case eEvent::Tachycardia:
         m_ss << " Patient has Tachycardia";
         break;
       case eEvent::Tachypnea:
         m_ss << " Patient has Tachypnea";
-        break;
-      case eEvent::Fatigue:
-        m_ss << "Patient has fatigue";
         break;
       case eEvent::StartOfCardiacCycle:
       case eEvent::StartOfExhale:
@@ -181,6 +193,12 @@ void SEEventManager::SetEvent(eEvent type, bool active, const SEScalarTime& time
         break;
       case eEvent::MechanicalVentilatorReliefValveActive:
         m_ss << "Mechanical Ventilator Relief valve active - pressure exceeded";
+        break;
+      case eEvent::SupplementalOxygenBottleExhausted:
+        m_ss << "Supplemental oxygen bottle is exhausted";
+        break;
+      case eEvent::NonRebreatherMaskOxygenBagEmpty:
+        m_ss << "Non-rebreather mask oxygen bag is empty";
         break;
       default:
         m_ss << " Engine has entered state : " << eEvent_Name(type);
@@ -223,6 +241,9 @@ void SEEventManager::SetEvent(eEvent type, bool active, const SEScalarTime& time
       case eEvent::Fasciculation:
         m_ss << "Patient no longer has fasciculations";
         break;
+      case eEvent::Fatigue:
+        m_ss << "Patient is no longer fatigued";
+        break;
       case eEvent::FunctionalIncontinence:
         m_ss << " Patient has an empty bladder";
         break;
@@ -232,11 +253,17 @@ void SEEventManager::SetEvent(eEvent type, bool active, const SEScalarTime& time
       case eEvent::Hyperglycemia:
         m_ss << " Patient no longer has Hyperglycemia";
         break;
+      case eEvent::Hypernatremia:
+        m_ss << " Patient no longer has Hypernatremia";
+        break;
       case eEvent::Hyperthermia:
         m_ss << " Patient is no longer has Hyperthermic";
         break;
       case eEvent::Hypoglycemia:
         m_ss << " Patient no longer has Hypoglycemia";
+        break;
+      case eEvent::Hyponatremia:
+        m_ss << " Patient no longer has Hyponatremia";
         break;
       case eEvent::Hypothermia:
         m_ss << " Patient is no longer has Hypothermic";
@@ -298,8 +325,11 @@ void SEEventManager::SetEvent(eEvent type, bool active, const SEScalarTime& time
       case eEvent::RenalHypoperfusion:
         m_ss << " Patient no longer has Renal Hypoperfusion";
         break;
-      case eEvent::Stabilization:
-        m_ss << " Engine completed stabilizing";
+      case eEvent::RespiratoryAcidosis:
+        m_ss << " Patient no longer has Respiratory Acidosis";
+        break;
+      case eEvent::RespiratoryAlkalosis:
+        m_ss << " Patient no longer has Respiratory Alkalosis";
         break;
       case eEvent::SevereHyperoxemia:
         m_ss << " The patient is no longer in a state of severe hyperoxemia";
@@ -307,14 +337,14 @@ void SEEventManager::SetEvent(eEvent type, bool active, const SEScalarTime& time
       case eEvent::SevereHypocapnia:
         m_ss << " The patient is no longer in a state of severe hypocapnia";
         break;
+      case eEvent::Stabilizing:
+        m_ss << " Engine completed stabilizing";
+        break;
       case eEvent::Tachycardia:
         m_ss << " Patient no longer has Tachycardia";
         break;
       case eEvent::Tachypnea:
         m_ss << " Patient no longer has Tachypnea";
-        break;
-      case eEvent::Fatigue:
-        m_ss << "Patient is no longer fatigued";
         break;
       case eEvent::StartOfCardiacCycle:
       case eEvent::StartOfExhale:
@@ -333,6 +363,12 @@ void SEEventManager::SetEvent(eEvent type, bool active, const SEScalarTime& time
         break;
       case eEvent::MechanicalVentilatorReliefValveActive:
         m_ss << "Mechanical Ventilator Relief valve inactive - pressure below setting";
+        break;
+      case eEvent::SupplementalOxygenBottleExhausted:
+        m_ss << "Supplemental oxygen bottle is no longer exhausted";
+        break;
+      case eEvent::NonRebreatherMaskOxygenBagEmpty:
+        m_ss << "Non-rebreather mask oxygen bag is now longer empty";
         break;
       default:
         m_ss << " Engine has exited state : " << eEvent_Name(type);

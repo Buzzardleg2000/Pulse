@@ -127,7 +127,6 @@ message NervousData
   double                                    LastMeanArterialPressure_mmHg                       = 9;
   double                                    PreviousBloodVolume_mL                              = 10;
   pulse.cdm.bind.eHeartRhythm               PreviousHeartRhythm                                 = 11;
-  double                                    TotalSympatheticFraction                            = 12;
 }
 
 message RenalData
@@ -216,4 +215,5 @@ message TissueData
   double                                   RestingBloodLipid_mg_Per_mL                         = 5;
   double                                   RestingBloodInsulin_mg_Per_mL                       = 6;
   double                                   RestingFluidMass_kg                                 = 7;
+  double                                   PreviousFluidMass_kg                                = 8;
 }

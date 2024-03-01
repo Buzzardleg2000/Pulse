@@ -49,26 +49,28 @@ message BloodChemistrySystemData
   Scalar0To1Data                       CarbonMonoxideSaturation                       = 7; /**<< @brief The fraction of hemoglobin that is carbon monoxide bound.*/  
   Scalar0To1Data                       Hematocrit                                     = 8; /**<< @brief Volume percentage of red blood cells in the blood.*/
   ScalarMassData                       HemoglobinContent                              = 9; /**<< @brief The total amount of hemoglobin in the blood.*/
-  Scalar0To1Data                       OxygenSaturation                               = 10; /**<< @brief The fraction of hemoglobin that is oxygen bound.*/
+  Scalar0To1Data                       OxygenSaturation                               = 10;/**<< @brief The fraction of hemoglobin that is oxygen bound.*/
   ScalarAmountPerVolumeData            Phosphate                                      = 11;/**<< @brief Sum of all inorganic phosphate in the blood.*/
-  ScalarVolumeData                     PlasmaVolume                                   = 12;/**<< @brief Volume of the plasma.*/
-  Scalar0To1Data                       PulseOximetry                                  = 13;/**<< @brief The fraction of hemoglobin with bound oxygen as measured optically, which can include Carbon Monoxide.*/
-  ScalarAmountPerVolumeData            RedBloodCellCount                              = 14;/**<< @brief Total number of red blood cells in the blood.*/
-  Scalar0To1Data                       ShuntFraction                                  = 15;/**<< @brief Fraction of the blood flow that bypasses the alveoli; therefore, does not engage is gas exchange.*/
-  ScalarAmountPerVolumeData            StrongIonDifference                            = 16;/**<< @brief Difference between the positive and negative strong ion concentrations in the blood.*/
-  ScalarMassPerVolumeData              TotalProteinConcentration                      = 17;/**<< @brief The concentration of urea in the blood.*/
-  Scalar0To1Data                       VolumeFractionNeutralLipidInPlasma             = 18;/**<< @brief Fraction of the plasma that is made up of neutral lipids.*/
-  Scalar0To1Data                       VolumeFractionNeutralPhospholipidInPlasma      = 19;/**<< @brief Fraction of the plasma that is made up of neutral phospholipids.*/
-  ScalarAmountPerVolumeData            WhiteBloodCellCount                            = 20;/**<< @brief Total number of white blood cells in the blood.*/
+  ScalarOsmolalityData                 PlasmaOsmolality                               = 12;/**<< @brief The osmolar pressure contributions of the sodium, urea and glucose divided by the mass of the fluid */
+  ScalarOsmolarityData                 PlasmaOsmolarity                               = 13;/**<< @brief The osmolar pressure contributions of the sodium, urea and glucose divided by the volume of the fluid */
+  ScalarVolumeData                     PlasmaVolume                                   = 14;/**<< @brief Volume of the plasma.*/
+  Scalar0To1Data                       PulseOximetry                                  = 15;/**<< @brief The fraction of hemoglobin with bound oxygen as measured optically, which can include Carbon Monoxide.*/
+  ScalarAmountPerVolumeData            RedBloodCellCount                              = 16;/**<< @brief Total number of red blood cells in the blood.*/
+  Scalar0To1Data                       ShuntFraction                                  = 17;/**<< @brief Fraction of the blood flow that bypasses the alveoli; therefore, does not engage is gas exchange.*/
+  ScalarAmountPerVolumeData            StrongIonDifference                            = 18;/**<< @brief Difference between the positive and negative strong ion concentrations in the blood.*/
+  ScalarMassPerVolumeData              TotalProteinConcentration                      = 19;/**<< @brief The concentration of urea in the blood.*/
+  Scalar0To1Data                       VolumeFractionNeutralLipidInPlasma             = 20;/**<< @brief Fraction of the plasma that is made up of neutral lipids.*/
+  Scalar0To1Data                       VolumeFractionNeutralPhospholipidInPlasma      = 21;/**<< @brief Fraction of the plasma that is made up of neutral phospholipids.*/
+  ScalarAmountPerVolumeData            WhiteBloodCellCount                            = 22;/**<< @brief Total number of white blood cells in the blood.*/
   /** Substance Pressures */
-  ScalarPressureData                   ArterialCarbonDioxidePressure                  = 21;/**<< @brief Partial pressure of carbon dioxide in the aorta.*/
-  ScalarPressureData                   ArterialOxygenPressure                         = 22;/**<< @brief Partial pressure of oxygen in the aorta.*/
-  ScalarPressureData                   PulmonaryArterialCarbonDioxidePressure         = 23;/**<< @brief Partial pressure of carbon dioxide in the pulmonary arteries.*/
-  ScalarPressureData                   PulmonaryArterialOxygenPressure                = 24;/**<< @brief Partial pressure of oxygen in the pulmonary arteries.*/
-  ScalarPressureData                   PulmonaryVenousCarbonDioxidePressure           = 25;/**<< @brief Partial pressure of carbon dioxide in the pulmonary veins.*/
-  ScalarPressureData                   PulmonaryVenousOxygenPressure                  = 26;/**<< @brief Partial pressure of oxygen in the pulmonary veins.*/
-  ScalarPressureData                   VenousCarbonDioxidePressure                    = 27;/**<< @brief Partial pressure of carbon dioxide in the vena cava.*/        
-  ScalarPressureData                   VenousOxygenPressure                           = 28;/**<< @brief Partial pressure of oxygen in the vena cava.*/  
+  ScalarPressureData                   ArterialCarbonDioxidePressure                  = 23;/**<< @brief Partial pressure of carbon dioxide in the aorta.*/
+  ScalarPressureData                   ArterialOxygenPressure                         = 24;/**<< @brief Partial pressure of oxygen in the aorta.*/
+  ScalarPressureData                   PulmonaryArterialCarbonDioxidePressure         = 25;/**<< @brief Partial pressure of carbon dioxide in the pulmonary arteries.*/
+  ScalarPressureData                   PulmonaryArterialOxygenPressure                = 26;/**<< @brief Partial pressure of oxygen in the pulmonary arteries.*/
+  ScalarPressureData                   PulmonaryVenousCarbonDioxidePressure           = 27;/**<< @brief Partial pressure of carbon dioxide in the pulmonary veins.*/
+  ScalarPressureData                   PulmonaryVenousOxygenPressure                  = 28;/**<< @brief Partial pressure of oxygen in the pulmonary veins.*/
+  ScalarPressureData                   VenousCarbonDioxidePressure                    = 29;/**<< @brief Partial pressure of carbon dioxide in the vena cava.*/        
+  ScalarPressureData                   VenousOxygenPressure                           = 30;/**<< @brief Partial pressure of oxygen in the vena cava.*/  
 }
 
 message CardiovascularMechanicsModifiersData
@@ -423,9 +425,10 @@ message TissueSystemData
 {
   ScalarVolumePerTimeData              CarbonDioxideProductionRate                    = 1;/**<< @brief The carbon dioxide generated on the tissue level from aerobic metabolism*/
   ScalarVolumeData                     ExtracellularFluidVolume                       = 2;/**<< @brief Volume of fluid outside of cells AND outside of the blood vessels*/
-  ScalarVolumeData                     ExtravascularFluidVolume                       = 3;/**<< @brief Total fluid volume outside of the blood vessels. */
+  ScalarVolumeData                     ExtravascularFluidVolume                       = 3;/**<< @brief Total fluid volume outside of the blood vessels.*/
   ScalarData                           IntracellularFluidPH                           = 4;/**<< @brief The acidity or alkalinity of the extravascular intercellular fluid.*/
-  ScalarVolumeData                     IntracellularFluidVolume                       = 5;/**<< @brief Volume of fluid in the cells outside of the blood vessels. */  
+  ScalarVolumeData                     IntracellularFluidVolume                       = 5;/**<< @brief Volume of fluid in the cells outside of the blood vessels.*/
   ScalarVolumePerTimeData              OxygenConsumptionRate                          = 6; /**<< @brief The oxygen consumed on the tissue level from aerobic metabolism*/
-  ScalarData                           RespiratoryExchangeRatio                       = 7; /**<< @brief The true ratio of carbon dioxide produced to oxygen consumed */   
+  ScalarData                           RespiratoryExchangeRatio                       = 7; /**<< @brief The true ratio of carbon dioxide produced to oxygen consumed*/
+  ScalarVolumeData                     TotalFluidVolume                               = 8; /**<< @brief Sum of extravascular and intravascular/blood volumes.*/
 }

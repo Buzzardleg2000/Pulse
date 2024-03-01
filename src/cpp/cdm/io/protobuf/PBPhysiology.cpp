@@ -1462,6 +1462,8 @@ void PBPhysiology::Serialize(const CDM_BIND::TissueSystemData& src, SETissueSyst
     PBProperty::Load(src.oxygenconsumptionrate(), dst.GetOxygenConsumptionRate());
   if (src.has_respiratoryexchangeratio())
     PBProperty::Load(src.respiratoryexchangeratio(), dst.GetRespiratoryExchangeRatio());
+  if (src.has_totalfluidvolume())
+    PBProperty::Load(src.totalfluidvolume(), dst.GetTotalFluidVolume());
 }
 
 CDM_BIND::TissueSystemData* PBPhysiology::Unload(const SETissueSystem& src)
@@ -1486,4 +1488,6 @@ void PBPhysiology::Serialize(const SETissueSystem& src, CDM_BIND::TissueSystemDa
     dst.set_allocated_oxygenconsumptionrate(PBProperty::Unload(*src.m_OxygenConsumptionRate));
   if (src.HasRespiratoryExchangeRatio())
     dst.set_allocated_respiratoryexchangeratio(PBProperty::Unload(*src.m_RespiratoryExchangeRatio));
+  if (src.HasTotalFluidVolume())
+    dst.set_allocated_totalfluidvolume(PBProperty::Unload(*src.m_TotalFluidVolume));
 }

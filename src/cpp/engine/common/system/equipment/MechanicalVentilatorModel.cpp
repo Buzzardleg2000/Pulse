@@ -110,6 +110,7 @@ namespace pulse
     m_Initializing = false;
     m_PositiveEndExpiratoryPressure_cmH2O = 0.0;
     m_PeakExpiratoryFlow_L_Per_s = 0.0;
+    m_PeakInspiratoryFlow_L_Per_s = 0.0;
     m_EndTidalCarbonDioxideFraction = 0.0;
     m_EndTidalCarbonDioxidePressure_cmH2O = 0.0;
     m_EndTidalOxygenFraction = 0.0;
@@ -133,6 +134,7 @@ namespace pulse
     GetLeakFraction().SetValue(0.0);
     GetMeanAirwayPressure().SetValue(0.0, PressureUnit::cmH2O);
     GetPeakExpiratoryFlow().SetValue(0.0, VolumePerTimeUnit::L_Per_s);
+    GetPeakInspiratoryFlow().SetValue(0.0, VolumePerTimeUnit::L_Per_s);
     GetPeakInspiratoryPressure().SetValue(0.0, PressureUnit::cmH2O);
     GetPlateauPressure().SetValue(0.0, PressureUnit::cmH2O);
     GetPositiveEndExpiratoryPressure().SetValue(0.0, PressureUnit::cmH2O);
@@ -1170,6 +1172,7 @@ namespace pulse
     }
 
     m_PeakExpiratoryFlow_L_Per_s = MAX(m_PeakExpiratoryFlow_L_Per_s, expiratoryFlow_L_Per_s);
+    m_PeakInspiratoryFlow_L_Per_s = MAX(m_PeakInspiratoryFlow_L_Per_s, inspiratoryFlow_L_Per_s);
   }
 
   //--------------------------------------------------------------------------------------------------
@@ -1253,28 +1256,30 @@ namespace pulse
     m_MeanAirwayPressure_cmH2O->Invalidate();
 
     GetPeakExpiratoryFlow().SetValue(m_PeakExpiratoryFlow_L_Per_s, VolumePerTimeUnit::L_Per_s);
+    GetPeakInspiratoryFlow().SetValue(m_PeakInspiratoryFlow_L_Per_s, VolumePerTimeUnit::L_Per_s);
 
-    double compliance_L_Per_cmH2O = 0.0;
     double pressureDifference_cmH2O = GetPlateauPressure(PressureUnit::cmH2O) - GetPositiveEndExpiratoryPressure(PressureUnit::cmH2O);
-    if(pressureDifference_cmH2O > ZERO_APPROX)
+    double compliance_L_Per_cmH2O = 0.0;
+    if(pressureDifference_cmH2O > ZERO_APPROX && tidalVolume_L > 0.0)
       compliance_L_Per_cmH2O = tidalVolume_L / pressureDifference_cmH2O;
     GetStaticPulmonaryCompliance().SetValue(compliance_L_Per_cmH2O, VolumePerPressureUnit::L_Per_cmH2O);
 
-    compliance_L_Per_cmH2O = 0.0;
+    double resistance_cmH2O_s_Per_L = 0.0;
+    if (m_PeakExpiratoryFlow_L_Per_s > ZERO_APPROX && pressureDifference_cmH2O > 0.0)
+      resistance_cmH2O_s_Per_L = pressureDifference_cmH2O / m_PeakExpiratoryFlow_L_Per_s;
+    GetExpiratoryResistance().SetValue(resistance_cmH2O_s_Per_L, PressureTimePerVolumeUnit::cmH2O_s_Per_L);
+
     pressureDifference_cmH2O = GetPeakInspiratoryPressure(PressureUnit::cmH2O) - GetPositiveEndExpiratoryPressure(PressureUnit::cmH2O);
-    if (pressureDifference_cmH2O > ZERO_APPROX)
+    compliance_L_Per_cmH2O = 0.0;
+    if (pressureDifference_cmH2O > ZERO_APPROX && tidalVolume_L > 0.0)
       compliance_L_Per_cmH2O = tidalVolume_L / pressureDifference_cmH2O;
     GetDynamicPulmonaryCompliance().SetValue(compliance_L_Per_cmH2O, VolumePerPressureUnit::L_Per_cmH2O);
 
-    double resistance_cmH2O_s_Per_L = 0.0;
-    if(m_InspiratoryFlow_L_Per_s > ZERO_APPROX)
-      resistance_cmH2O_s_Per_L = (GetPeakInspiratoryPressure(PressureUnit::cmH2O) - GetPlateauPressure(PressureUnit::cmH2O)) / m_InspiratoryFlow_L_Per_s;
-    GetInspiratoryResistance().SetValue(resistance_cmH2O_s_Per_L, PressureTimePerVolumeUnit::cmH2O_s_Per_L);
-
+    pressureDifference_cmH2O = GetPeakInspiratoryPressure(PressureUnit::cmH2O) - GetPlateauPressure(PressureUnit::cmH2O);
     resistance_cmH2O_s_Per_L = 0.0;
-    if (m_PeakExpiratoryFlow_L_Per_s > ZERO_APPROX)
-      resistance_cmH2O_s_Per_L = (GetPlateauPressure(PressureUnit::cmH2O) - GetPositiveEndExpiratoryPressure(PressureUnit::cmH2O)) / m_PeakExpiratoryFlow_L_Per_s;
-    GetExpiratoryResistance().SetValue(resistance_cmH2O_s_Per_L, PressureTimePerVolumeUnit::cmH2O_s_Per_L);
+    if(m_PeakInspiratoryFlow_L_Per_s > ZERO_APPROX && pressureDifference_cmH2O > 0.0)
+      resistance_cmH2O_s_Per_L = pressureDifference_cmH2O / m_PeakInspiratoryFlow_L_Per_s;
+    GetInspiratoryResistance().SetValue(resistance_cmH2O_s_Per_L, PressureTimePerVolumeUnit::cmH2O_s_Per_L);
 
     GetEndTidalCarbonDioxideFraction().SetValue(m_EndTidalCarbonDioxideFraction);
     GetEndTidalCarbonDioxidePressure().SetValue(m_EndTidalCarbonDioxidePressure_cmH2O, PressureUnit::cmH2O);
@@ -1284,6 +1289,7 @@ namespace pulse
     m_CurrentVentilatorVolume_L = 0.0;
     m_CurrentRespiratoryVolume_L = 0.0;
     m_PeakExpiratoryFlow_L_Per_s = 0.0;
+    m_PeakInspiratoryFlow_L_Per_s = 0.0;
   }
 
   //--------------------------------------------------------------------------------------------------

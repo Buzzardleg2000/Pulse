@@ -189,6 +189,7 @@ namespace pulse { namespace human_adult_ventilation_mechanics
         drMgr.CreateMechanicalVentilatorDataRequest("LeakFraction");
         drMgr.CreateMechanicalVentilatorDataRequest("MeanAirwayPressure", PressureUnit::cmH2O);
         drMgr.CreateMechanicalVentilatorDataRequest("PeakExpiratoryFlow", VolumePerTimeUnit::L_Per_s);
+        drMgr.CreateMechanicalVentilatorDataRequest("PeakInspiratoryFlow", VolumePerTimeUnit::L_Per_s);
         drMgr.CreateMechanicalVentilatorDataRequest("PeakInspiratoryPressure", PressureUnit::cmH2O);
         drMgr.CreateMechanicalVentilatorDataRequest("PlateauPressure", PressureUnit::cmH2O);
         drMgr.CreateMechanicalVentilatorDataRequest("PositiveEndExpiratoryPressure", PressureUnit::cmH2O);

@@ -97,14 +97,15 @@ message MechanicalVentilatorData
   Scalar0To1Data                      LeakFraction                              = 16;/**<< @brief The fraction of gas volume lost during the ventilation cycle determined from the air volume in and out difference.*/
   ScalarPressureData                  MeanAirwayPressure                        = 17;/**<< @brief The mean pressure applied during positive-pressure mechanical ventilation. */
   ScalarVolumePerTimeData             PeakExpiratoryFlow                        = 18;/**<< @brief The highest airflow during exhalation.*/
-  ScalarPressureData                  PeakInspiratoryPressure                   = 19;/**<< @brief The highest pressure applied to the lungs (alveolar pressure) above atmospheric pressure during inhalation.*/
-  ScalarPressureData                  PlateauPressure                           = 20;/**<< @brief The pressure applied by the ventilator measured at end-inspiration with an inspiratory hold maneuver.*/
-  ScalarPressureData                  PositiveEndExpiratoryPressure             = 21;/**<< @brief Extrinsic pressure above atmosphere at the end of exhalation. */
-  ScalarFrequencyData                 RespirationRate                           = 22;/**<< @brief The frequency of the respiratory cycle.*/
-  ScalarVolumePerPressureData         StaticPulmonaryCompliance                 = 23;/**<< @brief The pulmonary compliance during periods without gas flow.*/
-  ScalarVolumeData                    TidalVolume                               = 24;/**<< @brief The volume of air moved into or out of the lungs during normal respiration.*/
-  ScalarVolumeData                    TotalLungVolume                           = 25;/**<< @brief The total volume of air within the lungs at any given time.*/
-  ScalarVolumePerTimeData             TotalPulmonaryVentilation                 = 26;/**<< @brief The amount of air that enters the lungs as a function of time - can be used for minute ventilation.*/
+  ScalarVolumePerTimeData             PeakInspiratoryFlow                       = 19;/**<< @brief The highest airflow during inhalation.*/
+  ScalarPressureData                  PeakInspiratoryPressure                   = 20;/**<< @brief The highest pressure applied to the lungs (alveolar pressure) above atmospheric pressure during inhalation.*/
+  ScalarPressureData                  PlateauPressure                           = 21;/**<< @brief The pressure applied by the ventilator measured at end-inspiration with an inspiratory hold maneuver.*/
+  ScalarPressureData                  PositiveEndExpiratoryPressure             = 22;/**<< @brief Extrinsic pressure above atmosphere at the end of exhalation. */
+  ScalarFrequencyData                 RespirationRate                           = 23;/**<< @brief The frequency of the respiratory cycle.*/
+  ScalarVolumePerPressureData         StaticPulmonaryCompliance                 = 24;/**<< @brief The pulmonary compliance during periods without gas flow.*/
+  ScalarVolumeData                    TidalVolume                               = 25;/**<< @brief The volume of air moved into or out of the lungs during normal respiration.*/
+  ScalarVolumeData                    TotalLungVolume                           = 26;/**<< @brief The total volume of air within the lungs at any given time.*/
+  ScalarVolumePerTimeData             TotalPulmonaryVentilation                 = 27;/**<< @brief The amount of air that enters the lungs as a function of time - can be used for minute ventilation.*/
 
-  MechanicalVentilatorSettingsData    Settings                                  = 27;
+  MechanicalVentilatorSettingsData    Settings                                  = 28;
 }

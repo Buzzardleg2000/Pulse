@@ -19,6 +19,7 @@
     { "DecimalFormat": { "Precision": 6 }, "Category": "MechanicalVentilator", "PropertyName": "LeakFraction"                                             },
     { "DecimalFormat": { "Precision": 6 }, "Category": "MechanicalVentilator", "PropertyName": "MeanAirwayPressure",                  "Unit": "cmH2O"     },
     { "DecimalFormat": { "Precision": 6 }, "Category": "MechanicalVentilator", "PropertyName": "PeakExpiratoryFlow",                  "Unit": "L/s"       },
+    { "DecimalFormat": { "Precision": 6 }, "Category": "MechanicalVentilator", "PropertyName": "PeakInspiratoryFlow",                 "Unit": "L/s"       },
     { "DecimalFormat": { "Precision": 6 }, "Category": "MechanicalVentilator", "PropertyName": "PeakInspiratoryPressure",             "Unit": "cmH2O"     },
     { "DecimalFormat": { "Precision": 6 }, "Category": "MechanicalVentilator", "PropertyName": "PlateauPressure",                     "Unit": "cmH2O"     },
     { "DecimalFormat": { "Precision": 6 }, "Category": "MechanicalVentilator", "PropertyName": "PositiveEndExpiratoryPressure",       "Unit": "cmH2O"     },

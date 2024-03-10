@@ -33,6 +33,7 @@ SEMechanicalVentilator::SEMechanicalVentilator(Logger* logger) : SEEquipment(log
   m_LeakFraction = nullptr;
   m_MeanAirwayPressure = nullptr;
   m_PeakExpiratoryFlow = nullptr;
+  m_PeakInspiratoryFlow = nullptr;
   m_PeakInspiratoryPressure = nullptr;
   m_PlateauPressure = nullptr;
   m_PositiveEndExpiratoryPressure = nullptr;
@@ -65,6 +66,7 @@ SEMechanicalVentilator::~SEMechanicalVentilator()
   SAFE_DELETE(m_LeakFraction);
   SAFE_DELETE(m_MeanAirwayPressure);
   SAFE_DELETE(m_PeakExpiratoryFlow);
+  SAFE_DELETE(m_PeakInspiratoryFlow);
   SAFE_DELETE(m_PeakInspiratoryPressure);
   SAFE_DELETE(m_PlateauPressure);
   SAFE_DELETE(m_PositiveEndExpiratoryPressure);
@@ -99,6 +101,7 @@ void SEMechanicalVentilator::Clear()
   INVALIDATE_PROPERTY(m_LeakFraction);
   INVALIDATE_PROPERTY(m_MeanAirwayPressure);
   INVALIDATE_PROPERTY(m_PeakExpiratoryFlow);
+  INVALIDATE_PROPERTY(m_PeakInspiratoryFlow);
   INVALIDATE_PROPERTY(m_PeakInspiratoryPressure);
   INVALIDATE_PROPERTY(m_PlateauPressure);
   INVALIDATE_PROPERTY(m_PositiveEndExpiratoryPressure);
@@ -133,6 +136,7 @@ void SEMechanicalVentilator::TurnOff()
   ZERO_SCALAR(m_LeakFraction);
   ZERO_UNIT_SCALAR(m_MeanAirwayPressure);
   ZERO_UNIT_SCALAR(m_PeakExpiratoryFlow);
+  ZERO_UNIT_SCALAR(m_PeakInspiratoryFlow);
   ZERO_UNIT_SCALAR(m_PeakInspiratoryPressure);
   ZERO_UNIT_SCALAR(m_PlateauPressure);
   ZERO_UNIT_SCALAR(m_PositiveEndExpiratoryPressure);
@@ -188,6 +192,8 @@ const SEScalar* SEMechanicalVentilator::GetScalar(const std::string& name)
     return &GetMeanAirwayPressure();
   if (name.compare("PeakExpiratoryFlow") == 0)
     return &GetPeakExpiratoryFlow();
+  if (name.compare("PeakInspiratoryFlow") == 0)
+    return &GetPeakInspiratoryFlow();
   if (name.compare("PeakInspiratoryPressure") == 0)
     return &GetPeakInspiratoryPressure();
   if (name.compare("PlateauPressure") == 0)
@@ -504,6 +510,23 @@ double SEMechanicalVentilator::GetPeakExpiratoryFlow(const VolumePerTimeUnit& un
   if (m_PeakExpiratoryFlow == nullptr)
     return SEScalar::dNaN();
   return m_PeakExpiratoryFlow->GetValue(unit);
+}
+
+bool SEMechanicalVentilator::HasPeakInspiratoryFlow() const
+{
+  return m_PeakInspiratoryFlow == nullptr ? false : m_PeakInspiratoryFlow->IsValid();
+}
+SEScalarVolumePerTime& SEMechanicalVentilator::GetPeakInspiratoryFlow()
+{
+  if (m_PeakInspiratoryFlow == nullptr)
+    m_PeakInspiratoryFlow = new SEScalarVolumePerTime();
+  return *m_PeakInspiratoryFlow;
+}
+double SEMechanicalVentilator::GetPeakInspiratoryFlow(const VolumePerTimeUnit& unit) const
+{
+  if (m_PeakInspiratoryFlow == nullptr)
+    return SEScalar::dNaN();
+  return m_PeakInspiratoryFlow->GetValue(unit);
 }
 
 bool SEMechanicalVentilator::HasPeakInspiratoryPressure() const

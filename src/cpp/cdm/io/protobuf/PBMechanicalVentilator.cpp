@@ -58,6 +58,8 @@ void PBMechanicalVentilator::Serialize(const CDM_BIND::MechanicalVentilatorData&
     PBProperty::Load(src.meanairwaypressure(), dst.GetMeanAirwayPressure());
   if (src.has_peakexpiratoryflow())
     PBProperty::Load(src.peakexpiratoryflow(), dst.GetPeakExpiratoryFlow());
+  if (src.has_peakinspiratoryflow())
+    PBProperty::Load(src.peakinspiratoryflow(), dst.GetPeakInspiratoryFlow());
   if (src.has_peakinspiratorypressure())
     PBProperty::Load(src.peakinspiratorypressure(), dst.GetPeakInspiratoryPressure());
   if (src.has_plateaupressure())
@@ -122,6 +124,8 @@ void PBMechanicalVentilator::Serialize(const SEMechanicalVentilator& src, CDM_BI
     dst.set_allocated_meanairwaypressure(PBProperty::Unload(*src.m_MeanAirwayPressure));
   if (src.HasPeakExpiratoryFlow())
     dst.set_allocated_peakexpiratoryflow(PBProperty::Unload(*src.m_PeakExpiratoryFlow));
+  if (src.HasPeakInspiratoryFlow())
+    dst.set_allocated_peakinspiratoryflow(PBProperty::Unload(*src.m_PeakInspiratoryFlow));
   if (src.HasPeakInspiratoryPressure())
     dst.set_allocated_peakinspiratorypressure(PBProperty::Unload(*src.m_PeakInspiratoryPressure));
   if (src.HasPlateauPressure())

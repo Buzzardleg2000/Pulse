@@ -100,6 +100,10 @@ public:
   virtual SEScalarVolumePerTime& GetPeakExpiratoryFlow();
   virtual double GetPeakExpiratoryFlow(const VolumePerTimeUnit& unit) const;
 
+  virtual bool HasPeakInspiratoryFlow() const;
+  virtual SEScalarVolumePerTime& GetPeakInspiratoryFlow();
+  virtual double GetPeakInspiratoryFlow(const VolumePerTimeUnit& unit) const;
+
   virtual bool HasPeakInspiratoryPressure() const;
   virtual SEScalarPressure& GetPeakInspiratoryPressure();
   virtual double GetPeakInspiratoryPressure(const PressureUnit& unit) const;
@@ -157,6 +161,7 @@ protected:
   SEScalar0To1*                      m_LeakFraction;
   SEScalarPressure*                  m_MeanAirwayPressure;
   SEScalarVolumePerTime*             m_PeakExpiratoryFlow;
+  SEScalarVolumePerTime*             m_PeakInspiratoryFlow;
   SEScalarPressure*                  m_PeakInspiratoryPressure;
   SEScalarPressure*                  m_PlateauPressure;
   SEScalarPressure*                  m_PositiveEndExpiratoryPressure;

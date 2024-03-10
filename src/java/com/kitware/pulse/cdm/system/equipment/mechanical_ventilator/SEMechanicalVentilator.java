@@ -27,6 +27,7 @@ public class SEMechanicalVentilator implements SEEquipment
   protected SEScalar0To1                      leakFraction;
   protected SEScalarPressure                  meanAirwayPressure;
   protected SEScalarVolumePerTime             peakExpiratoryFlow;
+  protected SEScalarVolumePerTime             peakInspiratoryFlow;
   protected SEScalarPressure                  peakInspiratoryPressure;
   protected SEScalarPressure                  plateauPressure;
   protected SEScalarPressure                  positiveEndExpiratoryPressure;
@@ -58,6 +59,7 @@ public class SEMechanicalVentilator implements SEEquipment
     leakFraction = null;
     meanAirwayPressure = null;
     peakExpiratoryFlow = null;
+    peakInspiratoryFlow = null;
     peakInspiratoryPressure = null;
     plateauPressure = null;
     positiveEndExpiratoryPressure = null;
@@ -108,6 +110,8 @@ public class SEMechanicalVentilator implements SEEquipment
       meanAirwayPressure.invalidate();
     if (peakExpiratoryFlow != null)
       peakExpiratoryFlow.invalidate();
+    if (peakInspiratoryFlow != null)
+      peakInspiratoryFlow.invalidate();
     if (peakInspiratoryPressure != null)
       peakInspiratoryPressure.invalidate();
     if (plateauPressure != null)
@@ -327,6 +331,17 @@ public class SEMechanicalVentilator implements SEEquipment
     if (peakExpiratoryFlow == null)
       peakExpiratoryFlow = new SEScalarVolumePerTime();
     return peakExpiratoryFlow;
+  }
+  
+  public boolean hasPeakInspiratoryFlow()
+  {
+    return peakInspiratoryFlow == null ? false : peakInspiratoryFlow.isValid();
+  }
+  public SEScalarVolumePerTime getPeakInspiratoryFlow()
+  {
+    if (peakInspiratoryFlow == null)
+      peakInspiratoryFlow = new SEScalarVolumePerTime();
+    return peakInspiratoryFlow;
   }
   
   public boolean hasPeakInspiratoryPressure()

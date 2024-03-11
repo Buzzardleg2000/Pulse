@@ -20,7 +20,7 @@
     { "DecimalFormat": { "Precision": 4 }, "Category": "Physiology", "PropertyName": "PositiveEndExpiratoryPressure",              "Unit": "cmH2O"     },
     { "DecimalFormat": { "Precision": 4 }, "Category": "Physiology", "PropertyName": "PulmonaryCompliance",                        "Unit": "L/cmH2O"   },
     { "DecimalFormat": { "Precision": 4 }, "Category": "Physiology", "PropertyName": "RespiratoryMuscleFatigue",                   "Unit": "unitless"  },
-    { "DecimalFormat": { "Precision": 4 }, "Category": "Physiology", "PropertyName": "RespiratoryMusclePressure",                  "Unit": "cmH2O"     },
+    { "DecimalFormat": { "Precision": 4 }, "Category": "Physiology", "PropertyName": "TransMusclePressure",                        "Unit": "cmH2O"     },
     { "DecimalFormat": { "Precision": 4 }, "Category": "Physiology", "PropertyName": "TotalPowerOfBreathing",                      "Unit": "W"         },
     { "DecimalFormat": { "Precision": 4 }, "Category": "Physiology", "PropertyName": "TotalPulmonaryVentilation",                  "Unit": "L/min"     },
     { "DecimalFormat": { "Precision": 4 }, "Category": "Physiology", "PropertyName": "TotalWorkOfBreathing",                       "Unit": "J"         },

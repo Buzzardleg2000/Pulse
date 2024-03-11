@@ -651,25 +651,26 @@ namespace pulse
     //The sweat rate heat transfer is determined from a control equation that attempts to keep the core temperature in line
     /// \cite herman2008physics
 
-    //Cutaneous evaporation at rest = 500mL/day = 347 mg/min = 5.78e-6 kg/s
+    //Cutaneous evaporation at rest = 500mL/day = 347 mg/min
     /// \cite marriott1993water
-    double baselineSweatRate_kg_Per_s = 5.78e-6;
+    double baselineSweatRate_mg_Per_min = 347.0;
 
     double sweatRate_kg_Per_s = (0.25 * sweatHeatTranferCoefficient_W_Per_K / vaporizationEnergy_J_Per_kg) * (coreTemperature_degC - coreTemperatureHigh_degC);
-    sweatRate_kg_Per_s = baselineSweatRate_kg_Per_s + MAX(sweatRate_kg_Per_s, 0.0);
+    double sweatRate_mg_Per_min = Convert(sweatRate_kg_Per_s, MassPerTimeUnit::kg_Per_s, MassPerTimeUnit::mg_Per_min);
+    sweatRate_mg_Per_min = baselineSweatRate_mg_Per_min + MAX(sweatRate_mg_Per_min, 0.0);
 
     //Thermoregulatory consequences due to decreased blood volume:
     //Reduced sweating and evaporative heat loss mechanisms impaired (increased core temperature)
     double initialBloodVolume_L = m_data.GetInitialPatient().GetBloodVolumeBaseline(VolumeUnit::L);
     double currentBloodVolume_L = m_data.GetCardiovascular().GetBloodVolume(VolumeUnit::L);
     double bloodVolumeFraction = currentBloodVolume_L / initialBloodVolume_L;
-    sweatRate_kg_Per_s *= GeneralMath::ExponentialGrowthFunction(10.0, 0.0001, 1.0, LIMIT(bloodVolumeFraction, 0.0, 1.0));
+    sweatRate_mg_Per_min *= GeneralMath::ExponentialGrowthFunction(10.0, 0.0001, 1.0, LIMIT(bloodVolumeFraction, 0.0, 1.0));
 
-    GetSweatRate().SetValue(sweatRate_kg_Per_s, MassPerTimeUnit::kg_Per_s);
+    GetSweatRate().SetValue(sweatRate_mg_Per_min, MassPerTimeUnit::mg_Per_min);
 
     //Set the flow source on the extravascular circuit to begin removing the fluid that is excreted
-    double sweatDensity_kg_Per_m3 = config.GetWaterDensity(MassPerVolumeUnit::kg_Per_m3); /// \todo Convert to sweat density once specific gravity calculation is in
-    double sweatRate_mL_Per_s = sweatRate_kg_Per_s / sweatDensity_kg_Per_m3 * 1.e6;
+    double sweatDensity_mg_Per_m3 = config.GetWaterDensity(MassPerVolumeUnit::mg_Per_m3); /// \todo Convert to sweat density once specific gravity calculation is in
+    double sweatRate_mL_Per_s = sweatRate_mg_Per_min / sweatDensity_mg_Per_m3 * 16666.7; //Conversion
     m_skinExtravascularToSweatingGroundPath->GetNextFlowSource().SetValue(sweatRate_mL_Per_s, VolumePerTimeUnit::mL_Per_s);
 
     //The mass lost is now handled in the Tissue system by body liquid accounting

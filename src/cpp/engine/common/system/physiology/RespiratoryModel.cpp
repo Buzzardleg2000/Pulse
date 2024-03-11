@@ -3798,16 +3798,14 @@ namespace pulse
 
     // Obstructive effects
     //Multiplier included to counterbalance effects of RC time constant
-    m_IERatioScaleFactor *= GeneralMath::LinearInterpolator(0.0, 1.0, 1.0, 0.5 * 0.2, combinedObstructiveSeverity);
+    double combinedSeverity = MAX(combinedObstructiveSeverity, combinedRestrictiveSeverity);
+    m_IERatioScaleFactor *= GeneralMath::LinearInterpolator(0.0, 1.0, 1.0, 0.5 * 0.2, combinedSeverity);
 
     // Bronchodilators
     //When albuterol is administered, the bronchodilation also causes the IE ratio to correct itself
     m_IERatioScaleFactor *= exp(7728.4 * m_AverageLocalTissueBronchodilationEffects);
     //Lower than 0.1 causes simulation instability
     m_IERatioScaleFactor = LIMIT(m_IERatioScaleFactor, 0.1, 1.0);
-
-    // Restrictive effects
-    m_IERatioScaleFactor *= GeneralMath::LinearInterpolator(0.0, 1.0, 1.0, 1.5, combinedRestrictiveSeverity);
   }
 
   //--------------------------------------------------------------------------------------------------

@@ -26,6 +26,8 @@ namespace pulse
     {
     public:
       virtual void AdvanceModelTime(double dt_s) = 0;
+      virtual double InfectionSeverityToPathogenCount(double InfectionSeverity) = 0;
+      virtual double ProgressionSeverityToPathogenGrowthRate(double ProgressionSeverity) = 0;
     };
 
     void Clear() override;

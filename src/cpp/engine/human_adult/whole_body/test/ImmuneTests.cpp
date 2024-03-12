@@ -30,51 +30,51 @@ namespace pulse { namespace human_adult_whole_body
 {
   void EngineTest::MildInfectionMildProgressionSepsisTest(const std::string &sTestDirectory)
   {
-    SepsisTest(1.0, 0.25, 300, sTestDirectory, "MildInfectionMildProgressionSepsis");
+    SepsisTest(0.3, 0.3, 300, sTestDirectory, "MildInfectionMildProgressionSepsis");
   }
   void EngineTest::MildInfectionModerateProgressionSepsisTest(const std::string& sTestDirectory)
   {
-    SepsisTest(1.0, 0.33, 300, sTestDirectory, "MildInfectionModerateProgressionSepsis");
+    SepsisTest(0.3, 0.6, 300, sTestDirectory, "MildInfectionModerateProgressionSepsis");
   }
   void EngineTest::MildInfectionSevereProgressionSepsisTest(const std::string& sTestDirectory)
   {
-    SepsisTest(1.0, 0.6, 300, sTestDirectory, "MildInfectionSevereProgressionSepsis");
+    SepsisTest(0.3, 0.9, 300, sTestDirectory, "MildInfectionSevereProgressionSepsis");
   }
 
   void EngineTest::ModerateInfectionMildProgressionSepsisTest(const std::string &sTestDirectory)
   {
-    SepsisTest(1.25, 0.25, 300, sTestDirectory, "ModerateInfectionMildProgressionSepsis");
+    SepsisTest(0.6, 0.3, 300, sTestDirectory, "ModerateInfectionMildProgressionSepsis");
   }
   void EngineTest::ModerateInfectionModerateProgressionSepsisTest(const std::string& sTestDirectory)
   {
-    SepsisTest(1.25, 0.33, 300, sTestDirectory, "ModerateInfectionModerateProgressionSepsis");
+    SepsisTest(0.6, 0.6, 300, sTestDirectory, "ModerateInfectionModerateProgressionSepsis");
   }
   void EngineTest::ModerateInfectionSevereProgressionSepsisTest(const std::string& sTestDirectory)
   {
-    SepsisTest(1.25, 0.6, 300, sTestDirectory, "ModerateInfectionSevereProgressionSepsis");
+    SepsisTest(0.6, 0.9, 300, sTestDirectory, "ModerateInfectionSevereProgressionSepsis");
   }
 
   void EngineTest::SevereInfectionMildProgressionSepsisTest(const std::string &sTestDirectory)
   {
-    SepsisTest(1.4, 0.25, 300, sTestDirectory, "SevereInfectionMildProgressionSepsis");
+    SepsisTest(0.9, 0.3, 300, sTestDirectory, "SevereInfectionMildProgressionSepsis");
   }
   void EngineTest::SevereInfectionModerateProgressionSepsisTest(const std::string& sTestDirectory)
   {
-    SepsisTest(1.4, 0.33, 300, sTestDirectory, "SevereInfectionModerateProgressionSepsis");
+    SepsisTest(0.9, 0.6, 300, sTestDirectory, "SevereInfectionModerateProgressionSepsis");
   }
   void EngineTest::SevereInfectionSevereProgressionSepsisTest(const std::string& sTestDirectory)
   {
-    SepsisTest(1.4, 0.6, 300, sTestDirectory, "SevereInfectionSevereProgressionSepsis");
+    SepsisTest(0.9, 0.9, 300, sTestDirectory, "SevereInfectionSevereProgressionSepsis");
   }
 
   void EngineTest::AsepticTest(const std::string &sTestDirectory)
   {
-    SepsisTest(1.5, 0.3, 300, sTestDirectory, "Aseptic");
+    SepsisTest(1.0, 0.4875, 300, sTestDirectory, "Aseptic");
   }
 
   void EngineTest::MaximumSepsisTest(const std::string& sTestDirectory)
   {
-    SepsisTest(1.5, 0.65, 300, sTestDirectory, "MaximumSepsis");
+    SepsisTest(1.0, 1.0, 300, sTestDirectory, "MaximumSepsis");
   }
 
   void EngineTest::SepsisTest(double infectionSeverity, double progressionSeverity, double duration_hr, const std::string& sTestDirectory, const std::string& sTestName)
@@ -96,11 +96,11 @@ namespace pulse { namespace human_adult_whole_body
     double testTime_s = 60 * 60 * duration_hr;
     double timeStep_s = 60;
 
-    im.m_PathogenCount = infectionSeverity;
+    im.m_PathogenCount = im.m_SepsisModel->InfectionSeverityToPathogenCount(infectionSeverity);
     im.m_ActivatedPhagocytes = 0;
     im.m_TissueDamage = 0;
     im.m_AntiInflammatoryMediators = 0.125;
-    im.m_PathogenGrowthRate = progressionSeverity;
+    im.m_PathogenGrowthRate = im.m_SepsisModel->ProgressionSeverityToPathogenGrowthRate(progressionSeverity);
     for (unsigned int i = 0; i < (testTime_s / timeStep_s); i++)
     {
       outTrk.Track("PathogenCount", time_s, im.m_PathogenCount);

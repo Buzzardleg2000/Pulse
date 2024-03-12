@@ -7,6 +7,7 @@
 #include "cdm/patient/actions/SESepsisExacerbation.h"
 #include "cdm/properties/SEScalar0To1.h"
 #include "cdm/utils/DataTrack.h"
+#include "cdm/utils/GeneralMath.h"
 
 PUSH_EIGEN_WARNINGS
 #include "Eigen/Core"
@@ -21,6 +22,28 @@ namespace pulse
     ReynoldsModel(double& pc, double& pgr, double& ap, double& td, double& aim) :
       m_pc(pc), m_pgr(pgr), m_ap(ap), m_td(td), m_aim(aim) {};
     virtual ~ReynoldsModel() = default;
+
+    double InfectionSeverityToPathogenCount(double InfectionSeverity) override
+    {
+      std::vector<std::pair<double, double>> pts;
+      pts.push_back(std::make_pair(0.0, 0.0));
+      pts.push_back(std::make_pair(0.3, 1.0));
+      pts.push_back(std::make_pair(0.6, 1.25));
+      pts.push_back(std::make_pair(0.9, 1.4));
+      pts.push_back(std::make_pair(1.0, 1.5));
+      return GeneralMath::PiecewiseLinearInterpolator(pts, InfectionSeverity);
+    }
+
+    double ProgressionSeverityToPathogenGrowthRate(double ProgressionSeverity) override
+    {
+      std::vector<std::pair<double, double>> pts;
+      pts.push_back(std::make_pair(0.0, 0.0));
+      pts.push_back(std::make_pair(0.3, 0.25));
+      pts.push_back(std::make_pair(0.6, 0.33));
+      pts.push_back(std::make_pair(0.9, 0.6));
+      pts.push_back(std::make_pair(1.0, 0.65));
+      return GeneralMath::PiecewiseLinearInterpolator(pts, ProgressionSeverity);
+    }
 
     void AdvanceModelTime(double dt_s) override
     {

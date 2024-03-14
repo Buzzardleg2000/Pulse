@@ -297,7 +297,7 @@ namespace pulse
         SEScalarMass mass;
         SEMeal& meal = m_data.GetConditions().GetConsumeMeal().GetMeal();
         double elapsedTime_s = meal.GetElapsedTime().GetValue(TimeUnit::s);
-        double patientWeight_kg = SEScalar::Truncate(m_data.GetCurrentPatient().GetWeight(MassUnit::kg), 2);
+        double patientWeight_kg = SEScalar::Truncate(m_data.GetCurrentPatient().GetWeight(MassUnit::kg), 4);
         double renalVolumeCleared = m_Albumin->GetClearance().GetRenalClearance(VolumePerTimeMassUnit::mL_Per_s_kg) * patientWeight_kg * elapsedTime_s;
         double systemicVolumeCleared = m_Albumin->GetClearance().GetSystemicClearance(VolumePerTimeMassUnit::mL_Per_s_kg) * patientWeight_kg * elapsedTime_s - renalVolumeCleared;
         SEScalarVolume integratedVolume;
@@ -793,7 +793,7 @@ namespace pulse
 
     /// \todo Remove this temporary blood increment when diffusion is operational (0.125 is tuning factor)
     double acetoacetateIncrement_mg = 0.375 * KetoneProductionRate_mmol_Per_kg_s * m_Acetoacetate->GetMolarMass(MassPerAmountUnit::mg_Per_mmol)
-      * SEScalar::Truncate(m_data.GetCurrentPatient().GetWeight(MassUnit::kg), 2) * time_s;
+      * SEScalar::Truncate(m_data.GetCurrentPatient().GetWeight(MassUnit::kg), 4) * time_s;
     m_LiverAcetoacetate->GetMass().IncrementValue(acetoacetateIncrement_mg, MassUnit::mg);
     if (m_LiverAcetoacetate->GetMass(MassUnit::ug) < ZERO_APPROX)
     {
@@ -1045,7 +1045,7 @@ namespace pulse
           //m_data.GetDataTrack().Probe("Glucose_Released_mg", massReleased_mg);
 
           massConverted_g = acidDissociationFraction * KetoneProductionRate_mmol_Per_kg_s
-            * SEScalar::Truncate(m_data.GetCurrentPatient().GetWeight(MassUnit::kg), 2)
+            * SEScalar::Truncate(m_data.GetCurrentPatient().GetWeight(MassUnit::kg), 4)
             * m_Acetoacetate->GetMolarMass(MassPerAmountUnit::g_Per_mmol);
         }
       }

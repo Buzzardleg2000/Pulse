@@ -263,8 +263,25 @@ bool SEScalar::IsValue(double target, double value)
 
 double SEScalar::Truncate(double value, int decimal_places)
 {
-  const double multiplier = std::pow(10.0, decimal_places);
-  return std::ceil(value * multiplier) / multiplier;
+  switch (decimal_places)
+  {
+  case 1:
+    return std::ceil(value * 10) * 0.1;
+  case 2:
+    return std::ceil(value * 100) * 0.01;
+  case 3:
+    return std::ceil(value * 1000) * 0.001;
+  case 4:
+    return std::ceil(value * 10000) * 0.0001;
+  case 5:
+    return std::ceil(value * 100000) * 0.00001;
+  case 6:
+    return std::ceil(value * 1000000) * 0.000001;
+  default:
+    const double multiplier = std::pow(10.0, decimal_places);
+    return std::ceil(value * multiplier) / multiplier;
+  }
+  return value;
 }
 
 bool SEScalar::IsZero(double d, double limit)

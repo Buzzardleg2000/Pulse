@@ -246,7 +246,7 @@ namespace pulse
         //  Starvation(elapsedTime);
         //  m_AdjustCO2 = true;
         //  //Systemic clearance of calcium occurs over the elapsed time period
-        //  double patientWeight_kg = m_Patient->GetWeight(MassUnit::kg);
+        //  double patientWeight_kg = SEScalar::Truncate(m_Patient->GetWeight(MassUnit::kg), 2)
         //  double renalVolumeCleared = m_calcium->GetClearance().GetRenalClearance(VolumePerTimeMassUnit::mL_Per_s_kg)*patientWeight_kg*elapsedTime;
         //  double systemicVolumeCleared = m_calcium->GetClearance().GetSystemicClearance(VolumePerTimeMassUnit::mL_Per_s_kg)*patientWeight_kg*elapsedTime - renalVolumeCleared;
         //  SEScalarVolume* integratedVolume = new SEScalarVolume();
@@ -597,7 +597,7 @@ namespace pulse
     double totalMetabolicRateNew_Kcal_Per_day = 0.0;
     double totalMetabolicRateNew_W = 0.0;
     //The summit metabolism is the maximum amount of power the human body can generate due to shivering/response to the cold.
-    double summitMetabolism_W = 21.0 * pow(SEScalar::Truncate(m_data.GetCurrentPatient().GetWeight(MassUnit::kg), 2), 0.75); /// \cite herman2008physics
+    double summitMetabolism_W = 21.0 * pow(SEScalar::Truncate(m_data.GetCurrentPatient().GetWeight(MassUnit::kg), 4), 0.75); /// \cite herman2008physics
     double currentMetabolicRate_kcal_Per_day = GetTotalMetabolicRate(PowerUnit::kcal_Per_day);
     double basalMetabolicRate_kcal_Per_day = m_data.GetCurrentPatient().GetBasalMetabolicRate(PowerUnit::kcal_Per_day);
 
@@ -731,7 +731,7 @@ namespace pulse
   //--------------------------------------------------------------------------------------------------
   void EnergyModel::CalculateBasalMetabolicRate()
   {
-    double PatientMass_kg = SEScalar::Truncate(m_data.GetCurrentPatient().GetWeight(MassUnit::kg), 2);
+    double PatientMass_kg = SEScalar::Truncate(m_data.GetCurrentPatient().GetWeight(MassUnit::kg), 4);
     double PatientAge_yr = m_data.GetCurrentPatient().GetAge(TimeUnit::yr);
     double PatientHeight_cm = m_data.GetCurrentPatient().GetHeight(LengthUnit::cm);
 

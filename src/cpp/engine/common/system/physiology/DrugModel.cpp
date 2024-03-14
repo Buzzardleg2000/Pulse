@@ -644,7 +644,7 @@ namespace pulse
   //--------------------------------------------------------------------------------------------------
   void DrugModel::CalculateSubstanceClearance()
   {
-    double PatientWeight_kg = m_data.GetCurrentPatient().GetWeight(MassUnit::kg);
+    double PatientWeight_kg = SEScalar::Truncate(m_data.GetCurrentPatient().GetWeight(MassUnit::kg), 2);
     double HepaticClearance_mLPers = 0;
     double FractionUnboundInPlasma = 0;
     double IntrinsicClearance_mLPersPerkg = 0;

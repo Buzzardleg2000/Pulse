@@ -110,7 +110,7 @@ namespace pulse
     GetRadiativeHeatTranferCoefficient().SetValue(0.0, HeatConductancePerAreaUnit::W_Per_m2_K);
 
     double patientDensity_g_Per_mL = m_data.GetCurrentPatient().GetBodyDensity(MassPerVolumeUnit::g_Per_mL);
-    double patientMass_g = m_data.GetCurrentPatient().GetWeight(MassUnit::g);
+    double patientMass_g = SEScalar::Truncate(m_data.GetCurrentPatient().GetWeight(MassUnit::g),1);
     double patientHeight_m = m_data.GetCurrentPatient().GetHeight(LengthUnit::m);
     double pi = 3.14159;
     m_PatientEquivalentDiameter_m = pow(Convert(patientMass_g / patientDensity_g_Per_mL, VolumeUnit::mL, VolumeUnit::m3) / (pi * patientHeight_m), 0.5);

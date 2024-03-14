@@ -297,7 +297,7 @@ namespace pulse
         SEScalarMass mass;
         SEMeal& meal = m_data.GetConditions().GetConsumeMeal().GetMeal();
         double elapsedTime_s = meal.GetElapsedTime().GetValue(TimeUnit::s);
-        double patientWeight_kg = m_data.GetCurrentPatient().GetWeight(MassUnit::kg);
+        double patientWeight_kg = SEScalar::Truncate(m_data.GetCurrentPatient().GetWeight(MassUnit::kg), 2);
         double renalVolumeCleared = m_Albumin->GetClearance().GetRenalClearance(VolumePerTimeMassUnit::mL_Per_s_kg) * patientWeight_kg * elapsedTime_s;
         double systemicVolumeCleared = m_Albumin->GetClearance().GetSystemicClearance(VolumePerTimeMassUnit::mL_Per_s_kg) * patientWeight_kg * elapsedTime_s - renalVolumeCleared;
         SEScalarVolume integratedVolume;
@@ -793,7 +793,7 @@ namespace pulse
 
     /// \todo Remove this temporary blood increment when diffusion is operational (0.125 is tuning factor)
     double acetoacetateIncrement_mg = 0.375 * KetoneProductionRate_mmol_Per_kg_s * m_Acetoacetate->GetMolarMass(MassPerAmountUnit::mg_Per_mmol)
-      * m_data.GetCurrentPatient().GetWeight(MassUnit::kg) * time_s;
+      * SEScalar::Truncate(m_data.GetCurrentPatient().GetWeight(MassUnit::kg), 2) * time_s;
     m_LiverAcetoacetate->GetMass().IncrementValue(acetoacetateIncrement_mg, MassUnit::mg);
     if (m_LiverAcetoacetate->GetMass(MassUnit::ug) < ZERO_APPROX)
     {
@@ -1044,7 +1044,8 @@ namespace pulse
           } // End temporary endocrine control of glucose
           //m_data.GetDataTrack().Probe("Glucose_Released_mg", massReleased_mg);
 
-          massConverted_g = acidDissociationFraction * KetoneProductionRate_mmol_Per_kg_s * m_data.GetCurrentPatient().GetWeight(MassUnit::kg)
+          massConverted_g = acidDissociationFraction * KetoneProductionRate_mmol_Per_kg_s
+            * SEScalar::Truncate(m_data.GetCurrentPatient().GetWeight(MassUnit::kg), 2)
             * m_Acetoacetate->GetMolarMass(MassPerAmountUnit::g_Per_mmol);
         }
       }
@@ -1246,8 +1247,8 @@ namespace pulse
 
     //Patient weight decrease due to fluid mass lost from all sources
     double patientMassLost_kg = m_PreviousFluidMass_kg - currentFluidMass_kg;
+    //m_data.GetDataTrack().Probe("patientMassLost_kg", patientMassLost_kg);
     m_data.GetCurrentPatient().GetWeight().IncrementValue(-patientMassLost_kg, MassUnit::kg);
-
     m_PreviousFluidMass_kg = currentFluidMass_kg;
 
     // Fasciculations (due to calcium deficiency) - Currently inactive for model improvement

@@ -597,7 +597,7 @@ namespace pulse
     double totalMetabolicRateNew_Kcal_Per_day = 0.0;
     double totalMetabolicRateNew_W = 0.0;
     //The summit metabolism is the maximum amount of power the human body can generate due to shivering/response to the cold.
-    double summitMetabolism_W = 21.0 * pow(m_data.GetCurrentPatient().GetWeight(MassUnit::kg), 0.75); /// \cite herman2008physics
+    double summitMetabolism_W = 21.0 * pow(SEScalar::Truncate(m_data.GetCurrentPatient().GetWeight(MassUnit::kg), 2), 0.75); /// \cite herman2008physics
     double currentMetabolicRate_kcal_Per_day = GetTotalMetabolicRate(PowerUnit::kcal_Per_day);
     double basalMetabolicRate_kcal_Per_day = m_data.GetCurrentPatient().GetBasalMetabolicRate(PowerUnit::kcal_Per_day);
 
@@ -673,9 +673,7 @@ namespace pulse
     double sweatRate_mL_Per_s = sweatRate_mg_Per_min / sweatDensity_mg_Per_m3 * 16666.7; //Conversion
     m_skinExtravascularToSweatingGroundPath->GetNextFlowSource().SetValue(sweatRate_mL_Per_s, VolumePerTimeUnit::mL_Per_s);
 
-    //The mass lost is now handled in the Tissue system by body liquid accounting
-    //double massLost_kg = sweatRate_kg_Per_s * m_data.GetTimeStep_s();
-    //m_data.GetCurrentPatient().GetWeight().IncrementValue(-massLost_kg, MassUnit::kg);
+    //Note body mass lost is handled in the Tissue system by body liquid accounting
 
     //Remove substances that are lost through perspiration
     double perspiredVolume_mL = sweatRate_mL_Per_s * m_data.GetTimeStep_s();
@@ -733,7 +731,7 @@ namespace pulse
   //--------------------------------------------------------------------------------------------------
   void EnergyModel::CalculateBasalMetabolicRate()
   {
-    double PatientMass_kg = m_data.GetCurrentPatient().GetWeight(MassUnit::kg);
+    double PatientMass_kg = SEScalar::Truncate(m_data.GetCurrentPatient().GetWeight(MassUnit::kg), 2);
     double PatientAge_yr = m_data.GetCurrentPatient().GetAge(TimeUnit::yr);
     double PatientHeight_cm = m_data.GetCurrentPatient().GetHeight(LengthUnit::cm);
 

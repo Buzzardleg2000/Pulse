@@ -71,7 +71,7 @@ public class HowTo_MechanicalVentilator
     dataRequests.createMechanicalVentilatorDataRequest("InspiratoryExpiratoryRatio");
     dataRequests.createMechanicalVentilatorDataRequest("InspiratoryFlow", VolumePerTimeUnit.L_Per_s);
     dataRequests.createMechanicalVentilatorDataRequest("InspiratoryTidalVolume", VolumeUnit.L);
-    dataRequests.createMechanicalVentilatorDataRequest("IntrinsicPositiveEndExpiredPressure", PressureUnit.cmH2O);
+    dataRequests.createMechanicalVentilatorDataRequest("IntrinsicPositiveEndExpiratoryPressure", PressureUnit.cmH2O);
     dataRequests.createMechanicalVentilatorDataRequest("LeakFraction");
     dataRequests.createMechanicalVentilatorDataRequest("MeanAirwayPressure", PressureUnit.cmH2O);
     dataRequests.createMechanicalVentilatorDataRequest("PeakInspiratoryPressure", PressureUnit.cmH2O);
@@ -105,7 +105,7 @@ public class HowTo_MechanicalVentilator
     cpap.setConnection(eSwitch.On);
     cpap.getFractionInspiredOxygen().setValue(0.21);
     cpap.getDeltaPressureSupport().setValue(10.0, PressureUnit.cmH2O);
-    cpap.getPositiveEndExpiredPressure().setValue(5.0, PressureUnit.cmH2O);
+    cpap.getPositiveEndExpiratoryPressure().setValue(5.0, PressureUnit.cmH2O);
     cpap.getSlope().setValue(0.2, TimeUnit.s);
     pulse.processAction(cpap);
     pulse.advanceTime_s(10);
@@ -120,7 +120,7 @@ public class HowTo_MechanicalVentilator
     pc_ac.getFractionInspiredOxygen().setValue(0.21);
     pc_ac.getInspiratoryPeriod().setValue(1.0,TimeUnit.s);
     pc_ac.getInspiratoryPressure().setValue(19.0, PressureUnit.cmH2O);
-    pc_ac.getPositiveEndExpiredPressure().setValue(5.0, PressureUnit.cmH2O);
+    pc_ac.getPositiveEndExpiratoryPressure().setValue(5.0, PressureUnit.cmH2O);
     pc_ac.getRespirationRate().setValue(12.0, FrequencyUnit.Per_min);
     pc_ac.getSlope().setValue(0, TimeUnit.s);
     pulse.processAction(pc_ac);
@@ -136,7 +136,7 @@ public class HowTo_MechanicalVentilator
     vc_ac.getFlow().setValue(60.0, VolumePerTimeUnit.L_Per_min);
     vc_ac.getFractionInspiredOxygen().setValue(0.21);
     vc_ac.getInspiratoryPeriod().setValue(1.0, TimeUnit.s);
-    vc_ac.getPositiveEndExpiredPressure().setValue(5.0, PressureUnit.cmH2O);
+    vc_ac.getPositiveEndExpiratoryPressure().setValue(5.0, PressureUnit.cmH2O);
     vc_ac.getRespirationRate().setValue(12.0, FrequencyUnit.Per_min);
     vc_ac.getTidalVolume().setValue(900.0, VolumeUnit.mL);
     pulse.processAction(vc_ac);
@@ -153,7 +153,7 @@ public class HowTo_MechanicalVentilator
     mv.setInspirationWaveform(eDriverWaveform.Square);
     mv.setExpirationWaveform(eDriverWaveform.Square);
     mv.getPeakInspiratoryPressure().setValue(21.0, PressureUnit.cmH2O);
-    mv.getPositiveEndExpiredPressure().setValue(10.0, PressureUnit.cmH2O);
+    mv.getPositiveEndExpiratoryPressure().setValue(10.0, PressureUnit.cmH2O);
     SESubstanceFraction fractionFiO2 = mv.getFractionInspiredGas("Oxygen");
     fractionFiO2.getAmount().setValue(0.5);
     double respirationRate_per_min = 20.0;

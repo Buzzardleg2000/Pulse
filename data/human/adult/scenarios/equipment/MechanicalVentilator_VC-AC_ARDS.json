@@ -47,7 +47,7 @@
           "InspirationPatientTriggerPressure": { "ScalarPressure": { "Value": -1, "Unit": "cmH2O" } },
           "InspirationTargetFlow": { "ScalarVolumePerTime": { "Value": 0.5, "Unit": "L/s" } },
           "ExpirationCycleVolume": { "ScalarVolume": { "Value": 0.540, "Unit": "L" } },
-          "PositiveEndExpiredPressure": { "ScalarPressure": { "Value": 8.0, "Unit": "cmH2O" } },
+          "PositiveEndExpiratoryPressure": { "ScalarPressure": { "Value": 8.0, "Unit": "cmH2O" } },
           "FractionInspiredGas": [
             { "Name": "Oxygen", "Amount": { "Scalar0To1": { "Value": 0.5, "Unit": "" } } }
           ]

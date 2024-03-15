@@ -46,7 +46,7 @@
           "InspirationWaveform": "Square",
           "ExpirationWaveform": "Square",
           "PeakInspiratoryPressure": { "ScalarPressure": { "Value": 27.4, "Unit": "cmH2O" } },
-          "PositiveEndExpiredPressure": { "ScalarPressure": { "Value": 11.0, "Unit": "cmH2O" } },
+          "PositiveEndExpiratoryPressure": { "ScalarPressure": { "Value": 11.0, "Unit": "cmH2O" } },
           "InspirationMachineTriggerTime": { "ScalarTime": { "Value": 1.579, "Unit": "s" } },
           "ExpirationCycleTime": { "ScalarTime": { "Value": 1.421, "Unit": "s" } },
           "FractionInspiredGas": [

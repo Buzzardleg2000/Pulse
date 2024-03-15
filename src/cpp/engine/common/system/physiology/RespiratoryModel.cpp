@@ -285,7 +285,7 @@ namespace pulse
     GetOxygenSaturationIndex().SetValue(0.0, PressureUnit::cmH2O);
     GetAirwayPressure().SetValue(0.0, PressureUnit::cmH2O);
     GetMeanAirwayPressure().SetValue(0.0, PressureUnit::cmH2O);
-    GetIntrinsicPositiveEndExpiredPressure().SetValue(0.0, PressureUnit::cmH2O);
+    GetIntrinsicPositiveEndExpiratoryPressure().SetValue(0.0, PressureUnit::cmH2O);
     GetInspiratoryFlow().SetValue(0.0, VolumePerTimeUnit::L_Per_s);
     GetExpiratoryFlow().SetValue(0.0, VolumePerTimeUnit::L_Per_s);
     GetPhysiologicDeadSpaceTidalVolumeRatio().SetValue(0.0);
@@ -319,10 +319,10 @@ namespace pulse
     GetTransChestWallPressure().SetValue(0.0, PressureUnit::cmH2O);
     GetTransMusclePressure().SetValue(0.0, PressureUnit::cmH2O);
 
-    GetPulmonaryCompliance().SetValue(0.1, VolumePerPressureUnit::L_Per_cmH2O);
+    GetRespiratoryCompliance().SetValue(0.1, VolumePerPressureUnit::L_Per_cmH2O);
     GetLungCompliance().SetValue(0.1, VolumePerPressureUnit::L_Per_cmH2O);
     GetChestWallCompliance().SetValue(0.2, VolumePerPressureUnit::L_Per_cmH2O);
-    GetPulmonaryElastance().SetValue(1.0 / 0.1, PressurePerVolumeUnit::cmH2O_Per_L);
+    GetRespiratoryElastance().SetValue(1.0 / 0.1, PressurePerVolumeUnit::cmH2O_Per_L);
 
     GetTotalRespiratoryModelCompliance().SetValue(0.1, VolumePerPressureUnit::L_Per_cmH2O);
     GetTotalRespiratoryModelResistance().SetValue(1.5, PressureTimePerVolumeUnit::cmH2O_s_Per_L);
@@ -2340,10 +2340,10 @@ namespace pulse
       if (pulmonaryCompliance_L_Per_cmH2O > zeroApprox)
       {
         //Dampen the change to prevent potential craziness
-        double previousPulmonaryCompliance_L_Per_cmH2O = GetPulmonaryCompliance(VolumePerPressureUnit::L_Per_cmH2O);
-        pulmonaryCompliance_L_Per_cmH2O = GeneralMath::Damper(pulmonaryCompliance_L_Per_cmH2O, previousPulmonaryCompliance_L_Per_cmH2O, dampenFraction_perSec, m_data.GetTimeStep_s());
-        GetPulmonaryCompliance().SetValue(pulmonaryCompliance_L_Per_cmH2O, VolumePerPressureUnit::L_Per_cmH2O);
-        GetPulmonaryElastance().SetValue(1.0 / pulmonaryCompliance_L_Per_cmH2O, PressurePerVolumeUnit::cmH2O_Per_L);
+        double previousRespiratoryCompliance_L_Per_cmH2O = GetRespiratoryCompliance(VolumePerPressureUnit::L_Per_cmH2O);
+        pulmonaryCompliance_L_Per_cmH2O = GeneralMath::Damper(pulmonaryCompliance_L_Per_cmH2O, previousRespiratoryCompliance_L_Per_cmH2O, dampenFraction_perSec, m_data.GetTimeStep_s());
+        GetRespiratoryCompliance().SetValue(pulmonaryCompliance_L_Per_cmH2O, VolumePerPressureUnit::L_Per_cmH2O);
+        GetRespiratoryElastance().SetValue(1.0 / pulmonaryCompliance_L_Per_cmH2O, PressurePerVolumeUnit::cmH2O_Per_L);
       }
     }
 
@@ -2408,7 +2408,7 @@ namespace pulse
 
         GetPeakInspiratoryPressure().SetValue(m_PeakAlveolarPressure_cmH2O - bodySurfacePressure_cmH2O, PressureUnit::cmH2O);
         GetPositiveEndExpiratoryPressure().SetValue(m_BottomBreathAlveoliPressure_cmH2O - bodySurfacePressure_cmH2O, PressureUnit::cmH2O);
-        GetIntrinsicPositiveEndExpiredPressure().SetValue(m_BottomBreathAlveoliPressure_cmH2O - bodySurfacePressure_cmH2O, PressureUnit::cmH2O);
+        GetIntrinsicPositiveEndExpiratoryPressure().SetValue(m_BottomBreathAlveoliPressure_cmH2O - bodySurfacePressure_cmH2O, PressureUnit::cmH2O);
         GetMaximalInspiratoryPressure().SetValue(m_MaximalAlveolarPressure_cmH2O - bodySurfacePressure_cmH2O, PressureUnit::cmH2O);
 
         // Calculate Ventilations
@@ -2554,7 +2554,7 @@ namespace pulse
       GetInspiratoryExpiratoryRatio().SetValue(0);
       GetPeakInspiratoryPressure().SetValue(0, PressureUnit::cmH2O);
       GetPositiveEndExpiratoryPressure().SetValue(0, PressureUnit::cmH2O);
-      GetIntrinsicPositiveEndExpiredPressure().SetValue(0, PressureUnit::cmH2O);
+      GetIntrinsicPositiveEndExpiratoryPressure().SetValue(0, PressureUnit::cmH2O);
       GetMaximalInspiratoryPressure().SetValue(0, PressureUnit::cmH2O);
       GetSpecificVentilation().SetValue(0);
       GetTotalDeadSpaceVentilation().SetValue(0, VolumePerTimeUnit::L_Per_min);

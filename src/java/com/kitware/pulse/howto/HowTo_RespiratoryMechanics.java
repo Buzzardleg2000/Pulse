@@ -55,7 +55,7 @@ public class HowTo_RespiratoryMechanics
     dataRequests.createPhysiologyDataRequest("TotalLungVolume", VolumeUnit.mL);
     dataRequests.createPhysiologyDataRequest("ExpiratoryPulmonaryResistance", PressureTimePerVolumeUnit.cmH2O_s_Per_L);
     dataRequests.createPhysiologyDataRequest("InspiratoryPulmonaryResistance", PressureTimePerVolumeUnit.cmH2O_s_Per_L);
-    dataRequests.createPhysiologyDataRequest("PulmonaryCompliance", VolumePerPressureUnit.L_Per_cmH2O);
+    dataRequests.createPhysiologyDataRequest("RespiratoryCompliance", VolumePerPressureUnit.L_Per_cmH2O);
     dataRequests.createPhysiologyDataRequest("TotalPulmonaryVentilation", VolumePerTimeUnit.L_Per_min);
     dataRequests.setResultsFilename("./test_results/howto/HowTo_RespiratoryMechanics.java.csv");
     

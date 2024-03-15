@@ -64,7 +64,7 @@ SERespiratorySystem::SERespiratorySystem(Logger* logger) : SESystem(logger)
   m_InspiratoryTidalVolume = nullptr;
   m_IntrapleuralPressure = nullptr;
   m_IntrapulmonaryPressure = nullptr;
-  m_IntrinsicPositiveEndExpiredPressure = nullptr;
+  m_IntrinsicPositiveEndExpiratoryPressure = nullptr;
   m_LungCompliance = nullptr;
   m_MaximalInspiratoryPressure = nullptr;
   m_MeanAirwayPressure = nullptr;
@@ -76,8 +76,8 @@ SERespiratorySystem::SERespiratorySystem(Logger* logger) : SESystem(logger)
   m_PhysiologicDeadSpace = nullptr;
   m_PhysiologicDeadSpaceTidalVolumeRatio = nullptr;
   m_PositiveEndExpiratoryPressure = nullptr;
-  m_PulmonaryCompliance = nullptr;
-  m_PulmonaryElastance = nullptr;
+  m_RespiratoryCompliance = nullptr;
+  m_RespiratoryElastance = nullptr;
   m_RelativeTotalLungVolume = nullptr;
   m_ResistiveExpiratoryWorkOfBreathing = nullptr;
   m_ResistiveInspiratoryWorkOfBreathing = nullptr;
@@ -130,7 +130,7 @@ SERespiratorySystem::~SERespiratorySystem()
   SAFE_DELETE(m_InspiratoryTidalVolume);
   SAFE_DELETE(m_IntrapleuralPressure);
   SAFE_DELETE(m_IntrapulmonaryPressure);
-  SAFE_DELETE(m_IntrinsicPositiveEndExpiredPressure);
+  SAFE_DELETE(m_IntrinsicPositiveEndExpiratoryPressure);
   SAFE_DELETE(m_LungCompliance);
   SAFE_DELETE(m_MaximalInspiratoryPressure);
   SAFE_DELETE(m_MeanAirwayPressure);
@@ -142,8 +142,8 @@ SERespiratorySystem::~SERespiratorySystem()
   SAFE_DELETE(m_PhysiologicDeadSpace);
   SAFE_DELETE(m_PhysiologicDeadSpaceTidalVolumeRatio);
   SAFE_DELETE(m_PositiveEndExpiratoryPressure);
-  SAFE_DELETE(m_PulmonaryCompliance);
-  SAFE_DELETE(m_PulmonaryElastance);
+  SAFE_DELETE(m_RespiratoryCompliance);
+  SAFE_DELETE(m_RespiratoryElastance);
   SAFE_DELETE(m_RelativeTotalLungVolume);
   SAFE_DELETE(m_ResistiveExpiratoryWorkOfBreathing);
   SAFE_DELETE(m_ResistiveInspiratoryWorkOfBreathing);
@@ -198,7 +198,7 @@ void SERespiratorySystem::Clear()
   INVALIDATE_PROPERTY(m_InspiratoryTidalVolume);
   INVALIDATE_PROPERTY(m_IntrapleuralPressure);
   INVALIDATE_PROPERTY(m_IntrapulmonaryPressure);
-  INVALIDATE_PROPERTY(m_IntrinsicPositiveEndExpiredPressure);
+  INVALIDATE_PROPERTY(m_IntrinsicPositiveEndExpiratoryPressure);
   INVALIDATE_PROPERTY(m_LungCompliance);
   INVALIDATE_PROPERTY(m_MaximalInspiratoryPressure);
   INVALIDATE_PROPERTY(m_MeanAirwayPressure);
@@ -210,8 +210,8 @@ void SERespiratorySystem::Clear()
   INVALIDATE_PROPERTY(m_PhysiologicDeadSpace);
   INVALIDATE_PROPERTY(m_PhysiologicDeadSpaceTidalVolumeRatio);
   INVALIDATE_PROPERTY(m_PositiveEndExpiratoryPressure);
-  INVALIDATE_PROPERTY(m_PulmonaryCompliance);
-  INVALIDATE_PROPERTY(m_PulmonaryElastance);
+  INVALIDATE_PROPERTY(m_RespiratoryCompliance);
+  INVALIDATE_PROPERTY(m_RespiratoryElastance);
   INVALIDATE_PROPERTY(m_RelativeTotalLungVolume);
   INVALIDATE_PROPERTY(m_ResistiveExpiratoryWorkOfBreathing);
   INVALIDATE_PROPERTY(m_ResistiveInspiratoryWorkOfBreathing);
@@ -288,8 +288,8 @@ const SEScalar* SERespiratorySystem::GetScalar(const std::string& name)
     return &GetIntrapleuralPressure();
   if (name.compare("IntrapulmonaryPressure") == 0)
     return &GetIntrapulmonaryPressure();
-  if (name.compare("IntrinsicPositiveEndExpiredPressure") == 0)
-    return &GetIntrinsicPositiveEndExpiredPressure();
+  if (name.compare("IntrinsicPositiveEndExpiratoryPressure") == 0)
+    return &GetIntrinsicPositiveEndExpiratoryPressure();
   if (name.compare("LungCompliance") == 0)
     return &GetLungCompliance();
   if (name.compare("MaximalInspiratoryPressure") == 0)
@@ -312,10 +312,10 @@ const SEScalar* SERespiratorySystem::GetScalar(const std::string& name)
     return &GetPhysiologicDeadSpaceTidalVolumeRatio();
   if (name.compare("PositiveEndExpiratoryPressure") == 0)
     return &GetPositiveEndExpiratoryPressure();
-  if (name.compare("PulmonaryCompliance") == 0)
-    return &GetPulmonaryCompliance();
-  if (name.compare("PulmonaryElastance") == 0)
-    return &GetPulmonaryElastance();
+  if (name.compare("RespiratoryCompliance") == 0)
+    return &GetRespiratoryCompliance();
+  if (name.compare("RespiratoryElastance") == 0)
+    return &GetRespiratoryElastance();
   if (name.compare("RelativeTotalLungVolume") == 0)
     return &GetRelativeTotalLungVolume();
   if (name.compare("ResistiveExpiratoryWorkOfBreathing") == 0)
@@ -760,21 +760,21 @@ double SERespiratorySystem::GetIntrapulmonaryPressure(const PressureUnit& unit) 
   return m_IntrapulmonaryPressure->GetValue(unit);
 }
 
-bool SERespiratorySystem::HasIntrinsicPositiveEndExpiredPressure() const
+bool SERespiratorySystem::HasIntrinsicPositiveEndExpiratoryPressure() const
 {
-  return m_IntrinsicPositiveEndExpiredPressure == nullptr ? false : m_IntrinsicPositiveEndExpiredPressure->IsValid();
+  return m_IntrinsicPositiveEndExpiratoryPressure == nullptr ? false : m_IntrinsicPositiveEndExpiratoryPressure->IsValid();
 }
-SEScalarPressure& SERespiratorySystem::GetIntrinsicPositiveEndExpiredPressure()
+SEScalarPressure& SERespiratorySystem::GetIntrinsicPositiveEndExpiratoryPressure()
 {
-  if (m_IntrinsicPositiveEndExpiredPressure == nullptr)
-    m_IntrinsicPositiveEndExpiredPressure = new SEScalarPressure();
-  return *m_IntrinsicPositiveEndExpiredPressure;
+  if (m_IntrinsicPositiveEndExpiratoryPressure == nullptr)
+    m_IntrinsicPositiveEndExpiratoryPressure = new SEScalarPressure();
+  return *m_IntrinsicPositiveEndExpiratoryPressure;
 }
-double SERespiratorySystem::GetIntrinsicPositiveEndExpiredPressure(const PressureUnit& unit) const
+double SERespiratorySystem::GetIntrinsicPositiveEndExpiratoryPressure(const PressureUnit& unit) const
 {
-  if (m_IntrinsicPositiveEndExpiredPressure == nullptr)
+  if (m_IntrinsicPositiveEndExpiratoryPressure == nullptr)
     return SEScalar::dNaN();
-  return m_IntrinsicPositiveEndExpiredPressure->GetValue(unit);
+  return m_IntrinsicPositiveEndExpiratoryPressure->GetValue(unit);
 }
 
 bool SERespiratorySystem::HasLungCompliance() const
@@ -963,38 +963,38 @@ double SERespiratorySystem::GetPositiveEndExpiratoryPressure(const PressureUnit&
   return m_PositiveEndExpiratoryPressure->GetValue(unit);
 }
 
-bool SERespiratorySystem::HasPulmonaryCompliance() const
+bool SERespiratorySystem::HasRespiratoryCompliance() const
 {
-  return m_PulmonaryCompliance == nullptr ? false : m_PulmonaryCompliance->IsValid();
+  return m_RespiratoryCompliance == nullptr ? false : m_RespiratoryCompliance->IsValid();
 }
-SEScalarVolumePerPressure& SERespiratorySystem::GetPulmonaryCompliance()
+SEScalarVolumePerPressure& SERespiratorySystem::GetRespiratoryCompliance()
 {
-  if (m_PulmonaryCompliance== nullptr)
-    m_PulmonaryCompliance = new SEScalarVolumePerPressure();
-  return *m_PulmonaryCompliance;
+  if (m_RespiratoryCompliance== nullptr)
+    m_RespiratoryCompliance = new SEScalarVolumePerPressure();
+  return *m_RespiratoryCompliance;
 }
-double SERespiratorySystem::GetPulmonaryCompliance(const VolumePerPressureUnit& unit) const
+double SERespiratorySystem::GetRespiratoryCompliance(const VolumePerPressureUnit& unit) const
 {
-  if (m_PulmonaryCompliance == nullptr)
+  if (m_RespiratoryCompliance == nullptr)
     return SEScalar::dNaN();
-  return m_PulmonaryCompliance->GetValue(unit);
+  return m_RespiratoryCompliance->GetValue(unit);
 }
 
-bool SERespiratorySystem::HasPulmonaryElastance() const
+bool SERespiratorySystem::HasRespiratoryElastance() const
 {
-  return m_PulmonaryElastance == nullptr ? false : m_PulmonaryElastance->IsValid();
+  return m_RespiratoryElastance == nullptr ? false : m_RespiratoryElastance->IsValid();
 }
-SEScalarPressurePerVolume& SERespiratorySystem::GetPulmonaryElastance()
+SEScalarPressurePerVolume& SERespiratorySystem::GetRespiratoryElastance()
 {
-  if (m_PulmonaryElastance == nullptr)
-    m_PulmonaryElastance = new SEScalarPressurePerVolume();
-  return *m_PulmonaryElastance;
+  if (m_RespiratoryElastance == nullptr)
+    m_RespiratoryElastance = new SEScalarPressurePerVolume();
+  return *m_RespiratoryElastance;
 }
-double SERespiratorySystem::GetPulmonaryElastance(const PressurePerVolumeUnit& unit) const
+double SERespiratorySystem::GetRespiratoryElastance(const PressurePerVolumeUnit& unit) const
 {
-  if (m_PulmonaryElastance == nullptr)
+  if (m_RespiratoryElastance == nullptr)
     return SEScalar::dNaN();
-  return m_PulmonaryElastance->GetValue(unit);
+  return m_RespiratoryElastance->GetValue(unit);
 }
 
 bool SERespiratorySystem::HasRelativeTotalLungVolume() const

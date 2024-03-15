@@ -26,8 +26,8 @@ void PBMechanicalVentilator::Serialize(const CDM_BIND::MechanicalVentilatorData&
   if (src.has_airwaypressure())
     PBProperty::Load(src.airwaypressure(), dst.GetAirwayPressure());
   dst.m_BreathState = (eBreathState)src.breathstate();
-  if (src.has_dynamicpulmonarycompliance())
-    PBProperty::Load(src.dynamicpulmonarycompliance(), dst.GetDynamicPulmonaryCompliance());
+  if (src.has_dynamicrespiratorycompliance())
+    PBProperty::Load(src.dynamicrespiratorycompliance(), dst.GetDynamicRespiratoryCompliance());
   if (src.has_endtidalcarbondioxidefraction())
     PBProperty::Load(src.endtidalcarbondioxidefraction(), dst.GetEndTidalCarbonDioxideFraction());
   if (src.has_endtidalcarbondioxidepressure())
@@ -50,8 +50,8 @@ void PBMechanicalVentilator::Serialize(const CDM_BIND::MechanicalVentilatorData&
     PBProperty::Load(src.inspiratoryresistance(), dst.GetInspiratoryResistance());
   if (src.has_inspiratorytidalvolume())
     PBProperty::Load(src.inspiratorytidalvolume(), dst.GetInspiratoryTidalVolume());
-  if (src.has_intrinsicpositiveendexpiredpressure())
-    PBProperty::Load(src.intrinsicpositiveendexpiredpressure(), dst.GetIntrinsicPositiveEndExpiredPressure());
+  if (src.has_intrinsicpositiveendexpiratorypressure())
+    PBProperty::Load(src.intrinsicpositiveendexpiratorypressure(), dst.GetIntrinsicPositiveEndExpiratoryPressure());
   if (src.has_leakfraction())
     PBProperty::Load(src.leakfraction(), dst.GetLeakFraction());
   if (src.has_meanairwaypressure())
@@ -69,8 +69,8 @@ void PBMechanicalVentilator::Serialize(const CDM_BIND::MechanicalVentilatorData&
 
   if (src.has_respirationrate())
     PBProperty::Load(src.respirationrate(), dst.GetRespirationRate());
-  if (src.has_staticpulmonarycompliance())
-    PBProperty::Load(src.staticpulmonarycompliance(), dst.GetStaticPulmonaryCompliance());
+  if (src.has_staticrespiratorycompliance())
+    PBProperty::Load(src.staticrespiratorycompliance(), dst.GetStaticRespiratoryCompliance());
   if (src.has_tidalvolume())
     PBProperty::Load(src.tidalvolume(), dst.GetTidalVolume());
   if (src.has_totallungvolume())
@@ -92,8 +92,8 @@ void PBMechanicalVentilator::Serialize(const SEMechanicalVentilator& src, CDM_BI
   if (src.HasAirwayPressure())
     dst.set_allocated_airwaypressure(PBProperty::Unload(*src.m_AirwayPressure));
   dst.set_breathstate((CDM_BIND::eBreathState)src.m_BreathState.GetEnum());
-  if (src.HasDynamicPulmonaryCompliance())
-    dst.set_allocated_dynamicpulmonarycompliance(PBProperty::Unload(*src.m_DynamicPulmonaryCompliance));
+  if (src.HasDynamicRespiratoryCompliance())
+    dst.set_allocated_dynamicrespiratorycompliance(PBProperty::Unload(*src.m_DynamicRespiratoryCompliance));
   if (src.HasEndTidalCarbonDioxideFraction())
     dst.set_allocated_endtidalcarbondioxidefraction(PBProperty::Unload(*src.m_EndTidalCarbonDioxideFraction));
   if (src.HasEndTidalCarbonDioxidePressure())
@@ -116,8 +116,8 @@ void PBMechanicalVentilator::Serialize(const SEMechanicalVentilator& src, CDM_BI
     dst.set_allocated_inspiratoryresistance(PBProperty::Unload(*src.m_InspiratoryResistance));
   if (src.HasInspiratoryTidalVolume())
     dst.set_allocated_inspiratorytidalvolume(PBProperty::Unload(*src.m_InspiratoryTidalVolume));
-  if (src.HasIntrinsicPositiveEndExpiredPressure())
-    dst.set_allocated_intrinsicpositiveendexpiredpressure(PBProperty::Unload(*src.m_IntrinsicPositiveEndExpiredPressure));
+  if (src.HasIntrinsicPositiveEndExpiratoryPressure())
+    dst.set_allocated_intrinsicpositiveendexpiratorypressure(PBProperty::Unload(*src.m_IntrinsicPositiveEndExpiratoryPressure));
   if (src.HasLeakFraction())
     dst.set_allocated_leakfraction(PBProperty::Unload(*src.m_LeakFraction));
   if (src.HasMeanAirwayPressure())
@@ -134,8 +134,8 @@ void PBMechanicalVentilator::Serialize(const SEMechanicalVentilator& src, CDM_BI
     dst.set_allocated_positiveendexpiratorypressure(PBProperty::Unload(*src.m_PositiveEndExpiratoryPressure));
   if (src.HasRespirationRate())
     dst.set_allocated_respirationrate(PBProperty::Unload(*src.m_RespirationRate));
-  if (src.HasStaticPulmonaryCompliance())
-    dst.set_allocated_staticpulmonarycompliance(PBProperty::Unload(*src.m_StaticPulmonaryCompliance));
+  if (src.HasStaticRespiratoryCompliance())
+    dst.set_allocated_staticrespiratorycompliance(PBProperty::Unload(*src.m_StaticRespiratoryCompliance));
   if (src.HasTidalVolume())
     dst.set_allocated_tidalvolume(PBProperty::Unload(*src.m_TidalVolume));
   if (src.HasTotalLungVolume())
@@ -162,8 +162,8 @@ void PBMechanicalVentilator::Serialize(const CDM_BIND::MechanicalVentilatorSetti
   if (src.has_driverdampingparameter())
     PBProperty::Load(src.driverdampingparameter(), dst.GetDriverDampingParameter());
 
-  if (src.has_positiveendexpiredpressure())
-    PBProperty::Load(src.positiveendexpiredpressure(), dst.GetPositiveEndExpiredPressure());
+  if (src.has_positiveendexpiratorypressure())
+    PBProperty::Load(src.positiveendexpiratorypressure(), dst.GetPositiveEndExpiratoryPressure());
   else if (src.has_functionalresidualcapacity())
     PBProperty::Load(src.functionalresidualcapacity(), dst.GetFunctionalResidualCapacity());
 
@@ -284,8 +284,8 @@ void PBMechanicalVentilator::Serialize(const SEMechanicalVentilatorSettings& src
   if (src.HasDriverDampingParameter())
     dst.set_allocated_driverdampingparameter(PBProperty::Unload(*src.m_DriverDampingParameter));
 
-  if (src.HasPositiveEndExpiredPressure())
-    dst.set_allocated_positiveendexpiredpressure(PBProperty::Unload(*src.m_PositiveEndExpiredPressure));
+  if (src.HasPositiveEndExpiratoryPressure())
+    dst.set_allocated_positiveendexpiratorypressure(PBProperty::Unload(*src.m_PositiveEndExpiratoryPressure));
   else if (src.HasFunctionalResidualCapacity())
     dst.set_allocated_functionalresidualcapacity(PBProperty::Unload(*src.m_FunctionalResidualCapacity));
 

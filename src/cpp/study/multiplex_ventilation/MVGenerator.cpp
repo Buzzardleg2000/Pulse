@@ -177,7 +177,7 @@ namespace pulse::study::multiplex_ventilation
     mv.SetInspirationWaveform(eDriverWaveform::Square);
     mv.SetExpirationWaveform(eDriverWaveform::Square);
     mv.GetPeakInspiratoryPressure().SetValue(pData.pip_cmh2o(), PressureUnit::cmH2O);
-    mv.GetPositiveEndExpiredPressure().SetValue(pData.peep_cmh2o(), PressureUnit::cmH2O);
+    mv.GetPositiveEndExpiratoryPressure().SetValue(pData.peep_cmh2o(), PressureUnit::cmH2O);
     double respirationRate_per_min = pData.respirationrate_per_min();
     double IERatio = pData.ieratio();
 

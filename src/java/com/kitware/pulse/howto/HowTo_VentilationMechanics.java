@@ -67,7 +67,7 @@ public class HowTo_VentilationMechanics
     dataRequests.createPhysiologyDataRequest("InspiratoryFlow", VolumePerTimeUnit.L_Per_min);
     dataRequests.createPhysiologyDataRequest("ExpiratoryPulmonaryResistance", PressureTimePerVolumeUnit.cmH2O_s_Per_mL);
     dataRequests.createPhysiologyDataRequest("InspiratoryPulmonaryResistance", PressureTimePerVolumeUnit.cmH2O_s_Per_mL);
-    dataRequests.createPhysiologyDataRequest("PulmonaryCompliance", VolumePerPressureUnit.mL_Per_cmH2O);
+    dataRequests.createPhysiologyDataRequest("RespiratoryCompliance", VolumePerPressureUnit.mL_Per_cmH2O);
     dataRequests.createPhysiologyDataRequest("TotalPulmonaryVentilation", VolumePerTimeUnit.mL_Per_min);
     // Ventilator Monitor Data
     dataRequests.createMechanicalVentilatorDataRequest("AirwayPressure", PressureUnit.cmH2O);
@@ -80,7 +80,7 @@ public class HowTo_VentilationMechanics
     dataRequests.createMechanicalVentilatorDataRequest("InspiratoryExpiratoryRatio");
     dataRequests.createMechanicalVentilatorDataRequest("InspiratoryFlow", VolumePerTimeUnit.L_Per_s);
     dataRequests.createMechanicalVentilatorDataRequest("InspiratoryTidalVolume", VolumeUnit.L);
-    dataRequests.createMechanicalVentilatorDataRequest("IntrinsicPositiveEndExpiredPressure", PressureUnit.cmH2O);
+    dataRequests.createMechanicalVentilatorDataRequest("IntrinsicPositiveEndExpiratoryPressure", PressureUnit.cmH2O);
     dataRequests.createMechanicalVentilatorDataRequest("LeakFraction");
     dataRequests.createMechanicalVentilatorDataRequest("MeanAirwayPressure", PressureUnit.cmH2O);
     dataRequests.createMechanicalVentilatorDataRequest("PeakInspiratoryPressure", PressureUnit.cmH2O);
@@ -178,7 +178,7 @@ public class HowTo_VentilationMechanics
     pc_ac.getFractionInspiredOxygen().setValue(0.21);
     pc_ac.getInspiratoryPeriod().setValue(1.0, TimeUnit.s);
     pc_ac.getInspiratoryPressure().setValue(19.0, PressureUnit.cmH2O);
-    pc_ac.getPositiveEndExpiredPressure().setValue(5.0, PressureUnit.cmH2O);
+    pc_ac.getPositiveEndExpiratoryPressure().setValue(5.0, PressureUnit.cmH2O);
     pc_ac.getRespirationRate().setValue(12.0, FrequencyUnit.Per_min);
     pc_ac.getSlope().setValue(0.2, TimeUnit.s);
     pulse.processAction(pc_ac);

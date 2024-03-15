@@ -42,7 +42,7 @@ public class SERespiratorySystem extends SEPhysiologySystem implements SESystem
   protected SEScalarVolume                inspiratoryTidalVolume;
   protected SEScalarPressure              intrapleuralPressure;
   protected SEScalarPressure              intrapulmonaryPressure;
-  protected SEScalarPressure              intrinsicPositiveEndExpiredPressure;
+  protected SEScalarPressure              intrinsicPositiveEndExpiratoryPressure;
   protected SEScalarVolumePerPressure     lungCompliance;
   protected SEScalarPressure              maximalInspiratoryPressure;
   protected SEScalarPressure              meanAirwayPressure;
@@ -108,7 +108,7 @@ public class SERespiratorySystem extends SEPhysiologySystem implements SESystem
     inspiratoryTidalVolume = null;
     intrapleuralPressure = null;
     intrapulmonaryPressure = null;
-    intrinsicPositiveEndExpiredPressure = null;
+    intrinsicPositiveEndExpiratoryPressure = null;
     lungCompliance = null;
     maximalInspiratoryPressure = null;
     meanAirwayPressure = null;
@@ -198,8 +198,8 @@ public class SERespiratorySystem extends SEPhysiologySystem implements SESystem
       intrapleuralPressure.invalidate();
     if (intrapulmonaryPressure != null)
       intrapulmonaryPressure.invalidate();
-    if (intrinsicPositiveEndExpiredPressure != null)
-      intrinsicPositiveEndExpiredPressure.invalidate();
+    if (intrinsicPositiveEndExpiratoryPressure != null)
+      intrinsicPositiveEndExpiratoryPressure.invalidate();
     if (lungCompliance != null)
       lungCompliance.invalidate();
     if (maximalInspiratoryPressure != null)
@@ -325,8 +325,8 @@ public class SERespiratorySystem extends SEPhysiologySystem implements SESystem
       SEScalarPressure.load(src.getIntrapleuralPressure(),dst.getIntrapleuralPressure());
     if (src.hasIntrapulmonaryPressure())
       SEScalarPressure.load(src.getIntrapulmonaryPressure(),dst.getIntrapulmonaryPressure());
-    if (src.hasIntrinsicPositiveEndExpiredPressure())
-      SEScalarPressure.load(src.getIntrinsicPositiveEndExpiredPressure(),dst.getIntrinsicPositiveEndExpiredPressure());
+    if (src.hasIntrinsicPositiveEndExpiratoryPressure())
+      SEScalarPressure.load(src.getIntrinsicPositiveEndExpiratoryPressure(),dst.getIntrinsicPositiveEndExpiratoryPressure());
     if (src.hasLungCompliance())
       SEScalarVolumePerPressure.load(src.getLungCompliance(),dst.getLungCompliance());
     if (src.hasMaximalInspiratoryPressure())
@@ -349,10 +349,10 @@ public class SERespiratorySystem extends SEPhysiologySystem implements SESystem
       SEScalar.load(src.getPhysiologicDeadSpaceTidalVolumeRatio(),dst.getPhysiologicDeadSpaceTidalVolumeRatio());
     if (src.hasPositiveEndExpiratoryPressure())
       SEScalarPressure.load(src.getPositiveEndExpiratoryPressure(),dst.getPositiveEndExpiratoryPressure());
-    if (src.hasPulmonaryCompliance())
-      SEScalarVolumePerPressure.load(src.getPulmonaryCompliance(),dst.getPulmonaryCompliance());
-    if (src.hasPulmonaryElastance())
-      SEScalarPressurePerVolume.load(src.getPulmonaryElastance(),dst.getPulmonaryElastance()); 
+    if (src.hasRespiratoryCompliance())
+      SEScalarVolumePerPressure.load(src.getRespiratoryCompliance(),dst.getRespiratoryCompliance());
+    if (src.hasRespiratoryElastance())
+      SEScalarPressurePerVolume.load(src.getRespiratoryElastance(),dst.getRespiratoryElastance()); 
     if (src.hasRelativeTotalLungVolume())
       SEScalarVolume.load(src.getRelativeTotalLungVolume(),dst.getRelativeTotalLungVolume());
     if (src.hasResistiveExpiratoryWorkOfBreathing())
@@ -457,8 +457,8 @@ public class SERespiratorySystem extends SEPhysiologySystem implements SESystem
       dst.setInspiratoryTidalVolume(SEScalarVolume.unload(src.getInspiratoryTidalVolume()));
     if (src.hasIntrapleuralPressure())
       dst.setIntrapleuralPressure(SEScalarPressure.unload(src.getIntrapleuralPressure()));
-    if (src.hasIntrinsicPositiveEndExpiredPressure())
-      dst.setIntrinsicPositiveEndExpiredPressure(SEScalarPressure.unload(src.getIntrinsicPositiveEndExpiredPressure()));
+    if (src.hasIntrinsicPositiveEndExpiratoryPressure())
+      dst.setIntrinsicPositiveEndExpiratoryPressure(SEScalarPressure.unload(src.getIntrinsicPositiveEndExpiratoryPressure()));
     if (src.hasIntrapulmonaryPressure())
       dst.setIntrapulmonaryPressure(SEScalarPressure.unload(src.getIntrapulmonaryPressure()));
     if (src.hasLungCompliance())
@@ -483,10 +483,10 @@ public class SERespiratorySystem extends SEPhysiologySystem implements SESystem
       dst.setPhysiologicDeadSpaceTidalVolumeRatio(SEScalar.unload(src.getPhysiologicDeadSpaceTidalVolumeRatio()));
     if (src.hasPositiveEndExpiratoryPressure())
       dst.setPositiveEndExpiratoryPressure(SEScalarPressure.unload(src.getPositiveEndExpiratoryPressure()));
-    if (src.hasPulmonaryCompliance())
-      dst.setPulmonaryCompliance(SEScalarVolumePerPressure.unload(src.getPulmonaryCompliance()));
-    if (src.hasPulmonaryElastance())
-        dst.setPulmonaryElastance(SEScalarPressurePerVolume.unload(src.getPulmonaryElastance()));
+    if (src.hasRespiratoryCompliance())
+      dst.setRespiratoryCompliance(SEScalarVolumePerPressure.unload(src.getRespiratoryCompliance()));
+    if (src.hasRespiratoryElastance())
+        dst.setRespiratoryElastance(SEScalarPressurePerVolume.unload(src.getRespiratoryElastance()));
     if (src.hasRelativeTotalLungVolume())
       dst.setRelativeTotalLungVolume(SEScalarVolume.unload(src.getRelativeTotalLungVolume()));
     if (src.hasResistiveExpiratoryWorkOfBreathing())
@@ -795,15 +795,15 @@ public class SERespiratorySystem extends SEPhysiologySystem implements SESystem
   }
   
 
-  public boolean hasIntrinsicPositiveEndExpiredPressure()
+  public boolean hasIntrinsicPositiveEndExpiratoryPressure()
   {
-    return intrinsicPositiveEndExpiredPressure == null ? false : intrinsicPositiveEndExpiredPressure.isValid();
+    return intrinsicPositiveEndExpiratoryPressure == null ? false : intrinsicPositiveEndExpiratoryPressure.isValid();
   }
-  public SEScalarPressure getIntrinsicPositiveEndExpiredPressure()
+  public SEScalarPressure getIntrinsicPositiveEndExpiratoryPressure()
   {
-    if (intrinsicPositiveEndExpiredPressure == null)
-      intrinsicPositiveEndExpiredPressure = new SEScalarPressure();
-    return intrinsicPositiveEndExpiredPressure;
+    if (intrinsicPositiveEndExpiratoryPressure == null)
+      intrinsicPositiveEndExpiratoryPressure = new SEScalarPressure();
+    return intrinsicPositiveEndExpiratoryPressure;
   }
   
   public boolean hasLungCompliance()
@@ -927,22 +927,22 @@ public class SERespiratorySystem extends SEPhysiologySystem implements SESystem
     return positiveEndExpiratoryPressure;
   }
 
-  public boolean hasPulmonaryCompliance()
+  public boolean hasRespiratoryCompliance()
   {
     return pulmonaryCompliance == null ? false : pulmonaryCompliance.isValid();
   }
-  public SEScalarVolumePerPressure getPulmonaryCompliance()
+  public SEScalarVolumePerPressure getRespiratoryCompliance()
   {
     if (pulmonaryCompliance == null)
       pulmonaryCompliance = new SEScalarVolumePerPressure();
     return pulmonaryCompliance;
   }
 
-  public boolean hasPulmonaryElastance()
+  public boolean hasRespiratoryElastance()
   {
     return pulmonaryElastance == null ? false : pulmonaryElastance.isValid();
   }
-  public SEScalarPressurePerVolume getPulmonaryElastance()
+  public SEScalarPressurePerVolume getRespiratoryElastance()
   {
     if (pulmonaryElastance == null)
       pulmonaryElastance = new SEScalarPressurePerVolume();

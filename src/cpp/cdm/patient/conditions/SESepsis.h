@@ -29,7 +29,12 @@ public:
   virtual SEScalar0To1& GetProgressionSeverity();
   virtual double GetProgressionSeverity() const;
 
+  virtual bool HasProgressionDuration() const;
+  virtual SEScalarTime& GetProgressionDuration();
+  virtual double GetProgressionDuration(const TimeUnit& unit) const;
+
 protected:
   SEScalar0To1* m_InfectionSeverity;
   SEScalar0To1* m_ProgressionSeverity;
+  SEScalarTime* m_ProgressionDuration;
 };

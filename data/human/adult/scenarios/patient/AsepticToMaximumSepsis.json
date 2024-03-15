@@ -1,0 +1,36 @@
+{
+  "Name": "AsepticSepsis",
+  "Description": "Stabilize to aseptic sepsis, 11 hours into the progression. Then simulate sepsis for 2 hours, exacerbate to maximum for another 2",
+  "PatientConfiguration": { 
+    "PatientFile": "StandardMale.json",
+    "Conditions": { "AnyCondition": [{
+      "PatientCondition": {
+        "Sepsis": {
+          "PatientCondition": {
+            "Condition": { "Comment": "" }},
+          "InfectionSeverity": { "Scalar0To1": { "Value": 1.0 }},
+          "ProgressionSeverity": { "Scalar0To1": { "Value": 0.5 }},
+          "ProgressionDuration": { "ScalarTime": { "Value": 11.0, "Unit": "hr" }}
+        }}
+    }]}
+  },
+  "DataRequestFile": [
+    "StandardDataRequests.json"
+  ],
+  "DataRequestManager": {
+    "SamplesPerSecond": 1.0
+  },
+  "AnyAction": [{
+    "AdvanceTime": {
+      "Time": { "ScalarTime": { "Value": 2.0, "Unit": "hr" }}}
+    }, {
+    "PatientAction": {
+      "SepsisExacerbation": {
+        "PatientAction": { "Action": { "Comment": "" }},
+        "ProgressionSeverity": { "Scalar0To1": { "Value": 1.0 }}}
+    }
+  },{
+    "AdvanceTime": {
+      "Time": { "ScalarTime": { "Value": 2.0, "Unit": "hr" }}}
+  }]
+}

@@ -72,12 +72,18 @@ namespace pulse { namespace human_adult_whole_body
     SepsisTest(1.0, 0.4875, 300, sTestDirectory, "Aseptic");
   }
 
+  void EngineTest::AsepticToMaximumTest(const std::string& sTestDirectory)
+  {
+    SepsisTest(1.0, 0.4875, 300, sTestDirectory, "AsepticToMaximum", 1.0);
+  }
+
   void EngineTest::MaximumSepsisTest(const std::string& sTestDirectory)
   {
     SepsisTest(1.0, 1.0, 300, sTestDirectory, "MaximumSepsis");
   }
 
-  void EngineTest::SepsisTest(double infectionSeverity, double progressionSeverity, double duration_hr, const std::string& sTestDirectory, const std::string& sTestName)
+  void EngineTest::SepsisTest(double infectionSeverity, double progressionSeverity, double duration_hr,
+    const std::string& sTestDirectory, const std::string& sTestName, double halfwayProgressionSeverity)
   {
     std::string tName = sTestName;
 
@@ -96,18 +102,28 @@ namespace pulse { namespace human_adult_whole_body
     double testTime_s = 60 * 60 * duration_hr;
     double timeStep_s = 60;
 
-    im.m_PathogenCount = im.m_SepsisModel->InfectionSeverityToPathogenCount(infectionSeverity);
-    im.m_ActivatedPhagocytes = 0;
-    im.m_TissueDamage = 0;
-    im.m_AntiInflammatoryMediators = 0.125;
-    im.m_PathogenGrowthRate = im.m_SepsisModel->ProgressionSeverityToPathogenGrowthRate(progressionSeverity);
+    im.m_SepsisModel->PathogenCount = im.m_SepsisModel->InfectionSeverityToPathogenCount(infectionSeverity);
+    im.m_SepsisModel->ActivatedPhagocytes = 0;
+    im.m_SepsisModel->TissueDamage = 0;
+    im.m_SepsisModel->AntiInflammatoryMediators = 0.125;
+    im.m_SepsisModel->PathogenGrowthRate = im.m_SepsisModel->ProgressionSeverityToPathogenGrowthRate(progressionSeverity);
+    unsigned int halfway = (testTime_s / timeStep_s) * 0.5;
     for (unsigned int i = 0; i < (testTime_s / timeStep_s); i++)
     {
-      outTrk.Track("PathogenCount", time_s, im.m_PathogenCount);
-      outTrk.Track("ActivatedPhagocytes", time_s, im.m_ActivatedPhagocytes);
-      outTrk.Track("TissueDamage", time_s, im.m_TissueDamage);
-      outTrk.Track("AntiInflammatoryMediators", time_s, im.m_AntiInflammatoryMediators);
+      outTrk.Track("PathogenCount", time_s, im.m_SepsisModel->PathogenCount);
+      outTrk.Track("ActivatedPhagocytes", time_s, im.m_SepsisModel->ActivatedPhagocytes);
+      outTrk.Track("TissueDamage", time_s, im.m_SepsisModel->TissueDamage);
+      outTrk.Track("AntiInflammatoryMediators", time_s, im.m_SepsisModel->AntiInflammatoryMediators);
 
+      if (i == halfway && halfwayProgressionSeverity >= 0)
+      {
+        double newPathogenGrowthRate = im.m_SepsisModel->ProgressionSeverityToPathogenGrowthRate(halfwayProgressionSeverity);
+        pc.GetLogger()->Info("Changing the progression severity from " + pulse::cdm::to_string(progressionSeverity) + " to " + pulse::cdm::to_string(halfwayProgressionSeverity));
+        pc.GetLogger()->Info("Changing the PathogenGrowthRate from " + pulse::cdm::to_string(im.m_SepsisModel->PathogenGrowthRate) + " to " + pulse::cdm::to_string(newPathogenGrowthRate));
+        im.m_SepsisModel->PathogenGrowthRate = newPathogenGrowthRate;
+      }
+
+      // TODO Change/Test time step to 0.02s
       im.m_SepsisModel->AdvanceModelTime(timeStep_s);
       
       if (i == 0)

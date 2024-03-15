@@ -3,9 +3,13 @@
 
 #include "engine/common/system/physiology/ImmuneModel.h"
 #include "cdm/engine/SEActionManager.h"
+#include "cdm/engine/SEConditionManager.h"
 #include "cdm/engine/SEPatientActionCollection.h"
 #include "cdm/patient/actions/SESepsisExacerbation.h"
+#include "cdm/patient/conditions/SESepsis.h"
 #include "cdm/properties/SEScalar0To1.h"
+#include "cdm/properties/SEScalarAmount.h"
+#include "cdm/properties/SEScalarTime.h"
 #include "cdm/utils/DataTrack.h"
 #include "cdm/utils/GeneralMath.h"
 
@@ -16,12 +20,29 @@ POP_EIGEN_WARNINGS
 namespace pulse
 {
   // Implementation of the Reynolds reduced four-variable model
-  class ReynoldsModel : public ImmuneModel::SepsisModel
+  class ReynoldsSepsisModelImpl : public ImmuneModel::ReynoldsSepsisModel
   {
   public:
-    ReynoldsModel(double& pc, double& pgr, double& ap, double& td, double& aim) :
-      m_pc(pc), m_pgr(pgr), m_ap(ap), m_td(td), m_aim(aim) {};
-    virtual ~ReynoldsModel() = default;
+    ReynoldsSepsisModelImpl() :
+      m_pc(PathogenCount),m_pgr(PathogenGrowthRate),
+      m_ap(ActivatedPhagocytes), m_td(TissueDamage), m_aim(AntiInflammatoryMediators) {};
+    virtual ~ReynoldsSepsisModelImpl() = default;
+
+    bool Active() const override
+    {
+      // TODO can we stop calculating the model?
+      if (PathogenCount > 0)
+        return true;
+      if (PathogenGrowthRate > 0)
+        return true;
+      if (ActivatedPhagocytes > 0)
+        return true;
+      if (TissueDamage > 0)
+        return true;
+      // AntiInflammatoryMediators?
+
+      return false;
+    }
 
     double InfectionSeverityToPathogenCount(double InfectionSeverity) override
     {
@@ -154,14 +175,13 @@ namespace pulse
   ImmuneModel::ImmuneModel(Data& data) : ImmuneSystem(data.GetLogger()), Model(data)
   {
     Clear();
-    m_SepsisModel = new ReynoldsModel(m_PathogenCount,
-                                      m_PathogenGrowthRate, m_ActivatedPhagocytes,
-                                      m_TissueDamage, m_AntiInflammatoryMediators);
+    m_SepsisModel = new ReynoldsSepsisModelImpl();
   }
 
   ImmuneModel::~ImmuneModel()
   {
     Clear();
+    delete m_SepsisModel;
   }
 
   void ImmuneModel::Clear()
@@ -181,11 +201,13 @@ namespace pulse
   {
     Model::Initialize();
 
-    m_PathogenCount = 0; // max 20e6
-    m_PathogenGrowthRate = 0;
-    m_ActivatedPhagocytes = 0;
-    m_TissueDamage = 0;
-    m_AntiInflammatoryMediators = 0.125;
+    m_ActiveSepsis = false;
+    m_InitialSepsisInfectionSeverity = -1;
+    m_SepsisModel->PathogenCount = 0; // max 20e6
+    m_SepsisModel->PathogenGrowthRate = 0;
+    m_SepsisModel->ActivatedPhagocytes = 0;
+    m_SepsisModel->TissueDamage = 0;
+    m_SepsisModel->AntiInflammatoryMediators = 0.125;
   }
 
   //--------------------------------------------------------------------------------------------------
@@ -199,7 +221,7 @@ namespace pulse
   //--------------------------------------------------------------------------------------------------
   void ImmuneModel::SetUp()
   {
-    m_InitialPathogenCount = -1;
+
   }
 
   //--------------------------------------------------------------------------------------------------
@@ -211,7 +233,39 @@ namespace pulse
   //--------------------------------------------------------------------------------------------------
   void ImmuneModel::AtSteadyState()
   {
+    if (m_data.GetState() == EngineState::AtInitialStableState)
+    {
+      if (m_data.GetConditions().HasSepsis() && m_data.GetConditions().GetSepsis().HasProgressionDuration())
+      {
+        SESepsis& sepsis = m_data.GetConditions().GetSepsis();
+        m_InitialSepsisInfectionSeverity = sepsis.GetInfectionSeverity().GetValue();
+        m_SepsisModel->PathogenCount = m_SepsisModel->InfectionSeverityToPathogenCount(m_InitialSepsisInfectionSeverity);
+        m_SepsisModel->PathogenGrowthRate = m_SepsisModel->ProgressionSeverityToPathogenGrowthRate(sepsis.GetProgressionSeverity().GetValue());
 
+        // Advance sepsis model the duration
+        double duration_s = 0;
+        if (m_data.GetConditions().GetSepsis().HasProgressionDuration())
+        {
+          duration_s = m_data.GetConditions().GetSepsis().GetProgressionDuration(TimeUnit::s);
+          if (duration_s > 0)
+          {
+            size_t steps = std::ceil(duration_s / m_data.GetTimeStep_s());
+            Info("Simulating " + m_data.GetConditions().GetSepsis().GetProgressionDuration().ToString() + " of Sepsis");
+            Info("  -That is " + std::to_string(steps) + " time steps.");
+
+            for (size_t i = 0; i < steps; i++)
+              m_SepsisModel->AdvanceModelTime(m_data.GetTimeStep_s());
+          }
+        }
+
+        // NOTE: Don't active the sepsis model until after we have stabilized to the values we computed in the sepsis model
+      }
+    }
+    else if (m_data.GetState() == EngineState::Active)
+    {
+      if (m_data.GetConditions().HasSepsis())
+        m_ActiveSepsis = true;
+    }
   }
 
   //--------------------------------------------------------------------------------------------------
@@ -222,57 +276,54 @@ namespace pulse
   //--------------------------------------------------------------------------------------------------
   void ImmuneModel::PreProcess()
   {
-    Sepsis();
+    if (m_data.GetActions().GetPatientActions().HasSepsisExacerbation())
+    {
+      m_ActiveSepsis = true;
+      SESepsisExacerbation& sepsis = m_data.GetActions().GetPatientActions().GetSepsisExacerbation();
+
+      if (sepsis.HasInfectionSeverity())
+      {
+        // You really should not change the initial infection severity in the middle of a run
+        if (m_InitialSepsisInfectionSeverity < 0 || m_InitialSepsisInfectionSeverity != sepsis.GetInfectionSeverity().GetValue())
+        {
+          if (m_InitialSepsisInfectionSeverity != sepsis.GetInfectionSeverity().GetValue() && m_InitialSepsisInfectionSeverity >= 0)
+            Warning("Changing sepsis infection severity can produce unreliable results.");
+
+          m_InitialSepsisInfectionSeverity = sepsis.GetInfectionSeverity().GetValue();
+          m_SepsisModel->PathogenCount = m_SepsisModel->InfectionSeverityToPathogenCount(m_InitialSepsisInfectionSeverity);
+        }
+
+        m_SepsisModel->PathogenGrowthRate = m_SepsisModel->ProgressionSeverityToPathogenGrowthRate(sepsis.GetProgressionSeverity().GetValue());
+      }
+    }
+    else
+      m_ActiveSepsis = m_SepsisModel->Active();
+
+    if(m_ActiveSepsis)
+      Sepsis();
+
+    m_data.GetDataTrack().Probe("PathogenCount", m_SepsisModel->PathogenCount);
+    m_data.GetDataTrack().Probe("ActivatedPhagocytes", m_SepsisModel->ActivatedPhagocytes);
+    m_data.GetDataTrack().Probe("TissueDamage", m_SepsisModel->TissueDamage);
+    m_data.GetDataTrack().Probe("AntiInflammatoryMediators", m_SepsisModel->AntiInflammatoryMediators);
+
+    // TODO Translate the sepsis model parameters to the CDM
+    /*
+    GetActivatedPhagocytes().SetValue(m_ActivatedPhagocytes, AmountUnit::ct);
+    GetAntiInflammatoryMediators().SetValue(m_AntiInflammatoryMediators, AmountUnit::ct);
+    GetPathogenCount().SetValue(m_PathogenCount, AmountUnit::ct);
+    GetTissueDamage().SetValue(m_TissueDamage);
+    */
   }
 
   void ImmuneModel::Sepsis()
   {
-    if (m_data.GetActions().GetPatientActions().HasSepsisExacerbation())
-    {
-      double PathogenGrowthRate = 0;
-      SESepsisExacerbation& sepsis = m_data.GetActions().GetPatientActions().GetSepsisExacerbation();
-      if (sepsis.HasProgressionSeverity())
-      {
-        // TODO Do we need to do some maths here to compute a rate from our 0 to 1 scale
-          PathogenGrowthRate = 0;// sepsis.GetProgressionSeverity().GetValue();
-      }
-      else
-      {
-        Error("Sepsis requires a ProgressionSeverity");
-        return;
-      }
+    // TODO calculate a new growth rate based on drug values
 
-      if (sepsis.HasInfectionSeverity())
-      {
-        if (m_InitialPathogenCount < 0 || m_InitialPathogenCount != sepsis.GetInfectionSeverity().GetValue())
-        {
-          if (m_InitialPathogenCount != sepsis.GetInfectionSeverity().GetValue() && m_InitialPathogenCount >= 0)
-            Warning("Changing sepsis infection severity can produce unreliable results.");
+    // TODO when do we remove sepsis? if at all
+    // When the pathogen count reaches 0?
 
-          double severity = sepsis.GetInfectionSeverity().GetValue();
-
-          m_InitialPathogenCount = 0; //exp(severity);
-          // TODO Do we need to do some maths here to compute a count from our 0 to 1 scale?
-          m_PathogenCount = m_InitialPathogenCount;
-        }
-
-        // I don't think we need to initialize m_ActivatedPhagocytes or m_TissueDamage
-        // They will start out as 0 or what ever they last were computed to be in Advance
-        // Maybe AntiInflammatoryMediator could be computed to be something here?
-      }
-      // Currently these variable are the same, but in the future
-      // we could calculate a new growth rate based on drug values
-      m_PathogenGrowthRate = PathogenGrowthRate * 1.0;
-      m_SepsisModel->AdvanceModelTime(m_data.GetTimeStep_s());
-
-      // TODO when do we remove sepsis? if at all
-      // When the pathogen count reaches 0?
-    }
-
-    m_data.GetDataTrack().Probe("PathogenCount", m_PathogenCount);
-    m_data.GetDataTrack().Probe("ActivatedPhagocytes", m_ActivatedPhagocytes);
-    m_data.GetDataTrack().Probe("TissueDamage", m_TissueDamage);
-    m_data.GetDataTrack().Probe("AntiInflammatoryMediators", m_AntiInflammatoryMediators);
+    m_SepsisModel->AdvanceModelTime(m_data.GetTimeStep_s());
   }
 
   //--------------------------------------------------------------------------------------------------

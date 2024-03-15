@@ -92,46 +92,46 @@ message CardiovascularMechanicsModifiersData
     and other substances throughout the human body.*/
 message CardiovascularSystemData
 {
-  ScalarPressureData                  ArterialPressure                               = 1; /**<< @brief The current arterial pressure.*/
-  ScalarVolumeData                    BloodVolume                                    = 2; /**<< @brief The total volume of fluid within the cardiovascular system.*/
-  ScalarVolumePerTimeAreaData         CardiacIndex                                   = 3; /**<< @brief Relates heart performance to the size of the individual.*/
-  ScalarVolumePerTimeData             CardiacOutput                                  = 4; /**<< @brief The volume of blood being pumped from the heart in a given time interval.<br> It is defined as the heart rate multiplied by the stroke volume.*/
-  ScalarPressureData                  CentralVenousPressure                          = 5; /**<< @brief The instantaneous pressure of the venus return.*/
-  ScalarVolumePerTimeData             CerebralBloodFlow                              = 6; /**<< @brief The rate of blood flow into the skull, thus supplying the brain.*/
-  ScalarPressureData                  CerebralPerfusionPressure                      = 7; /**<< @brief The difference between the mean arterial pressure and the cerebral blood pressure. Defines the hydrostatic diffusion gradient.*/
-  ScalarPressureData                  CoronaryPerfusionPressure                      = 8; /**<< @brief The aortic diastolic pressure - left ventricular end diastolic pressure. The pressure gradient that drives coronary blood flow.*/
-  ScalarPressureData                  DiastolicArterialPressure                      = 9; /**<< @brief The minimum pressure in the aorta over the course of a cardiac cycle.*/
-  ScalarPressureData                  DiastolicLeftHeartPressure                     = 10;/**<< @brief The minimum pressure in the left heart over the course of a cardiac cycle.*/
-  ScalarPressureData                  DiastolicRightHeartPressure                    = 11;/**<< @brief The minimum pressure in the right heart over the course of a cardiac cycle.*/
-  Scalar0To1Data                      HeartEjectionFraction                          = 12;/**<< @brief The current pressure in the aorta.*/
-  ScalarFrequencyData                 HeartRate                                      = 13;/**<< @brief The fraction of the blood that is pumped out of the ventricle during a cardiac cycle.*/
-  eHeartRhythm                        HeartRhythm                                    = 14;/**<< @brief @ref eHeartRhythmTable */
-  ScalarVolumeData                    HeartStrokeVolume                              = 15;/**<< @brief The volume of blood pumped from the left ventricle in one contraction.*/
-  ScalarPressureData                  IntracranialPressure                           = 16;/**<< @brief The pressure inside the skull. Equal to the cerebral blood pressure with the cerebrospinal fluid pressure being assumed equal.*/
-  ScalarPressureData                  MeanArterialPressure                           = 17;/**<< @brief The average arterial pressure throughout each cardiac cycle.*/
-  ScalarPressureData                  MeanArterialCarbonDioxidePartialPressure       = 18;/**<< @brief The mean of the partial pressure of carbon dioxide in the aorta over a cardiac cycle.*/
-  ScalarPressureData                  MeanArterialCarbonDioxidePartialPressureDelta  = 19;/**<< @brief The change of the the mean of the partial pressure of carbon dioxide in the aorta from the previous cardiac cycle.*/
-  ScalarPressureData                  MeanCentralVenousPressure                      = 20;/**<< @brief The average pressure in the vena cava over the course of a cardiac cycle.*/
-  ScalarVolumePerTimeData             MeanSkinFlow                                   = 21;/**<< @brief The blood flow to the skin  averaged over the current cardiac cycle time*/
-  Scalar0To1Data                      PeripheralPerfusionIndex                       = 22;/**<< @brief The ratio of pulsatile blood flow to non-pulsatile blood flow in the peripheral tissue.*/
-  ScalarPressureData                  PulmonaryArterialPressure                      = 23;/**<< @brief The current pressure in the pulmonary arteries.*/
-  Scalar0To1Data                      PulmonaryCapillariesCoverageFraction           = 24;/**<< @brief The fraction of the capillaries interacting with blood.*/
-  ScalarPressureData                  PulmonaryCapillariesWedgePressure              = 25;/**<< @brief The pressure within the pulmonary capillaries.*/
-  ScalarPressureData                  PulmonaryDiastolicArterialPressure             = 26;/**<< @brief The minimum pressure that occurs in the pulmonary arteries over the course of a cardiac cycle.*/
-  ScalarPressureData                  PulmonaryMeanArterialPressure                  = 27;/**<< @brief The average pressure that occurs in the pulmonary arteries over the course of a cardiac cycle.*/
-  ScalarVolumePerTimeData             PulmonaryMeanCapillaryFlow                     = 28;/**<< @brief The average blood flow in the pulmonary capillaries over the course of a cardiac cycle.*/
-  ScalarVolumePerTimeData             PulmonaryMeanShuntFlow                         = 29;/**<< @brief The average blood flow diverted from the pulmonary capillaries (not oxygenated) over the course of a cardiac cycle.*/
-  ScalarPressureData                  PulmonarySystolicArterialPressure              = 30;/**<< @brief The maximum pressure in the pulmonary arteries over the course of a cardiac cycle.*/
-  ScalarPressureTimePerVolumeData     PulmonaryVascularResistance                    = 31;/**<< @brief The resistance offered by the pulmonary circulation.*/
-  ScalarPressureTimePerVolumeAreaData PulmonaryVascularResistanceIndex               = 32;/**<< @brief Relates pulmonary circulation performance to the size of the individual. */
-  ScalarPressureData                  PulsePressure                                  = 33;/**<< @brief The difference between the systolic and diastolic pressures.*/
-  ScalarPressureTimePerVolumeData     SystemicVascularResistance                     = 34;/**<< @brief The resistance to blood flow through the entire systemic vasculature, not including the pulmonary circulation.*/
-  ScalarPressureData                  SystolicArterialPressure                       = 35;/**<< @brief The maximum pressure in the aorta over the course of a cardiac cycle.*/
-  ScalarPressureData                  SystolicLeftHeartPressure                      = 36;/**<< @brief The maximum pressure in the aorta over the course of a cardiac cycle.*/
-  ScalarPressureData                  SystolicRightHeartPressure                     = 37;/**<< @brief The maximum pressure in the aorta over the course of a cardiac cycle.*/
-  ScalarVolumePerTimeData             TotalHemorrhageRate                            = 38;/**<< @brief The total rate of blood loss due to all active hemorrhages.*/
-  ScalarVolumeData                    TotalHemorrhagedVolume                         = 39;/**<< @brief The total amount of blood lost due to all hemorrhages.*/
-  ScalarVolumePerTimeData             TotalPulmonaryPerfusion                        = 40;/**<< @brief The total blood flow that participates in gas exchange over the course of a cardiac cycle. */
+  ScalarPressureData                   ArterialPressure                               = 1; /**<< @brief The current arterial pressure.*/
+  ScalarVolumeData                     BloodVolume                                    = 2; /**<< @brief The total volume of fluid within the cardiovascular system.*/
+  ScalarVolumePerTimeAreaData          CardiacIndex                                   = 3; /**<< @brief Relates heart performance to the size of the individual.*/
+  ScalarVolumePerTimeData              CardiacOutput                                  = 4; /**<< @brief The volume of blood being pumped from the heart in a given time interval.<br> It is defined as the heart rate multiplied by the stroke volume.*/
+  ScalarPressureData                   CentralVenousPressure                          = 5; /**<< @brief The instantaneous pressure of the venus return.*/
+  ScalarVolumePerTimeData              CerebralBloodFlow                              = 6; /**<< @brief The rate of blood flow into the skull, thus supplying the brain.*/
+  ScalarPressureData                   CerebralPerfusionPressure                      = 7; /**<< @brief The difference between the mean arterial pressure and the cerebral blood pressure. Defines the hydrostatic diffusion gradient.*/
+  ScalarPressureData                   CoronaryPerfusionPressure                      = 8; /**<< @brief The aortic diastolic pressure - left ventricular end diastolic pressure. The pressure gradient that drives coronary blood flow.*/
+  ScalarPressureData                   DiastolicArterialPressure                      = 9; /**<< @brief The minimum pressure in the aorta over the course of a cardiac cycle.*/
+  ScalarPressureData                   DiastolicLeftHeartPressure                     = 10;/**<< @brief The minimum pressure in the left heart over the course of a cardiac cycle.*/
+  ScalarPressureData                   DiastolicRightHeartPressure                    = 11;/**<< @brief The minimum pressure in the right heart over the course of a cardiac cycle.*/
+  Scalar0To1Data                       HeartEjectionFraction                          = 12;/**<< @brief The current pressure in the aorta.*/
+  ScalarFrequencyData                  HeartRate                                      = 13;/**<< @brief The fraction of the blood that is pumped out of the ventricle during a cardiac cycle.*/
+  eHeartRhythm                         HeartRhythm                                    = 14;/**<< @brief @ref eHeartRhythmTable */
+  ScalarVolumeData                     HeartStrokeVolume                              = 15;/**<< @brief The volume of blood pumped from the left ventricle in one contraction.*/
+  ScalarPressureData                   IntracranialPressure                           = 16;/**<< @brief The pressure inside the skull. Equal to the cerebral blood pressure with the cerebrospinal fluid pressure being assumed equal.*/
+  ScalarPressureData                   MeanArterialPressure                           = 17;/**<< @brief The average arterial pressure throughout each cardiac cycle.*/
+  ScalarPressureData                   MeanArterialCarbonDioxidePartialPressure       = 18;/**<< @brief The mean of the partial pressure of carbon dioxide in the aorta over a cardiac cycle.*/
+  ScalarPressureData                   MeanArterialCarbonDioxidePartialPressureDelta  = 19;/**<< @brief The change of the the mean of the partial pressure of carbon dioxide in the aorta from the previous cardiac cycle.*/
+  ScalarPressureData                   MeanCentralVenousPressure                      = 20;/**<< @brief The average pressure in the vena cava over the course of a cardiac cycle.*/
+  ScalarVolumePerTimeData              MeanSkinFlow                                   = 21;/**<< @brief The blood flow to the skin  averaged over the current cardiac cycle time*/
+  Scalar0To1Data                       PeripheralPerfusionIndex                       = 22;/**<< @brief The ratio of pulsatile blood flow to non-pulsatile blood flow in the peripheral tissue.*/
+  ScalarPressureData                   PulmonaryArterialPressure                      = 23;/**<< @brief The current pressure in the pulmonary arteries.*/
+  Scalar0To1Data                       PulmonaryCapillariesCoverageFraction           = 24;/**<< @brief The fraction of the capillaries interacting with blood.*/
+  ScalarPressureData                   PulmonaryCapillariesWedgePressure              = 25;/**<< @brief The pressure within the pulmonary capillaries.*/
+  ScalarPressureData                   PulmonaryDiastolicArterialPressure             = 26;/**<< @brief The minimum pressure that occurs in the pulmonary arteries over the course of a cardiac cycle.*/
+  ScalarPressureData                   PulmonaryMeanArterialPressure                  = 27;/**<< @brief The average pressure that occurs in the pulmonary arteries over the course of a cardiac cycle.*/
+  ScalarVolumePerTimeData              PulmonaryMeanCapillaryFlow                     = 28;/**<< @brief The average blood flow in the pulmonary capillaries over the course of a cardiac cycle.*/
+  ScalarVolumePerTimeData              PulmonaryMeanShuntFlow                         = 29;/**<< @brief The average blood flow diverted from the pulmonary capillaries (not oxygenated) over the course of a cardiac cycle.*/
+  ScalarPressureData                   PulmonarySystolicArterialPressure              = 30;/**<< @brief The maximum pressure in the pulmonary arteries over the course of a cardiac cycle.*/
+  ScalarPressureTimePerVolumeData      PulmonaryVascularResistance                    = 31;/**<< @brief The resistance offered by the pulmonary circulation.*/
+  ScalarPressureTimePerVolumeAreaData  PulmonaryVascularResistanceIndex               = 32;/**<< @brief Relates pulmonary circulation performance to the size of the individual. */
+  ScalarPressureData                   PulsePressure                                  = 33;/**<< @brief The difference between the systolic and diastolic pressures.*/
+  ScalarPressureTimePerVolumeData      SystemicVascularResistance                     = 34;/**<< @brief The resistance to blood flow through the entire systemic vasculature, not including the pulmonary circulation.*/
+  ScalarPressureData                   SystolicArterialPressure                       = 35;/**<< @brief The maximum pressure in the aorta over the course of a cardiac cycle.*/
+  ScalarPressureData                   SystolicLeftHeartPressure                      = 36;/**<< @brief The maximum pressure in the aorta over the course of a cardiac cycle.*/
+  ScalarPressureData                   SystolicRightHeartPressure                     = 37;/**<< @brief The maximum pressure in the aorta over the course of a cardiac cycle.*/
+  ScalarVolumePerTimeData              TotalHemorrhageRate                            = 38;/**<< @brief The total rate of blood loss due to all active hemorrhages.*/
+  ScalarVolumeData                     TotalHemorrhagedVolume                         = 39;/**<< @brief The total amount of blood lost due to all hemorrhages.*/
+  ScalarVolumePerTimeData              TotalPulmonaryPerfusion                        = 40;/**<< @brief The total blood flow that participates in gas exchange over the course of a cardiac cycle. */
 }
 
 /** @brief Provides transport of drugs through the blood and air in the cardiovascular and respiratory systems, respectively.
@@ -157,19 +157,17 @@ message DrugSystemData
     @details The release of the hormones in response to the stimuli to represent the response of the sympathetic nervous system.*/
 message EndocrineSystemData
 {
-
   ScalarAmountPerTimeData              InsulinSynthesisRate                           = 1; /**<< @brief Insulin production rate. */
-                
 }
 
 /** @brief Provides heat transfer, nutrition, and exercise physiology in the human body.
     @details */
 message EnergySystemData
 {
-  Scalar0To1Data                       AchievedExerciseLevel                          = 1;/**<< @brief The fraction of how much of the requested exercise the patient is able to achieve. 1.0 means the the patient is performing at the requested level. Nan is the patient is not exercising (no Action)*/
+  Scalar0To1Data                       AchievedExerciseLevel                          = 1; /**<< @brief The fraction of how much of the requested exercise the patient is able to achieve. 1.0 means the the patient is performing at the requested level. Nan is the patient is not exercising (no Action)*/
   ScalarTemperatureData                CoreTemperature                                = 2; /**<< @brief The internal body temperature.*/
   ScalarAmountPerTimeData              CreatinineProductionRate                       = 3; /**<< @brief The generation of creatinine in the muscle tissue per */  
-  ScalarPressureData                   ExerciseMeanArterialPressureDelta              = 4;/**<< @brief The pressure delta that occurs during exercise. Used to modify the baroreceptor set-point */
+  ScalarPressureData                   ExerciseMeanArterialPressureDelta              = 4; /**<< @brief The pressure delta that occurs during exercise. Used to modify the baroreceptor set-point */
   Scalar0To1Data                       FatigueLevel                                   = 5; /**<< @brief The exhaustion level of the body, or inability to perform physical exercise @details The amount of energy available for activity divided by the normal rested energy */
   ScalarAmountPerTimeData              KetoneProductionRate                           = 6; /**<< @brief The molar amount of ketones generated in the liver */          
   ScalarAmountPerTimeData              LactateProductionRate                          = 7; /**<< @brief The molar amount of lactate generated on the tissue level from anaerobic metabolism */
@@ -196,7 +194,10 @@ message HepaticSystemData
 
 message ImmuneSystemData
 {
- 
+  ScalarAmountData                     ActivatedPhagocytes                            = 1;/**<< @brief The number of activated phagocytes.*/
+  ScalarAmountData                     AntiInflammatoryMediators                      = 2;/**<< @brief The number of anti inflammatory mediators*/
+  ScalarAmountData                     PathogenCount                                  = 3;/**<< @brief The number active pathogens*/
+  Scalar0To1Data                       TissueDamage                                   = 4;/**<< @brief The severity of tissue damage from infection*/
 }
 
 /** @brief 

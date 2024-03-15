@@ -127,4 +127,5 @@ message SepsisData
   PatientConditionData                        PatientCondition                      = 1;
   Scalar0To1Data                              InfectionSeverity                     = 2;/**<< @brief Initial level of infection, 0 being none, 1 being the highest possible. */
   Scalar0To1Data                              ProgressionSeverity                   = 3;/**<< @brief Growth rate of infection, 0 being none, 1 being the fastest possible. */
+  ScalarTimeData                              ProgressionDuration                   = 4;/**<< @brief How long the infection has been progressing. */
 }

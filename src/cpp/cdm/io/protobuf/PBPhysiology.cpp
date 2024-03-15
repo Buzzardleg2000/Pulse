@@ -622,9 +622,18 @@ void PBPhysiology::Load(const CDM_BIND::ImmuneSystemData& src, SEImmuneSystem& d
   dst.Clear();
   PBPhysiology::Serialize(src, dst);
 }
-void PBPhysiology::Serialize(const CDM_BIND::ImmuneSystemData& /*src*/, SEImmuneSystem& /*dst*/)
+void PBPhysiology::Serialize(const CDM_BIND::ImmuneSystemData& src, SEImmuneSystem& dst)
 {
-
+  /*
+  if (src.has_activatedphagocytes())
+    PBProperty::Load(src.activatedphagocytes(), dst.GetActivatedPhagocytes());
+  if (src.has_antiinflammatorymediators())
+    PBProperty::Load(src.antiinflammatorymediators(), dst.GetAntiInflammatoryMediators());
+  if (src.has_pathogencount())
+    PBProperty::Load(src.pathogencount(), dst.GetPathogenCount());
+  if (src.has_tissuedamage())
+    PBProperty::Load(src.tissuedamage(), dst.GetTissueDamage());
+    */
 }
 
 CDM_BIND::ImmuneSystemData* PBPhysiology::Unload(const SEImmuneSystem& src)
@@ -633,9 +642,18 @@ CDM_BIND::ImmuneSystemData* PBPhysiology::Unload(const SEImmuneSystem& src)
   PBPhysiology::Serialize(src, *dst);
   return dst;
 }
-void PBPhysiology::Serialize(const SEImmuneSystem& /*src*/, CDM_BIND::ImmuneSystemData& /*dst*/)
+void PBPhysiology::Serialize(const SEImmuneSystem& src, CDM_BIND::ImmuneSystemData& dst)
 {
-
+  /*
+  if (src.HasActivatedPhagocytes())
+    dst.set_allocated_activatedphagocytes(PBProperty::Unload(*src.m_ActivatedPhagocytes));
+  if (src.HasAntiInflammatoryMediators())
+    dst.set_allocated_antiinflammatorymediators(PBProperty::Unload(*src.m_AntiInflammatoryMediators));
+  if (src.HasPathogenCount())
+    dst.set_allocated_pathogencount(PBProperty::Unload(*src.m_PathogenCount));
+  if (src.HasTissueDamage())
+    dst.set_allocated_tissuedamage(PBProperty::Unload(*src.m_TissueDamage));
+    */
 }
 
 void PBPhysiology::Load(const CDM_BIND::NervousSystemData& src, SENervousSystem& dst)

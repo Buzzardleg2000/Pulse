@@ -317,12 +317,17 @@ namespace pulse
   {
     ::PBPhysiology::Serialize(src.common(), dst);
 
-    dst.m_ActivatedPhagocytes = src.activatedphagocytes();
-    dst.m_AntiInflammatoryMediators = src.antiinflammatorymediators();
-    dst.m_PathogenCount = src.pathogencount();
-    dst.m_InitialPathogenCount = src.initialpathogencount();
-    dst.m_PathogenGrowthRate = src.pathogengrowthrate();
-    dst.m_TissueDamage = src.tissuedamage();
+    dst.m_ActiveSepsis = src.activesepsis();
+    dst.m_InitialSepsisInfectionSeverity = src.initialsepsisinfectionseverity();
+
+    if (src.has_reynoldssepsismodel())
+    {
+      dst.m_SepsisModel->ActivatedPhagocytes = src.reynoldssepsismodel().activatedphagocytes();
+      dst.m_SepsisModel->AntiInflammatoryMediators = src.reynoldssepsismodel().antiinflammatorymediators();
+      dst.m_SepsisModel->PathogenCount = src.reynoldssepsismodel().pathogencount();
+      dst.m_SepsisModel->PathogenGrowthRate = src.reynoldssepsismodel().pathogengrowthrate();
+      dst.m_SepsisModel->TissueDamage = src.reynoldssepsismodel().tissuedamage();
+    }
   }
   PULSE_BIND::ImmuneData* PBPhysiology::Unload(const ImmuneModel& src)
   {
@@ -334,12 +339,15 @@ namespace pulse
   {
     ::PBPhysiology::Serialize(src, *dst.mutable_common());
 
-    dst.set_activatedphagocytes(src.m_ActivatedPhagocytes);
-    dst.set_antiinflammatorymediators(src.m_AntiInflammatoryMediators);
-    dst.set_initialpathogencount(src.m_InitialPathogenCount);
-    dst.set_pathogencount(src.m_PathogenCount);
-    dst.set_pathogengrowthrate(src.m_PathogenGrowthRate);
-    dst.set_tissuedamage(src.m_TissueDamage);
+    dst.set_activesepsis(src.m_ActiveSepsis);
+    dst.set_initialsepsisinfectionseverity(src.m_InitialSepsisInfectionSeverity);
+
+    auto reynolds = dst.mutable_reynoldssepsismodel();
+    reynolds->set_activatedphagocytes(src.m_SepsisModel->ActivatedPhagocytes);
+    reynolds->set_antiinflammatorymediators(src.m_SepsisModel->AntiInflammatoryMediators);
+    reynolds->set_pathogencount(src.m_SepsisModel->PathogenCount);
+    reynolds->set_pathogengrowthrate(src.m_SepsisModel->PathogenGrowthRate);
+    reynolds->set_tissuedamage(src.m_SepsisModel->TissueDamage);
   }
 
   void PBPhysiology::Load(const PULSE_BIND::NervousData& src, NervousModel& dst)

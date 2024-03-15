@@ -130,6 +130,7 @@ namespace pulse { namespace human_adult_whole_body
     testMap.insert(std::make_pair("SevereInfectionModerateProgressionSepsisTest", &EngineTest::SevereInfectionModerateProgressionSepsisTest));
     testMap.insert(std::make_pair("SevereInfectionSevereProgressionSepsisTest", &EngineTest::SevereInfectionSevereProgressionSepsisTest));
     testMap.insert(std::make_pair("AsepticTest", &EngineTest::AsepticTest));
+    testMap.insert(std::make_pair("AsepticToMaximumTest", &EngineTest::AsepticToMaximumTest));
     testMap.insert(std::make_pair("MaximumSepsisTest", &EngineTest::MaximumSepsisTest));
 
     testMap.insert(std::make_pair("ConditionCombinations", &EngineTest::ConditionCombinations));

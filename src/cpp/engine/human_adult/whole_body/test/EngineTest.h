@@ -170,8 +170,10 @@ namespace pulse { namespace human_adult_whole_body
     void SevereInfectionSevereProgressionSepsisTest(const std::string& sTestDirectory);
     void MaximumSepsisTest(const std::string& sTestDirectory);
     void AsepticTest(const std::string& sTestDirectory);
+    void AsepticToMaximumTest(const std::string& sTestDirectory);
   protected:
-    void SepsisTest(double infectionSeverity, double progressionSeverity, double duration_hr, const std::string& sTestDirectory, const std::string& sTestName);
+    void SepsisTest(double infectionSeverity, double progressionSeverity, double duration_hr,
+      const std::string& sTestDirectory, const std::string& sTestName, double halfwayProgressionSeverity=-1);
 
   public:
     ////////////////////////////

@@ -22,12 +22,22 @@ namespace pulse
     ImmuneModel(Data& data);
     virtual ~ImmuneModel();
 
-    class SepsisModel
+    class ReynoldsSepsisModel
     {
     public:
+      ReynoldsSepsisModel() = default;
+      virtual ~ReynoldsSepsisModel() = default;
+
+      virtual bool Active() const = 0;
       virtual void AdvanceModelTime(double dt_s) = 0;
       virtual double InfectionSeverityToPathogenCount(double InfectionSeverity) = 0;
       virtual double ProgressionSeverityToPathogenGrowthRate(double ProgressionSeverity) = 0;
+
+      double PathogenCount = 0;
+      double PathogenGrowthRate = 0;
+      double ActivatedPhagocytes = 0;
+      double TissueDamage = 0;
+      double AntiInflammatoryMediators = 0;
     };
 
     void Clear() override;
@@ -47,15 +57,12 @@ namespace pulse
     
     //Action methods/models
     void Sepsis();
-    SepsisModel* m_SepsisModel;
+    ReynoldsSepsisModel* m_SepsisModel;
 
     // Serializable member variables (Set in Initialize and in schema)
-    double                     m_InitialPathogenCount;
-    double                     m_PathogenCount;
-    double                     m_PathogenGrowthRate;
-    double                     m_ActivatedPhagocytes;
-    double                     m_TissueDamage;
-    double                     m_AntiInflammatoryMediators;
+    // All above ReynoldsSepsisModel properties are serializable
+    bool   m_ActiveSepsis;
+    double m_InitialSepsisInfectionSeverity = 0;
 
     // Stateless member variable (Set in SetUp())
 

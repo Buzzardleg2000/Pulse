@@ -4,18 +4,21 @@
 #include "cdm/CommonDefs.h"
 #include "cdm/patient/conditions/SESepsis.h"
 #include "cdm/properties/SEScalar0To1.h"
+#include "cdm/properties/SEScalarTime.h"
 #include "cdm/io/protobuf/PBPatientConditions.h"
 
 SESepsis::SESepsis(Logger* logger) : SEPatientCondition(logger)
 {
   m_InfectionSeverity = nullptr;
   m_ProgressionSeverity = nullptr;
+  m_ProgressionDuration = nullptr;
 }
 
 SESepsis::~SESepsis()
 {
   SAFE_DELETE(m_InfectionSeverity);
   SAFE_DELETE(m_ProgressionSeverity);
+  SAFE_DELETE(m_ProgressionDuration);
 }
 
 void SESepsis::Clear()
@@ -23,6 +26,7 @@ void SESepsis::Clear()
   SEPatientCondition::Clear();
   INVALIDATE_PROPERTY(m_InfectionSeverity);
   INVALIDATE_PROPERTY(m_ProgressionSeverity);
+  INVALIDATE_PROPERTY(m_ProgressionDuration);
 }
 
 void SESepsis::Copy(const SESepsis& src)
@@ -32,15 +36,15 @@ void SESepsis::Copy(const SESepsis& src)
 
 bool SESepsis::IsValid() const
 {
-  return HasInfectionSeverity() || HasProgressionSeverity();
+  return HasInfectionSeverity() && HasProgressionSeverity();
 }
 bool SESepsis::IsActive() const
 {
   if (!IsValid())
     return false;
-  if (HasInfectionSeverity() && GetInfectionSeverity() > 0)
+  if (GetInfectionSeverity() > 0)
     return true;
-  if (HasProgressionSeverity() && GetProgressionSeverity() > 0)
+  if (GetProgressionSeverity() > 0)
     return true;
   return false;
 }
@@ -79,4 +83,21 @@ double SESepsis::GetProgressionSeverity() const
   if (m_ProgressionSeverity == nullptr)
     return SEScalar::dNaN();
   return m_ProgressionSeverity->GetValue();
+}
+
+bool SESepsis::HasProgressionDuration() const
+{
+  return m_ProgressionDuration == nullptr ? false : m_ProgressionDuration->IsValid();
+}
+SEScalarTime& SESepsis::GetProgressionDuration()
+{
+  if (m_ProgressionDuration == nullptr)
+    m_ProgressionDuration = new SEScalarTime();
+  return *m_ProgressionDuration;
+}
+double SESepsis::GetProgressionDuration(const TimeUnit& unit) const
+{
+  if (m_ProgressionDuration == nullptr)
+    return SEScalar::dNaN();
+  return m_ProgressionDuration->GetValue(unit);
 }

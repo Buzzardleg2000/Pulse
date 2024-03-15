@@ -423,6 +423,8 @@ void PBPatientCondition::Serialize(const CDM_BIND::SepsisData& src, SESepsis& ds
     PBProperty::Load(src.infectionseverity(), dst.GetInfectionSeverity());
   if (src.has_progressionseverity())
     PBProperty::Load(src.progressionseverity(), dst.GetProgressionSeverity());
+  if (src.has_progressionduration())
+    PBProperty::Load(src.progressionduration(), dst.GetProgressionDuration());
 }
 CDM_BIND::SepsisData* PBPatientCondition::Unload(const SESepsis& src)
 {
@@ -437,6 +439,8 @@ void PBPatientCondition::Serialize(const SESepsis& src, CDM_BIND::SepsisData& ds
     dst.set_allocated_infectionseverity(PBProperty::Unload(*src.m_InfectionSeverity));
   if (src.HasProgressionSeverity())
     dst.set_allocated_progressionseverity(PBProperty::Unload(*src.m_ProgressionSeverity));
+  if (src.HasProgressionDuration())
+    dst.set_allocated_progressionduration(PBProperty::Unload(*src.m_ProgressionDuration));
 }
 void PBPatientCondition::Copy(const SESepsis& src, SESepsis& dst)
 {

@@ -44,5 +44,3 @@ double SEEndocrineSystem::GetInsulinSynthesisRate(const AmountPerTimeUnit& unit)
     return SEScalar::dNaN();
   return m_InsulinSynthesisRate->GetValue(unit);
 }
-
-

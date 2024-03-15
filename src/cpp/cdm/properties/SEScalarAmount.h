@@ -19,6 +19,7 @@ public:
 
   static const AmountUnit mol;
   static const AmountUnit pmol;
+  static const AmountUnit ct;
 };
 
 class CDM_DECL SEScalarAmount : public SEScalarQuantity<AmountUnit>

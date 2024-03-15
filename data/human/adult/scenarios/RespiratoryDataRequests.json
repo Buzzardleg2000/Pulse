@@ -52,7 +52,8 @@
     { "DecimalFormat": { "Precision": 2 }, "Category": "Physiology", "PropertyName": "NeuromuscularBlockLevel", "Unit": "unitless" },
     { "DecimalFormat": { "Precision": 2 }, "Category": "Physiology", "PropertyName": "SedationLevel",           "Unit": "unitless" },
 
-    { "DecimalFormat": { "Precision": 1 }, "Category": "Physiology", "PropertyName": "PulsePressure", "Unit": "mmHg" },
-    { "DecimalFormat": { "Precision": 2 }, "Category": "Physiology", "PropertyName": "BloodPH" }
+    { "DecimalFormat": { "Precision": 2 }, "Category": "Physiology", "PropertyName": "PulsePressure", "Unit": "mmHg" },
+    { "DecimalFormat": { "Precision": 2 }, "Category": "Physiology", "PropertyName": "BloodPH" },
+    { "DecimalFormat": { "Precision": 3 }, "Category": "LiquidCompartment", "CompartmentName": "Aorta",        "SubstanceName": "Bicarbonate",   "PropertyName": "Molarity",        "Unit": "mEq/L" }
   ]
 }

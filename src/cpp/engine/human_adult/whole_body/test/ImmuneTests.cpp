@@ -102,6 +102,13 @@ namespace pulse { namespace human_adult_whole_body
     double testTime_s = 60 * 60 * duration_hr;
     double timeStep_s = 60;
 
+    for (double infSev = 0; infSev <= 1.0; infSev+=0.1)
+      pc.GetLogger()->Info("Infection Severity: " + pulse::cdm::to_string(infSev)
+        + " = " + pulse::cdm::to_string(im.m_SepsisModel->InfectionSeverityToPathogenCount(infSev)));
+    for (double progSev = 0; progSev <= 1.0; progSev+=0.1)
+      pc.GetLogger()->Info("Progression Severity: " + pulse::cdm::to_string(progSev)
+        + " = " + pulse::cdm::to_string(im.m_SepsisModel->ProgressionSeverityToPathogenGrowthRate(progSev)));
+
     im.m_SepsisModel->PathogenCount = im.m_SepsisModel->InfectionSeverityToPathogenCount(infectionSeverity);
     im.m_SepsisModel->ActivatedPhagocytes = 0;
     im.m_SepsisModel->TissueDamage = 0;

@@ -26,6 +26,7 @@ miu_c = 0.1
 
 q_na = 6
 
+root = pathlib.Path(f"./test_results/sepsis_reynolds2006/")
 
 def g(x, C_A):
     return x / (1 + (C_A / C_inf) ** 2)
@@ -62,13 +63,14 @@ def dFdt(t, y):
             dDdt(t, P, N_star, D, C_A),
             dC_Adt(t, P, N_star, D, C_A)]
 
+
 def plot(sol, name):
 
     print(sol.t)
     print(sol.y)
     print(sol.y[0, -1])
 
-    path = pathlib.Path(f"./test_results/sepsis_reynolds2006/{name}")
+    path = root / name
     path.mkdir(parents=True, exist_ok=True)
 
     plt.figure()
@@ -117,49 +119,59 @@ if __name__ == "__main__":
     hours = 288  # Number of hours to simulate
     t_eval_max = 14 * 24  # Numbers of hours to hold (gives us a nice pad in our plots)
 
-    k_pg = 0.25  # growth rate of pathogen
-    sol = solve_ivp(dFdt, [0, hours], [1.0, 0, 0, 0.125], t_eval=np.linspace(0, hours, t_eval_max))
-    plot(sol, "MildInfectionMildProgressionSepsis")
+    growth_rates = [0.25, 0.33, 0.60]#, 0.65]
+    initial_infections = [1.0, 1.25, 1.4]#, 1.5]
+
+    img_directories = []
+    for growth_rate in growth_rates:
+        for init_infection in initial_infections:
+            k_pg = growth_rate  # growth rate of pathogen
+            sol = solve_ivp(dFdt, [0, hours], [init_infection, 0, 0, 0.125],
+                            t_eval=np.linspace(0, hours, t_eval_max))
+            name = f"{init_infection} Infection {growth_rate} ProgressionSepsis"
+            plot(sol, name)
+            img_directories.append(name)
 
     k_pg = 0.33  # growth rate of pathogen
-    sol = solve_ivp(dFdt, [0, hours], [1.0, 0, 0, 0.125], t_eval=np.linspace(0, hours, t_eval_max))
-    plot(sol, "MildInfectionModerateProgressionSepsis")
-
-    k_pg = 0.6  # growth rate of pathogen
-    sol = solve_ivp(dFdt, [0, hours], [1.0, 0, 0, 0.125], t_eval=np.linspace(0, hours, t_eval_max))
-    plot(sol, "MildInfectionSevereProgressionSepsis")
-
-    k_pg = 0.25  # growth rate of pathogen
-    sol = solve_ivp(dFdt, [0, hours], [1.25, 0, 0, 0.125], t_eval=np.linspace(0, hours, t_eval_max))
-    plot(sol, "ModerateInfectionMildProgressionSepsis")
-
-    k_pg = 0.33  # growth rate of pathogen
-    sol = solve_ivp(dFdt, [0, hours], [1.25, 0, 0, 0.125], t_eval=np.linspace(0, hours, t_eval_max))
-    plot(sol, "ModerateInfectionModerateProgressionSepsis")
-
-    k_pg = 0.6  # growth rate of pathogen
-    sol = solve_ivp(dFdt, [0, hours], [1.25, 0, 0, 0.125], t_eval=np.linspace(0, hours, t_eval_max))
-    plot(sol, "ModerateInfectionSevereProgressionSepsis")
-
-    k_pg = 0.25  # growth rate of pathogen
-    sol = solve_ivp(dFdt, [0, hours], [1.4, 0, 0, 0.125], t_eval=np.linspace(0, hours, t_eval_max))
-    plot(sol, "SevereInfectionMildProgressionSepsis")
-
-    k_pg = 0.33  # growth rate of pathogen
-    sol = solve_ivp(dFdt, [0, hours], [1.4, 0, 0, 0.125], t_eval=np.linspace(0, hours, t_eval_max))
-    plot(sol, "SevereInfectionModerateProgressionSepsis")
-
-    k_pg = 0.6  # growth rate of pathogen
-    sol = solve_ivp(dFdt, [0, hours], [1.4, 0, 0, 0.125], t_eval=np.linspace(0, hours, t_eval_max))
-    plot(sol, "SevereInfectionSevereProgressionSepsis")
-
-    k_pg = 0.3  # growth rate of pathogen
     sol = solve_ivp(dFdt, [0, hours], [1.5, 0, 0, 0.125], t_eval=np.linspace(0, hours, t_eval_max))
     plot(sol, "Aseptic")
 
     k_pg = 0.65  # growth rate of pathogen
     sol = solve_ivp(dFdt, [0, hours], [1.5, 0, 0, 0.125], t_eval=np.linspace(0, hours, t_eval_max))
     plot(sol, "MaximumSepsis")
+
+
+    def write_html_table(title: str, directories: list, img_width: int, imgs_per_row: int) -> str:
+        table = "<table>\n"
+        table += f"<b>{title}</b><br>\n"
+        for idx, img_dir in enumerate(directories):
+            if idx % imgs_per_row == 0:
+                table += "<tr>"
+            table += (f"<td><a href=\"./{img_dir}/{title}.jpg\">"
+                      f"<img src=\"./{img_dir}/{title}.jpg\""
+                      f" alt=\"{img_dir}\" width=\"{img_width}\"></a></td>\n")
+            if idx != 0 and (idx+1) % imgs_per_row == 0:
+                table += "</tr>\n"
+        table += "</table>\n"
+        table += "<br><br>\n"
+        return table
+    img_width = 350
+    imgs_per_row = 3
+    filename = str(root)+"/SepsisPlots.html"
+    with open(filename, "w") as f:
+        f.write("<html>\n")
+        f.write("<title>Sepsis Plots</title>\n")
+        f.write("<body>\n")
+        f.write("<center>\n")
+        f.write(write_html_table("ActivatedPhagocytesvsTime", img_directories, img_width, imgs_per_row))
+        f.write(write_html_table("AntiInflammatoryMediatorsvsTime", img_directories, img_width, imgs_per_row))
+        f.write(write_html_table("PathogenCountvsTime", img_directories, img_width, imgs_per_row))
+        f.write(write_html_table("TissueDamagevsTime", img_directories, img_width, imgs_per_row))
+        f.write("</center>\n")
+        f.write("</body>\n")
+        f.write("</html>")
+
+
 
 
 

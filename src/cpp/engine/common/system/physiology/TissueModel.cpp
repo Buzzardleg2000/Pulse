@@ -25,6 +25,7 @@
 #include "cdm/patient/conditions/SEConsumeMeal.h"
 #include "cdm/substance/SESubstance.h"
 #include "cdm/substance/SESubstanceClearance.h"
+#include "cdm/substance/SESubstanceCompound.h"
 #include "cdm/substance/SESubstancePharmacokinetics.h"
 #include "cdm/substance/SESubstanceTissuePharmacokinetics.h"
 #include "cdm/circuit/fluid/SEFluidCircuit.h"
@@ -125,7 +126,7 @@ namespace pulse
     // Get total tissue resting values for substances
     SETissueCompartment* tissue;
     SELiquidCompartment* vascular;
-    m_RestingFluidMass_kg = 0;
+    m_RestingFluidMass_kg = 0.0;
     m_RestingTissueGlucose_g = 0.0;
     for (auto tissueVascular : m_TissueToVascular)
     {
@@ -139,6 +140,7 @@ namespace pulse
       m_RestingFluidMass_kg += intracellular.GetVolume(VolumeUnit::mL) * m_data.GetConfiguration().GetWaterDensity(MassPerVolumeUnit::kg_Per_mL);
       m_RestingFluidMass_kg += extracellular.GetVolume(VolumeUnit::mL) * m_data.GetConfiguration().GetWaterDensity(MassPerVolumeUnit::kg_Per_mL);
     }
+    m_PreviousFluidMass_kg = m_RestingFluidMass_kg;
     m_RestingBloodGlucose_mg_Per_mL = m_data.GetSubstances().GetGlucose().GetBloodConcentration(MassPerVolumeUnit::mg_Per_mL);
     m_RestingBloodLipid_mg_Per_mL = m_data.GetSubstances().GetTristearin().GetBloodConcentration(MassPerVolumeUnit::mg_Per_mL);
     m_RestingBloodInsulin_mg_Per_mL = m_data.GetSubstances().GetInsulin().GetBloodConcentration(MassPerVolumeUnit::mg_Per_mL);
@@ -148,6 +150,11 @@ namespace pulse
     GetOxygenConsumptionRate().SetValue(250.0, VolumePerTimeUnit::mL_Per_min);
     GetCarbonDioxideProductionRate().SetValue(200.0, VolumePerTimeUnit::mL_Per_min);
     GetRespiratoryExchangeRatio().SetValue(0.8);
+
+    GetExtracellularFluidVolume().SetValue(0.0, VolumeUnit::mL);
+    GetIntracellularFluidVolume().SetValue(0.0, VolumeUnit::mL);
+    GetExtravascularFluidVolume().SetValue(0.0, VolumeUnit::mL);
+    GetTotalFluidVolume().SetValue(0.0, VolumeUnit::mL);
   }
 
   //--------------------------------------------------------------------------------------------------
@@ -162,8 +169,6 @@ namespace pulse
   //--------------------------------------------------------------------------------------------------
   void TissueModel::SetUp()
   {
-    m_RestingPatientMass_kg = m_data.GetInitialPatient().GetWeight(MassUnit::kg);
-
     m_Acetoacetate = &m_data.GetSubstances().GetAcetoacetate();
     m_LiverAcetoacetate = m_data.GetCompartments().GetLiquidCompartment(pulse::VascularCompartment::Liver)->GetSubstanceQuantity(*m_Acetoacetate);
 
@@ -182,6 +187,8 @@ namespace pulse
     m_Calcium = &m_data.GetSubstances().GetCalcium();
     m_Insulin = &m_data.GetSubstances().GetInsulin();
     m_Tristearin = &m_data.GetSubstances().GetTristearin();
+
+    m_Sweat = m_data.GetSubstances().GetCompound("Sweat");
 
     m_GutT1 = m_data.GetCircuits().GetActiveCardiovascularCircuit().GetNode(pulse::TissueNode::GutT1);
     m_GutT1ToGutT3 = m_data.GetCircuits().GetActiveCardiovascularCircuit().GetPath(pulse::TissuePath::GutT1ToGutT3);
@@ -284,13 +291,13 @@ namespace pulse
   void TissueModel::AtSteadyState()
   {
     if (m_data.GetState() == EngineState::AtInitialStableState)
-    {// Apply our conditions    
+    {// Apply our conditions
       if (m_data.GetConditions().HasConsumeMeal())
       {
         SEScalarMass mass;
         SEMeal& meal = m_data.GetConditions().GetConsumeMeal().GetMeal();
         double elapsedTime_s = meal.GetElapsedTime().GetValue(TimeUnit::s);
-        double patientWeight_kg = m_data.GetCurrentPatient().GetWeight(MassUnit::kg);
+        double patientWeight_kg = SEScalar::Truncate(m_data.GetCurrentPatient().GetWeight(MassUnit::kg), 4);
         double renalVolumeCleared = m_Albumin->GetClearance().GetRenalClearance(VolumePerTimeMassUnit::mL_Per_s_kg) * patientWeight_kg * elapsedTime_s;
         double systemicVolumeCleared = m_Albumin->GetClearance().GetSystemicClearance(VolumePerTimeMassUnit::mL_Per_s_kg) * patientWeight_kg * elapsedTime_s - renalVolumeCleared;
         SEScalarVolume integratedVolume;
@@ -786,7 +793,7 @@ namespace pulse
 
     /// \todo Remove this temporary blood increment when diffusion is operational (0.125 is tuning factor)
     double acetoacetateIncrement_mg = 0.375 * KetoneProductionRate_mmol_Per_kg_s * m_Acetoacetate->GetMolarMass(MassPerAmountUnit::mg_Per_mmol)
-      * m_data.GetCurrentPatient().GetWeight(MassUnit::kg) * time_s;
+      * SEScalar::Truncate(m_data.GetCurrentPatient().GetWeight(MassUnit::kg), 4) * time_s;
     m_LiverAcetoacetate->GetMass().IncrementValue(acetoacetateIncrement_mg, MassUnit::mg);
     if (m_LiverAcetoacetate->GetMass(MassUnit::ug) < ZERO_APPROX)
     {
@@ -852,7 +859,30 @@ namespace pulse
       else if (vascular->HasInFlow() && totalFlowRate_mL_Per_min > 0)
         BloodFlowFraction = vascular->GetInFlow(VolumePerTimeUnit::mL_Per_min) / totalFlowRate_mL_Per_min;
 
-      LocalATPUseRate_mol_Per_s = BloodFlowFraction * ATPUseRate_mol_Per_s;
+      //Reduced blood volumes cause reduced tissue perfusion
+      double vasularBaselineVolume_mL = 0.0;
+      double vascularCurrentVolulme_mL = 0.0;
+      for (SEFluidCircuitNode* node : vascular->GetNodeMapping().GetNodes())
+      {
+        if (node->HasNextVolume() && node->HasVolumeBaseline())
+        {
+          vascularCurrentVolulme_mL += node->GetNextVolume(VolumeUnit::mL);
+          vasularBaselineVolume_mL += node->GetVolumeBaseline(VolumeUnit::mL);
+        }
+      }
+
+      double vascularVolumeMultiplier = 1.0;
+      if (vasularBaselineVolume_mL > 0.0)
+      {
+        double vascularVolumeFraction = MIN(vascularCurrentVolulme_mL / vasularBaselineVolume_mL, 1.0);
+        double bufferCuttoffFraction = 0.85;
+        if (vascularVolumeFraction < bufferCuttoffFraction) //Give it a little buffer
+        {
+          vascularVolumeMultiplier = GeneralMath::LinearInterpolator(0.0, bufferCuttoffFraction, 5.0, 1.0, vascularVolumeFraction);
+        }
+      }
+
+      LocalATPUseRate_mol_Per_s = BloodFlowFraction * ATPUseRate_mol_Per_s * vascularVolumeMultiplier;
       anaerobicWeight = MIN(1.0, tissueO2_mM / anaerobicThresholdConcentration_mM);
       /// \todo This is the reason for the decrease in O2 consumption and CO2 production with oxygen depletion. It looks like we are mixing models here. 
       // At a minimum, we know that CO2 production should not decrease at the same rate as O2 consumption during anaerobic metabolism.
@@ -1014,7 +1044,8 @@ namespace pulse
           } // End temporary endocrine control of glucose
           //m_data.GetDataTrack().Probe("Glucose_Released_mg", massReleased_mg);
 
-          massConverted_g = acidDissociationFraction * KetoneProductionRate_mmol_Per_kg_s * m_data.GetCurrentPatient().GetWeight(MassUnit::kg)
+          massConverted_g = acidDissociationFraction * KetoneProductionRate_mmol_Per_kg_s
+            * SEScalar::Truncate(m_data.GetCurrentPatient().GetWeight(MassUnit::kg), 4)
             * m_Acetoacetate->GetMolarMass(MassPerAmountUnit::g_Per_mmol);
         }
       }
@@ -1191,9 +1222,8 @@ namespace pulse
   //--------------------------------------------------------------------------------------------------
   void TissueModel::CalculateVitals()
   {
-    // Hydration Status
-    double ecVol_mL = 0.;
-    double icvol_mL = 0.;
+    double extracellularFluidVolume_mL = 0.0;
+    double intracellularFluidVolume_mL = 0.0;
     double currentFluidMass_kg = 0.0;
     SETissueCompartment* tissue;
     SELiquidCompartment* vascular;
@@ -1204,24 +1234,22 @@ namespace pulse
       currentFluidMass_kg += vascular->GetVolume(VolumeUnit::mL) * m_data.GetBloodChemistry().GetBloodDensity(MassPerVolumeUnit::kg_Per_mL);
       currentFluidMass_kg += tissue->GetIntracellular().GetVolume(VolumeUnit::mL) * m_data.GetConfiguration().GetWaterDensity(MassPerVolumeUnit::kg_Per_mL);
       currentFluidMass_kg += tissue->GetExtracellular().GetVolume(VolumeUnit::mL) * m_data.GetConfiguration().GetWaterDensity(MassPerVolumeUnit::kg_Per_mL);
-      ecVol_mL += tissue->GetExtracellular().GetVolume(VolumeUnit::mL);
-      icvol_mL += tissue->GetIntracellular().GetVolume(VolumeUnit::mL);
+      extracellularFluidVolume_mL += tissue->GetExtracellular().GetVolume(VolumeUnit::mL);
+      intracellularFluidVolume_mL += tissue->GetIntracellular().GetVolume(VolumeUnit::mL);
     }
-    if ((m_RestingFluidMass_kg - currentFluidMass_kg) / m_RestingPatientMass_kg > 0.03)
-    {
-      m_data.GetEvents().SetEvent(eEvent::Dehydration, true, m_data.GetSimulationTime()); /// \cite who2005dehydration
-    }
-    else if ((m_RestingFluidMass_kg - currentFluidMass_kg) / m_RestingPatientMass_kg < 0.02)
-    {
-      m_data.GetEvents().SetEvent(eEvent::Dehydration, false, m_data.GetSimulationTime());
-    }
-    
-    // Total Volumes
-    GetExtracellularFluidVolume().SetValue(ecVol_mL, VolumeUnit::mL);
-    GetIntracellularFluidVolume().SetValue(icvol_mL, VolumeUnit::mL);
-    GetExtravascularFluidVolume().SetValue(ecVol_mL + icvol_mL, VolumeUnit::mL);
-    //m_data.GetDataTrack().Probe("TotalFluid_mL", ecVol_mL + icvol_mL + m_data.GetCardiovascular().GetBloodVolume(VolumeUnit::mL));
 
+    // Total Volumes
+    double totalFluidVolume_mL = extracellularFluidVolume_mL + intracellularFluidVolume_mL + m_data.GetCardiovascular().GetBloodVolume(VolumeUnit::mL);
+    GetExtracellularFluidVolume().SetValue(extracellularFluidVolume_mL, VolumeUnit::mL);
+    GetIntracellularFluidVolume().SetValue(intracellularFluidVolume_mL, VolumeUnit::mL);
+    GetExtravascularFluidVolume().SetValue(extracellularFluidVolume_mL + intracellularFluidVolume_mL, VolumeUnit::mL);
+    GetTotalFluidVolume().SetValue(totalFluidVolume_mL, VolumeUnit::mL);
+
+    //Patient weight decrease due to fluid mass lost from all sources
+    double patientMassLost_kg = m_PreviousFluidMass_kg - currentFluidMass_kg;
+    //m_data.GetDataTrack().Probe("patientMassLost_kg", patientMassLost_kg);
+    m_data.GetCurrentPatient().GetWeight().IncrementValue(-patientMassLost_kg, MassUnit::kg);
+    m_PreviousFluidMass_kg = currentFluidMass_kg;
 
     // Fasciculations (due to calcium deficiency) - Currently inactive for model improvement
     // The leading causes of fasciculation include magnesium deficiency, succinylcholine, nerve agents, and ALS.

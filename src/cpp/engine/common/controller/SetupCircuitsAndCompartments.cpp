@@ -4565,10 +4565,10 @@ namespace pulse
     Ground.GetNextTemperature().SetValue(0.0, TemperatureUnit::K);
     Ground.SetAsReferenceNode();
 
-    /*Metabolic heat generation, leading to a heat source into the core*/
+    //Metabolic heat generation, leading to a heat source into the core
     SEThermalCircuitPath& TemperatureGroundToCore = cIntemperature.CreatePath(Ground, Core, pulse::InternalTemperaturePath::GroundToInternalCore);
     TemperatureGroundToCore.GetHeatSourceBaseline().SetValue(0.0, PowerUnit::W);
-    /*Conduction and convection leading a resistance of heat flow from the core to the skin*/
+    //Conduction and convection leading a resistance of heat flow from the core to the skin
     SEThermalCircuitPath& CoreToSkin = cIntemperature.CreatePath(Core, Skin, pulse::InternalTemperaturePath::InternalCoreToInternalSkin);
     CoreToSkin.GetResistanceBaseline().SetValue(0.056, HeatResistanceUnit::K_Per_W);
 

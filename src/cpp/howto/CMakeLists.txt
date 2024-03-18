@@ -23,6 +23,7 @@ add_executable_ex(HowToDriver
   HowTo-ExpandedVasculature.cpp
   HowTo-Hemorrhage.cpp
   HowTo-Hemothorax.cpp
+  HowTo-IsoShuntAnalysis.cpp
   HowTo-Pneumonia.cpp
   HowTo-MechanicalVentilation.cpp
   HowTo-MechanicalVentilator.cpp

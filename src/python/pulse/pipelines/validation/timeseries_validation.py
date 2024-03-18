@@ -1,8 +1,9 @@
 # Distributed under the Apache License, Version 2.0.
 # See accompanying NOTICE file for details.
 
-import copy
 import logging
+import math
+
 import numpy as np
 import pandas as pd
 from pathlib import Path
@@ -98,7 +99,7 @@ def evaluate(tgt: SETimeSeriesValidationTarget, results: pd.DataFrame, epsilon: 
                             series = results[h].map(lambda x: PyPulse.convert(x, results_unit, desired_unit)).squeeze()
                             break
             if series is None:
-                raise ValueError(f"Missing header: {header}")
+                _pulse_logger.error(f"Expected results missing header: {header}")
         else:
             series = results[header].squeeze()
 
@@ -106,39 +107,40 @@ def evaluate(tgt: SETimeSeriesValidationTarget, results: pd.DataFrame, epsilon: 
 
     header_series = _get_header(tgt_header)
 
-    # Normalize series based on target type
-    if (
-       target_type == SETimeSeriesValidationTarget.eTargetType.MeanPerIdealWeight_kg or
-       target_type == SETimeSeriesValidationTarget.eTargetType.MinPerIdealWeight_kg or
-       target_type == SETimeSeriesValidationTarget.eTargetType.MaxPerIdealWeight_kg
-    ):
-        ideal_weight_kg_series = _get_header("Patient-IdealBodyWeight(kg)")
-        header_series = header_series.div(ideal_weight_kg_series)
-
-    # Compute requested comparison value
-    if (
-        target_type == SETimeSeriesValidationTarget.eTargetType.Minimum or
-        target_type == SETimeSeriesValidationTarget.eTargetType.MinPerIdealWeight_kg
-    ):
-        comparison_value = header_series.min()
-    elif (
-        target_type == SETimeSeriesValidationTarget.eTargetType.Maximum or
-        target_type == SETimeSeriesValidationTarget.eTargetType.MaxPerIdealWeight_kg
-    ):
-        comparison_value = header_series.max()
-    elif (
-        target_type == SETimeSeriesValidationTarget.eTargetType.Mean or
-        target_type == SETimeSeriesValidationTarget.eTargetType.MeanPerIdealWeight_kg
-    ):
-        comparison_value = header_series.mean() if not header_series.empty else np.nan
+    if header_series is None:
+        comparison_value = math.nan
     else:
-        raise ValueError(f"Unknown target type: {target_type}")
+        # Normalize series based on target type
+        if (
+           target_type == SETimeSeriesValidationTarget.eTargetType.MeanPerIdealWeight_kg or
+           target_type == SETimeSeriesValidationTarget.eTargetType.MinPerIdealWeight_kg or
+           target_type == SETimeSeriesValidationTarget.eTargetType.MaxPerIdealWeight_kg
+        ):
+            ideal_weight_kg_series = _get_header("Patient-IdealBodyWeight(kg)")
+            header_series = header_series.div(ideal_weight_kg_series)
 
-    if np.isnan(comparison_value):
-        _pulse_logger.error(f"Computed value for {tgt_header} is nan")
-        return
+        # Compute requested comparison value
+        if (
+            target_type == SETimeSeriesValidationTarget.eTargetType.Minimum or
+            target_type == SETimeSeriesValidationTarget.eTargetType.MinPerIdealWeight_kg
+        ):
+            comparison_value = header_series.min()
+        elif (
+            target_type == SETimeSeriesValidationTarget.eTargetType.Maximum or
+            target_type == SETimeSeriesValidationTarget.eTargetType.MaxPerIdealWeight_kg
+        ):
+            comparison_value = header_series.max()
+        elif (
+            target_type == SETimeSeriesValidationTarget.eTargetType.Mean or
+            target_type == SETimeSeriesValidationTarget.eTargetType.MeanPerIdealWeight_kg
+        ):
+            comparison_value = header_series.mean() if not header_series.empty else np.nan
+        else:
+            raise ValueError(f"Unknown target type: {target_type}")
 
     tgt.set_computed_value(comparison_value)
+    if np.isnan(comparison_value):
+        _pulse_logger.error(f"Comparison value for {tgt_header} is nan")
 
     # Compute error
     tgt_min = tgt.get_target_minimum()
@@ -148,14 +150,14 @@ def evaluate(tgt: SETimeSeriesValidationTarget, results: pd.DataFrame, epsilon: 
 
     # No error if we are in range
     error = None
-    if comparison_value >= tgt_min and comparison_value <= tgt_max:
+    if np.isnan(comparison_value):
+        error = np.nan
+    elif tgt_min <= comparison_value <= tgt_max:
         error = 0.
     elif comparison_value > tgt_max:
         error = max_error
     elif comparison_value < tgt_min:
         error = min_error
-    elif np.isnan(comparison_value):
-        error = np.nan
     else:
         raise ValueError("Unable to determine error")
 

@@ -56,6 +56,13 @@ Our version number sematic is Major.Minor.Patch-ReleaseStage, where :
     - This provides the end user more low level control to fine tune the physiology to their specific needs
   - The application of drug pharmacodynamics changes to the cardiovascular system now include pulse pressure as well as mean arterial pressure
     - Acute stress is more inline with validation data
+  - Updated body fluid and perspiration methodology
+    - Added sweat substance loss using a substance compound definition
+    - Updated the sweat rate methodology to better meet validation
+    - Calibrated the convective/evaporative heat loss due to sweating
+    - Fixed a bug for substance tissue diffusion between the vascular and extracellular spaces
+    - Added new system data outputs for total body fluid volume, plasma osmolality, and plasm osmolarity
+
 ---
 
 ## Pulse v4.2.0 (October 2023)

@@ -719,7 +719,7 @@ namespace pulse
     m_lactate->GetClearance().GetRenalExcretionRate().SetValue(totalLactateExcretionRate_mg_Per_s, MassPerTimeUnit::mg_Per_s);
 
     double plasmaConcentration_mg_Per_mL = m_aortaLactate->GetConcentration().GetValue(MassPerVolumeUnit::mg_Per_mL);
-    double patientWeight_kg = m_data.GetCurrentPatient().GetWeight(MassUnit::kg);
+    double patientWeight_kg = SEScalar::Truncate(m_data.GetCurrentPatient().GetWeight(MassUnit::kg), 4);
     m_lactate->GetClearance().GetRenalClearance().SetValue(totalLactateExcretionRate_mg_Per_s / plasmaConcentration_mg_Per_mL / patientWeight_kg, VolumePerTimeMassUnit::mL_Per_s_kg);
 
     double singleExcreted_mg = totalLactateExcretionRate_mg_Per_s * m_data.GetTimeStep_s() * 0.5;// We are assuming the kindney's are doing the same amount of work
@@ -1180,7 +1180,7 @@ namespace pulse
     sub.GetClearance().GetRenalExcretionRate().SetValue(totalExcretionRate_mg_Per_s, MassPerTimeUnit::mg_Per_s);
 
     double plasmaConcentration_mg_Per_mL = m_aorta->GetSubstanceQuantity(sub)->GetConcentration().GetValue(MassPerVolumeUnit::mg_Per_mL);
-    double patientWeight_kg = m_data.GetCurrentPatient().GetWeight(MassUnit::kg);
+    double patientWeight_kg = SEScalar::Truncate(m_data.GetCurrentPatient().GetWeight(MassUnit::kg), 4);
 
     if (totalExcretionRate_mg_Per_s <= 0.0 || patientWeight_kg <= 0.0)
     {
@@ -1218,7 +1218,7 @@ namespace pulse
   //--------------------------------------------------------------------------------------------------
   void RenalModel::CalculateAutomaticClearance(SESubstance& sub)
   {
-    double patientWeight_kg = m_data.GetCurrentPatient().GetWeight(MassUnit::kg);
+    double patientWeight_kg = SEScalar::Truncate(m_data.GetCurrentPatient().GetWeight(MassUnit::kg), 4);
     double renalVolumeCleared_mL = 0.0;
 
     SESubstanceClearance& clearance = sub.GetClearance();
@@ -1726,7 +1726,7 @@ namespace pulse
         continue;
 
       double clearance_mL_Per_s_Per_kg = sub->GetClearance().GetRenalClearance(VolumePerTimeMassUnit::mL_Per_s_kg);
-      double PatientWeight_kg = m_data.GetCurrentPatient().GetWeight(MassUnit::kg);
+      double PatientWeight_kg = SEScalar::Truncate(m_data.GetCurrentPatient().GetWeight(MassUnit::kg), 4);
       double volumeCleared_mL = clearance_mL_Per_s_Per_kg * PatientWeight_kg * elapsedTime_s;
       double aortaConcentration_mg_Per_mL = m_aorta->GetSubstanceQuantity(*sub)->GetConcentration().GetValue(MassPerVolumeUnit::mg_Per_mL);
 

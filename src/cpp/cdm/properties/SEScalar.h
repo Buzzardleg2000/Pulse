@@ -61,6 +61,7 @@ public:
   bool IsReadOnly() const;
 
   double GetValue() const;
+  double GetValue(int precision) const;
   void   SetValue(double d);
   void   ForceValue(double d);
 
@@ -82,6 +83,7 @@ public:
   static bool IsNumber(double d);
   static bool IsZero(double value, double limit);
   static bool IsValue(double target, double value);
+  static double Truncate(double value, int decimal_places);
 };
 
 inline std::ostream& operator<< (std::ostream& out, const SEScalar* s)
@@ -194,6 +196,7 @@ public:
   virtual bool Force(const SEScalar& s) = 0;
   virtual void Copy(const SEScalar& s) = 0;
   virtual double GetValue(const CCompoundUnit& unit) const = 0;
+  virtual double GetValue(const CCompoundUnit& unit, int decimal_places) const = 0;
   virtual void   SetValue(double d, const CCompoundUnit& unit) = 0;
   virtual void   ForceValue(double d, const CCompoundUnit& unit) = 0;
   virtual double IncrementValue(double d, const CCompoundUnit& unit) = 0;
@@ -225,6 +228,7 @@ protected:
   bool Force(const SEScalar& s) override;
 
   double GetValue(const CCompoundUnit& unit) const override;
+  double GetValue(const CCompoundUnit& unit, int decimal_places) const override;
   void   SetValue(double d, const CCompoundUnit& unit) override;
   void   ForceValue(double d, const CCompoundUnit& unit) override;
   double IncrementValue(double d, const CCompoundUnit& unit) override;
@@ -243,7 +247,9 @@ public:
   const Unit* GetUnit() const override;
 
   double GetValue() const = delete;// Must provide a unit
+  double GetValue(int precision) const = delete;// Must provide a unit
   virtual double GetValue(const Unit& unit) const;
+  virtual double GetValue(const Unit& unit, int decimal_places) const;
 
   void SetValue(double d) = delete;// Must provide a unit
   virtual void SetValue(double d, const Unit& unit);
@@ -302,7 +308,9 @@ public:
   virtual const CCompoundUnit* GetCompoundUnit(const std::string& unit) const;
 
   virtual double GetValue() const;
+  virtual double GetValue(int decimal_places) const;
   virtual double GetValue(const CCompoundUnit& unit) const;
+  virtual double GetValue(const CCompoundUnit& unit, int decimal_places) const;
 
   std::string GetString() const;
 

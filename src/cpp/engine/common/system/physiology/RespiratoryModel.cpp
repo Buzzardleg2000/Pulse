@@ -2308,11 +2308,12 @@ namespace pulse
     double transcompliancePressureChange_cmH2O = transcompliancePressure_cmH2O - previousTranscompliancePressure_cmH2O;
 
     double dampenFraction_perSec = 0.01 * 50.0;
+    double zeroApprox = 1e-4;
 
-    if (abs(transalveolarPressureChange_cmH2O) > ZERO_APPROX)
+    if (abs(transalveolarPressureChange_cmH2O) > zeroApprox)
     {
       double lungCompliance_L_Per_cmH2O = lungVolumeChange_L / transalveolarPressureChange_cmH2O;
-      if (lungCompliance_L_Per_cmH2O > ZERO_APPROX)
+      if (lungCompliance_L_Per_cmH2O > zeroApprox)
       {
         //Dampen the change to prevent potential craziness
         double previousLungCompliance_L_Per_cmH2O = GetLungCompliance(VolumePerPressureUnit::L_Per_cmH2O);
@@ -2321,10 +2322,10 @@ namespace pulse
       }
     }
 
-    if (abs(transplueralPressureChange_cmH2O) > ZERO_APPROX)
+    if (abs(transplueralPressureChange_cmH2O) > zeroApprox)
     {
       double chestWallCompliance_L_Per_cmH2O = pleuralVolumeChange_L / transplueralPressureChange_cmH2O;
-      if (chestWallCompliance_L_Per_cmH2O > ZERO_APPROX)
+      if (chestWallCompliance_L_Per_cmH2O > zeroApprox)
       {
         //Dampen the change to prevent potential craziness
         double previousChestWallCompliance_L_Per_cmH2O = GetChestWallCompliance(VolumePerPressureUnit::L_Per_cmH2O);
@@ -2333,10 +2334,10 @@ namespace pulse
       }
     }
 
-    if (abs(transcompliancePressureChange_cmH2O) > ZERO_APPROX)
+    if (abs(transcompliancePressureChange_cmH2O) > zeroApprox)
     {
       double pulmonaryCompliance_L_Per_cmH2O = flowVolumeChange_L / transcompliancePressureChange_cmH2O;
-      if (pulmonaryCompliance_L_Per_cmH2O > ZERO_APPROX)
+      if (pulmonaryCompliance_L_Per_cmH2O > zeroApprox)
       {
         //Dampen the change to prevent potential craziness
         double previousPulmonaryCompliance_L_Per_cmH2O = GetPulmonaryCompliance(VolumePerPressureUnit::L_Per_cmH2O);

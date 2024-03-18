@@ -116,12 +116,24 @@ double SEScalarQuantity<Unit>::GetValue(const Unit& unit) const
 }
 
 template<typename Unit>
+double SEScalarQuantity<Unit>::GetValue(const Unit& unit, int decimal_places) const
+{
+  return SEScalar::Truncate(GetValue(unit), decimal_places);
+}
+
+template<typename Unit>
 double SEScalarQuantity<Unit>::GetValue(const CCompoundUnit& unit) const
 {
   const Unit* u = dynamic_cast<const Unit*>(&unit);
   if (u == nullptr)
     throw CommonDataModelException("SEScalarQuantity<Unit>::GetValue: Provided unit is not of proper quantity type");
   return this->GetValue(*u);
+}
+
+template<typename Unit>
+double SEScalarQuantity<Unit>::GetValue(const CCompoundUnit& unit, int decimal_places) const
+{
+  return SEScalar::Truncate(GetValue(unit), decimal_places);
 }
 
 template<typename Unit>

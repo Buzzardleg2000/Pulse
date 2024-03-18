@@ -63,7 +63,6 @@ namespace pulse
     double m_BaroreceptorSaturationTime_s;
     double m_LastMeanArterialPressure_mmHg;
     double m_PreviousBloodVolume_mL;
-    double m_TotalSympatheticFraction;
     // Arrhythmia Support
     eHeartRhythm   m_PreviousHeartRhythm;
     //double m_BaroreceptorPauseTimer;

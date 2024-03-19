@@ -201,8 +201,8 @@ namespace pulse { namespace human_adult_ventilation_mechanics
 
         drMgr.CreatePhysiologyDataRequest("LungCompliance", VolumePerPressureUnit::L_Per_cmH2O);
         drMgr.CreatePhysiologyDataRequest("RespiratoryCompliance", VolumePerPressureUnit::L_Per_cmH2O);
-        drMgr.CreatePhysiologyDataRequest("InspiratoryPulmonaryResistance", PressureTimePerVolumeUnit::cmH2O_s_Per_L);
-        drMgr.CreatePhysiologyDataRequest("ExpiratoryPulmonaryResistance", PressureTimePerVolumeUnit::cmH2O_s_Per_L);
+        drMgr.CreatePhysiologyDataRequest("InspiratoryRespiratoryResistance", PressureTimePerVolumeUnit::cmH2O_s_Per_L);
+        drMgr.CreatePhysiologyDataRequest("ExpiratoryRespiratoryResistance", PressureTimePerVolumeUnit::cmH2O_s_Per_L);
         drMgr.CreatePhysiologyDataRequest("TransMusclePressure", PressureUnit::cmH2O);
         drMgr.CreatePhysiologyDataRequest("TotalLungVolume", VolumeUnit::mL);
         drMgr.CreatePhysiologyDataRequest("TidalVolume", VolumeUnit::mL);

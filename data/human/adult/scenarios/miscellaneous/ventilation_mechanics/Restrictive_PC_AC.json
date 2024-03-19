@@ -33,8 +33,8 @@
    { "DecimalFormat": { "Precision": 6 }, "Category": "MechanicalVentilator", "PropertyName": "TotalPulmonaryVentilation", "Unit": "L/s" },
    { "DecimalFormat": { "Precision": 6 }, "Category": "Physiology", "PropertyName": "LungCompliance", "Unit": "L/cmH2O" },
    { "DecimalFormat": { "Precision": 6 }, "Category": "Physiology", "PropertyName": "RespiratoryCompliance", "Unit": "L/cmH2O" },
-   { "DecimalFormat": { "Precision": 6 }, "Category": "Physiology", "PropertyName": "InspiratoryPulmonaryResistance", "Unit": "cmH2O s/L" },
-   { "DecimalFormat": { "Precision": 6 }, "Category": "Physiology", "PropertyName": "ExpiratoryPulmonaryResistance", "Unit": "cmH2O s/L" },
+   { "DecimalFormat": { "Precision": 6 }, "Category": "Physiology", "PropertyName": "InspiratoryRespiratoryResistance", "Unit": "cmH2O s/L" },
+   { "DecimalFormat": { "Precision": 6 }, "Category": "Physiology", "PropertyName": "ExpiratoryRespiratoryResistance", "Unit": "cmH2O s/L" },
    { "DecimalFormat": { "Precision": 6 }, "Category": "Physiology", "PropertyName": "TransMusclePressure", "Unit": "cmH2O" },
    { "DecimalFormat": { "Precision": 6 }, "Category": "Physiology", "PropertyName": "TotalLungVolume", "Unit": "mL" },
    { "DecimalFormat": { "Precision": 6 }, "Category": "Physiology", "PropertyName": "TidalVolume", "Unit": "mL" }

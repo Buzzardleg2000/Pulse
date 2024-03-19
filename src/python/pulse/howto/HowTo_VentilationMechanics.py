@@ -25,8 +25,8 @@ def HowTo_VentilationMechanics():
         SEDataRequest.create_physiology_request("TransrespiratoryPressure", unit=PressureUnit.cmH2O),
         SEDataRequest.create_physiology_request("IntrapulmonaryPressure", unit=PressureUnit.cmH2O),
         SEDataRequest.create_physiology_request("InspiratoryFlow", unit=VolumePerTimeUnit.L_Per_min),
-        SEDataRequest.create_physiology_request("ExpiratoryPulmonaryResistance", PressureTimePerVolumeUnit.cmH2O_s_Per_mL),
-        SEDataRequest.create_physiology_request("InspiratoryPulmonaryResistance", PressureTimePerVolumeUnit.cmH2O_s_Per_mL),
+        SEDataRequest.create_physiology_request("ExpiratoryRespiratoryResistance", PressureTimePerVolumeUnit.cmH2O_s_Per_mL),
+        SEDataRequest.create_physiology_request("InspiratoryRespiratoryResistance", PressureTimePerVolumeUnit.cmH2O_s_Per_mL),
         SEDataRequest.create_physiology_request("RespiratoryCompliance", VolumePerPressureUnit.mL_Per_cmH2O),
         SEDataRequest.create_physiology_request("TotalPulmonaryVentilation", VolumePerTimeUnit.mL_Per_min),
         # Ventilator Monitor Data

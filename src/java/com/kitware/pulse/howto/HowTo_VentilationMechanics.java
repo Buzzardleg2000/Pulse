@@ -65,8 +65,8 @@ public class HowTo_VentilationMechanics
     dataRequests.createPhysiologyDataRequest("TransrespiratoryPressure", PressureUnit.cmH2O);
     dataRequests.createPhysiologyDataRequest("IntrapulmonaryPressure", PressureUnit.cmH2O);
     dataRequests.createPhysiologyDataRequest("InspiratoryFlow", VolumePerTimeUnit.L_Per_min);
-    dataRequests.createPhysiologyDataRequest("ExpiratoryPulmonaryResistance", PressureTimePerVolumeUnit.cmH2O_s_Per_mL);
-    dataRequests.createPhysiologyDataRequest("InspiratoryPulmonaryResistance", PressureTimePerVolumeUnit.cmH2O_s_Per_mL);
+    dataRequests.createPhysiologyDataRequest("ExpiratoryRespiratoryResistance", PressureTimePerVolumeUnit.cmH2O_s_Per_mL);
+    dataRequests.createPhysiologyDataRequest("InspiratoryRespiratoryResistance", PressureTimePerVolumeUnit.cmH2O_s_Per_mL);
     dataRequests.createPhysiologyDataRequest("RespiratoryCompliance", VolumePerPressureUnit.mL_Per_cmH2O);
     dataRequests.createPhysiologyDataRequest("TotalPulmonaryVentilation", VolumePerTimeUnit.mL_Per_min);
     // Ventilator Monitor Data

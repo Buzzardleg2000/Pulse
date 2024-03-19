@@ -82,9 +82,9 @@ public:
   virtual SEScalarVolumePerTime& GetExpiratoryFlow();
   virtual double GetExpiratoryFlow(const VolumePerTimeUnit& unit) const;
 
-  virtual bool HasExpiratoryPulmonaryResistance() const;
-  virtual SEScalarPressureTimePerVolume& GetExpiratoryPulmonaryResistance();
-  virtual double GetExpiratoryPulmonaryResistance(const PressureTimePerVolumeUnit& unit) const;
+  virtual bool HasExpiratoryRespiratoryResistance() const;
+  virtual SEScalarPressureTimePerVolume& GetExpiratoryRespiratoryResistance();
+  virtual double GetExpiratoryRespiratoryResistance(const PressureTimePerVolumeUnit& unit) const;
 
   virtual bool HasExpiratoryTidalVolume() const;
   virtual SEScalarVolume& GetExpiratoryTidalVolume();
@@ -110,9 +110,9 @@ public:
   virtual SEScalarVolumePerTime& GetInspiratoryFlow();
   virtual double GetInspiratoryFlow(const VolumePerTimeUnit& unit) const;
 
-  virtual bool HasInspiratoryPulmonaryResistance() const;
-  virtual SEScalarPressureTimePerVolume& GetInspiratoryPulmonaryResistance();
-  virtual double GetInspiratoryPulmonaryResistance(const PressureTimePerVolumeUnit& unit) const;
+  virtual bool HasInspiratoryRespiratoryResistance() const;
+  virtual SEScalarPressureTimePerVolume& GetInspiratoryRespiratoryResistance();
+  virtual double GetInspiratoryRespiratoryResistance(const PressureTimePerVolumeUnit& unit) const;
 
   virtual bool HasInspiratoryTidalVolume() const;
   virtual SEScalarVolume& GetInspiratoryTidalVolume();
@@ -293,14 +293,14 @@ protected:
   SEScalar0To1*                    m_EndTidalOxygenFraction;
   SEScalarPressure*                m_EndTidalOxygenPressure;
   SEScalarVolumePerTime*           m_ExpiratoryFlow;
-  SEScalarPressureTimePerVolume*   m_ExpiratoryPulmonaryResistance;
+  SEScalarPressureTimePerVolume*   m_ExpiratoryRespiratoryResistance;
   SEScalarVolume*                  m_ExpiratoryTidalVolume;
   SEScalar0To1*                    m_FractionOfInspiredOxygen;
   SEScalarPower*                   m_ImposedPowerOfBreathing;
   SEScalarEnergy*                  m_ImposedWorkOfBreathing;
   SEScalar*                        m_InspiratoryExpiratoryRatio;
   SEScalarVolumePerTime*           m_InspiratoryFlow;
-  SEScalarPressureTimePerVolume*   m_InspiratoryPulmonaryResistance;
+  SEScalarPressureTimePerVolume*   m_InspiratoryRespiratoryResistance;
   SEScalarVolume*                  m_InspiratoryTidalVolume;
   SEScalarPressure*                m_IntrapleuralPressure;
   SEScalarPressure*                m_IntrapulmonaryPressure;

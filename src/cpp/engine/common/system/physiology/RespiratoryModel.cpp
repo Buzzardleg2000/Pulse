@@ -327,8 +327,8 @@ namespace pulse
     GetTotalRespiratoryModelCompliance().SetValue(0.1, VolumePerPressureUnit::L_Per_cmH2O);
     GetTotalRespiratoryModelResistance().SetValue(1.5, PressureTimePerVolumeUnit::cmH2O_s_Per_L);
 
-    GetInspiratoryPulmonaryResistance().SetValue(1.5, PressureTimePerVolumeUnit::cmH2O_s_Per_L);
-    GetExpiratoryPulmonaryResistance().SetValue(1.5, PressureTimePerVolumeUnit::cmH2O_s_Per_L);
+    GetInspiratoryRespiratoryResistance().SetValue(1.5, PressureTimePerVolumeUnit::cmH2O_s_Per_L);
+    GetExpiratoryRespiratoryResistance().SetValue(1.5, PressureTimePerVolumeUnit::cmH2O_s_Per_L);
 
     // Muscle Pressure Waveform
     m_InspiratoryRiseFraction = 0;
@@ -2284,11 +2284,11 @@ namespace pulse
       {
         if (tracheaFlow_L_Per_s > 0.0)
         {
-          GetInspiratoryPulmonaryResistance().SetValue(resistance_cmH2O_s_Per_L, PressureTimePerVolumeUnit::cmH2O_s_Per_L);
+          GetInspiratoryRespiratoryResistance().SetValue(resistance_cmH2O_s_Per_L, PressureTimePerVolumeUnit::cmH2O_s_Per_L);
         }
         else
         {
-          GetExpiratoryPulmonaryResistance().SetValue(resistance_cmH2O_s_Per_L, PressureTimePerVolumeUnit::cmH2O_s_Per_L);
+          GetExpiratoryRespiratoryResistance().SetValue(resistance_cmH2O_s_Per_L, PressureTimePerVolumeUnit::cmH2O_s_Per_L);
         }
       }
     }

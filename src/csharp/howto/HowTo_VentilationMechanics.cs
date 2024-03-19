@@ -27,8 +27,8 @@ namespace HowTo_VentilationMechanics
         SEDataRequest.CreatePhysiologyDataRequest("TransrespiratoryPressure", PressureUnit.cmH2O),
         SEDataRequest.CreatePhysiologyDataRequest("IntrapulmonaryPressure", PressureUnit.cmH2O),
         SEDataRequest.CreatePhysiologyDataRequest("InspiratoryFlow", VolumePerTimeUnit.L_Per_min),
-        SEDataRequest.CreatePhysiologyDataRequest("ExpiratoryPulmonaryResistance", PressureTimePerVolumeUnit.cmH2O_s_Per_mL),
-        SEDataRequest.CreatePhysiologyDataRequest("InspiratoryPulmonaryResistance", PressureTimePerVolumeUnit.cmH2O_s_Per_mL),
+        SEDataRequest.CreatePhysiologyDataRequest("ExpiratoryRespiratoryResistance", PressureTimePerVolumeUnit.cmH2O_s_Per_mL),
+        SEDataRequest.CreatePhysiologyDataRequest("InspiratoryRespiratoryResistance", PressureTimePerVolumeUnit.cmH2O_s_Per_mL),
         SEDataRequest.CreatePhysiologyDataRequest("RespiratoryCompliance",VolumePerPressureUnit.mL_Per_cmH2O),
         SEDataRequest.CreatePhysiologyDataRequest("TotalPulmonaryVentilation", VolumePerTimeUnit.mL_Per_min),
         // Ventilator Monitor Data

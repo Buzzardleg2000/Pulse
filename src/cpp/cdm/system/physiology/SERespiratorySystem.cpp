@@ -53,14 +53,14 @@ SERespiratorySystem::SERespiratorySystem(Logger* logger) : SESystem(logger)
   m_EndTidalOxygenFraction = nullptr;
   m_EndTidalOxygenPressure = nullptr;
   m_ExpiratoryFlow = nullptr;
-  m_ExpiratoryPulmonaryResistance = nullptr;
+  m_ExpiratoryRespiratoryResistance = nullptr;
   m_ExpiratoryTidalVolume = nullptr;
   m_FractionOfInspiredOxygen = nullptr;
   m_ImposedPowerOfBreathing = nullptr;
   m_ImposedWorkOfBreathing = nullptr;
   m_InspiratoryExpiratoryRatio = nullptr;
   m_InspiratoryFlow = nullptr;
-  m_InspiratoryPulmonaryResistance = nullptr;
+  m_InspiratoryRespiratoryResistance = nullptr;
   m_InspiratoryTidalVolume = nullptr;
   m_IntrapleuralPressure = nullptr;
   m_IntrapulmonaryPressure = nullptr;
@@ -120,13 +120,13 @@ SERespiratorySystem::~SERespiratorySystem()
   SAFE_DELETE(m_EndTidalOxygenPressure);
   SAFE_DELETE(m_ExpiratoryFlow);
   SAFE_DELETE(m_ExpiratoryTidalVolume);
-  SAFE_DELETE(m_ExpiratoryPulmonaryResistance);
+  SAFE_DELETE(m_ExpiratoryRespiratoryResistance);
   SAFE_DELETE(m_FractionOfInspiredOxygen);
   SAFE_DELETE(m_ImposedPowerOfBreathing);
   SAFE_DELETE(m_ImposedWorkOfBreathing);
   SAFE_DELETE(m_InspiratoryExpiratoryRatio);
   SAFE_DELETE(m_InspiratoryFlow);
-  SAFE_DELETE(m_InspiratoryPulmonaryResistance);
+  SAFE_DELETE(m_InspiratoryRespiratoryResistance);
   SAFE_DELETE(m_InspiratoryTidalVolume);
   SAFE_DELETE(m_IntrapleuralPressure);
   SAFE_DELETE(m_IntrapulmonaryPressure);
@@ -187,14 +187,14 @@ void SERespiratorySystem::Clear()
   INVALIDATE_PROPERTY(m_EndTidalOxygenFraction);
   INVALIDATE_PROPERTY(m_EndTidalOxygenPressure);
   INVALIDATE_PROPERTY(m_ExpiratoryFlow);
-  INVALIDATE_PROPERTY(m_ExpiratoryPulmonaryResistance);
+  INVALIDATE_PROPERTY(m_ExpiratoryRespiratoryResistance);
   INVALIDATE_PROPERTY(m_ExpiratoryTidalVolume);
   INVALIDATE_PROPERTY(m_FractionOfInspiredOxygen);
   INVALIDATE_PROPERTY(m_ImposedPowerOfBreathing);
   INVALIDATE_PROPERTY(m_ImposedWorkOfBreathing);
   INVALIDATE_PROPERTY(m_InspiratoryExpiratoryRatio);
   INVALIDATE_PROPERTY(m_InspiratoryFlow);
-  INVALIDATE_PROPERTY(m_InspiratoryPulmonaryResistance);
+  INVALIDATE_PROPERTY(m_InspiratoryRespiratoryResistance);
   INVALIDATE_PROPERTY(m_InspiratoryTidalVolume);
   INVALIDATE_PROPERTY(m_IntrapleuralPressure);
   INVALIDATE_PROPERTY(m_IntrapulmonaryPressure);
@@ -266,8 +266,8 @@ const SEScalar* SERespiratorySystem::GetScalar(const std::string& name)
     return &GetEndTidalOxygenPressure();
   if (name.compare("ExpiratoryFlow") == 0)
     return &GetExpiratoryFlow();
-  if (name.compare("ExpiratoryPulmonaryResistance") == 0)
-    return &GetExpiratoryPulmonaryResistance();
+  if (name.compare("ExpiratoryRespiratoryResistance") == 0)
+    return &GetExpiratoryRespiratoryResistance();
   if (name.compare("ExpiratoryTidalVolume") == 0)
     return &GetExpiratoryTidalVolume();
   if (name.compare("FractionOfInspiredOxygen") == 0)
@@ -280,8 +280,8 @@ const SEScalar* SERespiratorySystem::GetScalar(const std::string& name)
     return &GetInspiratoryExpiratoryRatio();
   if (name.compare("InspiratoryFlow") == 0)
     return &GetInspiratoryFlow();
-  if (name.compare("InspiratoryPulmonaryResistance") == 0)
-    return &GetInspiratoryPulmonaryResistance();
+  if (name.compare("InspiratoryRespiratoryResistance") == 0)
+    return &GetInspiratoryRespiratoryResistance();
   if (name.compare("InspiratoryTidalVolume") == 0)
     return &GetInspiratoryTidalVolume();
   if (name.compare("IntrapleuralPressure") == 0)
@@ -573,21 +573,21 @@ double SERespiratorySystem::GetExpiratoryFlow(const VolumePerTimeUnit& unit) con
   return m_ExpiratoryFlow->GetValue(unit);
 }
 
-bool SERespiratorySystem::HasExpiratoryPulmonaryResistance() const
+bool SERespiratorySystem::HasExpiratoryRespiratoryResistance() const
 {
-  return m_ExpiratoryPulmonaryResistance == nullptr ? false : m_ExpiratoryPulmonaryResistance->IsValid();
+  return m_ExpiratoryRespiratoryResistance == nullptr ? false : m_ExpiratoryRespiratoryResistance->IsValid();
 }
-SEScalarPressureTimePerVolume& SERespiratorySystem::GetExpiratoryPulmonaryResistance()
+SEScalarPressureTimePerVolume& SERespiratorySystem::GetExpiratoryRespiratoryResistance()
 {
-  if (m_ExpiratoryPulmonaryResistance == nullptr)
-    m_ExpiratoryPulmonaryResistance = new SEScalarPressureTimePerVolume();
-  return *m_ExpiratoryPulmonaryResistance;
+  if (m_ExpiratoryRespiratoryResistance == nullptr)
+    m_ExpiratoryRespiratoryResistance = new SEScalarPressureTimePerVolume();
+  return *m_ExpiratoryRespiratoryResistance;
 }
-double SERespiratorySystem::GetExpiratoryPulmonaryResistance(const PressureTimePerVolumeUnit& unit) const
+double SERespiratorySystem::GetExpiratoryRespiratoryResistance(const PressureTimePerVolumeUnit& unit) const
 {
-  if (m_ExpiratoryPulmonaryResistance == nullptr)
+  if (m_ExpiratoryRespiratoryResistance == nullptr)
     return SEScalar::dNaN();
-  return m_ExpiratoryPulmonaryResistance->GetValue(unit);
+  return m_ExpiratoryRespiratoryResistance->GetValue(unit);
 }
 
 bool SERespiratorySystem::HasExpiratoryTidalVolume() const
@@ -692,21 +692,21 @@ double SERespiratorySystem::GetInspiratoryFlow(const VolumePerTimeUnit& unit) co
   return m_InspiratoryFlow->GetValue(unit);
 }
 
-bool SERespiratorySystem::HasInspiratoryPulmonaryResistance() const
+bool SERespiratorySystem::HasInspiratoryRespiratoryResistance() const
 {
-  return m_InspiratoryPulmonaryResistance == nullptr ? false : m_InspiratoryPulmonaryResistance->IsValid();
+  return m_InspiratoryRespiratoryResistance == nullptr ? false : m_InspiratoryRespiratoryResistance->IsValid();
 }
-SEScalarPressureTimePerVolume& SERespiratorySystem::GetInspiratoryPulmonaryResistance()
+SEScalarPressureTimePerVolume& SERespiratorySystem::GetInspiratoryRespiratoryResistance()
 {
-  if (m_InspiratoryPulmonaryResistance == nullptr)
-    m_InspiratoryPulmonaryResistance = new SEScalarPressureTimePerVolume();
-  return *m_InspiratoryPulmonaryResistance;
+  if (m_InspiratoryRespiratoryResistance == nullptr)
+    m_InspiratoryRespiratoryResistance = new SEScalarPressureTimePerVolume();
+  return *m_InspiratoryRespiratoryResistance;
 }
-double SERespiratorySystem::GetInspiratoryPulmonaryResistance(const PressureTimePerVolumeUnit& unit) const
+double SERespiratorySystem::GetInspiratoryRespiratoryResistance(const PressureTimePerVolumeUnit& unit) const
 {
-  if (m_InspiratoryPulmonaryResistance == nullptr)
+  if (m_InspiratoryRespiratoryResistance == nullptr)
     return SEScalar::dNaN();
-  return m_InspiratoryPulmonaryResistance->GetValue(unit);
+  return m_InspiratoryRespiratoryResistance->GetValue(unit);
 }
 
 bool SERespiratorySystem::HasInspiratoryTidalVolume() const

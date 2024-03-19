@@ -367,7 +367,7 @@ message RespiratorySystemData
   Scalar0To1Data                       EndTidalOxygenFraction                         = 9; /**<< @brief The fraction of gas in the mouth/nose that is oxygen at the end of each respiratory cycle.*/
   ScalarPressureData                   EndTidalOxygenPressure                         = 10;/**<< @brief The pressure of gas in the mouth/nose that is oxygen at the end of each respiratory cycle.*/
   ScalarVolumePerTimeData              ExpiratoryFlow                                 = 11;/**<< @brief Instantaneous airflow out of the lungs (negative value when inhaling).*/
-  ScalarPressureTimePerVolumeData      ExpiratoryPulmonaryResistance                  = 12;/**<< @brief The total resistance to airflow through the lungs during exhalation. */
+  ScalarPressureTimePerVolumeData      ExpiratoryRespiratoryResistance                = 12;/**<< @brief The total resistance to airflow through the lungs during exhalation. */
   ScalarVolumeData                     ExpiratoryTidalVolume                          = 13;/**<< @brief The volume of air moved into or out of the lungs during normal expiration.*/
   Scalar0To1Data                       FractionOfInspiredOxygen                       = 14;/**<< @brief Fraction of Oxygen being taking into the body. */
   ScalarPressureData                   HorowitzIndex                                  = 15;/**<< @brief (AKA P/F Ratio) The ratio of arterial partial pressure O2 and the inspired O2. O2 level in blood vs. Concentration of O2 in a breath.*/
@@ -375,7 +375,7 @@ message RespiratorySystemData
   ScalarEnergyData                     ImposedWorkOfBreathing                         = 17;/**<< @brief Externally imposed power of breathing (e.g., from a ventilator).*/
   ScalarData                           InspiratoryExpiratoryRatio                     = 18;/**<< @brief The ratio of the length of time of inspiration to the length of time of expiration.*/
   ScalarVolumePerTimeData              InspiratoryFlow                                = 19;/**<< @brief The instantaneous airflow into the lungs (negative value when exhaling).*/
-  ScalarPressureTimePerVolumeData      InspiratoryPulmonaryResistance                 = 20;/**<< @brief The total resistance to airflow through the lungs during inhalation. */
+  ScalarPressureTimePerVolumeData      InspiratoryRespiratoryResistance               = 20;/**<< @brief The total resistance to airflow through the lungs during inhalation. */
   ScalarVolumeData                     InspiratoryTidalVolume                         = 21;/**<< @brief The volume of air moved into or out of the lungs during normal inspiration.*/
   ScalarPressureData                   IntrapleuralPressure                           = 22;/**<< @brief The pressure difference across the whole lung.*/
   ScalarPressureData                   IntrapulmonaryPressure                         = 23;/**<< @brief The total respiratory recoil pressure relative to body surface.*/

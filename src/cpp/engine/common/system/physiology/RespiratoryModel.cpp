@@ -3802,12 +3802,10 @@ namespace pulse
 
     // Bronchodilators
     //When albuterol is administered, the bronchodilation also causes the IE ratio to correct itself
-    combinedSeverity *= exp(7728.4 * m_AverageLocalTissueBronchodilationEffects);
+    combinedSeverity *= 1.0 - m_AverageLocalTissueBronchodilationEffects / 0.001;
     combinedSeverity = LIMIT(combinedSeverity, 0.0, 1.0);
 
     m_IERatioScaleFactor *= GeneralMath::LinearInterpolator(0.0, 1.0, 1.0, 0.5 * 0.2, combinedSeverity);
-
-
   }
 
   //--------------------------------------------------------------------------------------------------

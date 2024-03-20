@@ -1593,7 +1593,7 @@ namespace pulse
     ///\cite Fresnel2014musclePressure
     //Adjust for standard 12 bpm giving ~0.33 instead of 16 bpm by adding 4
     double inspiratoryFraction = (0.0125 * (m_VentilationFrequency_Per_min + 4.0) + 0.125) * m_IERatioScaleFactor;
-    inspiratoryFraction = LIMIT(inspiratoryFraction, 0.1, 0.9);
+    inspiratoryFraction = LIMIT(inspiratoryFraction, 0.1, 0.5); //Max I:E Ratio set to 1:1
     double expiratoryFraction = 1.0 - inspiratoryFraction;
 
     m_InspiratoryRiseFraction = inspiratoryFraction;
@@ -3799,13 +3799,15 @@ namespace pulse
     // Obstructive effects
     //Multiplier included to counterbalance effects of RC time constant
     double combinedSeverity = MAX(combinedObstructiveSeverity, combinedRestrictiveSeverity);
-    m_IERatioScaleFactor *= GeneralMath::LinearInterpolator(0.0, 1.0, 1.0, 0.5 * 0.2, combinedSeverity);
 
     // Bronchodilators
     //When albuterol is administered, the bronchodilation also causes the IE ratio to correct itself
-    m_IERatioScaleFactor *= exp(7728.4 * m_AverageLocalTissueBronchodilationEffects);
-    //Lower than 0.1 causes simulation instability
-    m_IERatioScaleFactor = LIMIT(m_IERatioScaleFactor, 0.1, 1.0);
+    combinedSeverity *= exp(7728.4 * m_AverageLocalTissueBronchodilationEffects);
+    combinedSeverity = LIMIT(combinedSeverity, 0.0, 1.0);
+
+    m_IERatioScaleFactor *= GeneralMath::LinearInterpolator(0.0, 1.0, 1.0, 0.5 * 0.2, combinedSeverity);
+
+
   }
 
   //--------------------------------------------------------------------------------------------------

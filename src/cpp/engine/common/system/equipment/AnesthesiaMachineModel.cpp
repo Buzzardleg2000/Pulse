@@ -310,7 +310,7 @@ namespace pulse
     }
 
     double CO2PreviousVolume = m_scubberCO2->GetVolume(VolumeUnit::L);
-    m_scrubberN2->GetVolume().IncrementValue(CO2PreviousVolume - CO2Volume, VolumeUnit::L);
+    m_scrubberN2->GetVolume().Increment(CO2PreviousVolume - CO2Volume, VolumeUnit::L);
     m_scubberCO2->GetVolume().SetValue(CO2Volume, VolumeUnit::L);
     m_scrubber->Balance(BalanceGasBy::Volume);
   }

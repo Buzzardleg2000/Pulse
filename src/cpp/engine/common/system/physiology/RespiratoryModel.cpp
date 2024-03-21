@@ -817,9 +817,9 @@ namespace pulse
         subQ->GetMass().SetValue(0, MassUnit::ug);
       }
       else
-        subQ->GetMass().IncrementValue(-airwayDepositied_ug, MassUnit::ug);
+        subQ->GetMass().Increment(-airwayDepositied_ug, MassUnit::ug);
       subQ->Balance(BalanceLiquidBy::Mass);
-      subQ->GetMassDeposited().IncrementValue(airwayDepositied_ug, MassUnit::ug);
+      subQ->GetMassDeposited().Increment(airwayDepositied_ug, MassUnit::ug);
       //Carina
       subQ = m_AerosolCarina->GetSubstanceQuantities()[i];
       carinaDepositied_ug = subQ->GetConcentration(MassPerVolumeUnit::ug_Per_mL)*m_AerosolCarina->GetInFlow(VolumePerTimeUnit::mL_Per_s)*m_data.GetTimeStep_s()*SIDECoeff->GetCarina();
@@ -829,9 +829,9 @@ namespace pulse
         subQ->GetMass().SetValue(0, MassUnit::ug);
       }
       else
-        subQ->GetMass().IncrementValue(-carinaDepositied_ug, MassUnit::ug);
+        subQ->GetMass().Increment(-carinaDepositied_ug, MassUnit::ug);
       subQ->Balance(BalanceLiquidBy::Mass);
-      carinaTotalDepositied_ug = subQ->GetMassDeposited().IncrementValue(carinaDepositied_ug, MassUnit::ug);
+      carinaTotalDepositied_ug = subQ->GetMassDeposited().Increment(carinaDepositied_ug, MassUnit::ug);
       carinaResistanceModifier += carinaTotalDepositied_ug*inflammationCoefficient;
       //Left DeadSpace
       subQ = m_AerosolLeftAnatomicDeadSpace->GetSubstanceQuantities()[i];
@@ -842,9 +842,9 @@ namespace pulse
         subQ->GetMass().SetValue(0, MassUnit::ug);
       }
       else
-        subQ->GetMass().IncrementValue(-leftDeadSpaceDepositied_ug, MassUnit::ug);
+        subQ->GetMass().Increment(-leftDeadSpaceDepositied_ug, MassUnit::ug);
       subQ->Balance(BalanceLiquidBy::Mass);
-      leftDeadSpaceTotalDepositied_ug = subQ->GetMassDeposited().IncrementValue(leftDeadSpaceDepositied_ug, MassUnit::ug);
+      leftDeadSpaceTotalDepositied_ug = subQ->GetMassDeposited().Increment(leftDeadSpaceDepositied_ug, MassUnit::ug);
       leftDeadSpaceResistanceModifier += leftDeadSpaceTotalDepositied_ug*inflammationCoefficient;
       //Left Alveoli
       subQ = m_AerosolLeftAlveoli->GetSubstanceQuantities()[i];
@@ -855,9 +855,9 @@ namespace pulse
         subQ->GetMass().SetValue(0, MassUnit::ug);
       }
       else
-        subQ->GetMass().IncrementValue(-leftAlveoliDepositied_ug, MassUnit::ug);
+        subQ->GetMass().Increment(-leftAlveoliDepositied_ug, MassUnit::ug);
       subQ->Balance(BalanceLiquidBy::Mass);
-      leftAlveoliTotalDepositied_ug = subQ->GetMassDeposited().IncrementValue(leftAlveoliDepositied_ug, MassUnit::ug);
+      leftAlveoliTotalDepositied_ug = subQ->GetMassDeposited().Increment(leftAlveoliDepositied_ug, MassUnit::ug);
       leftAlveoliResistanceModifier += leftAlveoliTotalDepositied_ug*inflammationCoefficient;
       //Right DeadSpace
       subQ = m_AerosolRightAnatomicDeadSpace->GetSubstanceQuantities()[i];
@@ -868,9 +868,9 @@ namespace pulse
         subQ->GetMass().SetValue(0, MassUnit::ug);
       }
       else
-        subQ->GetMass().IncrementValue(-rightDeadSpaceDepositied_ug, MassUnit::ug);
+        subQ->GetMass().Increment(-rightDeadSpaceDepositied_ug, MassUnit::ug);
       subQ->Balance(BalanceLiquidBy::Mass);
-      rightDeadSpaceTotalDepositied_ug = subQ->GetMassDeposited().IncrementValue(rightDeadSpaceDepositied_ug, MassUnit::ug);
+      rightDeadSpaceTotalDepositied_ug = subQ->GetMassDeposited().Increment(rightDeadSpaceDepositied_ug, MassUnit::ug);
       rightDeadSpaceResistanceModifier += rightDeadSpaceTotalDepositied_ug*inflammationCoefficient;
       //Right Alveoli
       subQ = m_AerosolRightAlveoli->GetSubstanceQuantities()[i];
@@ -881,9 +881,9 @@ namespace pulse
         subQ->GetMass().SetValue(0, MassUnit::ug);
       }
       else
-        subQ->GetMass().IncrementValue(-rightAlveoliDepositied_ug, MassUnit::ug);
+        subQ->GetMass().Increment(-rightAlveoliDepositied_ug, MassUnit::ug);
       subQ->Balance(BalanceLiquidBy::Mass);
-      rightAlveoliTotalDepositied_ug = subQ->GetMassDeposited().IncrementValue(rightAlveoliDepositied_ug, MassUnit::ug);
+      rightAlveoliTotalDepositied_ug = subQ->GetMassDeposited().Increment(rightAlveoliDepositied_ug, MassUnit::ug);
       rightAlveoliResistanceModifier += rightAlveoliTotalDepositied_ug*inflammationCoefficient;
       
       // Apply the BronchileModifier dilation effect
@@ -899,11 +899,11 @@ namespace pulse
         // We do not currently do anything with the mass in the airway and carina
         // Could possibly let it go into the stomach somehow... 
         tSubQ = m_LeftLungExtravascular->GetSubstanceQuantity(subQ->GetSubstance());
-        tSubQ->GetMass().IncrementValue(leftDeadSpaceDepositied_ug + leftAlveoliDepositied_ug, MassUnit::ug); tSubQ->Balance(BalanceLiquidBy::Mass);    
+        tSubQ->GetMass().Increment(leftDeadSpaceDepositied_ug + leftAlveoliDepositied_ug, MassUnit::ug); tSubQ->Balance(BalanceLiquidBy::Mass);    
         combinedLeftBronchodilationEffects += bronchioleModifier * tSubQ->GetConcentration(MassPerVolumeUnit::ug_Per_mL);
 
         tSubQ = m_RightLungExtravascular->GetSubstanceQuantity(subQ->GetSubstance());
-        tSubQ->GetMass().IncrementValue(rightDeadSpaceDepositied_ug + rightAlveoliDepositied_ug, MassUnit::ug); tSubQ->Balance(BalanceLiquidBy::Mass);
+        tSubQ->GetMass().Increment(rightDeadSpaceDepositied_ug + rightAlveoliDepositied_ug, MassUnit::ug); tSubQ->Balance(BalanceLiquidBy::Mass);
         combinedRightBronchodilationEffects += bronchioleModifier * tSubQ->GetConcentration(MassPerVolumeUnit::ug_Per_mL);
       }
     }
@@ -1164,7 +1164,7 @@ namespace pulse
     //Inf volume is assumed to be a wall connection that will never run out
     if (so.GetVolume(VolumeUnit::L) != std::numeric_limits<double>::infinity())
     {
-      so.GetVolume().IncrementValue(-flow_L_Per_min * m_data.GetTimeStep_s()/60, VolumeUnit::L);
+      so.GetVolume().Increment(-flow_L_Per_min * m_data.GetTimeStep_s()/60, VolumeUnit::L);
       //Check if the tank is depleated
       if (so.GetVolume(VolumeUnit::L) <= 0.0)
       {
@@ -1878,7 +1878,7 @@ namespace pulse
 
       if (m_PatientActions->GetLeftHemothorax().HasTotalBloodVolume())
       {
-        m_PatientActions->GetLeftHemothorax().GetTotalBloodVolume().IncrementValue(leftBloodFlow_L_Per_s * m_data.GetTimeStep_s(), VolumeUnit::L);
+        m_PatientActions->GetLeftHemothorax().GetTotalBloodVolume().Increment(leftBloodFlow_L_Per_s * m_data.GetTimeStep_s(), VolumeUnit::L);
       }
       else
       {
@@ -1966,7 +1966,7 @@ namespace pulse
 
       if (m_PatientActions->GetRightHemothorax().HasTotalBloodVolume())
       {
-        m_PatientActions->GetRightHemothorax().GetTotalBloodVolume().IncrementValue(rightBloodFlow_L_Per_s * m_data.GetTimeStep_s(), VolumeUnit::L);
+        m_PatientActions->GetRightHemothorax().GetTotalBloodVolume().Increment(rightBloodFlow_L_Per_s * m_data.GetTimeStep_s(), VolumeUnit::L);
       }
       else
       {
@@ -2943,7 +2943,7 @@ namespace pulse
       //The environment just changed
       //Keep volume the same by changing the pressure equally on both sides
       double pressureChange_cmH2O = m_AmbientNode->GetNextPressure(PressureUnit::cmH2O) - m_AmbientNode->GetPressure(PressureUnit::cmH2O);
-      m_StomachNode->GetNextPressure().IncrementValue(pressureChange_cmH2O, PressureUnit::cmH2O);
+      m_StomachNode->GetNextPressure().Increment(pressureChange_cmH2O, PressureUnit::cmH2O);
     }
 
     double functionalResidualCapacity_L = m_data.GetInitialPatient().GetFunctionalResidualCapacity(VolumeUnit::L);
@@ -3067,8 +3067,8 @@ namespace pulse
 
         alveoliNode->GetNextVolume().SetReadOnly(false);
         alveoliNode->GetVolume().SetReadOnly(false);
-        alveoliNode->GetNextVolume().IncrementValue(currentAlveoliVolumeIncrement_L, VolumeUnit::L);
-        alveoliNode->GetVolume().IncrementValue(currentAlveoliVolumeIncrement_L, VolumeUnit::L);
+        alveoliNode->GetNextVolume().Increment(currentAlveoliVolumeIncrement_L, VolumeUnit::L);
+        alveoliNode->GetVolume().Increment(currentAlveoliVolumeIncrement_L, VolumeUnit::L);
         alveoliNode->GetNextVolume().SetReadOnly(true);
         alveoliNode->GetVolume().SetReadOnly(true);
 
@@ -3077,8 +3077,8 @@ namespace pulse
 
         pleuralNode->GetNextVolume().SetReadOnly(false);
         pleuralNode->GetVolume().SetReadOnly(false);
-        pleuralNode->GetNextVolume().IncrementValue(currentAlveoliVolumeIncrement_L, VolumeUnit::L);
-        pleuralNode->GetVolume().IncrementValue(currentAlveoliVolumeIncrement_L, VolumeUnit::L);
+        pleuralNode->GetNextVolume().Increment(currentAlveoliVolumeIncrement_L, VolumeUnit::L);
+        pleuralNode->GetVolume().Increment(currentAlveoliVolumeIncrement_L, VolumeUnit::L);
         pleuralNode->GetNextVolume().SetReadOnly(true);
         pleuralNode->GetVolume().SetReadOnly(true);
 

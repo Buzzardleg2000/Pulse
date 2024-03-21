@@ -416,19 +416,19 @@ namespace pulse { namespace human_adult_whole_body
             depositedRightAnatomicDeadSpaceParticulate_ug + depositedRightAlveoliParticulate_ug;
 
           // Remove the delta from the compartment substance quantity mass
-          airwayParticulate->GetMass().IncrementValue(-depositedAirwayParticulate_ug, MassUnit::ug); airwayParticulate->Balance(BalanceLiquidBy::Mass);
-          carinaParticulate->GetMass().IncrementValue(-depositedCarinaParticulate_ug, MassUnit::ug); carinaParticulate->Balance(BalanceLiquidBy::Mass);
-          leftAnatomicDeadSpaceParticulate->GetMass().IncrementValue(-depositedLeftAnatomicDeadSpaceParticulate_ug, MassUnit::ug); leftAnatomicDeadSpaceParticulate->Balance(BalanceLiquidBy::Mass);
-          leftAlveoliParticulate->GetMass().IncrementValue(-depositedLeftAlveoliParticulate_ug, MassUnit::ug); leftAlveoliParticulate->Balance(BalanceLiquidBy::Mass);
-          rightAnatomicDeadSpaceParticulate->GetMass().IncrementValue(-depositedRightAnatomicDeadSpaceParticulate_ug, MassUnit::ug); rightAnatomicDeadSpaceParticulate->Balance(BalanceLiquidBy::Mass);
-          rightAlveoliParticulate->GetMass().IncrementValue(-depositedRightAlveoliParticulate_ug, MassUnit::ug); rightAlveoliParticulate->Balance(BalanceLiquidBy::Mass);
+          airwayParticulate->GetMass().Increment(-depositedAirwayParticulate_ug, MassUnit::ug); airwayParticulate->Balance(BalanceLiquidBy::Mass);
+          carinaParticulate->GetMass().Increment(-depositedCarinaParticulate_ug, MassUnit::ug); carinaParticulate->Balance(BalanceLiquidBy::Mass);
+          leftAnatomicDeadSpaceParticulate->GetMass().Increment(-depositedLeftAnatomicDeadSpaceParticulate_ug, MassUnit::ug); leftAnatomicDeadSpaceParticulate->Balance(BalanceLiquidBy::Mass);
+          leftAlveoliParticulate->GetMass().Increment(-depositedLeftAlveoliParticulate_ug, MassUnit::ug); leftAlveoliParticulate->Balance(BalanceLiquidBy::Mass);
+          rightAnatomicDeadSpaceParticulate->GetMass().Increment(-depositedRightAnatomicDeadSpaceParticulate_ug, MassUnit::ug); rightAnatomicDeadSpaceParticulate->Balance(BalanceLiquidBy::Mass);
+          rightAlveoliParticulate->GetMass().Increment(-depositedRightAlveoliParticulate_ug, MassUnit::ug); rightAlveoliParticulate->Balance(BalanceLiquidBy::Mass);
           // Add the delta to the compartment substance quantity mass deposited
-          airwayParticulate->GetMassDeposited().IncrementValue(depositedAirwayParticulate_ug, MassUnit::ug);
-          carinaParticulate->GetMassDeposited().IncrementValue(depositedCarinaParticulate_ug, MassUnit::ug);
-          leftAnatomicDeadSpaceParticulate->GetMassDeposited().IncrementValue(depositedLeftAnatomicDeadSpaceParticulate_ug, MassUnit::ug);
-          leftAlveoliParticulate->GetMassDeposited().IncrementValue(depositedLeftAlveoliParticulate_ug, MassUnit::ug);
-          rightAnatomicDeadSpaceParticulate->GetMassDeposited().IncrementValue(depositedRightAnatomicDeadSpaceParticulate_ug, MassUnit::ug);
-          rightAlveoliParticulate->GetMassDeposited().IncrementValue(depositedRightAlveoliParticulate_ug, MassUnit::ug);
+          airwayParticulate->GetMassDeposited().Increment(depositedAirwayParticulate_ug, MassUnit::ug);
+          carinaParticulate->GetMassDeposited().Increment(depositedCarinaParticulate_ug, MassUnit::ug);
+          leftAnatomicDeadSpaceParticulate->GetMassDeposited().Increment(depositedLeftAnatomicDeadSpaceParticulate_ug, MassUnit::ug);
+          leftAlveoliParticulate->GetMassDeposited().Increment(depositedLeftAlveoliParticulate_ug, MassUnit::ug);
+          rightAnatomicDeadSpaceParticulate->GetMassDeposited().Increment(depositedRightAnatomicDeadSpaceParticulate_ug, MassUnit::ug);
+          rightAlveoliParticulate->GetMassDeposited().Increment(depositedRightAlveoliParticulate_ug, MassUnit::ug);
         }
       }
 

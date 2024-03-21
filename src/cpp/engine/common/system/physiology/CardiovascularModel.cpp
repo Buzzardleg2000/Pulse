@@ -1835,11 +1835,11 @@ namespace pulse
           h->GetFlowRate().SetValue(hemorrhageFlow_mL_Per_s, VolumePerTimeUnit::mL_Per_s);
 
         totalLossRate_mL_Per_s += hemorrhageFlow_mL_Per_s;
-        h->GetTotalBloodLost().IncrementValue(hemorrhageFlow_mL_Per_s* m_data.GetTimeStep_s(), VolumeUnit::mL);
+        h->GetTotalBloodLost().Increment(hemorrhageFlow_mL_Per_s* m_data.GetTimeStep_s(), VolumeUnit::mL);
       }
     }
     GetTotalHemorrhageRate().SetValue(totalLossRate_mL_Per_s, VolumePerTimeUnit::mL_Per_s);
-    GetTotalHemorrhagedVolume().IncrementValue((totalLossRate_mL_Per_s* m_data.GetTimeStep_s()), VolumeUnit::mL);
+    GetTotalHemorrhagedVolume().Increment((totalLossRate_mL_Per_s* m_data.GetTimeStep_s()), VolumeUnit::mL);
 
     for (SEHemorrhage* ih : invalid_hemorrhages)
     {

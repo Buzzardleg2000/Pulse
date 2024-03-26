@@ -105,7 +105,7 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
     """
-    mode = "itm"
+    mode = "test"
     if len(sys.argv) > 1:
         mode = sys.argv[1]
     injury_scenarios_list_filename = f"./test_results/patient_variability/{mode}/scenarios/tccc.json"

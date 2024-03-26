@@ -206,7 +206,7 @@ int main(int argc, char* argv[])
     female->SetResultsDirectory(rootDir + "/results/" + female->GetIterationName());
     iPatients.push_back(female);
 
-    if (false)
+    if (true)
     {
       TCCCIteration* tccc = new TCCCIteration(logger);
       tccc->SetIterationName("tccc");

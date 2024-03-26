@@ -764,9 +764,9 @@ def generate_observations(injury_scenario: SEScenarioExecStatus) -> None:
     report = ITMScenarioReport(
         Path(injury_scenario.get_log_filename()),            # log file
         Path(injury_scenario.get_csv_filename()),            # csv file
-        3,                                                   # observation frequency (min)
-        None,                                                # actions filter
-        None,                                                # events filter
+        observation_frequency_min,                           # observation frequency (min)
+        None,                                      # actions filter
+        None,                                      # events filter
     )
     report.write(out_file)
 
@@ -775,7 +775,7 @@ if __name__ == "__main__":
     #faulthandler.enable()
     logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
 
-    mode = "itm"
+    mode = "test"
     if len(sys.argv) > 1:
         mode = sys.argv[1]
     injury_scenarios_list_filename = f"./test_results/patient_variability/{mode}/scenarios/tccc.json"

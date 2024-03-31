@@ -1414,13 +1414,13 @@ namespace pulse
             m_VentilationFrequency_Per_min = 0.0;
             m_NotBreathing = true;
           }
-          else
+          else if (!m_NotBreathing)
           {
             m_VentilationFrequency_Per_min = targetPulmonaryVentilation_L_Per_min / (targetTidalVolume_L - DrugsTVChange_L); //breaths/min
             m_VentilationFrequency_Per_min *= NMBModifier * SedationModifier;
             m_VentilationFrequency_Per_min += DrugRRChange_Per_min;
             m_NotBreathing = false;
-          }  
+          }
 
           m_VentilationFrequency_Per_min = LIMIT(m_VentilationFrequency_Per_min, 0.0, dMaximumPulmonaryVentilationRate / dHalfVitalCapacity_L);
 
@@ -1485,16 +1485,19 @@ namespace pulse
     double ExpiratoryReleaseTimeStart_s = ExpiratoryHoldTimeStart_s + m_ExpiratoryHoldFraction * m_VentilationPeriod_s;
     double ResidueFractionTimeStart_s = ExpiratoryReleaseTimeStart_s + m_ExpiratoryReleaseFraction * m_VentilationPeriod_s;
 
-    if (SEScalar::IsZero(m_BreathingCycleTime_s, ZERO_APPROX) &&
-      m_InspiratoryRiseFraction != 0.0) //Only call this once per cycle - needed here for conscious respiration
+    if (!m_NotBreathing)
     {
-      m_data.GetEvents().SetEvent(eEvent::StartOfInhale, true, m_data.GetSimulationTime());
-    }
+      if (SEScalar::IsZero(m_BreathingCycleTime_s, ZERO_APPROX) &&
+        m_InspiratoryRiseFraction != 0.0) //Only call this once per cycle - needed here for conscious respiration
+      {
+        m_data.GetEvents().SetEvent(eEvent::StartOfInhale, true, m_data.GetSimulationTime());
+      }
 
-    if (m_BreathingCycleTime_s >= InspiratoryReleaseTimeStart_s &&
-      m_BreathingCycleTime_s < InspiratoryReleaseTimeStart_s + m_data.GetTimeStep_s()) //Only call this once per cycle
-    {
-      m_data.GetEvents().SetEvent(eEvent::StartOfExhale, true, m_data.GetSimulationTime());
+      if (m_BreathingCycleTime_s >= InspiratoryReleaseTimeStart_s &&
+        m_BreathingCycleTime_s < InspiratoryReleaseTimeStart_s + m_data.GetTimeStep_s()) //Only call this once per cycle
+      {
+        m_data.GetEvents().SetEvent(eEvent::StartOfExhale, true, m_data.GetSimulationTime());
+      }
     }
 
     double pi = 3.14159265359;
@@ -4390,6 +4393,7 @@ namespace pulse
     }
 
     //------------------------------------------------------------------------------------------------------
+    m_NotBreathing = false;
     if (SEScalar::IsZero(1.0 - dyspneaSeverity, ZERO_APPROX)) //~1.0
     {
       dyspneaSeverity = 1.0;

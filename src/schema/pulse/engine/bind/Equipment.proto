@@ -67,7 +67,8 @@ message MechanicalVentilatorData
   double                                           PeakInspiratoryFlow_L_Per_s            = 17;
   double                                           PreviousDriverFlow_L_Per_s             = 18;
   double                                           PreviousConnectionPressure_cmH2O       = 19;
-  double                                           PreviousDriverPressure_cmH2O           = 20;
-  double                                           PreviousYPieceToConnectionFlow_L_Per_s = 21;
-  double                                           PositiveEndExpiratoryPressure_cmH2O    = 22;
+  bool                                             PauseOccurred                          = 20;
+  double                                           PreviousDriverPressure_cmH2O           = 21;
+  double                                           PreviousYPieceToConnectionFlow_L_Per_s = 22;
+  double                                           PositiveEndExpiratoryPressure_cmH2O    = 23;
 }

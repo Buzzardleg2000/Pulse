@@ -139,14 +139,12 @@ if(${PROJECT_NAME}_SUPERBUILD)
     option(USE_SYSTEM_${extProj} "Exclude ${extProj} from superbuild and use an existing build." OFF)
     mark_as_advanced(USE_SYSTEM_${extProj})
   endmacro()
-
+  
+  include(AddExternalProject)
+  define_dependency(absl)
   define_dependency(Eigen3)
   define_dependency(protobuf)
-  message(STATUS "We are using protobuf ${Protobuf_VERSION}")
-  if (Protobuf_VERSION VERSION_GREATER_EQUAL "22.0")
-    message(STATUS "Added ABSL dependency")
-    define_dependency(absl)
-  endif()
+
   if(${PROJECT_NAME}_PYTHON_API)
     find_package (Python3 COMPONENTS Interpreter Development)
     if(Python3_FOUND)

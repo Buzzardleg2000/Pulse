@@ -85,7 +85,7 @@ mark_as_superbuild(VARS CMAKE_INCLUDE_PATH ALL_PROJECTS)
 # Solve dependencies
 #-----------------------------------------------------------------------------
 set(EXTERNAL_PROJECT_DIR ${CMAKE_CURRENT_SOURCE_DIR}) # Location of the "External_*" files
-
+message(STATUS "Solving dependencies: ${${PROJECT_NAME}_DEPENDENCIES}")
 ExternalProject_Include_Dependencies( ${PROJECT_NAME}
   DEPENDS_VAR ${PROJECT_NAME}_DEPENDENCIES
   EP_ARGS_VAR ${PROJECT_NAME}_EP_ARGS

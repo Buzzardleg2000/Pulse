@@ -1,6 +1,7 @@
 #-----------------------------------------------------------------------------
 # Add External Project
 #-----------------------------------------------------------------------------
+message(STATUS "Processing External_protobuf")
 if(${PROJECT_NAME}_MULTI_BUILD)
   message(STATUS "Building multiple protobuf configurations at once")
   set(PROTOBUF_DEBUG_BLD COMMAND ${CMAKE_COMMAND} --build . --config debug)
@@ -39,13 +40,14 @@ set(_pb_args)
 set(_pb_dependencies)
 message(STATUS "We are using protobuf ${Protobuf_VERSION}")
 if (Protobuf_VERSION VERSION_GREATER_EQUAL "22.0")
-  message(STATUS "Added ABSL dependency")
-  define_dependency(absl)
+  message(STATUS "Added ABSL dependency: ${absl_DIR}")
   set (_pb_dependencies absl)
   set(_pb_args -Dprotobuf_ABSL_PROVIDER:STRING=package -Dabsl_DIR:PATH=${absl_DIR})
+else()
+  message(STATUS "Removing absl dependency")
+  list(REMOVE_ITEM ${${PROJECT_NAME}_DEPENDENCIES} absl)
 endif()
 
-include(AddExternalProject)
 define_external_dirs_ex(protobuf)
 add_external_project_ex( protobuf
   URL ${Protobuf_url}

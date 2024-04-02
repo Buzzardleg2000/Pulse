@@ -232,6 +232,7 @@ namespace pulse
       eSide                Side;
       SEFluidCircuitNode*  AlveoliNode;
       SEFluidCircuitNode*  DeadSpaceNode;
+      SEFluidCircuitPath*  ResistancePath;
       SEFluidCircuitPath*  CompliancePath;
       SEFluidCircuitPath*  ShuntPath;
       SEFluidCircuitPath*  CapillaryPath;

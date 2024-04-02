@@ -471,6 +471,7 @@ namespace pulse
       // Side
       // Alveoli Node
       // Dead Space Node
+      // Resistance Path - jbw: Support this in the expanded model
       // Compliance Path
       // Shunt Path
       // Capillary Path
@@ -481,6 +482,7 @@ namespace pulse
         eSide::Left,
         m_RespiratoryCircuit->GetNode(pulse::RespiratoryNode::LeftAlveoli),
         m_RespiratoryCircuit->GetNode(pulse::RespiratoryNode::LeftAlveolarDeadSpace),
+        m_RespiratoryCircuit->GetPath(pulse::RespiratoryPath::LeftAnatomicDeadSpaceToLeftAlveolarDeadSpace),
         m_RespiratoryCircuit->GetPath(pulse::RespiratoryPath::LeftAlveoliToLeftPleuralConnection),
         m_data.GetCircuits().GetCardiovascularCircuit().GetPath(pulse::CardiovascularPath::LeftPulmonaryArteries1ToLeftPulmonaryVeins1),
         m_data.GetCircuits().GetCardiovascularCircuit().GetPath(pulse::CardiovascularPath::LeftPulmonaryCapillaries1ToLeftPulmonaryVeins1),
@@ -492,6 +494,7 @@ namespace pulse
         eSide::Right,
         m_RespiratoryCircuit->GetNode(pulse::RespiratoryNode::RightAlveoli),
         m_RespiratoryCircuit->GetNode(pulse::RespiratoryNode::RightAlveolarDeadSpace),
+        m_RespiratoryCircuit->GetPath(pulse::RespiratoryPath::RightAnatomicDeadSpaceToRightAlveolarDeadSpace),
         m_RespiratoryCircuit->GetPath(pulse::RespiratoryPath::RightAlveoliToRightPleuralConnection),
         m_data.GetCircuits().GetCardiovascularCircuit().GetPath(pulse::CardiovascularPath::RightPulmonaryArteries1ToRightPulmonaryVeins1),
         m_data.GetCircuits().GetCardiovascularCircuit().GetPath(pulse::CardiovascularPath::RightPulmonaryCapillaries1ToRightPulmonaryVeins1),
@@ -2996,7 +2999,7 @@ namespace pulse
           severity = m_data.GetConditions().GetAcuteRespiratoryDistressSyndrome().GetSeverity(cmpt).GetValue();
         }
 
-        if (severity > 0.3)
+        if (severity > 0.29)
         {
           // best fit for (severity, volume): (0, 0), (0.3, 0), (0.6, 0.003), (0.9, 0.15)
           deadSpaceIncrement_L = alveoliVolumeRatio * (0.3704 * std::pow(severity, 3.0) - 0.1667 * std::pow(severity, 2.0) + 0.0167 * severity);
@@ -3224,7 +3227,7 @@ namespace pulse
           else
           {
             //Tuned based on mechanical ventilator validation data
-            tracheaResistance_cmH2O_s_Per_L *= 12.5;
+            tracheaResistance_cmH2O_s_Per_L *= 8.5;
           }
 
           break;
@@ -3440,12 +3443,30 @@ namespace pulse
         bronchitisSeverity = m_data.GetConditions().GetChronicObstructivePulmonaryDisease().GetBronchitisSeverity().GetValue();
       }
 
-      double resistanceScalingFactor = GeneralMath::LinearInterpolator(0.0, 1.0, 1.0, 60.0, bronchitisSeverity);
+      std::vector<std::pair<double, double>> inhaleInterpolatorPoints =
+      {
+        {0.0, 1.0}, //None
+        {0.3, 35.0}, //Mild
+        {0.6, 60.0}, //Moderate
+        {0.9, 80.0}, //Severe
+        {1.0, 100.0}  //Max
+      };
+      std::vector<std::pair<double, double>> exhaleInterpolatorPoints =
+      {
+        {0.0, 1.0}, //None
+        {0.3, 60.0}, //Mild
+        {0.6, 85.0}, //Moderate
+        {0.9, 100.0}, //Severe
+        {1.0, 125.0}  //Max
+      };
+
+      double resistanceScalingFactor = 1.0;
+      if (inhaling)
+        resistanceScalingFactor = GeneralMath::PiecewiseLinearInterpolator(inhaleInterpolatorPoints, bronchitisSeverity);
+      else //exhaling
+        resistanceScalingFactor = GeneralMath::PiecewiseLinearInterpolator(exhaleInterpolatorPoints, bronchitisSeverity);
       obstructiveResistanceScalingFactor = MAX(obstructiveResistanceScalingFactor, resistanceScalingFactor);
     }
-
-    //------------------------------------------------------------------------------------------------------
-    //Restrictive - No change
 
     //------------------------------------------------------------------------------------------------------
     leftBronchiResistance_cmH2O_s_Per_L *= obstructiveResistanceScalingFactor;
@@ -3499,6 +3520,89 @@ namespace pulse
     m_RightAnatomicDeadSpaceToRightAlveolarDeadSpace->GetNextResistance().SetValue(rightAlveoliResistance_cmH2O_s_Per_L, PressureTimePerVolumeUnit::cmH2O_s_Per_L);
     m_LeftAnatomicDeadSpaceToLeftAlveolarDeadSpace->GetNextResistance().SetValue(leftAlveoliResistance_cmH2O_s_Per_L, PressureTimePerVolumeUnit::cmH2O_s_Per_L);
     m_AirwayToStomach->GetNextResistance().SetValue(esophagusResistance_cmH2O_s_Per_L, PressureTimePerVolumeUnit::cmH2O_s_Per_L);
+
+    //------------------------------------------------------------------------------------------------------
+    //Restrictive
+    //Some need to be done at the compartment level and need to handle expanded compartment definitions
+    for (auto& itr : m_LungComponents)
+    {
+      eLungCompartment cmpt = itr.first;
+      LungComponent& cpt = itr.second;
+
+      double restrictiveSeverity = 0.0;
+
+      //------------------------------------------------------------------------------------------------------
+      //Pneumonia
+      //Exacerbation will overwrite the condition, even if it means improvement
+      if (m_data.GetConditions().HasPneumonia() || m_PatientActions->HasPneumoniaExacerbation())
+      {
+        double severity = 0.0;
+        if (m_PatientActions->HasPneumoniaExacerbation())
+        {
+          severity = m_PatientActions->GetPneumoniaExacerbation().GetSeverity(cmpt).GetValue();
+        }
+        else
+        {
+          severity = m_data.GetConditions().GetPneumonia().GetSeverity(cmpt).GetValue();
+        }
+
+        restrictiveSeverity = MAX(restrictiveSeverity, severity);
+      }
+
+      //------------------------------------------------------------------------------------------------------
+      //Pulmonary Fibrosis
+      if (m_data.GetConditions().HasPulmonaryFibrosis())
+      {
+        double severity = m_data.GetConditions().GetPulmonaryFibrosis().GetSeverity().GetValue();
+
+        restrictiveSeverity = MAX(restrictiveSeverity, severity);
+      }
+
+      //------------------------------------------------------------------------------------------------------
+      //ARDS
+      //Exacerbation will overwrite the condition, even if it means improvement
+      if (m_data.GetConditions().HasAcuteRespiratoryDistressSyndrome() || m_PatientActions->HasAcuteRespiratoryDistressSyndromeExacerbation())
+      {
+        double severity = 0.0;
+        if (m_PatientActions->HasAcuteRespiratoryDistressSyndromeExacerbation())
+        {
+          severity = m_PatientActions->GetAcuteRespiratoryDistressSyndromeExacerbation().GetSeverity(cmpt).GetValue();
+        }
+        else
+        {
+          severity = m_data.GetConditions().GetAcuteRespiratoryDistressSyndrome().GetSeverity(cmpt).GetValue();
+        }
+
+        restrictiveSeverity = MAX(restrictiveSeverity, severity);
+      }
+
+      std::vector<std::pair<double, double>> inhaleInterpolatorPoints =
+      {
+        {0.0, 1.0}, //None
+        {0.3, 1.0}, //Mild
+        {0.6, 15.0}, //Moderate
+        {0.9, 30.0}, //Severe
+        {1.0, 40.0}  //Max
+      };
+      std::vector<std::pair<double, double>> exhaleInterpolatorPoints =
+      {
+        {0.0, 1.0}, //None
+        {0.3, 10.0}, //Mild
+        {0.6, 28.0}, //Moderate
+        {0.9, 55.0}, //Severe
+        {1.0, 65.0}  //Max
+      };
+
+      double resistanceScalingFactor = 1.0;
+      if (inhaling)
+        resistanceScalingFactor = GeneralMath::PiecewiseLinearInterpolator(inhaleInterpolatorPoints, restrictiveSeverity);
+      else //exhaling
+        resistanceScalingFactor = GeneralMath::PiecewiseLinearInterpolator(exhaleInterpolatorPoints, restrictiveSeverity);
+
+      SEFluidCircuitPath* alveoliResistancePath = cpt.ResistancePath;
+      double alveoliResistance_cmH2O_s_Per_L = alveoliResistancePath->GetNextResistance(PressureTimePerVolumeUnit::cmH2O_s_Per_L);
+      alveoliResistancePath->GetNextResistance().SetValue(alveoliResistance_cmH2O_s_Per_L * resistanceScalingFactor, PressureTimePerVolumeUnit::cmH2O_s_Per_L);
+    }
 
     bool stateChange = false;
     if (pharynxResistance_cmH2O_s_Per_L > 0.0)
@@ -3579,7 +3683,7 @@ namespace pulse
       ///\TODO
 
       //------------------------------------------------------------------------------------------------------
-      //COPD
+      //COPD - Moves enough based on lung volume increase alone
       //Exacerbation will overwrite the condition, even if it means improvement
       if (m_data.GetConditions().HasChronicObstructivePulmonaryDisease() || m_PatientActions->HasChronicObstructivePulmonaryDiseaseExacerbation())
       {
@@ -3593,7 +3697,15 @@ namespace pulse
           emphysemaSeverity = m_data.GetConditions().GetChronicObstructivePulmonaryDisease().GetEmphysemaSeverity(cmpt).GetValue();
         }
 
-        obstructiveComplianceScalingFactor = GeneralMath::ExponentialGrowthFunction(10, 1.0, 1.15, emphysemaSeverity);
+        std::vector<std::pair<double, double>> interpolatorPoints =
+        {
+          {0.0, 1.0}, //None
+          {0.3, 0.9}, //Mild
+          {0.6, 0.95}, //Moderate
+          {0.9, 1.05}, //Severe
+          {1.0, 1.1}  //Max
+        };
+        obstructiveComplianceScalingFactor = GeneralMath::PiecewiseLinearInterpolator(interpolatorPoints, emphysemaSeverity);
       }
 
       //------------------------------------------------------------------------------------------------------
@@ -3615,7 +3727,7 @@ namespace pulse
           severity = m_data.GetConditions().GetPneumonia().GetSeverity(cmpt).GetValue();
         }
 
-        restrictiveComplianceScalingFactor = GeneralMath::ExponentialDecayFunction(10, 0.32, 1.0, severity);
+        restrictiveComplianceScalingFactor = GeneralMath::ExponentialDecayFunction(10, 0.45, 1.0, severity);
       }
 
       //------------------------------------------------------------------------------------------------------
@@ -3624,7 +3736,7 @@ namespace pulse
       {
         double severity = m_data.GetConditions().GetPulmonaryFibrosis().GetSeverity().GetValue();
 
-        restrictiveComplianceScalingFactor = MIN(restrictiveComplianceScalingFactor, GeneralMath::ExponentialDecayFunction(10, 0.32, 1.0, severity));
+        restrictiveComplianceScalingFactor = MIN(restrictiveComplianceScalingFactor, GeneralMath::ExponentialDecayFunction(10, 0.45, 1.0, severity));
       }
 
       //------------------------------------------------------------------------------------------------------
@@ -3642,7 +3754,7 @@ namespace pulse
           severity = m_data.GetConditions().GetAcuteRespiratoryDistressSyndrome().GetSeverity(cmpt).GetValue();
         }
 
-        restrictiveComplianceScalingFactor = MIN(restrictiveComplianceScalingFactor, GeneralMath::ExponentialDecayFunction(10, 0.32, 1.0, severity));
+        restrictiveComplianceScalingFactor = MIN(restrictiveComplianceScalingFactor, GeneralMath::ExponentialDecayFunction(10, 0.45, 1.0, severity));
       }
 
       //------------------------------------------------------------------------------------------------------
@@ -4183,8 +4295,43 @@ namespace pulse
       //------------------------------------------------------------------------------------------------------
       //Combine effects
       double recruitmentScalingFactor = GeneralMath::ExponentialDecayFunction(10, 0.04, 1.0, 1.0 - recruitedFraction);
-      double damageScalingFactor = GeneralMath::ExponentialDecayFunction(10, 0.1, 1.0, combinedSeverity); //Acts as floor if fully recruited
+      std::vector<std::pair<double, double>> interpolatorPoints =
+      {
+        {0.0, 1.0}, //None
+        {0.3, 0.18}, //Mild
+        {0.6, 0.15}, //Moderate
+        {0.9, 0.06}, //Severe
+        {1.0, 0.01}  //Max
+      };
+      double damageScalingFactor = GeneralMath::PiecewiseLinearInterpolator(interpolatorPoints, combinedSeverity); //Acts as floor if fully recruited
       double totalScalingFactor = MIN(recruitmentScalingFactor, damageScalingFactor);
+
+      //------------------------------------------------------------------------------------------------------
+      //COPD
+      //Exacerbation will overwrite the condition, even if it means improvement
+      if (m_data.GetConditions().HasChronicObstructivePulmonaryDisease() || m_PatientActions->HasChronicObstructivePulmonaryDiseaseExacerbation())
+      {
+        double emphysemaSeverity = 0.0;
+        if (m_PatientActions->HasChronicObstructivePulmonaryDiseaseExacerbation())
+        {
+          emphysemaSeverity = m_PatientActions->GetChronicObstructivePulmonaryDiseaseExacerbation().GetEmphysemaSeverity(cmpt).GetValue();
+        }
+        else
+        {
+          emphysemaSeverity = m_data.GetConditions().GetChronicObstructivePulmonaryDisease().GetEmphysemaSeverity(cmpt).GetValue();
+        }
+
+        std::vector<std::pair<double, double>> interpolatorPoints =
+        {
+          {0.0, 1.0}, //None
+          {0.3, 0.3}, //Mild
+          {0.6, 0.25}, //Moderate
+          {0.9, 0.2}, //Severe
+          {1.0, 0.1}  //Max
+        };
+        double scalingFactor = GeneralMath::PiecewiseLinearInterpolator(interpolatorPoints, emphysemaSeverity);
+        totalScalingFactor = MIN(totalScalingFactor, scalingFactor);
+      }
 
       //------------------------------------------------------------------------------------------------------
       //PulmonaryShunt

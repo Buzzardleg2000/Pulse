@@ -4299,8 +4299,8 @@ namespace pulse
       {
         {0.0, 1.0}, //None
         {0.3, 0.18}, //Mild
-        {0.6, 0.15}, //Moderate
-        {0.9, 0.06}, //Severe
+        {0.6, 0.12}, //Moderate
+        {0.9, 0.03}, //Severe
         {1.0, 0.01}  //Max
       };
       double damageScalingFactor = GeneralMath::PiecewiseLinearInterpolator(interpolatorPoints, combinedSeverity); //Acts as floor if fully recruited
@@ -4324,9 +4324,9 @@ namespace pulse
         std::vector<std::pair<double, double>> interpolatorPoints =
         {
           {0.0, 1.0}, //None
-          {0.3, 0.3}, //Mild
-          {0.6, 0.25}, //Moderate
-          {0.9, 0.2}, //Severe
+          {0.3, 0.25}, //Mild
+          {0.6, 0.23}, //Moderate
+          {0.9, 0.21}, //Severe
           {1.0, 0.1}  //Max
         };
         double scalingFactor = GeneralMath::PiecewiseLinearInterpolator(interpolatorPoints, emphysemaSeverity);

@@ -106,9 +106,7 @@ bool PBUtils::SerializeToString(const google::protobuf::Message& src, std::strin
     google::protobuf::util::JsonPrintOptions opts;
     opts.add_whitespace = true;
     opts.preserve_proto_field_names = true;
-    if (m == eSerializationFormat::VERBOSE_JSON)
-      opts.always_print_primitive_fields = true;
-    auto status = google::protobuf::util::MessageToJsonString(src, &output, opts);
+    auto status = google::protobuf::util::MessageToJsonString(src, &output, PrintOpts(m == eSerializationFormat::VERBOSE_JSON));
     if (!status.ok())
     {
       LogError("SerializeFromString", status.ToString(), logger);
@@ -132,4 +130,18 @@ bool PBUtils::SerializeToString(const google::protobuf::Message& src, std::strin
     }
   }
   return true;
+}
+
+google::protobuf::util::JsonPrintOptions PBUtils::PrintOpts(bool verbose)
+{
+  google::protobuf::util::JsonPrintOptions opts;
+  opts.add_whitespace = true;
+  opts.preserve_proto_field_names = true;
+  if (verbose)
+#if GOOGLE_PROTOBUF_VERSION < 5000000
+    opts.always_print_primitive_fields = true;
+#else
+    opts.always_print_fields_with_no_presence = true;
+#endif
+  return opts;
 }

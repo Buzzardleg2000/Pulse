@@ -312,11 +312,7 @@ namespace pulse::study::hydrocephalus
 
   bool HRunner::SerializeToString(pulse::study::bind::hydrocephalus::SimulationListData& src, std::string& output, eSerializationFormat f) const
   {
-    google::protobuf::util::JsonPrintOptions printOpts;
-    printOpts.add_whitespace = true;
-    printOpts.preserve_proto_field_names = true;
-    printOpts.always_print_primitive_fields = true;
-    if (!google::protobuf::util::MessageToJsonString(src, &output, printOpts).ok())
+    if (!google::protobuf::util::MessageToJsonString(src, &output, PBUtils::PrintOpts()).ok())
     {
       Error("Unable to serialize simulation list");
       return false;

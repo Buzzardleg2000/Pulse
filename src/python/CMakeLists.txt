@@ -48,4 +48,5 @@ set_target_properties (PyPulse PROPERTIES FOLDER ${PROJECT_NAME})
 
 # Install protobuf python support, we don't get this unless python api is enabled
 install(DIRECTORY ${CMAKE_BINARY_DIR}/src/python/pulse DESTINATION ${CMAKE_INSTALL_PREFIX}/python)
-install(DIRECTORY ${CMAKE_BINARY_DIR}/src/python/google DESTINATION ${CMAKE_INSTALL_PREFIX}/python)
+# Should we just always pip install python now?
+#install(DIRECTORY ${CMAKE_BINARY_DIR}/src/python/google DESTINATION ${CMAKE_INSTALL_PREFIX}/python)

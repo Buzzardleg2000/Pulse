@@ -591,11 +591,7 @@ namespace pulse::study::patient_variability
 
   bool PVRunner::SerializeToString(pulse::study::bind::patient_variability::PatientStateListData& src, std::string& output) const
   {
-    google::protobuf::util::JsonPrintOptions printOpts;
-    printOpts.add_whitespace = true;
-    printOpts.preserve_proto_field_names = true;
-    printOpts.always_print_primitive_fields = true;
-    if (!google::protobuf::util::MessageToJsonString(src, &output, printOpts).ok())
+    if (!google::protobuf::util::MessageToJsonString(src, &output, PBUtils::PrintOpts()).ok())
     {
       Error("Unable to serialize Patient list");
       return false;

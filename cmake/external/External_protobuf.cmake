@@ -16,12 +16,12 @@ endif()
 # Generally, We only support the latest version at the time of a release
 # And any release that somebody has requested we support for compatibility with their application
 
-set(Protobuf_VERSION "25.2" CACHE STRING "Select the  version of ProtoBuf to build.")
-set_property(CACHE Protobuf_VERSION PROPERTY STRINGS "25.2" "21.12")
+set(Protobuf_VERSION "26.1" CACHE STRING "Select the  version of ProtoBuf to build.")
+set_property(CACHE Protobuf_VERSION PROPERTY STRINGS "26.1" "21.12")
 
-if (Protobuf_VERSION VERSION_EQUAL 25.2)# Latest, Can change
+if (Protobuf_VERSION VERSION_EQUAL 26.1)# Latest, Can change
   set(Protobuf_url "https://github.com/protocolbuffers/protobuf/releases/download/v${Protobuf_VERSION}/protobuf-${Protobuf_VERSION}.zip" )
-  set(Protobuf_md5 "fed3e9e3c19aae55a355ff9d9e475e1e" )
+  set(Protobuf_md5 "c15a80e24b177757aa96210ac4524bf3" )
 elseif (Protobuf_VERSION VERSION_EQUAL 21.12)# Last version before the ABSL dependency
   set(Protobuf_url "https://github.com/protocolbuffers/protobuf/releases/download/v${Protobuf_VERSION}/protobuf-all-${Protobuf_VERSION}.zip" )
   set(Protobuf_md5 "4ef7148d6f8b42bcdba687ea1b60292f" )
@@ -67,6 +67,14 @@ add_external_project_ex( protobuf
   DEPENDENCIES ${_pb_dependencies}
   #VERBOSE
 )
+
+# We no longer build the protobuf python API from source when using version 26 and on
+# We will just pip install the specific version of the source we are using
+if(${PROJECT_NAME}_PYTHON_API AND Protobuf_VERSION VERSION_GREATER_EQUAL "26.0")
+  # For system Python or other cases where “site-packages” is a non-writable directory, 
+  # the pip --user option is necessary to install a Python package under the user home directory
+  execute_process(COMMAND ${Python_EXECUTABLE} -m pip install ${_pip_args} -force-reinstall -v "protobuf==5.${Protobuf_VERSION}")
+endif()
 
 if (NOT USE_SYSTEM_protobuf)
   set(protobuf_INSTALL ${CMAKE_INSTALL_PREFIX})

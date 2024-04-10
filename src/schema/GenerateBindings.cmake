@@ -152,7 +152,17 @@ if(Pulse_JAVA_API)
                                           "${protobuf_SRC}/src/google/protobuf/${f}")
       message(STATUS "Java Binding file ${protobuf_SRC}/src/google/protobuf/${f}")
     endforeach()
-    
+    # New java proto files for protobuf 5.26
+    set(__java_proto "${protobuf_SRC}/java/core/src/main/resources/google/protobuf")
+    set(__java_protos java_features.proto)
+    if(EXISTS "${__java_proto}")
+      foreach(f ${__java_protos})
+        execute_process(COMMAND ${BINDER} --proto_path=${__java_proto}
+                                          --java_out=${java_bindings_DIR}
+                                            "${__java_proto}/${f}")
+        message(STATUS "Java Binding file ${__java_proto}/${f}")
+      endforeach()
+    endif()
   # Copy these files to our source directory
   file(COPY "${protobuf_SRC}/java/core/src/main/java/com"
        DESTINATION ${java_bindings_DIR}
@@ -196,11 +206,7 @@ if(Pulse_PYTHON_API)
     set(python_bindings_DIR "${DST_ROOT}/python")
     delete_bindings(${python_bindings_DIR})
     set( ENV{PROTOC} ${BINDER} )
-    execute_process(COMMAND ${Python3_EXECUTABLE} setup.py build
-                    WORKING_DIRECTORY "${protobuf_SRC}/python")
-    file(COPY "${protobuf_SRC}/python/build/lib/google"
-         DESTINATION ${python_bindings_DIR}
-    )
+
     foreach(f ${_FILES})
       message(STATUS "Python Binding file ${f}")
       execute_process(COMMAND ${BINDER} --proto_path=${SCHEMA_SRC}

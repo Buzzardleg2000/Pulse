@@ -4490,23 +4490,23 @@ namespace pulse
     //Define Paths
     //Everything will be properly initialized in Evironment::Reset
     SEThermalCircuitPath& EnvironmentCoreToAbsoluteReferencePath = exthermal.CreatePath(Core, Ground, pulse::ExternalTemperaturePath::ExternalCoreToGround);
-    EnvironmentCoreToAbsoluteReferencePath.GetNextHeatSource().SetValue(0.0, PowerUnit::W);
+    EnvironmentCoreToAbsoluteReferencePath.GetHeatSourceBaseline().SetValue(0.0, PowerUnit::W);
     SEThermalCircuitPath& EnvironmentSkinToAbsoluteReferencePath = exthermal.CreatePath(Skin, Ground, pulse::ExternalTemperaturePath::ExternalSkinToGround);
-    EnvironmentSkinToAbsoluteReferencePath.GetNextHeatSource().SetValue(0.0, PowerUnit::W);
+    EnvironmentSkinToAbsoluteReferencePath.GetHeatSourceBaseline().SetValue(0.0, PowerUnit::W);
     SEThermalCircuitPath& EnvironmentSkinToClothingPath = exthermal.CreatePath(Skin, Clothing, pulse::ExternalTemperaturePath::ExternalSkinToClothing);
-    EnvironmentSkinToClothingPath.GetNextResistance().SetValue(dNoResistance, HeatResistanceUnit::K_Per_W);
+    EnvironmentSkinToClothingPath.GetResistanceBaseline().SetValue(dNoResistance, HeatResistanceUnit::K_Per_W);
     SEThermalCircuitPath& AbsoluteReferenceToClothingPath = exthermal.CreatePath(Ground, Clothing, pulse::ExternalTemperaturePath::GroundToClothing);
-    AbsoluteReferenceToClothingPath.GetNextHeatSource().SetValue(0.0, PowerUnit::W);
+    AbsoluteReferenceToClothingPath.GetHeatSourceBaseline().SetValue(0.0, PowerUnit::W);
     SEThermalCircuitPath& ClothingToAmbientEnvironmentPath = exthermal.CreatePath(Clothing, ThermalEnvironment, pulse::ExternalTemperaturePath::ClothingToEnvironment);
-    ClothingToAmbientEnvironmentPath.GetNextResistance().SetValue(dNoResistance, HeatResistanceUnit::K_Per_W);
+    ClothingToAmbientEnvironmentPath.GetResistanceBaseline().SetValue(dNoResistance, HeatResistanceUnit::K_Per_W);
     SEThermalCircuitPath& ClothingToEnclosure = exthermal.CreatePath(Clothing, Enclosure, pulse::ExternalTemperaturePath::ClothingToEnclosure);
-    ClothingToEnclosure.GetNextResistance().SetValue(dNoResistance, HeatResistanceUnit::K_Per_W);
+    ClothingToEnclosure.GetResistanceBaseline().SetValue(dNoResistance, HeatResistanceUnit::K_Per_W);
     SEThermalCircuitPath& AbsoluteReferenceToAmbientEnvironmentPath = exthermal.CreatePath(Ground, ThermalEnvironment, pulse::ExternalTemperaturePath::GroundToEnvironment);
-    AbsoluteReferenceToAmbientEnvironmentPath.GetNextTemperatureSource().SetValue(0.0, TemperatureUnit::K);
+    AbsoluteReferenceToAmbientEnvironmentPath.GetTemperatureSourceBaseline().SetValue(0.0, TemperatureUnit::K);
     SEThermalCircuitPath& AbsoluteReferenceToEnclosurePath = exthermal.CreatePath(Ground, Enclosure, pulse::ExternalTemperaturePath::GroundToEnclosure);
-    AbsoluteReferenceToEnclosurePath.GetNextTemperatureSource().SetValue(0.0, TemperatureUnit::K);
+    AbsoluteReferenceToEnclosurePath.GetTemperatureSourceBaseline().SetValue(0.0, TemperatureUnit::K);
     SEThermalCircuitPath& AbsoluteReferenceToActivePath = exthermal.CreatePath(Ground, Active, pulse::ExternalTemperaturePath::GroundToActive);
-    AbsoluteReferenceToActivePath.GetNextTemperatureSource().SetValue(0.0, TemperatureUnit::K);
+    AbsoluteReferenceToActivePath.GetTemperatureSourceBaseline().SetValue(0.0, TemperatureUnit::K);
     SEThermalCircuitPath& ActiveToClothing = exthermal.CreatePath(Active, Clothing, pulse::ExternalTemperaturePath::ActiveToClothing);
     ActiveToClothing.SetNextSwitch(eGate::Open);
 

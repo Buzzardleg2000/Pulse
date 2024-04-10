@@ -824,14 +824,17 @@ namespace pulse
       typeString = "Starting ";
     else
     {
-      m_data.GetCurrentPatient().GetHeartRateBaseline().Set(GetHeartRate());
-      m_data.GetCurrentPatient().GetDiastolicArterialPressureBaseline().Set(GetDiastolicArterialPressure());
-      m_data.GetCurrentPatient().GetSystolicArterialPressureBaseline().Set(GetSystolicArterialPressure());
-      m_data.GetCurrentPatient().GetMeanArterialPressureBaseline().Set(GetMeanArterialPressure());
-      // Keep these for moving between arrhythmia's, note InitialPatient is pre conditions
-      m_StabilizedHeartRateBaseline_Per_min = m_data.GetCurrentPatient().GetHeartRateBaseline(FrequencyUnit::Per_min);
-      m_HeartRateBaseline_Per_min->Set(m_StabilizedHeartRateBaseline_Per_min);
-      m_StabilizedMeanArterialPressureBaseline_mmHg = m_data.GetCurrentPatient().GetMeanArterialPressureBaseline(PressureUnit::mmHg);
+      if (!(m_data.GetState() > EngineState::AtInitialStableState && m_data.GetConditions().HasDehydration()))
+      {
+        m_data.GetCurrentPatient().GetHeartRateBaseline().Set(GetHeartRate());
+        m_data.GetCurrentPatient().GetDiastolicArterialPressureBaseline().Set(GetDiastolicArterialPressure());
+        m_data.GetCurrentPatient().GetSystolicArterialPressureBaseline().Set(GetSystolicArterialPressure());
+        m_data.GetCurrentPatient().GetMeanArterialPressureBaseline().Set(GetMeanArterialPressure());
+        // Keep these for moving between arrhythmia's, note InitialPatient is pre conditions
+        m_StabilizedHeartRateBaseline_Per_min = m_data.GetCurrentPatient().GetHeartRateBaseline(FrequencyUnit::Per_min);
+        m_HeartRateBaseline_Per_min->Set(m_StabilizedHeartRateBaseline_Per_min);
+        m_StabilizedMeanArterialPressureBaseline_mmHg = m_data.GetCurrentPatient().GetMeanArterialPressureBaseline(PressureUnit::mmHg);
+      }
 
       if (m_data.GetState() == EngineState::AtInitialStableState)
       {// At Resting State, apply conditions if we have them

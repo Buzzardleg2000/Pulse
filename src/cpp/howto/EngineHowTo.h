@@ -28,6 +28,7 @@ void HowToCOPD();
 void HowToCOVID19Ventilated();
 void HowToCPR();
 void HowToECMO();
+void HowToDehydration();
 void HowToEnvironmentChange();
 void HowToExercise();
 void HowToExpandedVasculature();

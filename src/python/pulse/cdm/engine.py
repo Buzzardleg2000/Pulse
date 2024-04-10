@@ -58,47 +58,49 @@ class eEvent(Enum):
     CardiogenicShock = 5
     CardiovascularCollapse = 6
     CriticalBrainOxygenDeficit = 7
-    Dehydration = 8
-    Diuresis = 9
-    Fasciculation = 10
-    Fatigue = 11
-    FunctionalIncontinence = 12
-    Hypercapnia = 13
-    Hyperglycemia = 14
-    Hypernatremia = 15
-    Hyperthermia = 16
-    Hypoglycemia = 17
-    Hyponatremia = 18
-    Hypothermia = 19
-    Hypoxia = 20
-    HypovolemicShock = 21
-    IntracranialHypertension = 22
-    IntracranialHypotension = 23
-    IrreversibleState = 24
-    Ketoacidosis = 25
-    LacticAcidosis = 26
-    MassiveHemothorax = 27
-    MaximumPulmonaryVentilationRate = 28
-    MediumHemothorax = 29
-    MetabolicAcidosis = 30
-    MetabolicAlkalosis = 31
+    Diuresis = 8
+    Fasciculation = 9
+    Fatigue = 10
+    FunctionalIncontinence = 11
+    Hypercapnia = 12
+    Hyperglycemia = 13
+    Hypernatremia = 14
+    Hyperthermia = 15
+    Hypoglycemia = 16
+    Hyponatremia = 17
+    Hypothermia = 18
+    Hypoxia = 19
+    HypovolemicShock = 20
+    IntracranialHypertension = 21
+    IntracranialHypotension = 22
+    IrreversibleState = 23
+    Ketoacidosis = 24
+    LacticAcidosis = 25
+    MassiveHemothorax = 26
+    MaximumPulmonaryVentilationRate = 27
+    MediumHemothorax = 28
+    MetabolicAcidosis = 29
+    MetabolicAlkalosis = 30
+    MildDehydration = 31
     MinimalHemothorax = 32
-    ModerateHyperoxemia = 33
-    ModerateHypocapnia = 34
-    MyocardiumOxygenDeficit = 35
-    Natriuresis = 36
-    NutritionDepleted = 37
-    RenalHypoperfusion = 38
-    RespiratoryAcidosis = 39
-    RespiratoryAlkalosis = 40
-    SevereHyperoxemia = 41
-    SevereHypocapnia = 42
-    Stabilizing = 43
-    StartOfCardiacCycle = 44
-    StartOfExhale = 45
-    StartOfInhale = 46
-    Tachycardia = 47
-    Tachypnea = 48
+    ModerateDehydration = 33
+    ModerateHyperoxemia = 34
+    ModerateHypocapnia = 355
+    MyocardiumOxygenDeficit = 36
+    Natriuresis = 37
+    NutritionDepleted = 38
+    RenalHypoperfusion = 39
+    RespiratoryAcidosis = 40
+    RespiratoryAlkalosis = 41
+    SevereDehydration = 42
+    SevereHyperoxemia = 43
+    SevereHypocapnia = 44
+    Stabilizing = 45
+    StartOfCardiacCycle = 46
+    StartOfExhale = 47
+    StartOfInhale = 48
+    Tachycardia = 49
+    Tachypnea = 50
 
     # Equipment
     AnesthesiaMachineOxygenBottleOneExhausted = 1000
@@ -258,7 +260,7 @@ from pulse.cdm.patient_conditions import *
 
 class SEConditionManager():
     __slots__ = ["_ards", "_anemia", "_copd", "_cvsd", "_impaired_alveolar_exchange",
-                 "_pericardial_effusion", "_pneumonia",
+                 "_dehydration", "_pericardial_effusion", "_pneumonia",
                  "_pulmonary_fibrosis", "_pulmonary_shunt", "_renal_stenosis", "_sepsis",
                  "_initial_environmental_conditions"]
 
@@ -270,6 +272,7 @@ class SEConditionManager():
         self._anemia = None
         self._copd = None
         self._cvsd = None
+        self._dehydration = None
         self._impaired_alveolar_exchange = None
         self._pericardial_effusion = None
         self._pneumonia = None
@@ -291,6 +294,8 @@ class SEConditionManager():
         if self.has_chronic_pericardial_effusion():
             return False
         if self.has_chronic_renal_stenosis():
+            return False
+        if self.has_dehydration():
             return False
         if self.has_impaired_alveolar_exchange():
             return False
@@ -361,6 +366,15 @@ class SEConditionManager():
     def remove_chronic_renal_stenosis(self):
         self._renal_stenosis = None
 
+    def has_dehydration(self):
+        return False if self._dehydration is None else self._dehydration.is_valid()
+    def get_dehydration(self):
+        if self._dehydration is None:
+            self._dehydration = SEDehydration()
+        return self._dehydration
+    def remove_dehydration(self):
+        self._dehydration = None
+
     def has_impaired_alveolar_exchange(self):
         return False if self._impaired_alveolar_exchange is None else self._impaired_alveolar_exchange.is_valid()
     def get_impaired_alveolar_exchange(self):
@@ -387,6 +401,7 @@ class SEConditionManager():
         return self._pulmonary_fibrosis
     def remove_pulmonary_fibrosis(self):
         self._pulmonary_fibrosis = None
+
     def has_pulmonary_shunt(self):
         return False if self._pulmonary_shunt is None else self._pulmonary_shunt.is_valid()
     def get_pulmonary_shunt(self):

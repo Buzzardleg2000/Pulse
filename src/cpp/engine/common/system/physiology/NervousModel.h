@@ -46,6 +46,7 @@ namespace pulse
     void ComputeExposedModelParameters() override;
 
     void BaroreceptorFeedback();
+    void InitializeBaroreceptors();
     void CheckBrainStatus();
     void ChemoreceptorFeedback();
     void SetPupilEffects();

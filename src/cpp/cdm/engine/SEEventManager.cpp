@@ -124,7 +124,7 @@ void SEEventManager::SetEvent(eEvent type, bool active, const SEScalarTime& time
         break;
       case eEvent::MildDehydration:
         m_ss << " The patient is in a state of mild dehydration";
-        Break;
+        break;
       case eEvent::MediumHemothorax:
         m_ss << " Patient has Medium Hemothorax";
         break;

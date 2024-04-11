@@ -85,7 +85,7 @@ class eEvent(Enum):
     MinimalHemothorax = 32
     ModerateDehydration = 33
     ModerateHyperoxemia = 34
-    ModerateHypocapnia = 355
+    ModerateHypocapnia = 35
     MyocardiumOxygenDeficit = 36
     Natriuresis = 37
     NutritionDepleted = 38

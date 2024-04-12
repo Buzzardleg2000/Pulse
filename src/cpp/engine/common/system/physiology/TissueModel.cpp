@@ -1895,7 +1895,7 @@ namespace pulse
         }
         else
         {
-          vascularQuantity->GetMass().IncrementValue(-vascularMassLost_g, MassUnit::g);
+          vascularQuantity->GetMass().Increment(-vascularMassLost_g, MassUnit::g);
         }
         vascularQuantity->Balance(BalanceLiquidBy::Mass);
 
@@ -1903,14 +1903,14 @@ namespace pulse
         double intracellularMassLost_g = concentration_g_Per_L * intracellularPerspiredVolume_mL / 1000.0;
         SELiquidSubstanceQuantity* intracellularQuantity = tissue->GetIntracellular().GetSubstanceQuantity(component->GetSubstance());
         intracellularMassLost_g = MIN(intracellularQuantity->GetMass(MassUnit::g), intracellularMassLost_g);
-        intracellularQuantity->GetMass().IncrementValue(-intracellularMassLost_g, MassUnit::g);
+        intracellularQuantity->GetMass().Increment(-intracellularMassLost_g, MassUnit::g);
         intracellularQuantity->Balance(BalanceLiquidBy::Mass);
 
         // Extracellular
         double extracellularMassLost_g = concentration_g_Per_L * extracellularPerspiredVolume_mL / 1000.0;
         SELiquidSubstanceQuantity* extracellularQuantity = tissue->GetExtracellular().GetSubstanceQuantity(component->GetSubstance());
         extracellularMassLost_g = MIN(extracellularQuantity->GetMass(MassUnit::g), extracellularMassLost_g);
-        extracellularQuantity->GetMass().IncrementValue(-extracellularMassLost_g, MassUnit::g);
+        extracellularQuantity->GetMass().Increment(-extracellularMassLost_g, MassUnit::g);
         extracellularQuantity->Balance(BalanceLiquidBy::Mass);
 
       }

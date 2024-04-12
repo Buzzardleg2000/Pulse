@@ -9,6 +9,7 @@
 // Conditions
 #include "cdm/engine/SEConditionManager.h"
 #include "cdm/patient/conditions/SEConsumeMeal.h"
+#include "cdm/patient/conditions/SEDehydration.h"
 // Actions
 #include "cdm/engine/SEActionManager.h"
 #include "cdm/engine/SEPatientActionCollection.h"
@@ -253,6 +254,8 @@ namespace pulse
         //  integratedVolume->SetValue(systemicVolumeCleared, VolumeUnit::mL);
         //  m_data.GetCircuits().BalanceBloodMassByClearedVolume(*m_calcium, *integratedVolume);
       }
+
+      Dehydration();
     }
   }
 
@@ -627,7 +630,11 @@ namespace pulse
       GetTotalMetabolicRate().SetValue(totalMetabolicRateNew_Kcal_Per_day, PowerUnit::kcal_Per_day);                  /// \cite pate2001thermal                  
     }
 
-    m_groundToCorePath->GetNextHeatSource().SetValue(GetTotalMetabolicRate(PowerUnit::W), PowerUnit::W);
+    if (m_groundToCorePath->GetNextHeatSource(PowerUnit::W) == m_groundToCorePath->GetHeatSourceBaseline(PowerUnit::W))
+    {
+      //Don't override if someone is trying to set it, like with dehydration
+      m_groundToCorePath->GetNextHeatSource().SetValue(GetTotalMetabolicRate(PowerUnit::W), PowerUnit::W);
+    }
   }
 
   //--------------------------------------------------------------------------------------------------
@@ -667,8 +674,6 @@ namespace pulse
     sweatRate_mg_Per_min *= GeneralMath::ExponentialGrowthFunction(10.0, 0.0001, 1.0, LIMIT(bloodVolumeFraction, 0.0, 1.0));
 
     GetSweatRate().SetValue(sweatRate_mg_Per_min, MassPerTimeUnit::mg_Per_min);
-
-    //Set the flow source on the extravascular circuit to begin removing the fluid that is excreted
     double sweatDensity_mg_Per_m3 = config.GetWaterDensity(MassPerVolumeUnit::mg_Per_m3); /// \todo Convert to sweat density once specific gravity calculation is in
     double sweatRate_mL_Per_s = sweatRate_mg_Per_min / sweatDensity_mg_Per_m3 * 16666.7; //Conversion
     m_skinExtravascularToSweatingGroundPath->GetNextFlowSource().SetValue(sweatRate_mL_Per_s, VolumePerTimeUnit::mL_Per_s);
@@ -748,5 +753,31 @@ namespace pulse
     std::stringstream ss;
     ss << "Conditions applied homeostasis: " << "Patient basal metabolic rate = " << patientBMR_kcal_Per_day << " kcal/day";
     Info(ss);
+  }
+
+  //--------------------------------------------------------------------------------------------------
+/// \brief
+/// Apply dehydration condition
+///
+/// \details
+/// Apply thermoregulatory consequences as if they progressed slowly and came to a new homeostasis.
+//--------------------------------------------------------------------------------------------------
+  void EnergyModel::Dehydration()
+  {
+    if (!m_data.GetConditions().HasDehydration())
+    {
+      return;
+    }
+
+    double severity = m_data.GetConditions().GetDehydration().GetSeverity().GetValue();
+
+    //Set temperature changes and update compliance heat accordingly
+    double coreTemperature_C = GeneralMath::LinearInterpolator(0.0, 1.0, GetCoreTemperature(TemperatureUnit::C), 40.0, severity);
+    double coreTemperatureChange_K = coreTemperature_C - m_coreNode->GetNextTemperature(TemperatureUnit::C); //Delta K is same as Delta C
+
+    double capacitance_J_Per_K = m_coreToGroundPath->GetNextCapacitance(HeatCapacitanceUnit::J_Per_K);
+    double heatFlow_W = capacitance_J_Per_K * coreTemperatureChange_K / m_data.GetTimeStep_s();
+
+    m_groundToCorePath->GetNextHeatSource().SetValue(heatFlow_W, PowerUnit::W);
   }
 }

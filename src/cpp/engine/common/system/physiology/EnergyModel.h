@@ -53,6 +53,7 @@ namespace pulse
     // These are both part of the consume meal condition.
     //void Dehydration(double time); // Need to revisit
     //void Starvation(double time); // Need to revisit
+    void Dehydration();
     // Used in Reset & Starvation
     void CalculateBasalMetabolicRate();
 

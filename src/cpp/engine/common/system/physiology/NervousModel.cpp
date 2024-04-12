@@ -8,6 +8,7 @@
 #include "engine/common/system/physiology/NervousModel.h"
 // Conditions
 #include "cdm/engine/SEConditionManager.h"
+#include "cdm/patient/conditions/SEDehydration.h"
 // Actions
 #include "cdm/engine/SEActionManager.h"
 #include "cdm/engine/SEPatientActionCollection.h"
@@ -230,7 +231,11 @@ namespace pulse
         GetBaroreceptorResistanceScale().SetValue(1.0);
         GetBaroreceptorComplianceScale().SetValue(1.0);
       }
-
+    }
+    else if (m_data.GetConditions().HasDehydration())
+    {
+      SetBaroreceptorFeedback(eSwitch::On);
+      InitializeBaroreceptors();
     }
 
 #ifdef PROBE
@@ -495,6 +500,59 @@ namespace pulse
 #ifdef PROBE
     m_data.GetDataTrack().Probe("effectivenessParameter", m_BaroreceptorEffectivenessParameter);
 #endif
+  }
+
+//--------------------------------------------------------------------------------------------------
+/// \brief 
+/// Set baroreceptors during stabilization
+///
+/// \details
+/// This uses the same logic as the main baroreceptor feedback model, but allows it to act as if
+/// It as been runnning for a long time due to a chronic condition.
+/// 
+//--------------------------------------------------------------------------------------------------
+  void NervousModel::InitializeBaroreceptors()
+  {
+    //TODO: Make this part of the BaroreceptorFeedback method and clean them both up
+
+    double nu = 4 * m_data.GetConfiguration().GetResponseSlope();
+
+    double meanArterialPressure_mmHg = m_data.GetCardiovascular().GetMeanArterialPressure(PressureUnit::mmHg);
+    double meanArterialPressureBaseline_mmHg = m_data.GetCurrentPatient().GetMeanArterialPressureBaseline(PressureUnit::mmHg);
+    double meanArterialPressureCombinedBaseline_mmHg = meanArterialPressureBaseline_mmHg
+      + m_data.GetDrugs().GetMeanBloodPressureChange(PressureUnit::mmHg)
+      + m_data.GetEnergy().GetExerciseMeanArterialPressureDelta(PressureUnit::mmHg);
+
+    double totalSympatheticFraction = 1.0 / (1.0 + pow(meanArterialPressure_mmHg / meanArterialPressureCombinedBaseline_mmHg, nu));
+    double parasympatheticFraction = 1.0 - totalSympatheticFraction;
+
+    //Calculate the normalized change in heart rate
+    double normalizedHeartRate = GetBaroreceptorHeartRateScale().GetValue();
+    double tauHeartRate_s = m_data.GetConfiguration().GetHeartRateDistributedTimeDelay(TimeUnit::s);
+    double deltaNormalizedHeartRate = (1.0 / tauHeartRate_s) * (-normalizedHeartRate + m_NormalizedAlphaHeartRate * totalSympatheticFraction - m_NormalizedBetaHeartRate * parasympatheticFraction + m_NormalizedGammaHeartRate) * m_data.GetTimeStep_s();
+    normalizedHeartRate += deltaNormalizedHeartRate;
+    GetBaroreceptorHeartRateScale().SetValue(normalizedHeartRate);
+
+    //Calculate the normalized change in heart elastance
+    double normalizedHeartElastance = GetBaroreceptorHeartElastanceScale().GetValue();
+    double tauElastance_s = m_data.GetConfiguration().GetHeartElastanceDistributedTimeDelay(TimeUnit::s);
+    double deltaNormalizedHeartElastance = (1.0 / tauElastance_s) * (-normalizedHeartElastance + m_NormalizedAlphaElastance * totalSympatheticFraction + m_NormalizedGammaElastance) * m_data.GetTimeStep_s();
+    normalizedHeartElastance += deltaNormalizedHeartElastance;
+    GetBaroreceptorHeartElastanceScale().SetValue(normalizedHeartElastance);
+
+    //Calculate the normalized change in flow resistance for any cardiovascular resistor
+    double normalizedResistance = GetBaroreceptorResistanceScale().GetValue();
+    double tauResistance_s = m_data.GetConfiguration().GetSystemicResistanceDistributedTimeDelay(TimeUnit::s);
+    double deltaNormalizedResistance = (1.0 / tauResistance_s) * (-normalizedResistance + m_NormalizedAlphaResistance * totalSympatheticFraction + m_NormalizedGammaResistance) * m_data.GetTimeStep_s();
+    normalizedResistance += deltaNormalizedResistance;
+    GetBaroreceptorResistanceScale().SetValue(normalizedResistance);
+
+    //Calculate the normalized change in flow compliance for any cardiovascular compliance
+    double normalizedCompliance = GetBaroreceptorComplianceScale().GetValue();
+    double tauCompliance_s = m_data.GetConfiguration().GetVenousComplianceDistributedTimeDelay(TimeUnit::s);
+    double deltaNormalizedCompliance = (1.0 / tauCompliance_s) * (-normalizedCompliance + m_NormalizedAlphaCompliance * parasympatheticFraction + m_NormalizedGammaCompliance) * m_data.GetTimeStep_s();
+    normalizedCompliance += deltaNormalizedCompliance;
+    GetBaroreceptorComplianceScale().SetValue(normalizedCompliance);
   }
 
   //--------------------------------------------------------------------------------------------------

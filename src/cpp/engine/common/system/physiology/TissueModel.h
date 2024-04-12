@@ -50,6 +50,7 @@ namespace pulse
 
     // Preprocess Methods
     void ProduceAlbumin(double duration_s);
+    void Dehydration();
 
     /*Tissue System*/
     void CalculateMetabolicConsumptionAndProduction(double time);

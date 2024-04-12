@@ -10,6 +10,8 @@ namespace HowToDriver
       //HowTo_UseEngine.Example.Run();
       //HowTo_CreateState.Example.Run();
       //HowTo_PatientStates.Example.Run();
+
+      //HowTo_Dehydration.Example.Run();
       //HowTo_Environment.Example.Run();
       //HowTo_Hemorrhage.Example.Run();
       //HowTo_ECMO.Example.Run();

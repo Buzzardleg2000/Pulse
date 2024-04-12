@@ -62,9 +62,6 @@ void SEEventManager::SetEvent(eEvent type, bool active, const SEScalarTime& time
       case eEvent::CriticalBrainOxygenDeficit:
         m_ss << " Oxygen tension in the brain is critically low";
         break;
-      case eEvent::Dehydration:
-        m_ss << " Patient has entered state of Dehydration";
-        break;
       case eEvent::Diuresis:
         m_ss << " Patient has entered Diuresis";
         break;
@@ -125,6 +122,9 @@ void SEEventManager::SetEvent(eEvent type, bool active, const SEScalarTime& time
       case eEvent::MaximumPulmonaryVentilationRate:
         m_ss << " Patient's Respiratory Driver has exceeded the maximum target pulmonary ventilation rate, setting value to the maximum allowable rate";
         break;
+      case eEvent::MildDehydration:
+        m_ss << " The patient is in a state of mild dehydration";
+        break;
       case eEvent::MediumHemothorax:
         m_ss << " Patient has Medium Hemothorax";
         break;
@@ -136,6 +136,9 @@ void SEEventManager::SetEvent(eEvent type, bool active, const SEScalarTime& time
         break;
       case eEvent::MinimalHemothorax:
         m_ss << " Patient has Minimal Hemothorax";
+        break;
+      case eEvent::ModerateDehydration:
+        m_ss << " The patient is in a state of moderate dehydration";
         break;
       case eEvent::ModerateHyperoxemia:
         m_ss << " The patient is in a state of moderate hyperoxemia";
@@ -160,6 +163,9 @@ void SEEventManager::SetEvent(eEvent type, bool active, const SEScalarTime& time
         break;
       case eEvent::RespiratoryAlkalosis:
         m_ss << " Patient has Respiratory Alkalosis";
+        break;
+      case eEvent::SevereDehydration:
+        m_ss << " The patient is in a state of severe dehydration";
         break;
       case eEvent::SevereHyperoxemia:
         m_ss << " The patient is in a state of moderate hyperoxemia";
@@ -232,9 +238,6 @@ void SEEventManager::SetEvent(eEvent type, bool active, const SEScalarTime& time
       case eEvent::CriticalBrainOxygenDeficit:
         m_ss << " Oxygen tension in the brain has increased above the critical threshold";
         break;
-      case eEvent::Dehydration:
-        m_ss << " Patient no longer is in Dehydration state";
-        break;
       case eEvent::Diuresis:
         m_ss << " Patient no longer has Diuresis";
         break;
@@ -304,8 +307,14 @@ void SEEventManager::SetEvent(eEvent type, bool active, const SEScalarTime& time
       case eEvent::MetabolicAlkalosis:
         m_ss << " The patient is no longer in a state of metabolic alkalosis";
         break;
+      case eEvent::MildDehydration:
+        m_ss << " The patient no longer has mild dehydration";
+        break;
       case eEvent::MinimalHemothorax:
         m_ss << " Patient no longer has Minimal Hemothorax";
+        break;
+      case eEvent::ModerateDehydration:
+        m_ss << " The patient no longer has moderate dehydration";
         break;
       case eEvent::ModerateHyperoxemia:
         m_ss << " The patient is no longer in a state of moderate hyperoxemia";
@@ -330,6 +339,9 @@ void SEEventManager::SetEvent(eEvent type, bool active, const SEScalarTime& time
         break;
       case eEvent::RespiratoryAlkalosis:
         m_ss << " Patient no longer has Respiratory Alkalosis";
+        break;
+      case eEvent::SevereDehydration:
+        m_ss << " The patient no longer has severe dehydration";
         break;
       case eEvent::SevereHyperoxemia:
         m_ss << " The patient is no longer in a state of severe hyperoxemia";

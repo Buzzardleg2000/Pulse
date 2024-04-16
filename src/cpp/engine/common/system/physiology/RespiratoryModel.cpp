@@ -49,6 +49,7 @@
 #include "cdm/system/physiology/SEEnergySystem.h"
 #include "cdm/system/physiology/SERespiratoryMechanics.h"
 #include "cdm/system/physiology/SERespiratoryMechanicsModifiers.h"
+#include "cdm/system/environment/SEEnvironmentalConditions.h"
 // CDM
 #include "cdm/patient/SEPatient.h"
 #include "cdm/engine/SEEventManager.h"
@@ -3127,6 +3128,21 @@ namespace pulse
     m_data.GetCurrentPatient().GetInspiratoryReserveVolume().SetValue(inspiratoryReserveVolume_L, VolumeUnit::L);
     m_data.GetCurrentPatient().GetInspiratoryCapacity().SetValue(inspiratoryCapacity_L, VolumeUnit::L);
     m_data.GetCurrentPatient().GetVitalCapacity().SetValue(vitalCapacity_L, VolumeUnit::L);
+
+
+    //---------------------------------------------------------------------------------------------------------------------------------------------
+    //Mechanical Dead Space
+    //This is from the environment settings
+    //Equipment models include their own dead space values and should be used instead where possible
+
+    double airwayBaselineVolume_L = m_AirwayNode->GetVolumeBaseline(VolumeUnit::L);
+    double mechanicalDeadSpace_L = 0.0;
+    if (m_data.GetEnvironment().GetEnvironmentalConditions().HasMechanicalDeadSpace())
+    {
+      //Aaron - Why is this never hit?
+      mechanicalDeadSpace_L = m_data.GetEnvironment().GetEnvironmentalConditions().GetMechanicalDeadSpace(VolumeUnit::L);
+    }
+    m_AirwayNode->GetNextVolume().SetValue(airwayBaselineVolume_L + mechanicalDeadSpace_L, VolumeUnit::L);
   }
 
   //--------------------------------------------------------------------------------------------------
@@ -4321,7 +4337,7 @@ namespace pulse
           emphysemaSeverity = m_data.GetConditions().GetChronicObstructivePulmonaryDisease().GetEmphysemaSeverity(cmpt).GetValue();
         }
 
-        std::vector<std::pair<double, double>> interpolatorPoints =
+        interpolatorPoints =
         {
           {0.0, 1.0}, //None
           {0.3, 0.25}, //Mild

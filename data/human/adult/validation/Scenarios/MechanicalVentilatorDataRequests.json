@@ -67,6 +67,7 @@
     { "DecimalFormat": { "Precision": 3 },                                            "PropertyName": "InspiratoryCapacity",                  "Unit": "L" },
     { "DecimalFormat": { "Precision": 3 },                                            "PropertyName": "InspiratoryReserveVolume",             "Unit": "L" },
     { "DecimalFormat": { "Precision": 3 },                                            "PropertyName": "ResidualVolume",                       "Unit": "L" },
+    { "DecimalFormat": { "Precision": 3 },                                            "PropertyName": "TidalVolumeBaseline",                  "Unit": "L" },
     { "DecimalFormat": { "Precision": 3 },                                            "PropertyName": "TotalLungCapacity",                    "Unit": "L" },
     { "DecimalFormat": { "Precision": 3 },                                            "PropertyName": "VitalCapacity",                        "Unit": "L" }
   ]

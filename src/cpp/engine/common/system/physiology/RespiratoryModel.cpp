@@ -2455,7 +2455,9 @@ namespace pulse
         GetTotalAlveolarVentilation().SetValue(totalAlveolarVentilation_L_Per_min, VolumePerTimeUnit::L_Per_min);
 
         //Calculate Ratios
-        GetPhysiologicDeadSpaceTidalVolumeRatio().SetValue(GetPhysiologicDeadSpace(VolumeUnit::L) / TidalVolume_L);
+        //Vd/Vt is based on the patient healthy spontaneous tidal volume
+        double tidalVolumeBaseline_L = m_data.GetInitialPatient().GetTidalVolumeBaseline(VolumeUnit::L);
+        GetPhysiologicDeadSpaceTidalVolumeRatio().SetValue(GetPhysiologicDeadSpace(VolumeUnit::L) / tidalVolumeBaseline_L);
         if (m_data.HasCardiovascular())
         {
           if (m_data.GetCardiovascular().GetTotalPulmonaryPerfusion(VolumePerTimeUnit::L_Per_min) > ZERO_APPROX)
@@ -3000,11 +3002,16 @@ namespace pulse
           severity = m_data.GetConditions().GetAcuteRespiratoryDistressSyndrome().GetSeverity(cmpt).GetValue();
         }
 
-        if (severity > 0.29)
+        std::vector<std::pair<double, double>>  interpolatorPoints =
         {
-          // best fit for (severity, volume): (0, 0), (0.3, 0), (0.6, 0.003), (0.9, 0.15)
-          deadSpaceIncrement_L = alveoliVolumeRatio * (0.3704 * std::pow(severity, 3.0) - 0.1667 * std::pow(severity, 2.0) + 0.0167 * severity);
-        }
+          {0.0, 0.0}, //None
+          {0.3, 0.0}, //Mild
+          {0.6, 0.1}, //Moderate
+          {0.9, 0.18}, //Severe
+          {1.0, 0.2}  //Max
+        };
+
+        deadSpaceIncrement_L = alveoliVolumeRatio * GeneralMath::PiecewiseLinearInterpolator(interpolatorPoints, severity);
 
         alveoliIncrement_L = -alveoliVolumeRatio * GeneralMath::LinearInterpolator(0.0, 1.0, 0.0, 1.2, severity);
       }
@@ -3028,7 +3035,16 @@ namespace pulse
           emphysemaSeverity = m_data.GetConditions().GetChronicObstructivePulmonaryDisease().GetEmphysemaSeverity(cmpt).GetValue();
         }
 
-        deadSpaceIncrement_L = MAX(deadSpaceIncrement_L, alveoliVolumeRatio * GeneralMath::LinearInterpolator(0.0, 1.0, 0.0, 1.0, emphysemaSeverity));
+        std::vector<std::pair<double, double>>  interpolatorPoints =
+        {
+          {0.0, 0.0}, //None
+          {0.3, 0.02}, //Mild 0.25 = 0.39
+          {0.6, 0.065}, //Moderate
+          {0.9, 0.12}, //Severe
+          {1.0, 0.2}  //Max
+        };
+
+        deadSpaceIncrement_L = MAX(deadSpaceIncrement_L, GeneralMath::PiecewiseLinearInterpolator(interpolatorPoints, emphysemaSeverity));
       }
 
       //---------------------------------------------------------------------------------------------------------------------------------------------
@@ -3243,7 +3259,7 @@ namespace pulse
           else
           {
             //Tuned based on mechanical ventilator validation data
-            tracheaResistance_cmH2O_s_Per_L *= 8.5;
+            tracheaResistance_cmH2O_s_Per_L *= 7.8;
           }
 
           break;
@@ -3462,18 +3478,18 @@ namespace pulse
       std::vector<std::pair<double, double>> inhaleInterpolatorPoints =
       {
         {0.0, 1.0}, //None
-        {0.3, 35.0}, //Mild
-        {0.6, 60.0}, //Moderate
-        {0.9, 80.0}, //Severe
-        {1.0, 100.0}  //Max
+        {0.3, 4.5}, //Mild
+        {0.6, 25.0}, //Moderate
+        {0.9, 55.0}, //Severe
+        {1.0, 90.0}  //Max
       };
       std::vector<std::pair<double, double>> exhaleInterpolatorPoints =
       {
         {0.0, 1.0}, //None
-        {0.3, 60.0}, //Mild
-        {0.6, 85.0}, //Moderate
-        {0.9, 100.0}, //Severe
-        {1.0, 125.0}  //Max
+        {0.3, 4.5}, //Mild
+        {0.6, 75.0}, //Moderate
+        {0.9, 130.0}, //Severe
+        {1.0, 150.0}  //Max
       };
 
       double resistanceScalingFactor = 1.0;
@@ -3592,28 +3608,16 @@ namespace pulse
         restrictiveSeverity = MAX(restrictiveSeverity, severity);
       }
 
-      std::vector<std::pair<double, double>> inhaleInterpolatorPoints =
+      std::vector<std::pair<double, double>> interpolatorPoints =
       {
         {0.0, 1.0}, //None
         {0.3, 1.0}, //Mild
-        {0.6, 15.0}, //Moderate
-        {0.9, 30.0}, //Severe
-        {1.0, 40.0}  //Max
-      };
-      std::vector<std::pair<double, double>> exhaleInterpolatorPoints =
-      {
-        {0.0, 1.0}, //None
-        {0.3, 10.0}, //Mild
-        {0.6, 28.0}, //Moderate
-        {0.9, 55.0}, //Severe
-        {1.0, 65.0}  //Max
+        {0.6, 10.0}, //Moderate
+        {0.9, 20.0}, //Severe
+        {1.0, 30.0}  //Max
       };
 
-      double resistanceScalingFactor = 1.0;
-      if (inhaling)
-        resistanceScalingFactor = GeneralMath::PiecewiseLinearInterpolator(inhaleInterpolatorPoints, restrictiveSeverity);
-      else //exhaling
-        resistanceScalingFactor = GeneralMath::PiecewiseLinearInterpolator(exhaleInterpolatorPoints, restrictiveSeverity);
+      double resistanceScalingFactor = GeneralMath::PiecewiseLinearInterpolator(interpolatorPoints, restrictiveSeverity);
 
       SEFluidCircuitPath* alveoliResistancePath = cpt.ResistancePath;
       double alveoliResistance_cmH2O_s_Per_L = alveoliResistancePath->GetNextResistance(PressureTimePerVolumeUnit::cmH2O_s_Per_L);
@@ -3716,10 +3720,10 @@ namespace pulse
         std::vector<std::pair<double, double>> interpolatorPoints =
         {
           {0.0, 1.0}, //None
-          {0.3, 0.9}, //Mild
-          {0.6, 0.95}, //Moderate
-          {0.9, 1.05}, //Severe
-          {1.0, 1.1}  //Max
+          {0.3, 1.1}, //Mild
+          {0.6, 1.2}, //Moderate
+          {0.9, 1.3}, //Severe
+          {1.0, 1.4}  //Max
         };
         obstructiveComplianceScalingFactor = GeneralMath::PiecewiseLinearInterpolator(interpolatorPoints, emphysemaSeverity);
       }
@@ -3770,7 +3774,7 @@ namespace pulse
           severity = m_data.GetConditions().GetAcuteRespiratoryDistressSyndrome().GetSeverity(cmpt).GetValue();
         }
 
-        restrictiveComplianceScalingFactor = MIN(restrictiveComplianceScalingFactor, GeneralMath::ExponentialDecayFunction(10, 0.45, 1.0, severity));
+        restrictiveComplianceScalingFactor = MIN(restrictiveComplianceScalingFactor, GeneralMath::ExponentialDecayFunction(10, 0.42, 1.0, severity));
       }
 
       //------------------------------------------------------------------------------------------------------
@@ -4310,16 +4314,27 @@ namespace pulse
 
       //------------------------------------------------------------------------------------------------------
       //Combine effects
-      double recruitmentScalingFactor = GeneralMath::ExponentialDecayFunction(10, 0.04, 1.0, 1.0 - recruitedFraction);
+      //Damage factor acts as floor if fully recruited - same as Emphysema
       std::vector<std::pair<double, double>> interpolatorPoints =
       {
         {0.0, 1.0}, //None
-        {0.3, 0.18}, //Mild
-        {0.6, 0.12}, //Moderate
-        {0.9, 0.03}, //Severe
+        {0.3, 0.20}, //Mild
+        {0.6, 0.14}, //Moderate
+        {0.9, 0.08}, //Severe
         {1.0, 0.01}  //Max
       };
-      double damageScalingFactor = GeneralMath::PiecewiseLinearInterpolator(interpolatorPoints, combinedSeverity); //Acts as floor if fully recruited
+      double damageScalingFactor = GeneralMath::PiecewiseLinearInterpolator(interpolatorPoints, combinedSeverity); 
+
+      interpolatorPoints =
+      {
+        {0.0, 1.0}, //None
+        {0.3, 0.14}, //Mild
+        {0.6, 0.07}, //Moderate
+        {0.9, 0.02}, //Severe
+        {1.0, 0.01}  //Max
+      };
+      double recruitmentScalingFactor = GeneralMath::PiecewiseLinearInterpolator(interpolatorPoints, 1.0 - recruitedFraction);
+
       double totalScalingFactor = MIN(recruitmentScalingFactor, damageScalingFactor);
 
       //------------------------------------------------------------------------------------------------------
@@ -4340,10 +4355,10 @@ namespace pulse
         interpolatorPoints =
         {
           {0.0, 1.0}, //None
-          {0.3, 0.25}, //Mild
-          {0.6, 0.23}, //Moderate
-          {0.9, 0.21}, //Severe
-          {1.0, 0.1}  //Max
+          {0.3, 0.20}, //Mild
+          {0.6, 0.14}, //Moderate
+          {0.9, 0.08}, //Severe
+          {1.0, 0.01}  //Max
         };
         double scalingFactor = GeneralMath::PiecewiseLinearInterpolator(interpolatorPoints, emphysemaSeverity);
         totalScalingFactor = MIN(totalScalingFactor, scalingFactor);
